@@ -1,0 +1,22 @@
+<table style="width: 100%; ">
+    <tr>
+        <th></th>
+        <th>{{ __("Payment") }}</th>
+        <th>{{ __("Posting date") }}</th>
+        <th>{{ __("Amount") }}</th>
+        <th>{{ __("Party") }}</th>
+        <th>{{ __("Account") }}</th>
+    </tr>
+    {% for payment in payments %}
+    <tr>
+        <td><input type="checkbox" id="chk{{ payment.name }}" name="{{ payment.name }}"></td>
+        <td><a href="/desk#Form/Payment Entry/{{ payment.name }}">{{ payment.name }}</a></td>
+        <td>{{ payment.posting_date }}</td>
+        <td>{{ payment.paid_amount }}</td>
+        <td>{{ payment.party }}</td>
+        <td>{{ payment.paid_from }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+

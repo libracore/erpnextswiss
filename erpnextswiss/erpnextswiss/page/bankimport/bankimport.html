@@ -1,0 +1,49 @@
+<div>
+  <hr style="margin-top: 50px;">
+  <h3>{%= __("Bank import") %}</h3>
+  <p class="text-muted">{%= __("Import payment entries from bank account file") %}</p>
+
+  <div class="section-body">
+    <div class="row">
+	  <div class="form-column col-sm-4">
+	    <p>{{ __("Bank") }}</p>
+	    <select id="bank">
+	      <option value="ubs">UBS</option>
+		  <option value="cs">Credit Suisse</option>
+		  <option value="zkb">ZKB</option>
+	    </select>
+	  </div>
+	  
+	  <div class="form-column col-sm-4">
+	    <p>{{ __("Payment account") }}</p>
+	    <select id="payment_account">
+
+	    </select>
+	  </div>
+	  
+	  <div class="form-column col-sm-4">
+	    <p>{{ __("Options") }}</p>
+	    <div class="checkbox">
+	      <label><input type="checkbox" id="auto_submit">{{ __("Automatically submit.") }}</label>
+	    </div>
+	  </div>	  
+    </div>
+	    
+    <div class="row">
+	  <div class="form-column col-sm-4">
+	    <p>{{ __("File") }} <input type="file" id="input_file" /></p>
+	  </div>
+	  
+	  <div class="form-column col-sm-4">
+	    <p>{{ __("Parse") }}</p>
+        <button type="submit" class="btn btn-sm btn-primary btn-parse-file">{{ __("Parse") }}</button>
+        <div class="waiting-gif hide"><img src="/assets/frappe/images/ui/ajax-loader.gif" /></div>
+	  </div>
+	  
+	  <div class="form-column col-sm-4">
+	    <div class="insert-log-messages"></div>
+	  </div>
+    </div>
+  </div>
+  
+</div>

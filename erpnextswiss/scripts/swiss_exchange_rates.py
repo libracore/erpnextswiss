@@ -6,7 +6,7 @@
 #
 # For information on ERPNext, refer to https://erpnext.org/
 #
-# Execute with $ bench execute myapp.scripts.swiss_exchange_rates.read_rates
+# Execute with $ bench execute erpnextswiss.scripts.swiss_exchange_rates.read_rates
 #
 #Python 3: from urllib.request import urlopen
 import urllib2

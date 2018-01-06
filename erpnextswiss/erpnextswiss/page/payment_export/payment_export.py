@@ -181,9 +181,9 @@ def generate_payment_file(payments):
                 # creditor account
                 payment_content += make_line("        <CdtrAcct>")
                 payment_content += make_line("          <Id>")
-                if payment_reference.iban:
+                if payment_record.iban:
                     payment_content += make_line("            <IBAN>" + 
-                        payment_reference.iban + "</IBAN>")
+                        payment_record.iban + "</IBAN>")
                 else:
                     # no iban: not valid record, skip
                     content += add_invalid_remark( payment + ": " + _("no IBAN found") )
@@ -194,47 +194,48 @@ def generate_payment_file(payments):
                 # creditor agent
                 payment_content += make_line("        <CdtrAgt>")
                 payment_content += make_line("          <FinInstnId>")
-                if payment_reference.bic:
+                if payment_record.bic:
                     payment_content += make_line("            <BIC>" + 
-                        payment_reference.bic + "</BIC>")
+                        payment_record.bic + "</BIC>")
                 else:
                     # no bic: not a valid record, skip
                     content += add_invalid_remark( payment + ": " + _("no BIC found") )
                     skipped.append(payment)
                     continue
                 payment_content += make_line("          </FinInstnId>")
-                payment_content += make_line("        </CdtrAgt>")      
-                # creditor (required for non-ESR)
-                payment_content += make_line("        <Cdr>") 
-                # name of the creditor/supplier           
-                payment_content += make_line("          <Nm>" + 
-                    payment_record.party + "</Nm>")
-                # address of creditor/supplier (should contain at least country and first address line
-                # get supplier address
-                supplier_address = get_billing_address(payment_record.party)
-                if supplier_address == None:
-                    # no address found, skip entry (not valid)
-                    content += add_invalid_remark( payment + ": " + _("no address found") )
-                    skipped.append(payment)
-                    continue
-                payment_content += make_line("          <PstlAdr>")
-                # street name
-                payment_content += make_line("            <StrtNm>" +
-                    get_street_name(supplier_address.address_line1) + "</StrtNm>")
-                # building number
-                payment_content += make_line("            <BldgNb>" +
-                    get_building_number(supplier_address.address_line1) + "</BldgNb>")
-                # postal code
-                payment_content += make_line("            <PstCd>{0}</PstCd>".format(
-                    supplier_address.postal_code))
-                # town name
-                payment_content += make_line("            <TwnNm>" +
-                    supplier_address.city + "</TwnNm>")
-                # country
-                payment_content += make_line("            <Ctry>" +
-                    supplier_address.country + "</Ctry>")
-                payment_content += make_line("          </PstlAdr>")
-                payment_content += make_line("        </Cdr>") 
+                payment_content += make_line("        </CdtrAgt>")    
+            
+            # creditor information
+            payment_content += make_line("        <Cdr>") 
+            # name of the creditor/supplier           
+            payment_content += make_line("          <Nm>" + 
+                payment_record.party + "</Nm>")
+            # address of creditor/supplier (should contain at least country and first address line
+            # get supplier address
+            supplier_address = get_billing_address(payment_record.party)
+            if supplier_address == None:
+                # no address found, skip entry (not valid)
+                content += add_invalid_remark( payment + ": " + _("no address found") )
+                skipped.append(payment)
+                continue
+            payment_content += make_line("          <PstlAdr>")
+            # street name
+            payment_content += make_line("            <StrtNm>" +
+                get_street_name(supplier_address.address_line1) + "</StrtNm>")
+            # building number
+            payment_content += make_line("            <BldgNb>" +
+                get_building_number(supplier_address.address_line1) + "</BldgNb>")
+            # postal code
+            payment_content += make_line("            <PstCd>{0}</PstCd>".format(
+                supplier_address.pincode))
+            # town name
+            payment_content += make_line("            <TwnNm>" +
+                supplier_address.city + "</TwnNm>")
+            # country
+            payment_content += make_line("            <Ctry>" +
+                supplier_address.country + "</Ctry>")
+            payment_content += make_line("          </PstlAdr>")
+            payment_content += make_line("        </Cdr>") 
                             
             # close payment record
             payment_content += make_line("      </CdtTrfTxInf>")

@@ -38,8 +38,23 @@ frappe.payment_export = {
                     },
                     callback: function(r) {
                         if (r.message) {
+                            // log errors if present
+                            var parent = page.main.find(".insert-log-messages").empty();
+                            if (r.message.skipped.length > 0) {
+                                $('<p>' + __("Some payments were skipped due to errors (check the payment file for details): ") + '</p>').appendTo(parent);
+                                for (var i = 0; i < r.message.skipped.length; i++) {
+									$('<p><a href="/desk#Form/Payment Entry/'
+									  + r.message.skipped[i] + '">' 
+									  + r.message.skipped[i] + '</a></p>').appendTo(parent);
+								}
+                            }
+                            else {
+                                $('<p>' + __("No errors") + '</p>').appendTo(parent);
+                            }
+
                             // prepare the xml file for download
                             download("payments.xml", r.message.content);
+                            
                         } 
                     }
                 });
@@ -73,7 +88,7 @@ frappe.payment_export = {
 
 function download(filename, content) {
   var element = document.createElement('a');
-  element.setAttribute('href', 'application/octet-stream;charset=utf-8,' + encodeURIComponent(content));
+  element.setAttribute('href', 'data:application/octet-stream;charset=utf-8,' + encodeURIComponent(content));
   element.setAttribute('download', filename);
 
   element.style.display = 'none';

@@ -23,6 +23,9 @@ def generate_payment_file(payments):
         # convert JavaScript parameter into Python array
         payments = eval(payments)
         
+        # array for skipped payments
+        skipped = []
+        
         # create xml header
         content = make_line("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
         # define xml template reference
@@ -88,14 +91,22 @@ def generate_payment_file(payments):
                 # no paying account IBAN: not valid record, skip
                 content += add_invalid_remark( _("{0}: no account IBAN found ({1})".format(
                     payment, payment_record.paid_from) ) )
+                skipped.append(payment)
                 continue
             payment_content += make_line("        </Id>")
             payment_content += make_line("      </DbtrAcct>")
             # debitor agent (sender) - BIC
             payment_content += make_line("      <DbtrAgt>")
             payment_content += make_line("        <FinInstnId>")
-            payment_content += make_line("          <BIC>" +
-                payment_account.bic + "</BIC>")
+            if payment_account.bic:
+                payment_content += make_line("          <BIC>" +
+                    payment_account.bic + "</BIC>")
+            else:
+                # no paying account BIC: not valid record, skip
+                content += add_invalid_remark( _("{0}: no account BIC found ({1})".format(
+                    payment, payment_record.paid_from) ) )
+                skipped.append(payment)
+                continue                    
             payment_content += make_line("        </FinInstnId>")
             payment_content += make_line("      </DbtrAgt>")
                 
@@ -143,6 +154,7 @@ def generate_payment_file(payments):
                 else:
                     # no particpiation number: not valid record, skip
                     content += add_invalid_remark( payment + ": " + _("no ESR participation number found") )
+                    skipped.append(payment)
                     continue
                 payment_content += make_line("            </Othr>")
                 payment_content += make_line("          </Id>")
@@ -159,6 +171,7 @@ def generate_payment_file(payments):
                 else:
                     # no ESR reference: not valid record, skip
                     content += add_invalid_remark( payment + ": " + _("no ESR reference found") )
+                    skipped.append(payment)
                     continue    
                 payment_content += make_line("            </CdtrRefInf>")
                 payment_content += make_line("          </Strd>")
@@ -174,6 +187,7 @@ def generate_payment_file(payments):
                 else:
                     # no iban: not valid record, skip
                     content += add_invalid_remark( payment + ": " + _("no IBAN found") )
+                    skipped.append(payment)
                     continue
                 payment_content += make_line("          </Id>")
                 payment_content += make_line("        </CdtrAcct>")
@@ -186,6 +200,7 @@ def generate_payment_file(payments):
                 else:
                     # no bic: not a valid record, skip
                     content += add_invalid_remark( payment + ": " + _("no BIC found") )
+                    skipped.append(payment)
                     continue
                 payment_content += make_line("          </FinInstnId>")
                 payment_content += make_line("        </CdtrAgt>")      
@@ -200,6 +215,7 @@ def generate_payment_file(payments):
                 if supplier_address == None:
                     # no address found, skip entry (not valid)
                     content += add_invalid_remark( payment + ": " + _("no address found") )
+                    skipped.append(payment)
                     continue
                 payment_content += make_line("          <PstlAdr>")
                 # street name
@@ -230,7 +246,7 @@ def generate_payment_file(payments):
         content += make_line("  </CstmrCdtTrfInitn>")
         content += make_line("</Document>")
         
-        return { 'content': content }
+        return { 'content': content, 'skipped': skipped }
     #except:
     #    frappe.throw( _("Error while generating xml. Make sure that you made required customisations to the DocTypes.") )
     #    return

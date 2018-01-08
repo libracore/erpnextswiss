@@ -3,7 +3,7 @@
 
 frappe.ui.form.on('VAT Declaration', {
 	refresh: function(frm) {
-
+        get_revenue(frm);
 	}
 });
 
@@ -38,20 +38,19 @@ frappe.ui.form.on("VAT Declaration", {
 });
 
 // get revenues
-function get_revenue() {
+function get_revenue(frm) {
     // total revenues is the sum of all sales invoices in the period
     frappe.call({
         method: 'erpnextswiss.erpnextswiss.doctype.vat_declaration.vat_declaration.get_revenue',
-        args: { },
+        args: { 
+            'start_date': frm.doc.start_date,
+            'end_date': frm.doc.end_date
+            },
         callback: function(r) {
             if (r.message) {
-                var parent = page.main.find(".payment-table").empty();
-                if (r.message.payments.length > 0) {
-                    $(frappe.render_template('payment_export_table', r.message)).appendTo(parent);
-                } else {
-                    $('<h3>No payment entries to be paid found with status draft</h3>').appendTo(parent);
-                }
-            } 
+                window.alert("got value");
+                frm.set_value('total_revenue', r.message.total_revenue);
+            }
         }
     });
 }

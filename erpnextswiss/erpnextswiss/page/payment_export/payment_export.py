@@ -22,6 +22,8 @@ def generate_payment_file(payments):
     #try:
         # convert JavaScript parameter into Python array
         payments = eval(payments)
+        # remove empty items in case there should be any (bigfix for issue #2)
+        payments = filter(None, payments)
         
         # array for skipped payments
         skipped = []

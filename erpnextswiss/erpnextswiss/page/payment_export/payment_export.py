@@ -34,23 +34,25 @@ def generate_payment_file(payments):
         content += make_line("  <CstmrCdtTrfInitn>")
         ### Group Header (GrpHdr, A-Level)
         # create group header
-        content += make_line("      <GrpHdr>")
+        content += make_line("    <GrpHdr>")
         # message ID (unique, SWIFT-characters only)
-        content += make_line("        <MsgId>MSG-" + time.strftime("%Y%m%d%H%M%S") + "</MsgId>")
+        content += make_line("      <MsgId>MSG-" + time.strftime("%Y%m%d%H%M%S") + "</MsgId>")
         # creation date and time ( e.g. 2010-02-15T07:30:00 )
-        content += make_line("        <CreDtTm>" + time.strftime("%Y-%m-%dT%H:%M:%S") + "</CreDtTm>")
+        content += make_line("      <CreDtTm>" + time.strftime("%Y-%m-%dT%H:%M:%S") + "</CreDtTm>")
         # number of transactions in the file
         transaction_count = 0
-        content += make_line("        <NbOfTxs><!-- COUNT --></NbOfTxs>")
+        transaction_count_identifier = "<!-- $COUNT -->"
+        content += make_line("      <NbOfTxs>" + transaction_count_identifier + "</NbOfTxs>")
         # total amount of all transactions ( e.g. 15850.00 )  (sum of all amounts)
         control_sum = 0.0
-        content += make_line("        <CtrlSum><!-- CONTROL_SUM --></CtrlSum>")
+        control_sum_identifier = "<!-- $CONTROL_SUM -->"
+        content += make_line("      <CtrlSum>" + control_sum_identifier + "</CtrlSum>")
         # initiating party requires at least name or identification
-        content += make_line("        <InitgPty>")
+        content += make_line("      <InitgPty>")
         # initiating party name ( e.g. MUSTER AG )
-        content += make_line("          <Nm>" + get_company_name(payments[0]) + "</Nm>")
-        content += make_line("        </InitgPty>")
-        content += make_line("      </GrpHdr>")
+        content += make_line("        <Nm>" + get_company_name(payments[0]) + "</Nm>")
+        content += make_line("      </InitgPty>")
+        content += make_line("    </GrpHdr>")
         
         ### Payment Information (PmtInf, B-Level)
         # payment information records (1 .. 99'999)
@@ -198,8 +200,8 @@ def generate_payment_file(payments):
                     payment_content += make_line("          <FinInstnId>")
                     payment_content += make_line("            <BIC>" + 
                         payment_record.bic + "</BIC>")
-                payment_content += make_line("          </FinInstnId>")
-                payment_content += make_line("        </CdtrAgt>")    
+                    payment_content += make_line("          </FinInstnId>")
+                    payment_content += make_line("        </CdtrAgt>")    
                 # creditor account
                 payment_content += make_line("        <CdtrAcct>")
                 payment_content += make_line("          <Id>")
@@ -219,15 +221,15 @@ def generate_payment_file(payments):
             payment_content += make_line("    </PmtInf>")
             # once the payment is extracted for payment, submit the record
             transaction_count += 1
-            control_sum += payment_content.paid_amount
+            control_sum += payment_record.paid_amount
             content += payment_content
             payment_record.submit()
         # add footer
         content += make_line("  </CstmrCdtTrfInitn>")
         content += make_line("</Document>")
         # insert control numbers
-        content.replace("<!-- COUNT -->", "{0}".format(transaction_count))
-        content.replace("<!-- CONTROL_SUM -->", "{:.2f}".format(control_sum))
+        content = content.replace(transaction_count_identifier, "{0}".format(transaction_count))
+        content = content.replace(control_sum_identifier, "{:.2f}".format(control_sum))
         
         return { 'content': content, 'skipped': skipped }
     #except:

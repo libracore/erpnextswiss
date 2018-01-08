@@ -40,9 +40,11 @@ def generate_payment_file(payments):
         # creation date and time ( e.g. 2010-02-15T07:30:00 )
         content += make_line("        <CreDtTm>" + time.strftime("%Y-%m-%dT%H:%M:%S") + "</CreDtTm>")
         # number of transactions in the file
-        content += make_line("        <NbOfTxs>{0}</NbOfTxs>".format(len(payments)))
+        transaction_count = 0
+        content += make_line("        <NbOfTxs><!-- COUNT --></NbOfTxs>"
         # total amount of all transactions ( e.g. 15850.00 )  (sum of all amounts)
-        content += make_line("        <CtrlSum>{0}</CtrlSum>".format(get_total_amount(payments)))
+        control_sum = 0.0
+        content += make_line("        <CtrlSum><!-- CONTROL_SUM --></CtrlSum>"
         # initiating party requires at least name or identification
         content += make_line("        <InitgPty>")
         # initiating party name ( e.g. MUSTER AG )
@@ -136,7 +138,7 @@ def generate_payment_file(payments):
             payment_content += make_line("        </PmtTpInf>")
             # amount 
             payment_content += make_line("        <Amt>")
-            payment_content += make_line("          <InstdAmt Ccy=\"{0}\">{1}</InstdAmt>".format(
+            payment_content += make_line("          <InstdAmt Ccy=\"{0}\">{1:.2f}</InstdAmt>".format(
                 payment_record.paid_from_account_currency,
                 payment_record.paid_amount))
             payment_content += make_line("        </Amt>")
@@ -153,7 +155,7 @@ def generate_payment_file(payments):
                         payment_record.esr_participant_number + "</Id>")
                 else:
                     # no particpiation number: not valid record, skip
-                    content += add_invalid_remark( payment + ": " + _("no ESR participation number found") )
+                    content += add_invalid_remark( _("{0}: no ESR participation number found").format(payment) )
                     skipped.append(payment)
                     continue
                 payment_content += make_line("            </Othr>")
@@ -170,7 +172,7 @@ def generate_payment_file(payments):
                         payment_record.esr_reference + "</Ref>")
                 else:
                     # no ESR reference: not valid record, skip
-                    content += add_invalid_remark( payment + ": " + _("no ESR reference found") )
+                    content += add_invalid_remark( _("{0}: no ESR reference found").format(payment) )
                     skipped.append(payment)
                     continue    
                 payment_content += make_line("            </CdtrRefInf>")
@@ -249,11 +251,16 @@ def generate_payment_file(payments):
             payment_content += make_line("      </CdtTrfTxInf>")
             payment_content += make_line("    </PmtInf>")
             # once the payment is extracted for payment, submit the record
+            transaction_count++
+            control_sum += payment_content.paid_amount
             content += payment_content
             payment_record.submit()
         # add footer
         content += make_line("  </CstmrCdtTrfInitn>")
         content += make_line("</Document>")
+        # insert control numbers
+        content.replace("<!-- COUNT -->", "{0}".format(transaction_count))
+        content.replace("<!-- CONTROL_SUM -->", "{:.2f}".format(control_sum))
         
         return { 'content': content, 'skipped': skipped }
     #except:

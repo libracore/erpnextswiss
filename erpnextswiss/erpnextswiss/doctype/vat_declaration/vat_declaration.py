@@ -17,7 +17,7 @@ def get_revenue(start_date, end_date, tax_mode=None):
     if tax_mode:  
         # get special taxed revenue
         tax_template = frappe.get_value('ERPNextSwiss VAT configuration', None, tax_mode)
-        sql_query = ("SELECT SUM(`base_grand_total`) AS `total_revenue` " +
+        sql_query = ("SELECT IFNULL(SUM(`base_grand_total`), 0) AS `total_revenue` " +
             "FROM `tabSales Invoice` " +
             "WHERE `posting_date` >= '{0}' ".format(start_date) + 
             "AND `posting_date` <= '{0}' ".format(end_date) + 
@@ -26,11 +26,11 @@ def get_revenue(start_date, end_date, tax_mode=None):
         revenue = frappe.db.sql(sql_query, as_dict=True)     
     else:
         # get total revenue
-        revenue = frappe.db.sql("SELECT SUM(`base_grand_total`) AS `total_revenue` " +
+        sql_query = ("SELECT IFNULL(SUM(`base_grand_total`), 0) AS `total_revenue` " +
             "FROM `tabSales Invoice` " +
             "WHERE `posting_date` >= '{0}' AND `posting_date` <= '{1}' AND `docstatus` = 1".format(
-                start_date, end_date)
-            , as_dict=True)
+                start_date, end_date))
+        revenue = frappe.db.sql(sql_query, as_dict=True)
         
     if revenue:
         return { 'revenue': revenue }

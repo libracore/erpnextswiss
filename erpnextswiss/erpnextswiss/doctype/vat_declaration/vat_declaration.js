@@ -3,13 +3,20 @@
 
 frappe.ui.form.on('VAT Declaration', {
 	refresh: function(frm) {
-        get_total_revenue(frm);
-        get_abroad_revenue(frm);
-        
+        frm.add_custom_button(__("Get values"), function() 
+		{
+			get_values(frm);
+		});
         
         update_taxable_revenue(frm);
 	}
 });
+
+// retrieve values from database
+function get_values(frm) {
+    get_total_revenue(frm);
+    get_abroad_revenue(frm);
+}
 
 frappe.ui.form.on("VAT Declaration", {
   setup: function(frm) {

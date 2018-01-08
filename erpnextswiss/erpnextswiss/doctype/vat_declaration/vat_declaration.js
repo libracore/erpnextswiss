@@ -53,77 +53,19 @@ frappe.ui.form.on("VAT Declaration", {
   }
 });
 
-frappe.ui.form.on("VAT Declaration", {
-  normal_amount: function(frm) {
-      update_tax_amounts(frm)
-  }
-});
-
-frappe.ui.form.on("VAT Declaration", {
-  reduced_amount: function(frm) {
-      update_tax_amounts(frm)
-  }
-});
-
-frappe.ui.form.on("VAT Declaration", {
-  lodging_amount: function(frm) {
-      update_tax_amounts()
-  }
-});
-
-frappe.ui.form.on("VAT Declaration", {
-  additional_amount: function(frm) {
-      update_tax_amounts(frm)
-  }
-});
-
-frappe.ui.form.on("VAT Declaration", {
-  amount_1: function(frm) {
-      update_tax_amounts(frm)
-  }
-});
-
-frappe.ui.form.on("VAT Declaration", {
-  amount_1: function(frm) {
-      update_tax_amounts(frm)
-  }
-});
-
-frappe.ui.form.on("VAT Declaration", {
-  rate_1: function(frm) {
-      update_tax_amounts(frm)
-  }
-});
-
-frappe.ui.form.on("VAT Declaration", {
-  rate_2: function(frm) {
-      update_tax_amounts(frm)
-  }
-});
-
-frappe.ui.form.on("VAT Declaration", {
-  normal_rate: function(frm) {
-      update_tax_amounts(frm)
-  }
-});
-
-frappe.ui.form.on("VAT Declaration", {
-  reduced_rate: function(frm) {
-      update_tax_amounts(frm)
-  }
-});
-
-frappe.ui.form.on("VAT Declaration", {
-  lodging_rate: function(frm) {
-      update_tax_amounts(frm)
-  }
-});
-
-frappe.ui.form.on("VAT Declaration", {
-  additional_tax: function(frm) {
-      update_tax_amounts(frm)
-  }
-});
+// add change handlers for tax positions
+frappe.ui.form.on("VAT Declaration", "normal_amount", function(frm) { update_tax_amounts(frm) } );
+frappe.ui.form.on("VAT Declaration", "reduced_amount", function(frm) { update_tax_amounts(frm) } );
+frappe.ui.form.on("VAT Declaration", "lodging_amount", function(frm) { update_tax_amounts(frm) } );
+frappe.ui.form.on("VAT Declaration", "additional_amount", function(frm) { update_tax_amounts(frm) } );
+frappe.ui.form.on("VAT Declaration", "amount_1", function(frm) { update_tax_amounts(frm) } );
+frappe.ui.form.on("VAT Declaration", "amount_2", function(frm) { update_tax_amounts(frm) } );
+frappe.ui.form.on("VAT Declaration", "rate_1", function(frm) { update_tax_amounts(frm) } );
+frappe.ui.form.on("VAT Declaration", "rate_2", function(frm) { update_tax_amounts(frm) } );
+frappe.ui.form.on("VAT Declaration", "normal_rate", function(frm) { update_tax_amounts(frm) } );
+frappe.ui.form.on("VAT Declaration", "reduced_rate", function(frm) { update_tax_amounts(frm) } );
+frappe.ui.form.on("VAT Declaration", "lodging_rate", function(frm) { update_tax_amounts(frm) } );
+frappe.ui.form.on("VAT Declaration", "additional_tax", function(frm) { update_tax_amounts(frm) } );
 
 function update_tax_amounts(frm) {
     normal_tax = frm.doc.normal_amount * (frm.doc.normal_rate / 100);
@@ -139,6 +81,14 @@ function update_tax_amounts(frm) {
     frm.set_value('tax_2', tax_2);
     frm.set_value('total_tax', total_tax);
 }
+
+// add change handlers for deduction positions
+frappe.ui.form.on("VAT Declaration", "tax_free_services", function(frm) { update_taxable_revenue(frm) } );
+frappe.ui.form.on("VAT Declaration", "revenue_abroad", function(frm) { update_taxable_revenue(frm) } );
+frappe.ui.form.on("VAT Declaration", "transfers", function(frm) { update_taxable_revenue(frm) } );
+frappe.ui.form.on("VAT Declaration", "non-taxable_services", function(frm) { update_taxable_revenue(frm) } );
+frappe.ui.form.on("VAT Declaration", "losses", function(frm) { update_taxable_revenue(frm) } );
+frappe.ui.form.on("VAT Declaration", "misc", function(frm) { update_taxable_revenue(frm) } );
 
 function update_taxable_revenue(frm) {
     var deductions =  frm.doc.tax_free_services +
@@ -164,7 +114,7 @@ function get_total_revenue(frm) {
         callback: function(r) {
             if (r.message) {
                 // window.alert("got value: " + r.message.revenue.toSource() + " - " + r.message.revenue[0].total_revenue);
-                frm.set_value('total_revenue', r.message.revenue[0].total_revenue);
+                frm.set_value('total_revenue', r.message.revenue);
             }
         }
     });

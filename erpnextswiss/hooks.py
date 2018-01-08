@@ -120,3 +120,6 @@ app_license = "AGPL"
 # 	"frappe.desk.doctype.event.event.get_events": "erpnextswiss.event.get_events"
 # }
 
+# Fixtures (to import DocType customisations)
+# --------
+fixtures = ["Custom Field"]

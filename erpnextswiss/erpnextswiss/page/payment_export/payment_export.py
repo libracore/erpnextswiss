@@ -97,20 +97,14 @@ def generate_payment_file(payments):
                 continue
             payment_content += make_line("        </Id>")
             payment_content += make_line("      </DbtrAcct>")
-            # debitor agent (sender) - BIC
-            payment_content += make_line("      <DbtrAgt>")
-            payment_content += make_line("        <FinInstnId>")
             if payment_account.bic:
+                # debitor agent (sender) - BIC
+                payment_content += make_line("      <DbtrAgt>")
+                payment_content += make_line("        <FinInstnId>")
                 payment_content += make_line("          <BIC>" +
                     payment_account.bic + "</BIC>")
-            else:
-                # no paying account BIC: not valid record, skip
-                content += add_invalid_remark( _("{0}: no account BIC found ({1})".format(
-                    payment, payment_record.paid_from) ) )
-                skipped.append(payment)
-                continue                    
-            payment_content += make_line("        </FinInstnId>")
-            payment_content += make_line("      </DbtrAgt>")
+                payment_content += make_line("        </FinInstnId>")
+                payment_content += make_line("      </DbtrAgt>")
                 
             ### Credit Transfer Transaction Information (CdtTrfTxInf, C-Level)
             payment_content += make_line("      <CdtTrfTxInf>")
@@ -146,7 +140,14 @@ def generate_payment_file(payments):
             # creditor account identification
             if payment_record.transaction_type == "ESR":
                 # add creditor information
-                payment_content += add_creditor_info(payment, payment_record)
+                creditor_info = add_creditor_info(payment_record)
+                if creditor_info:
+                    payment_content += creditor_info
+                else:
+                    # no address found, skip entry (not valid)
+                    content += add_invalid_remark( _("{0}: no address (or country) found").format(payment) )
+                    skipped.append(payment)
+                    continue
                 # ESR payment
                 payment_content += make_line("        <CdtrAcct>")
                 payment_content += make_line("          <Id>")
@@ -183,7 +184,14 @@ def generate_payment_file(payments):
             else:
                 # IBAN or SEPA payment
                 # add creditor information
-                payment_content += add_creditor_info(payment, payment_record)
+                creditor_info = add_creditor_info(payment_record)
+                if creditor_info:
+                    payment_content += creditor_info
+                else:
+                    # no address found, skip entry (not valid)
+                    content += add_invalid_remark( _("{0}: no address (or country) found").format(payment) )
+                    skipped.append(payment)
+                    continue
                 # creditor agent (BIC, optional)
                 if payment_record.bic:                
                     payment_content += make_line("        <CdtrAgt>")
@@ -226,7 +234,7 @@ def generate_payment_file(payments):
     #    frappe.throw( _("Error while generating xml. Make sure that you made required customisations to the DocTypes.") )
     #    return
 
-def add_creditor_info(payment, payment_record):
+def add_creditor_info(payment_record):
     payment_content = ""
     # creditor information
     payment_content += make_line("        <Cdtr>") 
@@ -237,10 +245,7 @@ def add_creditor_info(payment, payment_record):
     # get supplier address
     supplier_address = get_billing_address(payment_record.party)
     if supplier_address == None:
-        # no address found, skip entry (not valid)
-        content += add_invalid_remark( payment + ": " + _("no address found") )
-        skipped.append(payment)
-        continue
+        return None
     payment_content += make_line("          <PstlAdr>")
     # street name
     payment_content += make_line("            <StrtNm>" +
@@ -261,10 +266,7 @@ def add_creditor_info(payment, payment_record):
             country_code + "</Ctry>")
     else:
         # country code not found (not valid)
-        content += add_invalid_remark( _("{0}: country code for {1} not found").format(
-            payment, supplier_address.country) )
-        skipped.append(payment)
-        continue
+        return None
     payment_content += make_line("          </PstlAdr>")
     payment_content += make_line("        </Cdtr>") 
     return payment_content

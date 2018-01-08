@@ -2,3 +2,7 @@ Page: bankimport,Bank import,Bankdaten importieren
 DocType: VAT Declaration,VAT Declaration,Steuerdeklaration
 Page: payment_export,Payment export,Zahlungsdatei erstellen
 DocType: VAT Declaration,Taxes,Steuern
+DocType: Payment Entry,Transaction Type,Transaktionstyp
+DocType: Payment Entry,ESR Participant Number,ESR-Teilnehmernummer
+DocType: Payment Entry,ESR Reference,ESR-Referenz
+DocType: Account,Payment Files,Transferdateien

@@ -9,6 +9,7 @@ frappe.ui.form.on('VAT Declaration', {
 		});
         
         update_taxable_revenue(frm);
+
 	}
 });
 
@@ -16,11 +17,19 @@ frappe.ui.form.on('VAT Declaration', {
 function get_values(frm) {
     get_total_revenue(frm);
     get_revenue(frm, "abroad_tax_template", 'revenue_abroad');
-    get_revenue(frm, "normal_tax_rate_template", 'revenue_abroad');
-    get_revenue(frm, "reduced_tax_rate_template", 'revenue_abroad');
-    get_revenue(frm, "lodging_tax_rate_template", 'revenue_abroad');
-    get_revenue(frm, "abroad_tax_template", 'revenue_abroad');
-    get_revenue(frm, "abroad_tax_template", 'revenue_abroad');
+    if (frm.doc.vat_type == "effective") {
+        get_revenue(frm, "normal_rate_tax_template", 'normal_amount');
+        get_revenue(frm, "reduced_rate_tax_template", 'reduced_amount');
+        get_revenue(frm, "lodging_rate_tax_template", 'lodging_amount');
+    }
+    else {
+        get_revenue(frm, "rate_1_tax_template", 'amount_1');
+        get_revenue(frm, "rate_2_tax_template", 'amount_2');
+    }
+        
+    if (frm.doc.vat_type == "effective") {
+        get_pretax(frm);
+    }
 }
 
 frappe.ui.form.on("VAT Declaration", {
@@ -120,6 +129,8 @@ function get_total_revenue(frm) {
     });
 }
 
+// template: template configuration field (VAT config)
+// target: target fields
 function get_revenue(frm, template, target) {
     // total revenues is the sum of all sales invoices in the period
     frappe.call({
@@ -139,7 +150,18 @@ function get_revenue(frm, template, target) {
     }); 
 }
 
-
 function get_pretax(frm) {
-    
+    // total pretax  is the sum of the taxes collected in the tax collection account from payment invoices in the period    
+    frappe.call({
+        method: 'erpnextswiss.erpnextswiss.doctype.vat_declaration.vat_declaration.get_pretax',
+        args: { 
+            'start_date': frm.doc.start_date,
+            'end_date': frm.doc.end_date,
+            },
+        callback: function(r) {
+            if (r.message) {
+                frm.set_value('pretax_material', r.message.pretax);
+            }
+        }
+    }); 
 }

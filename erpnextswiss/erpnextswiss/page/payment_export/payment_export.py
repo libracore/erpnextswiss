@@ -1,4 +1,5 @@
-# Copyright (c) 2017-2018, libracore and contributors
+# -*- coding: utf-8 -*-
+# Copyright (c) 2017-2018, libracore (https://www.libracore.com) and contributors
 # License: AGPL v3. See LICENCE
 
 from __future__ import unicode_literals

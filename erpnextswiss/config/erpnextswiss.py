@@ -33,4 +33,16 @@ def get_data():
                    }
             ]
         },
+        {
+            "label": _("Configuration"),
+            "icon": "fa fa-bank",
+            "items": [
+                   {
+                       "type": "doctype",
+                       "name": "ERPNextSwiss VAT configuration",
+                       "label": _("VAT configuration"),
+                       "description": _("VAT configuration")
+                   }
+            ]
+        }
     ]

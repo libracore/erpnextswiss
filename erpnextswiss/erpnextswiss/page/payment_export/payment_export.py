@@ -145,6 +145,8 @@ def generate_payment_file(payments):
             # creditor account
             # creditor account identification
             if payment_record.transaction_type == "ESR":
+                # add creditor information
+                payment_content += add_creditor_info(payment, payment_record)
                 # ESR payment
                 payment_content += make_line("        <CdtrAcct>")
                 payment_content += make_line("          <Id>")
@@ -169,7 +171,7 @@ def generate_payment_file(payments):
                 # ESR reference 
                 if payment_record.esr_reference:
                     payment_content += make_line("              <Ref>" +
-                        payment_record.esr_reference + "</Ref>")
+                        payment_record.esr_reference.replace(" ", "") + "</Ref>")
                 else:
                     # no ESR reference: not valid record, skip
                     content += add_invalid_remark( _("{0}: no ESR reference found").format(payment) )
@@ -180,6 +182,16 @@ def generate_payment_file(payments):
                 payment_content += make_line("        </RmtInf>")
             else:
                 # IBAN or SEPA payment
+                # add creditor information
+                payment_content += add_creditor_info(payment, payment_record)
+                # creditor agent (BIC, optional)
+                if payment_record.bic:                
+                    payment_content += make_line("        <CdtrAgt>")
+                    payment_content += make_line("          <FinInstnId>")
+                    payment_content += make_line("            <BIC>" + 
+                        payment_record.bic + "</BIC>")
+                payment_content += make_line("          </FinInstnId>")
+                payment_content += make_line("        </CdtrAgt>")    
                 # creditor account
                 payment_content += make_line("        <CdtrAcct>")
                 payment_content += make_line("          <Id>")
@@ -193,60 +205,7 @@ def generate_payment_file(payments):
                     continue
                 payment_content += make_line("          </Id>")
                 payment_content += make_line("        </CdtrAcct>")
-                # creditor agent
-                payment_content += make_line("        <CdtrAgt>")
-                payment_content += make_line("          <FinInstnId>")
-                if payment_record.bic:
-                    payment_content += make_line("            <BIC>" + 
-                        payment_record.bic + "</BIC>")
-                else:
-                    # no bic: not a valid record, skip
-                    content += add_invalid_remark( payment + ": " + _("no BIC found") )
-                    skipped.append(payment)
-                    continue
-                payment_content += make_line("          </FinInstnId>")
-                payment_content += make_line("        </CdtrAgt>")    
-            
-            # creditor information
-            payment_content += make_line("        <Cdr>") 
-            # name of the creditor/supplier           
-            payment_content += make_line("          <Nm>" + 
-                payment_record.party + "</Nm>")
-            # address of creditor/supplier (should contain at least country and first address line
-            # get supplier address
-            supplier_address = get_billing_address(payment_record.party)
-            if supplier_address == None:
-                # no address found, skip entry (not valid)
-                content += add_invalid_remark( payment + ": " + _("no address found") )
-                skipped.append(payment)
-                continue
-            payment_content += make_line("          <PstlAdr>")
-            # street name
-            payment_content += make_line("            <StrtNm>" +
-                get_street_name(supplier_address.address_line1) + "</StrtNm>")
-            # building number
-            payment_content += make_line("            <BldgNb>" +
-                get_building_number(supplier_address.address_line1) + "</BldgNb>")
-            # postal code
-            payment_content += make_line("            <PstCd>{0}</PstCd>".format(
-                supplier_address.pincode))
-            # town name
-            payment_content += make_line("            <TwnNm>" +
-                supplier_address.city + "</TwnNm>")
-            # country (has to be a two-digit code)
-            country_code = frappe.get_value('Country', supplier_address.country, 'code').upper()
-            if country_code:
-                payment_content += make_line("            <Ctry>" +
-                    country_code + "</Ctry>")
-            else:
-                # country code not found (not valid)
-                content += add_invalid_remark( _("{0}: country code for {1} not found").format(
-                    payment, supplier_address.country) )
-                skipped.append(payment)
-                continue
-            payment_content += make_line("          </PstlAdr>")
-            payment_content += make_line("        </Cdr>") 
-                            
+                                        
             # close payment record
             payment_content += make_line("      </CdtTrfTxInf>")
             payment_content += make_line("    </PmtInf>")
@@ -267,6 +226,49 @@ def generate_payment_file(payments):
     #    frappe.throw( _("Error while generating xml. Make sure that you made required customisations to the DocTypes.") )
     #    return
 
+def add_creditor_info(payment, payment_record):
+    payment_content = ""
+    # creditor information
+    payment_content += make_line("        <Cdtr>") 
+    # name of the creditor/supplier           
+    payment_content += make_line("          <Nm>" + 
+        payment_record.party + "</Nm>")
+    # address of creditor/supplier (should contain at least country and first address line
+    # get supplier address
+    supplier_address = get_billing_address(payment_record.party)
+    if supplier_address == None:
+        # no address found, skip entry (not valid)
+        content += add_invalid_remark( payment + ": " + _("no address found") )
+        skipped.append(payment)
+        continue
+    payment_content += make_line("          <PstlAdr>")
+    # street name
+    payment_content += make_line("            <StrtNm>" +
+        get_street_name(supplier_address.address_line1) + "</StrtNm>")
+    # building number
+    payment_content += make_line("            <BldgNb>" +
+        get_building_number(supplier_address.address_line1) + "</BldgNb>")
+    # postal code
+    payment_content += make_line("            <PstCd>{0}</PstCd>".format(
+        supplier_address.pincode))
+    # town name
+    payment_content += make_line("            <TwnNm>" +
+        supplier_address.city + "</TwnNm>")
+    # country (has to be a two-digit code)
+    country_code = frappe.get_value('Country', supplier_address.country, 'code').upper()
+    if country_code:
+        payment_content += make_line("            <Ctry>" +
+            country_code + "</Ctry>")
+    else:
+        # country code not found (not valid)
+        content += add_invalid_remark( _("{0}: country code for {1} not found").format(
+            payment, supplier_address.country) )
+        skipped.append(payment)
+        continue
+    payment_content += make_line("          </PstlAdr>")
+    payment_content += make_line("        </Cdtr>") 
+    return payment_content
+            
 def get_total_amount(payments):
     # get total amount from all payments
     total_amount = float(0)

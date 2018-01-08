@@ -231,9 +231,17 @@ def generate_payment_file(payments):
             # town name
             payment_content += make_line("            <TwnNm>" +
                 supplier_address.city + "</TwnNm>")
-            # country
-            payment_content += make_line("            <Ctry>" +
-                supplier_address.country + "</Ctry>")
+            # country (has to be a two-digit code)
+            country_code = frappe.get_value('Country', supplier_address.country, 'code').upper()
+            if country_code:
+                payment_content += make_line("            <Ctry>" +
+                    country_code + "</Ctry>")
+            else:
+                # country code not found (not valid)
+                content += add_invalid_remark( _("{0}: country code for {1} not found").format(
+                    payment, supplier_address.country) )
+                skipped.append(payment)
+                continue
             payment_content += make_line("          </PstlAdr>")
             payment_content += make_line("        </Cdr>") 
                             

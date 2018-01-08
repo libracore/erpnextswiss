@@ -15,7 +15,12 @@ frappe.ui.form.on('VAT Declaration', {
 // retrieve values from database
 function get_values(frm) {
     get_total_revenue(frm);
-    get_abroad_revenue(frm);
+    get_revenue(frm, "abroad_tax_template", 'revenue_abroad');
+    get_revenue(frm, "normal_tax_rate_template", 'revenue_abroad');
+    get_revenue(frm, "reduced_tax_rate_template", 'revenue_abroad');
+    get_revenue(frm, "lodging_tax_rate_template", 'revenue_abroad');
+    get_revenue(frm, "abroad_tax_template", 'revenue_abroad');
+    get_revenue(frm, "abroad_tax_template", 'revenue_abroad');
 }
 
 frappe.ui.form.on("VAT Declaration", {
@@ -165,19 +170,20 @@ function get_total_revenue(frm) {
     });
 }
 
-function get_abroad_revenue(frm) {
+function get_revenue(frm, template, target) {
     // total revenues is the sum of all sales invoices in the period
     frappe.call({
         method: 'erpnextswiss.erpnextswiss.doctype.vat_declaration.vat_declaration.get_revenue',
         args: { 
             'start_date': frm.doc.start_date,
             'end_date': frm.doc.end_date,
-            'tax_mode': "abroad_tax_template"
+            'tax_mode': template
             },
         callback: function(r) {
             if (r.message) {
                 // window.alert("got value: " + r.message.revenue.toSource() + " - " + r.message.revenue[0].total_revenue);
-                frm.set_value('revenue_abroad', r.message.revenue[0].total_revenue);
+                //frm.set_value(target, r.message.revenue[0].total_revenue);
+                frm.set_value(target, r.message.revenue);
             }
         }
     }); 

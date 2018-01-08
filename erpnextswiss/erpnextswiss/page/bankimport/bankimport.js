@@ -1,7 +1,7 @@
 frappe.pages['bankimport'].on_page_load = function(wrapper) {
 	var page = frappe.ui.make_app_page({
 		parent: wrapper,
-		title: __('Bank Import'),
+		title: __('Bank import'),
 		single_column: true
 	});
 

@@ -41,10 +41,10 @@ def generate_payment_file(payments):
         content += make_line("        <CreDtTm>" + time.strftime("%Y-%m-%dT%H:%M:%S") + "</CreDtTm>")
         # number of transactions in the file
         transaction_count = 0
-        content += make_line("        <NbOfTxs><!-- COUNT --></NbOfTxs>"
+        content += make_line("        <NbOfTxs><!-- COUNT --></NbOfTxs>")
         # total amount of all transactions ( e.g. 15850.00 )  (sum of all amounts)
         control_sum = 0.0
-        content += make_line("        <CtrlSum><!-- CONTROL_SUM --></CtrlSum>"
+        content += make_line("        <CtrlSum><!-- CONTROL_SUM --></CtrlSum>")
         # initiating party requires at least name or identification
         content += make_line("        <InitgPty>")
         # initiating party name ( e.g. MUSTER AG )
@@ -251,7 +251,7 @@ def generate_payment_file(payments):
             payment_content += make_line("      </CdtTrfTxInf>")
             payment_content += make_line("    </PmtInf>")
             # once the payment is extracted for payment, submit the record
-            transaction_count++
+            transaction_count += 1
             control_sum += payment_content.paid_amount
             content += payment_content
             payment_record.submit()

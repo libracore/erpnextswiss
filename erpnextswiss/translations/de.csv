@@ -1,2 +1,4 @@
-DocType: BankImport,Bank Import,Bankdaten importieren
-DocType: VAT Declaration,VAT Declaration,Steuern
+Page: bankimport,Bank import,Bankdaten importieren
+DocType: VAT Declaration,VAT Declaration,Steuerdeklaration
+Page: payment_export,Payment export,Zahlungsdatei erstellen
+DocType: VAT Declaration,Taxes,Steuern

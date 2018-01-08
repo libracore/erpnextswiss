@@ -10,25 +10,25 @@ def get_data():
                    {
                        "type": "page",
                        "name": "bankimport",
-                       "label": "Bank Import",
+                       "label": _("Bank import"),
                        "description": _("Bank import")
                    },
                                       {
                        "type": "page",
                        "name": "payment_export",
-                       "label": "Payment export",
+                       "label": _("Payment export"),
                        "description": _("Payment export")
                    }
             ]
         },
         {
-            "label": _("VAT"),
+            "label": _("Taxes"),
             "icon": "fa fa-bank",
             "items": [
                    {
                        "type": "doctype",
                        "name": "VAT Declaration",
-                       "label": "VAT Declaration",
+                       "label": _("VAT Declaration"),
                        "description": _("VAT Declaration")
                    }
             ]

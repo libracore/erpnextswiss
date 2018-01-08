@@ -85,8 +85,8 @@ def generate_payment_file(payments):
             payment_content += make_line("      <DbtrAcct>")
             payment_content += make_line("        <Id>")
             if payment_account.iban:
-                payment_content += make_line("          <IBAN>" + 
-                    payment_account.iban + "</IBAN>")
+                payment_content += make_line("          <IBAN>{0}</IBAN>".format(
+                    payment_account.iban.replace(" ", "") ))
             else:
                 # no paying account IBAN: not valid record, skip
                 content += add_invalid_remark( _("{0}: no account IBAN found ({1})".format(
@@ -182,11 +182,11 @@ def generate_payment_file(payments):
                 payment_content += make_line("        <CdtrAcct>")
                 payment_content += make_line("          <Id>")
                 if payment_record.iban:
-                    payment_content += make_line("            <IBAN>" + 
-                        payment_record.iban + "</IBAN>")
+                    payment_content += make_line("            <IBAN>{0}</IBAN>".format( 
+                        payment_record.iban.replace(" ", "") ))
                 else:
                     # no iban: not valid record, skip
-                    content += add_invalid_remark( payment + ": " + _("no IBAN found") )
+                    content += add_invalid_remark( _("{0}: no IBAN found").format(payment) )
                     skipped.append(payment)
                     continue
                 payment_content += make_line("          </Id>")

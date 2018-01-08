@@ -73,7 +73,7 @@ function update_tax_amounts(frm) {
     lodging_tax = frm.doc.lodging_amount * (frm.doc.lodging_rate / 100);
     tax_1 = frm.doc.amount_1 * (frm.doc.rate_1 / 100);
     tax_2 = frm.doc.amount_2 * (frm.doc.rate_2 / 100);
-    total_tax = normal_tax + reduced_tax + lodging_tax + tax_1 + tax_2;
+    total_tax = normal_tax + reduced_tax + lodging_tax + tax_1 + tax_2 + frm.doc.additional_tax;
     frm.set_value('normal_tax', normal_tax);
     frm.set_value('reduced_tax', reduced_tax);
     frm.set_value('lodging_tax', lodging_tax);
@@ -137,4 +137,9 @@ function get_revenue(frm, template, target) {
             }
         }
     }); 
+}
+
+
+function get_pretax(frm) {
+    
 }

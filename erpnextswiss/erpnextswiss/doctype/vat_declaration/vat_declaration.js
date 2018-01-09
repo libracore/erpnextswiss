@@ -7,9 +7,13 @@ frappe.ui.form.on('VAT Declaration', {
 		{
 			get_values(frm);
 		});
+        frm.add_custom_button(__("Recalculate"), function() 
+		{
+			recalculate(frm);
+		});
         
         update_taxable_revenue(frm);
-
+        update_payable_tax(frm);
 	}
 });
 
@@ -30,6 +34,12 @@ function get_values(frm) {
     if (frm.doc.vat_type == "effective") {
         get_pretax(frm);
     }
+}
+
+// force recalculate
+function recalculate(frm) {
+    update_tax_amounts(frm);
+    update_payable_tax(frm);
 }
 
 frappe.ui.form.on("VAT Declaration", {
@@ -164,4 +174,22 @@ function get_pretax(frm) {
             }
         }
     }); 
+}
+
+// add change handlers for pretax
+frappe.ui.form.on("VAT Declaration", "pretax_material", function(frm) { update_payable_tax(frm) } );
+frappe.ui.form.on("VAT Declaration", "pretax_investments", function(frm) { update_payable_tax(frm) } );
+frappe.ui.form.on("VAT Declaration", "missing_pretax", function(frm) { update_payable_tax(frm) } );
+frappe.ui.form.on("VAT Declaration", "pretax_correction_mixed", function(frm) { update_payable_tax(frm) } );
+frappe.ui.form.on("VAT Declaration", "pretax_correction_other", function(frm) { update_payable_tax(frm) } );
+        
+function update_payable_tax(frm) {
+    var pretax = frm.doc.pretax_material 
+        + frm.doc.pretax_investments 
+        + frm.doc.missing_pretax 
+        - frm.doc.pretax_correction_mixed
+        - frm.doc.pretax_correction_other;
+    frm.set_value('total_pretax_reductions', pretax);
+    var payable_tax = frm.doc.total_tax - pretax;
+    frm.set_value('payable_tax', payable_tax);
 }

@@ -162,18 +162,22 @@ function get_revenue(frm, template, target) {
 
 function get_pretax(frm) {
     // total pretax  is the sum of the taxes collected in the tax collection account from payment invoices in the period    
-    frappe.call({
-        method: 'erpnextswiss.erpnextswiss.doctype.vat_declaration.vat_declaration.get_pretax',
-        args: { 
-            'start_date': frm.doc.start_date,
-            'end_date': frm.doc.end_date,
-            },
-        callback: function(r) {
-            if (r.message) {
-                frm.set_value('pretax_material', r.message.pretax);
+    if (frm.doc.vat_type == "effective") {
+        frappe.call({
+            method: 'erpnextswiss.erpnextswiss.doctype.vat_declaration.vat_declaration.get_pretax',
+            args: { 
+                'start_date': frm.doc.start_date,
+                'end_date': frm.doc.end_date,
+                },
+            callback: function(r) {
+                if (r.message) {
+                    frm.set_value('pretax_material', r.message.pretax);
+                }
             }
-        }
-    }); 
+        }); 
+    } else {
+        frm.set_value('pretax_material', 0.0);
+    }
 }
 
 // add change handlers for pretax
@@ -188,7 +192,9 @@ function update_payable_tax(frm) {
         + frm.doc.pretax_investments 
         + frm.doc.missing_pretax 
         - frm.doc.pretax_correction_mixed
-        - frm.doc.pretax_correction_other;
+        - frm.doc.pretax_correction_other
+        + frm.doc.form_1050
+        + frm.doc.form_1055;
     frm.set_value('total_pretax_reductions', pretax);
     var payable_tax = frm.doc.total_tax - pretax;
     frm.set_value('payable_tax', payable_tax);

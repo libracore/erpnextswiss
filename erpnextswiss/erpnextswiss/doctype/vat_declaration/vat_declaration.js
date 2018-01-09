@@ -25,6 +25,7 @@ function get_values(frm) {
         get_revenue(frm, "normal_rate_tax_template", 'normal_amount');
         get_revenue(frm, "reduced_rate_tax_template", 'reduced_amount');
         get_revenue(frm, "lodging_rate_tax_template", 'lodging_amount');
+        get_revenue(frm, "tax_free_tax_template", 'tax_free_services');
     }
     else {
         get_revenue(frm, "rate_1_tax_template", 'amount_1');

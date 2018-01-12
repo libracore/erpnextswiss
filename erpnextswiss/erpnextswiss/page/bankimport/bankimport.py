@@ -166,6 +166,13 @@ def parse_raiffeisen(content, account, auto_submit=False):
                             customer = frappe.get_value('Customer', customer_name, 'name')
                             if customer:
                                 new_payment_entry.party = customer
+                                # check if this customer has open invoices
+                                open_sales_invoices = get_unpaid_sales_invoices_by_customer(customer)
+                                if open_sales_invoices:
+                                    # found open sales invoices
+                                    if len(open_sales_invoices) == 1:
+                                        # only one invoice found, match
+                                        sales_invoice = open_sales_invoices[0].name
                             else:
                                 new_payment_entry.party = "Guest"
                             # date is in YYYY-MM-DD
@@ -181,6 +188,9 @@ def parse_raiffeisen(content, account, auto_submit=False):
                             if (i + 1) < len(lines):
                                 new_payment_entry.remarks = fields[1] + ", " + next_line_fields[1]
                             inserted_payment_entry = new_payment_entry.insert()
+                            # check matching to sales invoice
+                            if sales_invoice:
+                                create_reference(inserted_payment_entry.name, sales_invoice)
                             if auto_submit:
                                 new_payment_entry.submit()
                             new_payment_entries.append(inserted_payment_entry.name)
@@ -249,7 +259,7 @@ def match_by_amount(amount):
     # get sales invoices
     sql_query = ("SELECT `name` " +
                 "FROM `tabSales Invoice` " +
-                "WHERE `docstatus` = '1 " + 
+                "WHERE `docstatus` = 1 " + 
                 "AND `grand_total` = {0} ".format(amount) + 
                 "AND `status` != 'Paid'")
     open_sales_invoices = frappe.db.sql(sql_query, as_dict=True)
@@ -271,17 +281,49 @@ def match_by_comment(comment):
     # get sales invoices (submitted, not paid)
     sql_query = ("SELECT `name` " +
                 "FROM `tabSales Invoice` " +
-                "WHERE `docstatus` = '1 " + 
+                "WHERE `docstatus` = 1 " + 
                 "AND `status` != 'Paid'")
-    open_sales_invoices = frappe.db.sql(sql_query, as_list=True)
+    open_sales_invoices = frappe.db.sql(sql_query, as_dict=True)
     if open_sales_invoices:
         # find sales invoice referernce in the comment
-        for reference in open_sales_invoices:
+        for reference in open_sales_invoices.name:
             if reference in comment:
                 # found a match
                 return reference
     return None
-     
+
+# find unpaid invoices for a customer
+#
+# returns a dict (name) of sales invoice references or None
+def get_unpaid_sales_invoices_by_customer(customer):
+    # get sales invoices (submitted, not paid)
+    sql_query = ("SELECT `name` " +
+                "FROM `tabSales Invoice` " +
+                "WHERE `docstatus` = 1 " + 
+                "AND `customer` = '{0}' ".format(customer) +
+                "AND `status` != 'Paid'")
+    open_sales_invoices = frappe.db.sql(sql_query, as_dict=True)
+    return open_sales_invoices   
+
+# creates the reference record in a payment entry
+def create_reference(payment_entry, sales_invoice):
+    # create a new payment entry reference
+    reference_entry = frappe.get_doc({"doctype": "Payment Entry Reference"})
+    reference_entry.parent = payment_entry
+    reference_entry.parentfield = "references"
+    reference_entry.parenttype = "Payment Entry"
+    reference_entry.reference_doctype = "Sales Invoice"
+    reference_entry.reference_name = sales_invoice
+    reference_entry.total_amount = frappe.get_value("Sales Invoice", sales_invoice, "base_grand_total")
+    reference_entry.outstanding_amount = frappe.get_value("Sales Invoice", sales_invoice, "outstanding_amount")
+    paid_amount = frappe.get_value("Payment Entry", payment_entry, "paid_amount")
+    if paid_amount > reference_entry.outstanding_amount:
+        reference_entry.allocated_amount = reference_entry.outstanding_amount
+    else:
+        reference_entry.allocated_amount = paid_amount
+    reference_entry.insert();
+    return
+    
 def log(comment):
 	new_comment = frappe.get_doc({"doctype": "Log"})
 	new_comment.comment = comment

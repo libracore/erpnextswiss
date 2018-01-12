@@ -1,0 +1,20 @@
+<table style="width: 100%; ">
+    <tr>
+        <th></th>
+        <th>{{ __("Sales invoice") }}</th>
+        <th>{{ __("Customer") }}</th>
+        <th>{{ __("Due date") }}</th>
+        <th>{{ __("Amount") }}</th>
+    </tr>
+    {% for sales_invoice in unpaid_sales_invoices %}
+    <tr>
+        <td><input type="checkbox" id="chk{{ sales_invoice.name }}" name="{{ sales_invoice.name }}"></td>
+        <td><a href="/desk#Form/Sales Invoice/{{ sales_invoice.name }}">{{ sales_invoice.name }}</a></td>
+        <td>{{ sales_invoice.customer }}</td>
+        <td>{{ sales_invoice.due_date }}</td>
+        <td>{{ sales_invoice.amount }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+

@@ -1,0 +1,23 @@
+<div>
+  <hr style="margin-top: 50px;">
+  <h3>{%= __("Match payments") %}</h3>
+  <p class="text-muted">{%= __("Helps to match open sales invoices against received payments") %}</p>
+
+  <h4>Sales invoices</h4>
+  <div class="sales-invoice-table">
+  
+  </div>  
+  
+  <h4>Payment entries</h4>
+  <div class="payment-table">
+  
+  </div>  
+  
+  <h4>Match</h4>
+  <div class="row">
+  	  <div class="form-column col-sm-4">
+        <button type="submit" class="btn btn-sm btn-primary btn-match">{{ __("Match") }}</button>
+        <div class="waiting-gif hide"><img src="/assets/frappe/images/ui/ajax-loader.gif" /></div>
+	  </div>
+  </div>
+</div>

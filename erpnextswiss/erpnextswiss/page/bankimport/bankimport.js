@@ -7,6 +7,9 @@ frappe.pages['bankimport'].on_page_load = function(wrapper) {
 
 	frappe.bankimport.make(page);
 	frappe.bankimport.run();
+    
+    // add the application reference
+    frappe.breadcrumbs.add("ERPNextSwiss");
 }
 
 frappe.bankimport = {
@@ -18,6 +21,12 @@ frappe.bankimport = {
 		var data = "";
 		$(frappe.render_template('bankimport', data)).appendTo(me.body);
 
+        // add menu button
+        this.page.add_menu_item(__("Match payments"), function() {
+            // navigate to bank import tool
+            window.location.href="/desk#match_payments";
+		});
+        
 		// attach button handlers
 		this.page.main.find(".btn-parse-file").on('click', function() {
 			var me = frappe.bankimport;

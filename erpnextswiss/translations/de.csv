@@ -15,7 +15,10 @@ Page: bankimport,Payment account,Konto
 Page: bankimport,Automatically submit,Automatisch buchen
 Page: bankimport,Parse,Einlesen
 Page: bankimport,File,Datei
+Page: bankimport,Please select a file.,Bitte eine Datei wählen
+Page: bankimport,Error reading file,Fehler beim lesen der Datei
 Page: payment_export,Please select at least one payment.,Bitte mindestens eine Zahlung auswählen.
+Page: payment_export,No payment entries to be paid found with status draft,Es wurden keine Zahlungen mit Status Entwurf gefunden
 DocType: VAT Declaration,End,Ende
 DocType: VAT Declaration,VAT type,Abrechnungstyp
 DocType: VAT Declaration,effective,Effektiv
@@ -79,3 +82,19 @@ DocType: ERPNextSwiss VAT configuration,Rate 1 tax template,Steuertemplate Satz 
 DocType: ERPNextSwiss VAT configuration,Rate 2 tax template,Steuertemplate Satz 2
 DocType: ERPNextSwiss VAT configuration,Configuration,Einstellungen
 DocType: ERPNextSwiss VAT configuration,VAT configuration,Mehrwertsteuereinstellungen
+Page: match_payments,Match payments,Zahlungen zuordnen
+Helps to match unpaid sales invoices against received payments,Hilft Zahlungseingänge unbezahlten Ausgangsrechnungen zu zu ordnen
+Page: match_payments,Sales invoices,Rechnungen
+Page: match_payments,Sales invoice,Rechnung
+Page: match_payments,Due date,Zahlbarkeit
+Page: match_payments,Payment entries,Zahlungseingänge
+Page: match_payments,Payment entry,Zahlung
+Page: match_payments,Match,Zuordnen
+Page: match_payments,Please select a sales invoice.,Bitte eine Rechnung wählen
+Page: match_payments,Please select a payment entry.,Bitte einen Zahlungseingang wählen
+Page: match_payments,Payment entry not found,Zahlung nicht gefunden
+Page: match_payments,Customer not found,Kunde nicht gefunden
+Page: match_payments,Done,Fertig
+Page: match_payments,No unpaid sales invoices found.,Es wurden keine unbezahlten Rechnungen gefunden.
+Page: match_payments,No unallocated payment entries found.,Es wurden keine nicht-zugewiesene Zahlungen gefunden.
+Page: match_payments,Open bank import,Bankdaten importieren

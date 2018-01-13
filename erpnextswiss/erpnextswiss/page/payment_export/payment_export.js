@@ -7,6 +7,9 @@ frappe.pages['payment_export'].on_page_load = function(wrapper) {
 
 	frappe.payment_export.make(page);
 	frappe.payment_export.run(page);
+    
+    // add the application reference
+    frappe.breadcrumbs.add("ERPNextSwiss");
 }
 
 frappe.payment_export = {
@@ -78,7 +81,7 @@ frappe.payment_export = {
                     if (r.message.payments.length > 0) {
                         $(frappe.render_template('payment_export_table', r.message)).appendTo(parent);
                     } else {
-                        $('<h3>No payment entries to be paid found with status draft</h3>').appendTo(parent);
+                        $('<p class="text-muted">' + __("No payment entries to be paid found with status draft") + '</p>').appendTo(parent);
                     }
 				} 
 			}

@@ -7,6 +7,9 @@ frappe.pages['match_payments'].on_page_load = function(wrapper) {
 
 	frappe.match_payments.make(page);
 	frappe.match_payments.run(page);
+    
+    // add the application reference
+    frappe.breadcrumbs.add("ERPNextSwiss");
 }
 
 frappe.match_payments = {
@@ -18,6 +21,12 @@ frappe.match_payments = {
 		var data = "";
 		$(frappe.render_template('match_payments', data)).appendTo(me.body);
 
+        // add menu button
+        this.page.add_menu_item(__("Open bank import"), function() {
+            // navigate to bank import tool
+            window.location.href="/desk#bankimport";
+		});
+        
 		// attach button handlers
 		this.page.main.find(".btn-match").on('click', function() {
 			var me = frappe.bankimport;
@@ -73,7 +82,7 @@ frappe.match_payments = {
                     if (r.message.unpaid_sales_invoices.length > 0) {
                         $(frappe.render_template('sales_invoice_table', r.message)).appendTo(parent);
                     } else {
-                        $('<h3>No unpaid sales invoices found.</h3>').appendTo(parent);
+                        $('<p class="text-muted">' + __("No unpaid sales invoices found.") + '</p>').appendTo(parent);
                     }
 				} 
 			}
@@ -88,7 +97,7 @@ frappe.match_payments = {
                     if (r.message.unallocated_payment_entries.length > 0) {
                         $(frappe.render_template('payment_entry_table', r.message)).appendTo(parent);
                     } else {
-                        $('<h3>No unallocated payment entries found.</h3>').appendTo(parent);
+                        $('<p class="text-muted">' + __("No unallocated payment entries found.") + '</p>').appendTo(parent);
                     }
 				} 
 			}

@@ -44,8 +44,13 @@ def get_revenue(start_date, end_date, tax_mode=None):
 @frappe.whitelist()
 def get_pretax(start_date, end_date):
     """ Extract pretax from paymment records
+       
+        Get sum of all amounts paid to tax account from purchase invoices
+        Separates on the basis of the purchase tax template
     """
     vat_account = frappe.get_value('ERPNextSwiss VAT configuration', None, 'pretax_account')
+
+    material_pretax_template = frappe.get_value('ERPNextSwiss VAT configuration', None, 'pretax_material_tax_template')
     sql_query = ("SELECT (IFNULL(SUM(`transactions`.`base_tax_amount`), 0)) AS `pretax` FROM ( " +
         "SELECT `t1`.`name`, `posting_date`, `account_head`, `base_tax_amount`, `t1`.`docstatus` " + 
         "FROM `tabPurchase Invoice` AS `t1` " +
@@ -53,11 +58,31 @@ def get_pretax(start_date, end_date):
         "WHERE `t1`.`docstatus` = 1 " +
         "AND `posting_date` >= '{0}' ".format(start_date) +
         "AND `posting_date` <= '{0}' ".format(end_date) +
+        "AND `taxes_and_charges` = '{0}' ".format(material_pretax_template) + 
         "AND `account_head` = '{0}') AS `transactions`".format(vat_account))
-    pretax = frappe.db.sql(sql_query, as_dict=True)
+    material_pretax = frappe.db.sql(sql_query, as_dict=True)
     
-    if pretax:
-        return { 'pretax': pretax[0].pretax }
+    # other_pretax_template = frappe.get_value('ERPNextSwiss VAT configuration', None, 'pretax_investment_tax_template')
+    sql_query = ("SELECT (IFNULL(SUM(`transactions`.`base_tax_amount`), 0)) AS `pretax` FROM ( " +
+        "SELECT `t1`.`name`, `posting_date`, `account_head`, `base_tax_amount`, `t1`.`docstatus` " + 
+        "FROM `tabPurchase Invoice` AS `t1` " +
+        "INNER JOIN `tabPurchase Taxes and Charges` AS `t2` ON `t1`.`name` = `t2`.`parent` " +
+        "WHERE `t1`.`docstatus` = 1 " +
+        "AND `posting_date` >= '{0}' ".format(start_date) +
+        "AND `posting_date` <= '{0}' ".format(end_date) +
+        "AND `taxes_and_charges` != '{0}' ".format(material_pretax_template) + 
+        "AND `account_head` = '{0}') AS `transactions`".format(vat_account))
+    other_pretax = frappe.db.sql(sql_query, as_dict=True)
+        
+    
+    if material_pretax:
+        material_pretax = material_pretax[0].pretax
     else:
-        return { 'pretax': 0.0 } 
-    return    
+        material_pretax = 0.0
+    if other_pretax:
+        other_pretax = other_pretax[0].pretax
+    else:
+        other_pretax = 0.0    
+    
+    return { 'material_pretax': material_pretax, 'other_pretax': other_pretax }
+  

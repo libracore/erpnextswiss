@@ -26,6 +26,7 @@ From the frappe-bench folder, execute
 ## Features 
 * Banking
     * Bank import: allows to import bank account statements to update local payment entries (receiving)
+    * Match payments: match unpaid sales invoices with the corresponding payments
     * Payment export: allows to create payment files for banks (pain.001) from payment entries (paying)
 * Tax
     * Import monthly average exchange rates

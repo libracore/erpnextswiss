@@ -172,7 +172,8 @@ function get_pretax(frm) {
                 },
             callback: function(r) {
                 if (r.message) {
-                    frm.set_value('pretax_material', r.message.pretax);
+                    frm.set_value('pretax_material', r.message.material_pretax);
+                    frm.set_value('pretax_investments', r.message.other_pretax);
                 }
             }
         }); 

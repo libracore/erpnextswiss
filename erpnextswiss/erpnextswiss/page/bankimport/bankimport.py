@@ -167,12 +167,12 @@ def parse_raiffeisen(content, account, auto_submit=False):
                             if customer:
                                 new_payment_entry.party = customer
                                 # check if this customer has open invoices
-                                open_sales_invoices = get_unpaid_sales_invoices_by_customer(customer)
-                                if open_sales_invoices:
-                                    # found open sales invoices
-                                    if len(open_sales_invoices) == 1:
-                                        # only one invoice found, match
-                                        sales_invoice = open_sales_invoices[0].name
+                                #open_sales_invoices = get_unpaid_sales_invoices_by_customer(customer)
+                                #if open_sales_invoices:
+                                #    # found open sales invoices
+                                #    if len(open_sales_invoices) == 1:
+                                #        # only one invoice found, match
+                                #        sales_invoice = open_sales_invoices[0].name
                             else:
                                 new_payment_entry.party = "Guest"
                             # date is in YYYY-MM-DD
@@ -189,8 +189,8 @@ def parse_raiffeisen(content, account, auto_submit=False):
                                 new_payment_entry.remarks = fields[1] + ", " + next_line_fields[1]
                             inserted_payment_entry = new_payment_entry.insert()
                             # check matching to sales invoice
-                            if sales_invoice:
-                                create_reference(inserted_payment_entry.name, sales_invoice)
+                            #if sales_invoice:
+                            #    create_reference(inserted_payment_entry.name, sales_invoice)
                             if auto_submit:
                                 new_payment_entry.submit()
                             new_payment_entries.append(inserted_payment_entry.name)

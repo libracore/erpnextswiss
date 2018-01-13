@@ -27,8 +27,9 @@ frappe.bankimport = {
 			// get selected account
 			var account = document.getElementById("payment_account").value;
 			// get selected option
-			var auto_submit = document.getElementById("auto_submit").checked;
-			
+			//var auto_submit = document.getElementById("auto_submit").checked;
+			var auto_submit = false;
+            
 			// read the file 
 			var file = document.getElementById("input_file").files[0];
 			var content = "";

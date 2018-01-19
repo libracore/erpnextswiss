@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright (c) 2017-2018, libracore and contributors
 # License: AGPL v3. See LICENCE
 
@@ -148,10 +149,7 @@ def parse_raiffeisen(content, account, auto_submit=False):
                         # get unique transaction ID
                         next_line_fields = lines[i + 1].split(';')
                         elements_in_comment = next_line_fields[1].split(' ')
-                        if len(elements_in_comment) > 3:
-                            transaction_id = elements_in_comment[-3]
-                        else:
-                            transaction_id = next_line_fields[1]
+                        transaction_id = next_line_fields[1]
                         #log("Checking transaction {0}".format(transaction_id))
                         # cross-check if this transaction was already recorded
                         if not frappe.db.exists('Payment Entry', {'reference_no': transaction_id}):
@@ -166,13 +164,6 @@ def parse_raiffeisen(content, account, auto_submit=False):
                             customer = frappe.get_value('Customer', customer_name, 'name')
                             if customer:
                                 new_payment_entry.party = customer
-                                # check if this customer has open invoices
-                                #open_sales_invoices = get_unpaid_sales_invoices_by_customer(customer)
-                                #if open_sales_invoices:
-                                #    # found open sales invoices
-                                #    if len(open_sales_invoices) == 1:
-                                #        # only one invoice found, match
-                                #        sales_invoice = open_sales_invoices[0].name
                             else:
                                 new_payment_entry.party = "Guest"
                             # date is in YYYY-MM-DD
@@ -188,9 +179,6 @@ def parse_raiffeisen(content, account, auto_submit=False):
                             if (i + 1) < len(lines):
                                 new_payment_entry.remarks = fields[1] + ", " + next_line_fields[1]
                             inserted_payment_entry = new_payment_entry.insert()
-                            # check matching to sales invoice
-                            #if sales_invoice:
-                            #    create_reference(inserted_payment_entry.name, sales_invoice)
                             if auto_submit:
                                 new_payment_entry.submit()
                             new_payment_entries.append(inserted_payment_entry.name)
@@ -252,6 +240,52 @@ def parse_cs(content, account, auto_submit=False):
     except IndexError:
         frappe.throw( _("Parsing error. Make sure the correct bank is selected.") )
 
+def parse_migrosbank(content, account, auto_submit=False):
+    # parse a migrosbank bank extract csv
+    # collect all lines of the file
+    lines = content.split("\n")
+    
+    # collect created payment entries
+    new_payment_entries = []
+    
+    try:
+        for i in range(12, len(lines)):
+            # skip line 0..11, it contains account information the column headers
+            # collect each fields (separated by semicolon)
+            fields = lines[i].split(';')
+            
+            # get received amount, only continue if this has a value
+            if len(fields) > 3:
+                received_amount = float(fields[2])
+                # is a received payment if the amount is bigger than 0
+                if received_amount > 0:
+                    # get unique transaction ID
+                    transaction_id = lines[i]
+                    # cross-check if this transaction was already recorded
+                    if not frappe.db.exists('Payment Entry', {'reference_no': transaction_id}):
+                        # create new payment entry
+                        new_payment_entry = frappe.get_doc({'doctype': 'Payment Entry'})
+                        new_payment_entry.payment_type = "Receive"
+                        new_payment_entry.party_type = "Customer";
+                        new_payment_entry.party = "Guest"
+                        # date is in DD.MM.YYYY
+                        date = convert_to_unc(fields[0])
+                        new_payment_entry.posting_date = date
+                        new_payment_entry.paid_to = account
+                        new_payment_entry.received_amount = received_amount
+                        new_payment_entry.paid_amount = received_amount
+                        new_payment_entry.reference_no = transaction_id
+                        new_payment_entry.reference_date = date
+                        new_payment_entry.remarks = lines[i]
+                        inserted_payment_entry = new_payment_entry.insert()
+                        if auto_submit:
+                            new_payment_entry.submit()
+                        new_payment_entries.append(inserted_payment_entry.name)
+        
+        return new_payment_entries
+    except IndexError:
+        frappe.throw( _("Parsing error. Make sure the correct bank is selected.") )
+        
 # this function tries to match the amount to an open sales invoice
 #
 # returns the sales invoice reference (name string) or None
@@ -358,7 +392,9 @@ def parse_file(content, bank, account, auto_submit=False):
         new_records = parse_raiffeisen(content, account, auto_submit)
     elif bank == "cs":
         new_records = parse_cs(content, account, auto_submit)
-               
+    elif bank == "migrosbank":
+        new_records = parse_migrosbank(content, account, auto_submit)
+                       
     message = "Completed"
     if len(new_records) == 0:
         message = "No new transactions found"

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright (c) 2017-2018, libracore and contributors
 # License: AGPL v3. See LICENCE
 
@@ -243,6 +244,7 @@ def parse_migrosbank(content, account, auto_submit=False):
     # parse a migrosbank bank extract csv
     # collect all lines of the file
     lines = content.split("\n")
+    
     # collect created payment entries
     new_payment_entries = []
     
@@ -251,7 +253,7 @@ def parse_migrosbank(content, account, auto_submit=False):
             # skip line 0..11, it contains account information the column headers
             # collect each fields (separated by semicolon)
             fields = lines[i].split(';')
-           
+            
             # get received amount, only continue if this has a value
             if len(fields) > 3:
                 received_amount = float(fields[2])

@@ -52,7 +52,7 @@ frappe.bankimport = {
 					
 					// read file content
 					content = event.target.result;
-					
+
 					// call bankimport method with file content
 					frappe.call({
 						method: 'erpnextswiss.erpnextswiss.page.bankimport.bankimport.parse_file',
@@ -83,7 +83,7 @@ frappe.bankimport = {
 					frappe.msgprint(__("Error reading file"), __("Error"));
 				}
 				
-				reader.readAsText(file, "UTF-8");
+                reader.readAsText(file, "ANSI");
 			}
 			else
 			{

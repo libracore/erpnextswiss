@@ -166,9 +166,9 @@ def parse_raiffeisen(content, account, auto_submit=False):
                                 new_payment_entry.party = customer
                             else:
                                 new_payment_entry.party = "Guest"
-                            # date is in YYYY-MM-DD
+                            # date is in DD.MM.YYYY hh.mm (bug #11)
                             date_time = fields[0].split(' ')
-                            date = date_time[0]
+                            date = convert_to_unc(date_time[0])
                             new_payment_entry.posting_date = date
                             new_payment_entry.paid_to = account
                             # remove thousands separator

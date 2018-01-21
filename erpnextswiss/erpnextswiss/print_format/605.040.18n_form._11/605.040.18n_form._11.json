@@ -1,0 +1,23 @@
+{
+ "align_labels_right": 0, 
+ "creation": "2018-01-21 20:46:35.275930", 
+ "css": "", 
+ "custom_format": 0, 
+ "disabled": 0, 
+ "doc_type": "Salary Certificate", 
+ "docstatus": 0, 
+ "doctype": "Print Format", 
+ "font": "Default", 
+ "format_data": "[{\"fieldname\": \"print_heading_template\", \"fieldtype\": \"Custom HTML\", \"options\": \"<!-- <div class=\\\"print-heading\\\"></div> -->\"}, {\"fieldtype\": \"Section Break\", \"label\": \"Content\"}, {\"fieldtype\": \"Column Break\"}, {\"print_hide\": 0, \"options\": \"<style>\\n.form11 {\\n\\tbackground-image: url(\\\"/assets/erpnextswiss/images/605_040_18N_Form_11.png\\\");\\n\\t/* DIN A4: 210 x 297 mm */\\n\\theight: 267mm;\\n\\twidth: 180mm;\\n\\tbackground-size:cover;\\n\\tmargin-left: -5mm;\\n\\tmargin-top: -5mm;\\n}\\n</style>\\n\\n<div class=\\\"form11\\\">\\n<table>\\n  <tr>\\n    <td style=\\\"width: 20mm; \\\"></td><td>[A]</td>\\n  </tr>\\n  <tr>\\n    <td style=\\\"width: 20mm; \\\"></td><td>[B]</td>\\n  </tr>\\n</table>\\n<table>\\n  <tr>\\n    <td style=\\\"width: 20mm; \\\"></td><td>[AHV]</td>\\n  </tr>\\n</table>\\n\\n</div>\", \"fieldname\": \"_custom_html\", \"fieldtype\": \"HTML\", \"label\": \"Custom HTML\"}]", 
+ "idx": 0, 
+ "line_breaks": 0, 
+ "modified": "2018-01-21 21:01:26.932993", 
+ "modified_by": "Administrator", 
+ "module": "ERPNextSwiss", 
+ "name": "605.040.18N Form. 11", 
+ "owner": "Administrator", 
+ "print_format_builder": 1, 
+ "print_format_type": "Server", 
+ "show_section_headings": 0, 
+ "standard": "Yes"
+}

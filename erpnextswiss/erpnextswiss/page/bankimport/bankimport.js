@@ -52,7 +52,7 @@ frappe.bankimport = {
 					
 					// read file content
 					content = event.target.result;
-
+window.alert(content);
 					// call bankimport method with file content
 					frappe.call({
 						method: 'erpnextswiss.erpnextswiss.page.bankimport.bankimport.parse_file',

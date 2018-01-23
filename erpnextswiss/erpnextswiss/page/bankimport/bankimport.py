@@ -166,7 +166,7 @@ def parse_raiffeisen(content, account, auto_submit=False):
                                 new_payment_entry.party = customer
                             else:
                                 new_payment_entry.party = "Guest"
-                            # date is in DD.MM.YYYY hh.mm (bug #11)
+                            # date is in "DD.MM.YYYY hh.mm" or "YYYY-MM-DD hh:mm" (bug #11)
                             date_time = fields[0].split(' ')
                             date = convert_to_unc(date_time[0])
                             new_payment_entry.posting_date = date
@@ -375,8 +375,12 @@ def assert_bool(param):
 
 # convert a European/Swiss date format DD.MM.YYYY into UNC YYYY-MM-DD         
 def convert_to_unc(ch_date):
-    date_parts = ch_date.split('.')
-    return date_parts[2] + "-" + date_parts[1] + "-" + date_parts[0]
+    # check if is really .-separated (see bugfix #11)
+    if '.' in ch_date:
+        date_parts = ch_date.split('.')
+        return date_parts[2] + "-" + date_parts[1] + "-" + date_parts[0]
+    else:
+        return ch_date
 
 @frappe.whitelist()
 def parse_file(content, bank, account, auto_submit=False):

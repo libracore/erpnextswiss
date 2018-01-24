@@ -40,7 +40,7 @@ def get_data():
             ]
         },
         {
-            "label": _("HR"),
+            "label": _("Human Resources"),
             "icon": "fa fa-users",
             "items": [
                    {

@@ -98,3 +98,6 @@ Page: match_payments,Done,Fertig
 Page: match_payments,No unpaid sales invoices found.,Es wurden keine unbezahlten Rechnungen gefunden.
 Page: match_payments,No unallocated payment entries found.,Es wurden keine nicht-zugewiesene Zahlungen gefunden.
 Page: match_payments,Open bank import,Bankdaten importieren
+Page: payment_export,Some payments were skipped due to errors (check the payment file for details):,Einige Zahlungen wurden wegen Fehlern übersprungen (Zahlungsdatei enthält Details):
+DocType: Supplier,ESR Participation Number,ESR Teilnehmernummer
+DocType: Purchase Invoice,ESR Reference Number,ESR Referenznummer

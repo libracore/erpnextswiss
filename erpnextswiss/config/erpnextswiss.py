@@ -40,6 +40,18 @@ def get_data():
             ]
         },
         {
+            "label": _("Human Resources"),
+            "icon": "fa fa-users",
+            "items": [
+                   {
+                       "type": "doctype",
+                       "name": "Salary Certificate",
+                       "label": _("Salary Certificate"),
+                       "description": _("Salary Certificate")
+                   }
+            ]
+        },
+        {
             "label": _("Configuration"),
             "icon": "fa fa-bank",
             "items": [
@@ -48,6 +60,12 @@ def get_data():
                        "name": "ERPNextSwiss VAT configuration",
                        "label": _("VAT configuration"),
                        "description": _("VAT configuration")
+                   },
+                   {
+                       "type": "doctype",
+                       "name": "Salary certificate",
+                       "label": _("Salary certificate"),
+                       "description": _("Salary certificate")
                    }
             ]
         }

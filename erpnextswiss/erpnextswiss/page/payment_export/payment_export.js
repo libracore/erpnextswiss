@@ -58,6 +58,9 @@ frappe.payment_export = {
                             // prepare the xml file for download
                             download("payments.xml", r.message.content);
                             
+                            // remove create file button to prevent double payments
+                            page.main.find(".btn-create-file").addClass("hide");
+                            page.main.find(".btn-refresh").removeClass("hide");
                         } 
                     }
                 });
@@ -65,10 +68,11 @@ frappe.payment_export = {
             } else {
                 frappe.msgprint( __("Please select at least one payment."), __("Information") );
             }
-            
-            // 
-
 		});
+        this.page.main.find(".btn-refresh").on('click', function() {
+            // refresh
+            location.reload(); 
+        });
 	},
 	run: function(page) {  
 		// populate payment entries

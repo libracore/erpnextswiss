@@ -12,7 +12,7 @@
  "page_name": "match_payments", 
  "roles": [
   {
-   "role": "User"
+   "role": "Accounts User"
   }, 
   {
    "role": "System Manager"

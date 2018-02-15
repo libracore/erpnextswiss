@@ -197,14 +197,14 @@ def generate_payment_file(payments):
                     content += add_invalid_remark( _("{0}: no address (or country) found").format(payment) )
                     skipped.append(payment)
                     continue
-                # creditor agent (BIC, optional)
-                if payment_record.bic:                
-                    payment_content += make_line("        <CdtrAgt>")
-                    payment_content += make_line("          <FinInstnId>")
-                    payment_content += make_line("            <BIC>" + 
-                        payment_record.bic + "</BIC>")
-                    payment_content += make_line("          </FinInstnId>")
-                    payment_content += make_line("        </CdtrAgt>")    
+                # creditor agent (BIC, optional; removed to resolve issue #15)
+                #if payment_record.bic:                
+                #    payment_content += make_line("        <CdtrAgt>")
+                #    payment_content += make_line("          <FinInstnId>")
+                #    payment_content += make_line("            <BIC>" + 
+                #        payment_record.bic + "</BIC>")
+                #    payment_content += make_line("          </FinInstnId>")
+                #    payment_content += make_line("        </CdtrAgt>")    
                 # creditor account
                 payment_content += make_line("        <CdtrAcct>")
                 payment_content += make_line("          <Id>")

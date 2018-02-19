@@ -83,7 +83,7 @@ DocType: ERPNextSwiss VAT configuration,Rate 2 tax template,Steuertemplate Satz 
 DocType: ERPNextSwiss VAT configuration,Configuration,Einstellungen
 DocType: ERPNextSwiss VAT configuration,VAT configuration,Mehrwertsteuereinstellungen
 Page: match_payments,Match payments,Zahlungen zuordnen
-Helps to match unpaid sales invoices against received payments,Hilft Zahlungseingänge unbezahlten Ausgangsrechnungen zu zu ordnen,
+Page: match_payments,Helps to match unpaid sales invoices against received payments,Hilft Zahlungseingänge unbezahlten Ausgangsrechnungen zu zu ordnen
 Page: match_payments,Sales invoices,Rechnungen
 Page: match_payments,Sales invoice,Rechnung
 Page: match_payments,Due date,Zahlbarkeit
@@ -126,7 +126,7 @@ DocType: Salary Certificate,3 Irregular description,3. Beschreibung unregelmäss
 DocType: Salary Certificate,4 Capital description,4. Beschreibung Kapitalleistungen
 DocType: Salary Certificate,5 Participation,5. Beteiligungsrechte gemäss Beiblatt
 DocType: Salary Certificate,6 Board,6. Verwaltungsratsentschädigungen
-DocType: Salary Certificate,7 Other,7. Andere Lesitunge
+DocType: Salary Certificate,7 Other,7. Andere Leistungen
 DocType: Salary Certificate,7 Other description,7. Beschreibung andere Leistungen
 DocType: Salary Certificate,8 Gross salary,8. Bruttolohn total
 DocType: Salary Certificate,9 Deductions AHV/IV/EO/ALV/NBUV,9. Beiträge AHV/IV/EO/ALV/NBUV

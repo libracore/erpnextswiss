@@ -31,6 +31,8 @@ From the frappe-bench folder, execute
 * Tax
     * Import monthly average exchange rates
     * VAT declaration
+* Human resources
+    * Salary certificate ("Lohnausweis")
 
 ## Release notes
 Refer to [https://github.com/libracore/erpnextswiss/wiki/Release-Notes](https://github.com/libracore/erpnextswiss/wiki/Release-Notes)

@@ -54,3 +54,18 @@ def submit(payment_entry):
     payment_entry_record = frappe.get_doc("Payment Entry", payment_entry)
     payment_entry_record.submit()
     return { 'message': "Done" }
+
+@frappe.whitelist()
+def auto_match(method="docid"):
+    # prepare array of matched payments
+    matched_payments = []
+    # read all new payments
+    new_payments = def get_unallocated_payment_entries()
+    # loop through all unpaid sales invoices
+    for unpaid_sales_invoice in get_open_sales_invoices():
+        if method == "docid":
+            for payment in new_payments:
+                if unpaid_sales_invoice['name'] in payment['remarks']:
+                    match(unpaid_sales_invoice['name'], payment['name'])
+                    matched_payments.append(match(unpaid_sales_invoice['name'])
+    return { 'message': "Done", 'payments': matched_payments }

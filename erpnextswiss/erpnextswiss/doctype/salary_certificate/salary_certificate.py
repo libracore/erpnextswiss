@@ -21,7 +21,9 @@ class SalaryCertificate(Document):
         self.salary = get_component(self.employee, self.start_date, self.end_date, "B")
         self.gross_salary = values[0].gross
         self.net_salary = values[0].net
-        self.deduction_ahv = get_component(self.employee, self.start_date, self.end_date, "AHV")
+        self.deduction_ahv = (get_component(self.employee, self.start_date, self.end_date, "AHV") + 
+            get_component(self.employee, self.start_date, self.end_date, "ALV") +
+            get_component(self.employee, self.start_date, self.end_date, "NBUV"))
         self.deduction_pension = get_component(self.employee, self.start_date, self.end_date, "PK")   
             
         self.save()

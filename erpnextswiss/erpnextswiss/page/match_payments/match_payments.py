@@ -60,7 +60,7 @@ def auto_match(method="docid"):
     # prepare array of matched payments
     matched_payments = []
     # read all new payments
-    new_payments = def get_unallocated_payment_entries()
+    new_payments = get_unallocated_payment_entries()
     # loop through all unpaid sales invoices
     for unpaid_sales_invoice in get_open_sales_invoices():
         if method == "docid":

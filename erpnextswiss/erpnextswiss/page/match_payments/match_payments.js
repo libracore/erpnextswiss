@@ -122,8 +122,13 @@ function auto_match_id(page) {
                 'method': 'docid'
             },
             callback: function(r) {
-                if (r.message) {                   
-                    submit(r.message.payments, page);
+                if (r.message) {   
+                    if (r.message.payments.length > 0) {          
+                        submit_all(r.message.payments, page);
+                    } else {
+                        completed(page, false);
+                        frappe.show_alert( __("No matches found.") );
+                    }
                 } 
             }
         }); 
@@ -141,11 +146,7 @@ function submit(payment_entry, page) {
             },
         callback: function(r) {
             if (r.message) {
-                // disable waiting gif
-                page.main.find(".waiting-gif").addClass("hide");
-                
-                // refresh
-                location.reload(); 
+                completed(page);
             } 
         }
     });
@@ -153,18 +154,24 @@ function submit(payment_entry, page) {
 
 function submit_all(payments, page) {
     frappe.call({
-        method: 'erpnextswiss.erpnextswiss.page.match_payments.match_payments.submit',
+        method: 'erpnextswiss.erpnextswiss.page.match_payments.match_payments.submit_all',
         args: { 
-                'payment_entry': payment_entry
+                'payments': payments
             },
         callback: function(r) {
             if (r.message) {
-                // disable waiting gif
-                page.main.find(".waiting-gif").addClass("hide");
-                
-                // refresh
-                location.reload(); 
+                completed(page);
             } 
         }
     });
+}
+
+function completed(page, reload=true) {
+    // disable waiting gif
+    page.main.find(".waiting-gif").addClass("hide");
+    
+    // refresh
+    if (reload) {
+        location.reload(); 
+    }
 }

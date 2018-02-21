@@ -123,7 +123,8 @@ function auto_match_id(page) {
             },
             callback: function(r) {
                 if (r.message) {   
-                    if (r.message.payments.length > 0) {          
+                    if (r.message.payments.length > 0) {    
+                        frappe.show_alert( __("Matched {0} sales invoices.").replace("{0}", String(r.message.payments.length)));      
                         submit_all(r.message.payments, page);
                     } else {
                         completed(page, false);

@@ -156,7 +156,7 @@ function submit_all(payments, page) {
     frappe.call({
         method: 'erpnextswiss.erpnextswiss.page.match_payments.match_payments.submit_all',
         args: { 
-                'payments': payments
+                'payment_entries': payments
             },
         callback: function(r) {
             if (r.message) {

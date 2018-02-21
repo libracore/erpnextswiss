@@ -56,6 +56,12 @@ def submit(payment_entry):
     return { 'message': "Done" }
 
 @frappe.whitelist()
+def submit_all(payment_entries):
+    for payment_entry in payment_entries:
+        submit(payment_entry)
+    return { 'message': "Done" }
+
+@frappe.whitelist()
 def auto_match(method="docid"):
     # prepare array of matched payments
     matched_payments = []
@@ -66,6 +72,6 @@ def auto_match(method="docid"):
         if method == "docid":
             for payment in new_payments:
                 if unpaid_sales_invoice['name'] in payment['remarks']:
-                    match(unpaid_sales_invoice['name'], payment['name'])
-                    matched_payments.append(match(unpaid_sales_invoice['name'])
+                    matched_payment_entry = match(unpaid_sales_invoice['name'], payment['name'])[payment_entry]
+                    matched_payments.append(matched_payment_entry)
     return { 'message': "Done", 'payments': matched_payments }

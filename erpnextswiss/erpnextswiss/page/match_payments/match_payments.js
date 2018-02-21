@@ -28,46 +28,12 @@ frappe.match_payments = {
 		});
         
 		// attach button handlers
-		this.page.main.find(".btn-match").on('click', function() {
-			var me = frappe.bankimport;
-                    
-			// get sales invoice
-            try {
-                var sales_invoice = document.querySelector('input[name="invoice"]:checked').value;
-                
-                try {
-                    // get payment entry
-                    var payment_entry = document.querySelector('input[name="payment"]:checked').value;
-
-                    //frappe.msgprint("Match " + sales_invoice + " with " + payment_entry);
-                			
-                    // enable waiting gif
-                    page.main.find(".waiting-gif").removeClass("hide");
-                    
-                    // call match method 
-                    frappe.call({
-                        method: 'erpnextswiss.erpnextswiss.page.match_payments.match_payments.match',
-                        args: {
-                            'sales_invoice': sales_invoice,
-                            'payment_entry': payment_entry
-                        },
-                        callback: function(r) {
-                            if (r.message) {
-                                //frappe.msgprint("Matched!");
-                                
-                                submit(r.message.payment_entry, page);
-                            } 
-                        }
-                    }); 
-                }
-                catch (err) {
-                     frappe.msgprint( __("Please select a payment entry.") );
-                }
-            }
-            catch (err) {
-                frappe.msgprint( __("Please select a sales invoice.") );
-            }
-
+		this.page.main.find(".btn-match").on('click', function() {                   
+            match(page);
+		});
+        
+        this.page.main.find(".btn-auto-match-id").on('click', function() {                   
+            auto_match_id(page);
 		});
 
 	},
@@ -105,7 +71,87 @@ frappe.match_payments = {
 	}
 }
 
+function match(page) {
+    // get sales invoice
+    try {
+        var sales_invoice = document.querySelector('input[name="invoice"]:checked').value;
+        
+        try {
+            // get payment entry
+            var payment_entry = document.querySelector('input[name="payment"]:checked').value;
+
+            //frappe.msgprint("Match " + sales_invoice + " with " + payment_entry);
+                    
+            // enable waiting gif
+            page.main.find(".waiting-gif").removeClass("hide");
+            
+            // call match method 
+            frappe.call({
+                method: 'erpnextswiss.erpnextswiss.page.match_payments.match_payments.match',
+                args: {
+                    'sales_invoice': sales_invoice,
+                    'payment_entry': payment_entry
+                },
+                callback: function(r) {
+                    if (r.message) {
+                        //frappe.msgprint("Matched!");
+                        
+                        submit(r.message.payment_entry, page);
+                    } 
+                }
+            }); 
+        }
+        catch (err) {
+             frappe.msgprint( __("Please select a payment entry.") );
+        }
+    }
+    catch (err) {
+        frappe.msgprint( __("Please select a sales invoice.") );
+    }
+}
+
+function auto_match_id(page) {
+    try {                   
+        // enable waiting gif
+        page.main.find(".waiting-gif").removeClass("hide");
+        
+        // call match method 
+        frappe.call({
+            method: 'erpnextswiss.erpnextswiss.page.match_payments.match_payments.auto_match',
+            args: {
+                'method': 'docid'
+            },
+            callback: function(r) {
+                if (r.message) {                   
+                    submit(r.message.payments, page);
+                } 
+            }
+        }); 
+    }
+    catch (err) {
+         frappe.msgprint( __("Please select a payment entry.") );
+    }
+}
+
 function submit(payment_entry, page) {
+    frappe.call({
+        method: 'erpnextswiss.erpnextswiss.page.match_payments.match_payments.submit',
+        args: { 
+                'payment_entry': payment_entry
+            },
+        callback: function(r) {
+            if (r.message) {
+                // disable waiting gif
+                page.main.find(".waiting-gif").addClass("hide");
+                
+                // refresh
+                location.reload(); 
+            } 
+        }
+    });
+}
+
+function submit_all(payments, page) {
     frappe.call({
         method: 'erpnextswiss.erpnextswiss.page.match_payments.match_payments.submit',
         args: { 

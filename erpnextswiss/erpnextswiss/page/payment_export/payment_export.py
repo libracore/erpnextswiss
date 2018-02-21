@@ -20,7 +20,7 @@ def get_payments():
 def generate_payment_file(payments):
     # creates a pain.001 payment file from the selected payments
 
-    #try:
+    try:
         # convert JavaScript parameter into Python array
         payments = eval(payments)
         # remove empty items in case there should be any (bigfix for issue #2)
@@ -235,9 +235,12 @@ def generate_payment_file(payments):
         content = content.replace(control_sum_identifier, "{:.2f}".format(control_sum))
         
         return { 'content': content, 'skipped': skipped }
-    #except:
-    #    frappe.throw( _("Error while generating xml. Make sure that you made required customisations to the DocTypes.") )
-    #    return
+    except IndexError:
+        frappe.msgprint( _("Please select at least one payment."), _("Information") )
+        return
+    except:
+        frappe.throw( _("Error while generating xml. Make sure that you made required customisations to the DocTypes.") )
+        return
 
 def add_creditor_info(payment_record):
     payment_content = ""

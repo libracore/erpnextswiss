@@ -86,3 +86,14 @@ def get_pretax(start_date, end_date):
     
     return { 'material_pretax': material_pretax, 'other_pretax': other_pretax }
   
+@frappe.whitelist()
+def get_tax_rate(taxes_and_charges_template):
+    sql_query = ("""SELECT `rate` 
+        FROM `tabPurchase Taxes and Charges` 
+        WHERE `parent` = '{0}' 
+        ORDER BY `idx`;""".format(taxes_and_charges_template))
+    result = frappe.db.sql(sql_query, as_dict=True)
+    if result:
+        return result[0].rate
+    else:
+        return 0

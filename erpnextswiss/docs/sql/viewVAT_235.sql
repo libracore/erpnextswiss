@@ -4,7 +4,8 @@ CREATE VIEW `viewVAT_235` AS
         `tabGL Entry`.`voucher_no` AS `voucher_no`,
         `tabGL Entry`.`account` AS `account`,
         `tabGL Entry`.`debit` AS `debit`,
-        `tabGL Entry`.`credit` AS `credit`
+        `tabGL Entry`.`credit` AS `credit`,
+        (`tabGL Entry`.`credit` - `tabGL Entry`.`debit`) AS `base_grand_total`
     FROM
         `tabGL Entry`
     WHERE

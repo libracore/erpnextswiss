@@ -11,67 +11,80 @@ frappe.ui.form.on('VAT Declaration', {
 		{
 			recalculate(frm);
 		});
+        frm.add_custom_button(__("Test"), function() 
+		{
+			frappe.show_alert("Total: " + frm.doc.total_revenue);
+		});
         
-        update_taxable_revenue(frm);
-        update_payable_tax(frm);
-	}
+        // update_taxable_revenue(frm);
+        // update_payable_tax(frm);
+	},
+    onload: function(frm) {
+        if (frm.doc.name.startsWith("New ")) {
+            // this function is called when a new VAT declaration is created
+            // get current month (0..11)
+            var d = new Date();
+            var n = d.getMonth();
+            // define title as Qn YYYY of the last complete quarter
+            var title = " / " + d.getFullYear();
+            if ((n > (-1)) && (n < 3)) {
+                title = "Q04 / " + (d.getFullYear() - 1);
+                frm.set_value('start_date', (d.getFullYear() - 1) + "-10-01");
+                frm.set_value('end_date', (d.getFullYear() - 1) + "-12-31");
+            } else if ((n > (2)) && (n < 6)) {
+                title = "Q01" + title;
+                frm.set_value('start_date', d.getFullYear() + "-01-01");
+                frm.set_value('end_date', d.getFullYear() + "-03-31");
+            } else if ((n > (5)) && (n < 9)) {
+                title = "Q02" + title;
+                frm.set_value('start_date', d.getFullYear() + "-04-01");
+                frm.set_value('end_date', d.getFullYear() + "-06-30");
+            } else {
+                title = "Q03" + title;
+                frm.set_value('start_date', d.getFullYear() + "-07-01");
+                frm.set_value('end_date', d.getFullYear() + "-09-30");
+            } 
+
+            frm.set_value('title', title);
+        }
+  }
 });
 
 // retrieve values from database
 function get_values(frm) {
-    get_total_revenue(frm);
-    get_revenue(frm, "abroad_tax_template", 'revenue_abroad');
+    // Total revenue
+    get_total(frm, "viewVAT_200", 'total_revenue');
+    // get_total(frm, "viewVAT_205", 'non_taxable_revenue');
+    // Deductions
+    get_total(frm, "viewVAT_220", 'tax_free_services');
+    get_total(frm, "viewVAT_221", 'revenue_abroad');
+    get_total(frm, "viewVAT_225", 'transfers');
+    get_total(frm, "viewVAT_230", 'non_taxable_services');
+    get_total(frm, "viewVAT_235", 'losses');
+    // Tax calculation
     if (frm.doc.vat_type == "effective") {
-        get_revenue(frm, "normal_rate_tax_template", 'normal_amount');
-        get_revenue(frm, "reduced_rate_tax_template", 'reduced_amount');
-        get_revenue(frm, "lodging_rate_tax_template", 'lodging_amount');
-        get_revenue(frm, "tax_free_tax_template", 'tax_free_services');
+        get_total(frm, "viewVAT_301", 'normal_amount');
+        get_total(frm, "viewVAT_311", 'reduced_amount');
+        get_total(frm, "viewVAT_341", 'lodging_amount');
     }
     else {
-        get_revenue(frm, "rate_1_tax_template", 'amount_1');
-        get_revenue(frm, "rate_2_tax_template", 'amount_2');
+        get_total(frm, "viewVAT_321", 'amount_1');
+        get_total(frm, "viewVAT_331", 'amount_2');
     }
-        
+    get_total(frm, "viewVAT_381", 'additional_amount');
+    // Pretaxes
     if (frm.doc.vat_type == "effective") {
-        get_pretax(frm);
+        get_tax(frm, "viewVAT_400", 'pretax_material');
+        get_tax(frm, "viewVAT_405", 'pretax_investments');
     }
 }
 
 // force recalculate
 function recalculate(frm) {
     update_tax_amounts(frm);
+    update_taxable_revenue(frm);
     update_payable_tax(frm);
 }
-
-frappe.ui.form.on("VAT Declaration", {
-  setup: function(frm) {
-    // this function is called when a new VAT declaration is created
-    // get current month (0..11)
-    var d = new Date();
-    var n = d.getMonth();
-    // define title as Qn YYYY of the last complete quarter
-    var title = " / " + d.getFullYear();
-    if ((n > (-1)) && (n < 3)) {
-        title = "Q04 / " + (d.getFullYear() - 1);
-        frm.set_value('start_date', (d.getFullYear() - 1) + "-10-01");
-        frm.set_value('end_date', (d.getFullYear() - 1) + "-12-31");
-    } else if ((n > (2)) && (n < 6)) {
-        title = "Q01" + title;
-        frm.set_value('start_date', d.getFullYear() + "-01-01");
-        frm.set_value('end_date', d.getFullYear() + "-03-31");
-    } else if ((n > (5)) && (n < 9)) {
-        title = "Q02" + title;
-        frm.set_value('start_date', d.getFullYear() + "-04-01");
-        frm.set_value('end_date', d.getFullYear() + "-06-30");
-    } else {
-        title = "Q03" + title;
-        frm.set_value('start_date', d.getFullYear() + "-07-01");
-        frm.set_value('end_date', d.getFullYear() + "-09-30");
-    } 
-
-    frm.set_value('title', title);
-  }
-});
 
 // add change handlers for tax positions
 frappe.ui.form.on("VAT Declaration", "normal_amount", function(frm) { update_tax_amounts(frm) } );
@@ -122,64 +135,46 @@ function update_taxable_revenue(frm) {
     frm.set_value('taxable_revenue', taxable);
 }
 
-// get revenues
-function get_total_revenue(frm) {
-    // total revenues is the sum of all sales invoices in the period
+/* view: view to use
+ * target: target field
+ */
+function get_total(frm, view, target) {
+    // total revenues is the sum of all base grnad totals in the period
     frappe.call({
-        method: 'erpnextswiss.erpnextswiss.doctype.vat_declaration.vat_declaration.get_revenue',
-        args: { 
-            'start_date': frm.doc.start_date,
-            'end_date': frm.doc.end_date
-            },
-        callback: function(r) {
-            if (r.message) {
-                // window.alert("got value: " + r.message.revenue.toSource() + " - " + r.message.revenue[0].total_revenue);
-                frm.set_value('total_revenue', r.message.revenue);
-            }
-        }
-    });
-}
-
-// template: template configuration field (VAT config)
-// target: target fields
-function get_revenue(frm, template, target) {
-    // total revenues is the sum of all sales invoices in the period
-    frappe.call({
-        method: 'erpnextswiss.erpnextswiss.doctype.vat_declaration.vat_declaration.get_revenue',
+        method: 'get_view_total',
+        doc: frm.doc,
         args: { 
             'start_date': frm.doc.start_date,
             'end_date': frm.doc.end_date,
-            'tax_mode': template
-            },
+            'view_name': view
+        },
         callback: function(r) {
             if (r.message) {
-                // window.alert("got value: " + r.message.revenue.toSource() + " - " + r.message.revenue[0].total_revenue);
-                //frm.set_value(target, r.message.revenue[0].total_revenue);
-                frm.set_value(target, r.message.revenue);
+                frm.set_value(target, r.message.total);
             }
         }
     }); 
 }
 
-function get_pretax(frm) {
-    // total pretax  is the sum of the taxes collected in the tax collection account from payment invoices in the period    
-    if (frm.doc.vat_type == "effective") {
-        frappe.call({
-            method: 'erpnextswiss.erpnextswiss.doctype.vat_declaration.vat_declaration.get_pretax',
-            args: { 
-                'start_date': frm.doc.start_date,
-                'end_date': frm.doc.end_date,
-                },
-            callback: function(r) {
-                if (r.message) {
-                    frm.set_value('pretax_material', r.message.material_pretax);
-                    frm.set_value('pretax_investments', r.message.other_pretax);
-                }
+/* view: view to use
+ * target: target field
+ */
+function get_tax(frm, view, target) {
+    // total tax is the sum of all taxes in the period
+    frappe.call({
+        method: 'get_view_tax',
+        doc: frm.doc,
+        args: { 
+            'start_date': frm.doc.start_date,
+            'end_date': frm.doc.end_date,
+            'view_name': view
+        },
+        callback: function(r) {
+            if (r.message) {
+                frm.set_value(target, r.message.total);
             }
-        }); 
-    } else {
-        frm.set_value('pretax_material', 0.0);
-    }
+        }
+    }); 
 }
 
 // add change handlers for pretax

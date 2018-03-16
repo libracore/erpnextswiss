@@ -141,12 +141,11 @@ function update_taxable_revenue(frm) {
 function get_total(frm, view, target) {
     // total revenues is the sum of all base grnad totals in the period
     frappe.call({
-        method: 'get_view_total',
-        doc: frm.doc,
+        method: 'erpnextswiss.erpnextswiss.doctype.vat_declaration.vat_declaration.get_view_total',
         args: { 
-            'start_date': frm.doc.start_date,
-            'end_date': frm.doc.end_date,
-            'view_name': view
+            start_date: frm.doc.start_date,
+            end_date: frm.doc.end_date,
+            view_name: view
         },
         callback: function(r) {
             if (r.message) {
@@ -162,12 +161,11 @@ function get_total(frm, view, target) {
 function get_tax(frm, view, target) {
     // total tax is the sum of all taxes in the period
     frappe.call({
-        method: 'get_view_tax',
-        doc: frm.doc,
+        method: 'erpnextswiss.erpnextswiss.doctype.vat_declaration.vat_declaration.get_view_tax',
         args: { 
-            'start_date': frm.doc.start_date,
-            'end_date': frm.doc.end_date,
-            'view_name': view
+            start_date: frm.doc.start_date,
+            end_date: frm.doc.end_date,
+            view_name: view
         },
         callback: function(r) {
             if (r.message) {

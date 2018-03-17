@@ -11,13 +11,10 @@ frappe.ui.form.on('VAT Declaration', {
 		{
 			recalculate(frm);
 		});
-        frm.add_custom_button(__("Test"), function() 
-		{
-			frappe.show_alert("Total: " + frm.doc.total_revenue);
-		});
         
-        // update_taxable_revenue(frm);
-        // update_payable_tax(frm);
+        update_taxable_revenue(frm);
+        update_tax_amounts(frm);
+        update_payable_tax(frm);
 	},
     onload: function(frm) {
         if (frm.doc.name.startsWith("New ")) {
@@ -81,8 +78,8 @@ function get_values(frm) {
 
 // force recalculate
 function recalculate(frm) {
-    update_tax_amounts(frm);
     update_taxable_revenue(frm);
+    update_tax_amounts(frm);
     update_payable_tax(frm);
 }
 

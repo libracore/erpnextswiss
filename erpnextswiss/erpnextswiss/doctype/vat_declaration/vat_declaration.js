@@ -17,7 +17,7 @@ frappe.ui.form.on('VAT Declaration', {
         update_payable_tax(frm);
 	},
     onload: function(frm) {
-        if (frm.doc.name.startsWith("New ")) {
+        if (frm.doc.__islocal) {
             // this function is called when a new VAT declaration is created
             // get current month (0..11)
             var d = new Date();

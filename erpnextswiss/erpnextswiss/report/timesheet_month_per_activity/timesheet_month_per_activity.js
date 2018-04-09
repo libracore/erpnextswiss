@@ -1,4 +1,4 @@
-frappe.query_reports["Timesheet Month per Project"] = {
+frappe.query_reports["Timesheet Month per Activity"] = {
     "filters": [
         {
             "fieldname":"from_date",

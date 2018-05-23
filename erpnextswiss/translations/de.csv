@@ -5,6 +5,8 @@ DocType: VAT Declaration,Taxes,Steuern
 DocType: Payment Entry,Transaction Type,Transaktionstyp
 DocType: Payment Entry,ESR Participant Number,ESR-Teilnehmernummer
 DocType: Payment Entry,ESR Reference,ESR-Referenz
+DocType: Payment Entry,Supplier data added,Lieferantendetails hinzugefügt
+DocType: Payment Entry,Invoice details added,Rechnungsdetails hinzugefügt
 DocType: Account,Payment Files,Transferdateien
 Page: payment_export,No payment entries to be paid found with status draft,Es wurden keine offenen Zahlungen (Entwurf) gefunden.
 Page: payment_export,Exports the selected payment entries for execution by file transfer to a bank,Exportiert die gewählten Zahlungen zur Ausführung durch eine Bank

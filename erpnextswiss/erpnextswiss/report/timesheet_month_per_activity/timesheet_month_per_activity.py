@@ -13,11 +13,11 @@ def execute(filters=None):
             FROM `tabTimesheet Detail` 
             WHERE `from_time` > "{0} 0:0" AND `from_time` < "{1} 23:59"
             GROUP BY `Activity`
-            ORDER BY `Hours` DESC""".format(filters.from_date, filters.end_date), as_dict = True)
+            ORDER BY `Hours` DESC""".format(filters.from_date, filters.end_date), as_list = True)
     else:
         data = frappe.db.sql("""SELECT `activity_type` AS `Activity`, SUM(`hours`) AS `Hours`
             FROM `tabTimesheet Detail` 
             GROUP BY `Activity`
-            ORDER BY `Hours` DESC""".format(filters.from_date, filters.end_date), as_dict = True)
+            ORDER BY `Hours` DESC""".format(filters.from_date, filters.end_date), as_list = True)
             
     return columns, data

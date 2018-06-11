@@ -147,3 +147,5 @@ DocType: Salary Certificate,13.2.3 Other net expenses,13.2.3 Pauschalspesen übr
 DocType: Salary Certificate,13.3 Education,13.3 Beiträge an die Weiterbildung
 DocType: Salary Certificate,14 Other salary sides,14. Gehaltsnebenleistungen Art
 DocType: Salary Certificate,15 Remarks,15. Bemerkungen
+DocType: Label Printer,Label Printer,Etikettendrucker
+DocType: Label Printer,Create Test PDF,Test-PDF erstellen

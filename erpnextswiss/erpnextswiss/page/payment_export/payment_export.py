@@ -268,7 +268,10 @@ def add_creditor_info(payment_record):
     payment_content += make_line("            <TwnNm>" +
         supplier_address.city + "</TwnNm>")
     # country (has to be a two-digit code)
-    country_code = frappe.get_value('Country', supplier_address.country, 'code').upper()
+    try:
+        country_code = frappe.get_value('Country', supplier_address.country, 'code').upper()
+    except:
+        frappe.throw( _("Unable to find country code for {0}").format(supplier_address.country))
     if country_code:
         payment_content += make_line("            <Ctry>" +
             country_code + "</Ctry>")

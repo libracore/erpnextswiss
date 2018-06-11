@@ -63,9 +63,9 @@ def get_data():
                    },
                    {
                        "type": "doctype",
-                       "name": "Salary certificate",
-                       "label": _("Salary certificate"),
-                       "description": _("Salary certificate")
+                       "name": "Label Printer",
+                       "label": _("Label Printer"),
+                       "description": _("Label Printer")                   
                    }
             ]
         }

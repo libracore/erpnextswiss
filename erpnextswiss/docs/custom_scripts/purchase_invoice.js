@@ -1,8 +1,7 @@
 frappe.ui.form.on('Purchase Invoice', {
   validate: function(frm) {
     if (frm.doc.payment_type == "ESR") {
-      frappe.provide("erpnextswiss.swiss_common");
-      if (!erpnextswiss.swiss_common.check_esr(frm.doc.esr_reference_number)) {
+      if (!check_esr(frm.doc.esr_reference_number)) {
         frappe.msgprint( __("ESR code not valid") ); 
         frappe.validated=false;
       } 

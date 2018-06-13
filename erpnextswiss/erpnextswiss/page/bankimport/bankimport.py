@@ -5,6 +5,7 @@
 from __future__ import unicode_literals
 import frappe
 from frappe import throw, _
+import hashlib
 
 def parse_ubs(content, account, auto_submit=False):
     # parse a ubs bank extract csv
@@ -149,7 +150,7 @@ def parse_raiffeisen(content, account, auto_submit=False):
                         # get unique transaction ID
                         next_line_fields = lines[i + 1].split(';')
                         elements_in_comment = next_line_fields[1].split(' ')
-                        transaction_id = next_line_fields[1]
+                        transaction_id = hashlib.md5(fields[0] + next_line_fields[1]).hexdigest()
                         #log("Checking transaction {0}".format(transaction_id))
                         # cross-check if this transaction was already recorded
                         if not frappe.db.exists('Payment Entry', {'reference_no': transaction_id}):

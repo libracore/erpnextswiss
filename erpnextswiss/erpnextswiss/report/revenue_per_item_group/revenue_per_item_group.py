@@ -7,7 +7,7 @@ import frappe
 def execute(filters=None):
     columns, data = [], []
     
-    columns = ["Item Group::200", "Amount:200", "Qty::150"]
+    columns = ["Item Group:Link/Item Group:200", "Amount:Currency:200", "Qty::150"]
     if filters:
         data = frappe.db.sql("""SELECT 
 				  `t1`.`item_group`, 

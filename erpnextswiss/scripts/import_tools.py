@@ -67,7 +67,7 @@ def import_items(filename):
 
 	if len(cells) > 1:
 	    # check if item exists
-	    print("finding " + get_field(cells[ART_NR]))
+	    print("Checking " + get_field(cells[ART_NR]))
 	    update = False
 	    
 	    try:

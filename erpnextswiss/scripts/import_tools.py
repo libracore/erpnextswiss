@@ -116,28 +116,28 @@ def import_items(filename):
 				"material": get_field(cells[ART_BEZ1]),
 				"quality": get_field(cells[ART_QUA1]),
 				"weight": get_field(cells[ART_GEW]),
-				"count": get_field(cells[ART_QU11])
+				"count": get_field(cells[ART_ANZST1])
 			    },
 			    {
 				"element": "Edelstein",
 				"material": get_field(cells[ART_BEZ2]),
 				"quality": get_field(cells[ART_QUA2]),
 				"weight": get_field(cells[ART_GEW]),
-				"count": get_field(cells[ART_QU12])
+				"count": get_field(cells[ART_ANZST2])
 			    },
 			    {
 				"element": "Edelstein",
 				"material": get_field(cells[ART_BEZ3]),
 				"quality": get_field(cells[ART_QUA3]),
 				"weight": get_field(cells[ART_GEW]),
-				"count": get_field(cells[ART_QU13])
+				"count": get_field(cells[ART_ANZST3])
 			    },
 			    {
 				"element": "Edelstein",
 				"material": get_field(cells[ART_BEZ4]),
 				"quality": get_field(cells[ART_QUA4]),
 				"weight": get_field(cells[ART_GEW]),
-				"count": get_field(cells[ART_QU14])
+				"count": get_field(cells[ART_ANZST4])
 			    }
 			]			
 		    })

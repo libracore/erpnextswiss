@@ -114,30 +114,34 @@ def import_items(filename):
 			    {
 				"element": "Edelstein",
 				"material": get_field(cells[ART_BEZ1]),
-				"quality": get_field(cells[ART_QUA1]),
+				"quality": "{0}-{1}".format(get_field(cells[ART_QUA1]), get_field(cells[ART_QU11])),
 				"weight": get_field(cells[ART_GEW]),
-				"count": get_field(cells[ART_ANZST1])
+				"count": get_field(cells[ART_ANZST1]),
+				"unit": "ct"
 			    },
 			    {
 				"element": "Edelstein",
 				"material": get_field(cells[ART_BEZ2]),
-				"quality": get_field(cells[ART_QUA2]),
+				"quality": "{0}-{1}".format(get_field(cells[ART_QUA2]), get_field(cells[ART_QU12])),
 				"weight": get_field(cells[ART_GEW]),
-				"count": get_field(cells[ART_ANZST2])
+				"count": get_field(cells[ART_ANZST2]),
+				"unit": "ct"
 			    },
 			    {
 				"element": "Edelstein",
 				"material": get_field(cells[ART_BEZ3]),
-				"quality": get_field(cells[ART_QUA3]),
+				"quality": "{0}-{1}".format(get_field(cells[ART_QUA3]), get_field(cells[ART_QU13])),
 				"weight": get_field(cells[ART_GEW]),
-				"count": get_field(cells[ART_ANZST3])
+				"count": get_field(cells[ART_ANZST3]),
+				"unit": "ct"
 			    },
 			    {
 				"element": "Edelstein",
 				"material": get_field(cells[ART_BEZ4]),
-				"quality": get_field(cells[ART_QUA4]),
+				"quality": "{0}-{1}".format(get_field(cells[ART_QUA4]), get_field(cells[ART_QU14])),
 				"weight": get_field(cells[ART_GEW]),
-				"count": get_field(cells[ART_ANZST4])
+				"count": get_field(cells[ART_ANZST4]),
+				"unit": "ct"
 			    }
 			]			
 		    })

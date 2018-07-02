@@ -66,6 +66,7 @@ def import_items(filename):
 	cells = rows[i].split(CELL_SEPARATOR)
 
 	if len(cells) > 1:
+	    print("Cells: {0}".format(len(cells)))
 	    # check if item exists
 	    print("Checking " + get_field(cells[ART_NR]))
 	    update = False
@@ -75,7 +76,12 @@ def import_items(filename):
 		update = True
 	    except:
 		# find supplier
-		supplier = frappe.get_all('Supplier', filters={'supplier_number': get_field(cells[ART_LIE_COD2])}, fields=['name'])	
+		suppliers = frappe.get_all('Supplier', filters={'supplier_number': get_field(cells[ART_LIE_COD2])}, fields=['name'])	
+		if suppliers:
+			supplier = suppliers[0]['name']
+		else:
+			print("Supplier {0} not found".format(get_field(cells[ART_LIE_COD2])))
+			supplier = None
 		# create record
 		doc = frappe.get_doc(
 		    {
@@ -83,10 +89,10 @@ def import_items(filename):
 			"item_code": get_field(cells[ART_NR]),
 			"item_name": get_field(cells[ART_BEZ]),
 			"item_group": get_field(cells[ART_NR2]),
-			"default_supplier": supplier[0]['name'],
+			"default_supplier": supplier,
 			"supplier_items": [
 			    {
-				"supplier": supplier[0]['name'],
+				"supplier": supplier,
 				"supplier_part_no": get_field(cells[ART_BEST_NR])
 			    }	
 			],
@@ -146,6 +152,7 @@ def import_items(filename):
 			]			
 		    })
 		# insert record
+		print("{0}".format(doc.item_group))
 		doc.insert()
 		print("Inserted " + get_field(cells[ART_NR]))
     return

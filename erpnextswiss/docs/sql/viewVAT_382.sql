@@ -1,4 +1,4 @@
-CREATE VIEW `viewVAT_381` AS
+CREATE VIEW `viewVAT_382` AS
     SELECT 
         `tabPurchase Invoice`.`posting_date` AS `posting_date`,
         `tabPurchase Invoice`.`name` AS `name`,
@@ -9,4 +9,4 @@ CREATE VIEW `viewVAT_381` AS
         `tabPurchase Invoice`
     WHERE
         ((`tabPurchase Invoice`.`docstatus` = 1)
-            AND (`tabPurchase Invoice`.`taxes_and_charges` LIKE '%381%'))
+            AND (`tabPurchase Invoice`.`taxes_and_charges` LIKE '%382%'))

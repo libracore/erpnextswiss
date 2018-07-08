@@ -60,15 +60,15 @@ function get_values(frm) {
     get_total(frm, "viewVAT_235", 'losses');
     // Tax calculation
     if (frm.doc.vat_type == "effective") {
-        get_total(frm, "viewVAT_301", 'normal_amount');
-        get_total(frm, "viewVAT_311", 'reduced_amount');
-        get_total(frm, "viewVAT_341", 'lodging_amount');
+        get_total(frm, "viewVAT_302", 'normal_amount');
+        get_total(frm, "viewVAT_312", 'reduced_amount');
+        get_total(frm, "viewVAT_342", 'lodging_amount');
     }
     else {
-        get_total(frm, "viewVAT_321", 'amount_1');
-        get_total(frm, "viewVAT_331", 'amount_2');
+        get_total(frm, "viewVAT_322", 'amount_1');
+        get_total(frm, "viewVAT_332", 'amount_2');
     }
-    get_total(frm, "viewVAT_381", 'additional_amount');
+    get_total(frm, "viewVAT_382", 'additional_amount');
     // Pretaxes
     if (frm.doc.vat_type == "effective") {
         get_tax(frm, "viewVAT_400", 'pretax_material');

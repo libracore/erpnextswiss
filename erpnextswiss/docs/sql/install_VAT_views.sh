@@ -10,12 +10,12 @@ if [ "$1" != "" ]
     mysql "$1" < viewVAT_225.sql
     mysql "$1" < viewVAT_230.sql
     mysql "$1" < viewVAT_235.sql
-    mysql "$1" < viewVAT_301.sql
-    mysql "$1" < viewVAT_311.sql   
-    mysql "$1" < viewVAT_321.sql
-    mysql "$1" < viewVAT_331.sql
-    mysql "$1" < viewVAT_341.sql
-    mysql "$1" < viewVAT_381.sql
+    mysql "$1" < viewVAT_302.sql
+    mysql "$1" < viewVAT_312.sql   
+    mysql "$1" < viewVAT_322.sql
+    mysql "$1" < viewVAT_332.sql
+    mysql "$1" < viewVAT_342.sql
+    mysql "$1" < viewVAT_382.sql
     mysql "$1" < viewVAT_400.sql                     
     mysql "$1" < viewVAT_405.sql    
   else

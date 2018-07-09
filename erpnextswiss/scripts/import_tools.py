@@ -4,6 +4,8 @@
 #
 # Execute with 
 #    $ bench execute erpnextswiss.scripts.import_tools.import_items --args "['filename']"
+#    $ bench execute erpnextswiss.scripts.import_tools.correct_weights --args "['filename']"
+#    $ bench execute erpnextswiss.scripts.import_tools.load_images --args "['filename']"
 
 # import definitions
 from __future__ import unicode_literals
@@ -360,3 +362,42 @@ def read_length():
 			doc.save()
 			print("Updated {0} with {1} cm".format(match['parent'], match['count']))
 	return
+
+# load images from image link file
+def load_images(filename):
+    ITEM_CODE = None
+    URL = None
+    # read input file
+    file = open(filename, "rU")
+    data = file.read().decode('utf-8')
+    rows = data.split(ROW_SEPARATOR)
+    print("Rows: {0}".format(len(rows)))
+    # find column definition
+    cells = rows[0].split(CELL_SEPARATOR)
+    for c in range(0, len(cells)):
+        print(get_field(cells[c]).lower())
+        if get_field(cells[c]).lower() == "item code":
+            ITEM_CODE = c
+        elif get_field(cells[c]).lower() == "url":
+            URL = c
+    if ITEM_CODE is None:
+        print("ERROR: column 'item code' not found!")
+        return
+    if URL is None:
+        print("ERROR: column 'url' not found!")
+        return
+
+    for i in range(1, len(rows)):
+        cells = rows[i].split(CELL_SEPARATOR)
+
+        if len(cells) > 1:
+            # check if item exists
+            print("Checking " + get_field(cells[ITEM_CODE]))
+            matches = frappe.get_all("Item Supplier", filters={'supplier_part_no': get_field(cells[ITEM_CODE])}, fields=['parent'])
+            if matches:
+                item = frappe.get_doc("Item", matches[0]['parent'])
+                item.image = get_field(cells[URL])
+                item.save()
+                print("Updated {0} ({1}) with {2}".format(get_field(cells[ITEM_CODE]),  matches[0]['parent'], get_field(cells[URL])))
+    return
+

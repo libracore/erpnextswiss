@@ -22,7 +22,19 @@ def create_pdf(label_printer, content):
 		'margin-left': '0mm',
 		'margin-right': '0mm' }
 
-	pdfkit.from_string(content, fname, options=options or {})
+	html_content = """
+	<!DOCTYPE html>
+	<html>
+	<head>
+		<meta charset="utf-8">
+	</head>
+	<body>
+		{content}
+	<body>
+	</html>
+	""".format(content=content)
+	
+	pdfkit.from_string(html_content, fname, options=options or {})
 	
 	with open(fname, "rb") as fileobj:
 		filedata = fileobj.read()

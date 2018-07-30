@@ -9,10 +9,9 @@ from erpnextswiss.erpnextswiss.page.bankimport.bankimport import create_referenc
 @frappe.whitelist()
 def get_open_sales_invoices():
     # get unpaid sales invoices
-    sql_query = ("SELECT `name`, `customer`, `base_grand_total`, `due_date` " +
+    sql_query = ("SELECT `name`, `customer`, `base_grand_total`, `outstanding_amount`, `due_date` " +
                 "FROM `tabSales Invoice` " +
-                "WHERE `docstatus` = 1 " + 
-                "AND `status` != 'Paid'")
+                "WHERE `docstatus` = 1 AND `outstanding_amount` > 0 ")
     unpaid_sales_invoices = frappe.db.sql(sql_query, as_dict=True)
     return {'unpaid_sales_invoices': unpaid_sales_invoices }
 

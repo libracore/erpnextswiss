@@ -23,7 +23,7 @@ def import_pincodes(content):
             isfirst = False;
             # loop through cells
             for i in range(0, len(element)):
-                field_index[element[i]] = i
+                field_index[element[i].lower()] = i
             continue
         # check if the pincode is already in the database
         db_pincodes = frappe.get_all("Pincode", 

@@ -4,21 +4,23 @@
 
   <div class="section-body">
     <div class="row">
-	  <div class="form-column col-sm-4">
-	    <p>{{ __("Time") }}</p>
-	  </div>
-	  
-	  <div class="form-column col-sm-4">
-
-	  </div>
-	  
-	  <div class="form-column col-sm-4">
+	<div class="form-column col-sm-4">
+	    <p>{{ __("Period") }}</p>
+	    <input type="date" id="start_date" name="start_date" />
+	    <label for="start">&nbsp;{{ __("to") }}&nbsp;</label>
+	    <input type="date" id="end_date" name="end_date" />
+	</div>
+	  	  
+	<div class="form-column col-sm-4">
 	    <p>{{ __("Create File") }}</p>
-        <button type="submit" class="btn btn-sm btn-primary btn-create-file">{{ __("Create File") }}</button>
-        <div class="waiting-gif hide"><img src="/assets/frappe/images/ui/ajax-loader.gif" /></div>
-	  </div>	  
+	    <button type="submit" class="btn btn-sm btn-primary btn-create-file">{{ __("Create File") }}</button>
+	    <div class="waiting-gif hide"><img src="/assets/frappe/images/ui/ajax-loader.gif" /></div>
+	</div>	  
     </div>
-	    
+
+    <div class="row">
+	<div class="form-column col-sm10" id="preview"><p>Preview</p></div>
+    </div>
   </div>
   
 </div>

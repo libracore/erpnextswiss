@@ -160,3 +160,4 @@ DocType: Pincode,Canton,Kanton
 DocType: Pincode,Canton Code,Kantonsabkürzung
 DocType: Pincode,Country Code,Länderabkürzung
 DocType: Pincode,Set,Setzen
+DocType: Pincode,Import Pincodes,Postleitzahlen einlesen

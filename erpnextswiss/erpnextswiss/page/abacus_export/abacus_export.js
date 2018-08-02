@@ -25,9 +25,7 @@ frappe.abacus_export = {
         
         // attach button handlers
         this.page.main.find(".btn-create-file").on('click', function() {
-            var me = frappe.abacus_export;
-
-
+            frappe.abacus_export.create_transfer_file();
         });
     },
     run: function() {

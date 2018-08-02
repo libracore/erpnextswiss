@@ -1,0 +1,25 @@
+{
+ "creation": "2018-08-02 10:30:01.614045", 
+ "docstatus": 0, 
+ "doctype": "Page", 
+ "idx": 0, 
+ "icon": "octicon octicon-git-compare",
+ "modified": "2018-08-02 11:05:01.983200", 
+ "modified_by": "Administrator", 
+ "module": "erpnextswiss", 
+ "name": "abacus_export", 
+ "owner": "Administrator", 
+ "page_name": "abacus_export", 
+ "roles": [
+  {
+   "role": "Accounts User"
+  }, 
+  {
+   "role": "System Manager"
+  }
+ ], 
+ "script": null, 
+ "standard": "Yes", 
+ "style": null, 
+ "title": "Abacus Export"
+}

@@ -161,3 +161,9 @@ DocType: Pincode,Canton Code,Kantonsabkürzung
 DocType: Pincode,Country Code,Länderabkürzung
 DocType: Pincode,Set,Setzen
 DocType: Pincode,Import Pincodes,Postleitzahlen einlesen
+Page: abacus_export,Abacus Export,Abacus Transferdatei
+Page: abacus_export,Export General Ledger to an Abacus transfer file,Exportiert Transaktionen in eine Abacus Transferdatei
+Page: abacus_export,to,bis
+Page: abacus_export,Create File,Datei erstellen
+Page: abacus_export,more records available (not shown),es gibt weitere Einträge (nicht angezeigt)
+Page: abacus_export,No general ledger entries found.,Keine Transaktionen gefunden.

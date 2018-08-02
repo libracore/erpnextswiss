@@ -4,5 +4,8 @@
 frappe.ui.form.on('Pincode', {
 	refresh: function(frm) {
 
-	}
+	},
+    validate: function(frm) {
+        cur_frm.set_value('title', frm.doc.country_code + "-" + frm.doc.city);
+    }
 });

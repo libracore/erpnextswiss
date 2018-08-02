@@ -156,3 +156,7 @@ DocType: Salary Certificate,15 Remarks,15. Bemerkungen
 DocType: Label Printer,Label Printer,Etikettendrucker
 DocType: Label Printer,Create Test PDF,Test-PDF erstellen
 DocType: Label Printer,Create Label,Etikett erstellen
+DocType: Pincode,Canton,Kanton
+DocType: Pincode,Canton Code,Kantonsabkürzung
+DocType: Pincode,Country Code,Länderabkürzung
+DocType: Pincode,Set,Setzen

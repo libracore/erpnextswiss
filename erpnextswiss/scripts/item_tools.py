@@ -1,7 +1,8 @@
+# -*- coding: utf-8 -*-
 #
 # item_tools.py
 #
-# Copyright (C) libracore, 2017
+# Copyright (C) libracore, 2017-2018
 # https://www.libracore.com or https://github.com/libracore
 #
 # For information on ERPNext, refer to https://erpnext.org/
@@ -35,7 +36,7 @@ def get_next_item_code(start_value="1"):
     
 @frappe.whitelist()
 def get_voucher_value(voucher_code, customer):
-    sql_query = """SELECT 
+    sql_query = u"""SELECT 
                     (IFNULL(SUM(`qty` * `base_rate`), 0)) AS `value`
                 FROM `tabSales Invoice Item` 
                 WHERE 

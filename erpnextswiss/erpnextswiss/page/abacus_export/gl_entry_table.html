@@ -1,0 +1,22 @@
+<table class="table">
+  <thead class="thead-light">
+    <tr>
+        <th scope="col">{{ __("Date") }}</th>
+        <th scope="col">{{ __("Document") }}</th>
+        <th scope="col">{{ __("Account") }}</th>
+        <th scope="col">{{ __("Debit") }}</th>
+        <th scope="col">{{ __("Credit") }}</th>
+    </tr>
+  </thead>
+    {% for m in message %}
+    <tr>
+        <td>{{ m.posting_date }}</td>
+        <td><a href="/desk#Form/{{ m.voucher_type }}/{{ m.voucher_no }}">{{ m.voucher_no }}</a></td>
+        <td>{{ m.account }}</td>
+        <td>{{ m.debit }}</td>
+        <td>{{ m.credit }}</td>
+    </tr>
+    {% endfor %}    
+
+</table>
+

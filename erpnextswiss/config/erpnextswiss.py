@@ -57,16 +57,28 @@ def get_data():
             "items": [
                    {
                        "type": "doctype",
-                       "name": "ERPNextSwiss VAT configuration",
-                       "label": _("VAT configuration"),
-                       "description": _("VAT configuration")
-                   },
-                   {
-                       "type": "doctype",
                        "name": "Label Printer",
                        "label": _("Label Printer"),
                        "description": _("Label Printer")                   
-                   }
+                   },
+                   {
+                       "type": "doctype",
+                       "name": "Pincode",
+                       "label": _("Pincode"),
+                       "description": _("Pincode")                   
+                   }                   
             ]
-        }
+        },
+        {
+            "label": _("Integrations"),
+            "icon": "octicon octicon-git-compare",
+            "items": [
+                   {
+                       "type": "page",
+                       "name": "abacus_export",
+                       "label": _("Abacus Export"),
+                       "description": _("Abacus Export")                   
+                   }                   
+            ]
+        },
     ]

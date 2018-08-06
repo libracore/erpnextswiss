@@ -11,7 +11,7 @@ import time
 def get_payments():
     payments = frappe.get_list('Payment Entry', 
         filters={'docstatus': 0, 'payment_type': 'Pay'}, 
-        fields=['name', 'posting_date', 'paid_amount', 'party', 'paid_from', 'paid_from_account_currency'], 
+        fields=['name', 'posting_date', 'paid_amount', 'party', 'paid_from', 'paid_to_account_currency'], 
         order_by='posting_date')
     
     return { 'payments': payments }

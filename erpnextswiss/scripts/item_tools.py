@@ -1,7 +1,8 @@
+# -*- coding: utf-8 -*-
 #
 # item_tools.py
 #
-# Copyright (C) libracore, 2017
+# Copyright (C) libracore, 2017-2018
 # https://www.libracore.com or https://github.com/libracore
 #
 # For information on ERPNext, refer to https://erpnext.org/
@@ -32,3 +33,17 @@ def get_next_item_code(start_value="1"):
 		
 	#if its the first item, return start value
 	return start_value
+    
+@frappe.whitelist()
+def get_voucher_value(voucher_code, customer):
+    sql_query = u"""SELECT 
+                    (IFNULL(SUM(`qty` * `base_rate`), 0)) AS `value`
+                FROM `tabSales Invoice Item` 
+                WHERE 
+                    `item_code` = '{voucher}'
+                    AND `parent` IN (SELECT `name` FROM `tabSales Invoice` WHERE `docstatus` = 1 AND `customer` = '{customer}');""".format(voucher=voucher_code,customer=customer)
+    value = frappe.db.sql(sql_query, as_dict=True)
+    if value:
+        return { 'value': value[0].value }
+    else:
+        return { 'value': 0 }

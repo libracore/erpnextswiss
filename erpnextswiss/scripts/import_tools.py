@@ -427,13 +427,13 @@ def import_pinv(filename):
                }],
                'discount_amount': float(cells[3]),
             })
-            try:
-                new_pinv.insert()
-                new_pinv.submit()
-                frappe.db.commit()
-                print("Inserted {0}".format(cells[4]))
-            except:
-                print("Error on item {0}".format(cells[4]))
+            #try:
+            new_pinv.insert()
+            new_pinv.submit()
+            frappe.db.commit()
+            print("Inserted {0}".format(cells[4]))
+            #except:
+            #    print("Error on item {0}".format(cells[4]))
     file.close()
     return
 
@@ -453,6 +453,7 @@ def import_sinv(filename):
                'doctype': 'Sales Invoice',
                'naming_series': cells[0],
                'posting_date': cells[1],
+               'due_date': cells[1],
                'set_posting_time': 1,
                'company': cells[2],
                'currency': cells[3],
@@ -462,19 +463,20 @@ def import_sinv(filename):
                'plc_conversion_rate': cells[7],
                'base_net_total': float(cells[8]),
                'items': [{
-                  'item_code': cells[4],
-                  'qty': cells[5],
-                  'rate': cells[6]
+                  'item_code': cells[9],
+                  'qty': cells[10],
+                  'rate': cells[11]
                }],
                'discount_amount': float(cells[8]),
+               'debit_to': '1050 - Debitoren - MU'
             })
-            try:
-                new_sinv.insert()
-                new_sinv.submit()
-                frappe.db.commit()
-                print("Inserted {0}".format(cells[4]))
-            except:
-                print("Error on item {0}".format(cells[4]))
+            #try:
+            new_sinv.insert()
+            new_sinv.submit()
+            frappe.db.commit()
+            print("Inserted {0}".format(cells[9]))
+            #except:
+            #    print("Error on item {0}".format(cells[9]))
     file.close()
     return
 

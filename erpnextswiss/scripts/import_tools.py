@@ -401,3 +401,80 @@ def load_images(filename):
                 print("Updated {0} ({1}) with {2}".format(get_field(cells[ITEM_CODE]),  matches[0]['parent'], get_field(cells[URL])))
     return
 
+def import_pinv(filename):
+    # read input file
+    file = open(filename, "rU")
+    data = file.read().decode('utf-8')
+    rows = data.split(ROW_SEPARATOR)
+    print("Rows: {0}".format(len(rows)))
+    for i in range(1, len(rows)):
+        #print(row)
+        cells = rows[i].split(";")
+
+        if len(cells) > 1:
+            print("Cells: {0}".format(len(cells)))
+            new_pinv = frappe.get_doc({
+               'doctype': 'Purchase Invoice',
+               'naming_series': cells[0],
+               'posting_date': cells[1],
+               'set_posting_time': 1,
+               'company': cells[2],
+               'total': cells[3],
+               'items': [{
+                  'item_code': cells[4],
+                  'qty': cells[5],
+                  'rate': cells[6]
+               }],
+               'discount_amount': float(cells[3]),
+            })
+            try:
+                new_pinv.insert()
+                new_pinv.submit()
+                frappe.db.commit()
+                print("Inserted {0}".format(cells[4]))
+            except:
+                print("Error on item {0}".format(cells[4]))
+    file.close()
+    return
+
+def import_sinv(filename):
+    # read input file
+    file = open(filename, "rU")
+    data = file.read().decode('utf-8')
+    rows = data.split(ROW_SEPARATOR)
+    print("Rows: {0}".format(len(rows)))
+    for i in range(1, len(rows)):
+        #print(row)
+        cells = rows[i].split(";")
+
+        if len(cells) > 1:
+            print("Cells: {0}".format(len(cells)))
+            new_sinv = frappe.get_doc({
+               'doctype': 'Sales Invoice',
+               'naming_series': cells[0],
+               'posting_date': cells[1],
+               'set_posting_time': 1,
+               'company': cells[2],
+               'currency': cells[3],
+               'conversion_rate': cells[4],
+               'selling_price_list': cells[5],
+               'price_list_currency': cells[6],
+               'plc_conversion_rate': cells[7],
+               'base_net_total': float(cells[8]),
+               'items': [{
+                  'item_code': cells[4],
+                  'qty': cells[5],
+                  'rate': cells[6]
+               }],
+               'discount_amount': float(cells[8]),
+            })
+            try:
+                new_sinv.insert()
+                new_sinv.submit()
+                frappe.db.commit()
+                print("Inserted {0}".format(cells[4]))
+            except:
+                print("Error on item {0}".format(cells[4]))
+    file.close()
+    return
+

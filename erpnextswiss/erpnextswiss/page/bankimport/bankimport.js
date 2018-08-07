@@ -38,6 +38,8 @@ frappe.bankimport = {
 			// get selected option
 			//var auto_submit = document.getElementById("auto_submit").checked;
 			var auto_submit = false;
+            // get format type
+            var format = document.getElementById("format").value;
             
 			// read the file 
 			var file = document.getElementById("input_file").files[0];
@@ -48,35 +50,68 @@ frappe.bankimport = {
 				// assign load event to process the file
 				reader.onload = function (event) {
 					// enable waiting gif
-					page.main.find(".waiting-gif").removeClass("hide");
-					
+					//page.main.find(".waiting-gif").removeClass("hide");
+					frappe.bankimport.start_wait();
+                    
 					// read file content
 					content = event.target.result;
-
-					// call bankimport method with file content
-					frappe.call({
-						method: 'erpnextswiss.erpnextswiss.page.bankimport.bankimport.parse_file',
-						args: {
-							content: content,
-							bank: bank,
-							account: account,
-							auto_submit: auto_submit
-						},
-						callback: function(r) {
-							if (r.message) {
-								var parent = page.main.find(".insert-log-messages").empty();
-								$('<p>' + __(r.message.message) + '</p>').appendTo(parent);
-								frappe.msgprint(__(r.message.message));
-								for (var i = 0; i < r.message.records.length; i++) {
-									$('<p><a href="/desk#Form/Payment Entry/'
-									  + r.message.records[i] + '">' 
-									  + r.message.records[i] + '</a></p>').appendTo(parent);
-								}
-								// disable waiting gif
-								page.main.find(".waiting-gif").addClass("hide");
-							} 
-						}
-					}); 
+                    
+                    if (format == "csv") {
+                        // call bankimport method with file content
+                        frappe.call({
+                            method: 'erpnextswiss.erpnextswiss.page.bankimport.bankimport.parse_file',
+                            args: {
+                                content: content,
+                                bank: bank,
+                                account: account,
+                                auto_submit: auto_submit
+                            },
+                            callback: function(r) {
+                                if (r.message) {
+                                    var parent = page.main.find(".insert-log-messages").empty();
+                                    $('<p>' + __(r.message.message) + '</p>').appendTo(parent);
+                                    frappe.msgprint(__(r.message.message));
+                                    for (var i = 0; i < r.message.records.length; i++) {
+                                        $('<p><a href="/desk#Form/Payment Entry/'
+                                          + r.message.records[i] + '">' 
+                                          + r.message.records[i] + '</a></p>').appendTo(parent);
+                                    }
+                                    // disable waiting gif
+                                    //page.main.find(".waiting-gif").addClass("hide");
+                                    frappe.bankimport.end_wait();
+                                } 
+                            }
+                        }); 
+                    } 
+                    else if (format == "camt054") {
+                        // call bankimport method with file content
+                        frappe.call({
+                            method: 'erpnextswiss.erpnextswiss.page.bankimport.bankimport.read_camt054',
+                            args: {
+                                content: content,
+                                bank: bank,
+                                account: account,
+                                auto_submit: auto_submit
+                            },
+                            callback: function(r) {
+                                if (r.message) {
+                                    var parent = page.main.find(".insert-log-messages").empty();
+                                    $('<p>' + __(r.message.message) + '</p>').appendTo(parent);
+                                    frappe.msgprint(__(r.message.message));
+                                    for (var i = 0; i < r.message.records.length; i++) {
+                                        $('<p><a href="/desk#Form/Payment Entry/'
+                                          + r.message.records[i] + '">' 
+                                          + r.message.records[i] + '</a></p>').appendTo(parent);
+                                    }
+                                    // disable waiting gif
+                                    //page.main.find(".waiting-gif").addClass("hide");
+                                    frappe.bankimport.end_wait();
+                                } 
+                            }
+                        });
+                    } else {
+                        frappe.msgprint("Unknown format. Please contact your system manager");
+                    }
 				}
 				// assign an error handler event
 				reader.onerror = function (event) {
@@ -110,5 +145,11 @@ frappe.bankimport = {
 				} 
 			}
 		}); 
-	}
+	},
+    start_wait: function() {
+        document.getElementById("waitingScreen").style.display = "block";
+    },
+    end_wait: function() {
+    document.getElementById("waitingScreen").style.display = "none";
+}
 }

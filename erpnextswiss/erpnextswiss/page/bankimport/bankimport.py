@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe import throw, _
 import hashlib
+import xmltodict
 
 def parse_ubs(content, account, auto_submit=False):
     # parse a ubs bank extract csv
@@ -340,6 +341,30 @@ def get_unpaid_sales_invoices_by_customer(customer):
     open_sales_invoices = frappe.db.sql(sql_query, as_dict=True)
     return open_sales_invoices   
 
+# create a payment entry
+def create_payment_entry(date, to_account, received_amount, transaction_id, remarks, auto_submit=False):
+    if not frappe.db.exists('Payment Entry', {'reference_no': transaction_id}):
+        # create new payment entry
+        new_payment_entry = frappe.get_doc({'doctype': 'Payment Entry'})
+        new_payment_entry.payment_type = "Receive"
+        new_payment_entry.party_type = "Customer";
+        new_payment_entry.party = "Guest"
+        # date is in DD.MM.YYYY
+        new_payment_entry.posting_date = date
+        new_payment_entry.paid_to = to_account
+        new_payment_entry.received_amount = received_amount
+        new_payment_entry.paid_amount = received_amount
+        new_payment_entry.reference_no = transaction_id
+        new_payment_entry.reference_date = date
+        new_payment_entry.remarks = remarks
+        inserted_payment_entry = new_payment_entry.insert()
+        if auto_submit:
+            new_payment_entry.submit()
+        frappe.db.commit()
+        return inserted_payment_entry
+    else:
+        return None
+    
 # creates the reference record in a payment entry
 def create_reference(payment_entry, sales_invoice):
     # create a new payment entry reference
@@ -415,3 +440,86 @@ def get_bank_accounts():
     
     # frappe.throw(selectable_accounts)
     return {'accounts': selectable_accounts }
+
+@frappe.whitelist()
+def read_camt054(content, bank, account, auto_submit=False):
+    doc = xmltodict.parse(content)
+    new_payment_entries = []
+    # general information
+    iban = doc['Document']['BkToCstmrDbtCdtNtfctn']['Ntfctn']['Acct']['Id']['IBAN']
+    # transactions
+    for entry in doc['Document']['BkToCstmrDbtCdtNtfctn']['Ntfctn']['Ntry']:
+        date = entry['BookgDt']['Dt']
+        for transaction in entry['NtryDtls']['TxDtls']:
+            unique_reference = transaction['Refs']['AcctSvcrRef']
+            amount = float(transaction['Amt']['#text'])
+            currency = transaction['Amt']['@Ccy']
+            try:
+                customer = transaction['RltdPties']['Dbtr']
+                customer_name = customer['Nm']
+                try:
+                    street = customer['PstlAdr']['StrtNm']
+                    try:
+                        street_number = customer['PstlAdr']['BldgNb']
+                        address_line = "{0} {1}".format(street, street_number)
+                    except:
+                        address_line = street
+                        
+                except:
+                    address_line = ""
+                try:
+                    plz = customer['PstlAdr']['PstCd']
+                except:
+                    plz = ""
+                try:
+                    town = customer['PstlAdr']['TwnNm']
+                except:
+                    town = ""
+                try:
+                    country = customer['PstlAdr']['Ctry']
+                except:
+                    country = ""
+                customer_address = "{0}, {1} {2}, {3}".format(
+                    address_line,
+                    plz,
+                    town,
+                    country)
+                try:
+                    customer_iban = transaction['RltdPties']['DbtrAcct']['Id']['IBAN']
+                except:
+                    customer_iban = ""
+            except:
+                # key related parties not found / no customer info
+                customer_name = "Postschalter"
+                customer_address = ""
+                customer_iban = ""
+            try:
+                charges = float(transaction['Chrgs']['TtlChrgsAndTaxAmt']['#text'])
+            except:
+                charges = 0.0
+            # paid or received: (DBIT: paid, CRDT: received)
+            credit_debit = transaction['CdtDbtInd']
+            try:
+                # try to find ESR reference
+                transaction_reference = transaction['RmtInf']['Strd']['CdtrRefInf']['Ref']
+            except:
+                try:
+                    # try to find a user-defined reference (e.g. SINV.)
+                    transaction_reference = transaction['RmtInf']['Ustrd']
+                except:
+                    try:
+                        # try to find an end-to-end ID
+                        transaction_reference = transaction['Refs']['EndToEndId']
+                    except:
+                        transaction_reference = unique_reference
+            if credit_debit == "CRDT":
+                inserted_payment_entry = create_payment_entry(date=date, to_account=account, received_amount=amount, 
+                    transaction_id=unique_reference, remarks="ESR: {0}, {1}, {2}, IBAN: {3}".format(
+                    transaction_reference, customer_name, customer_address, customer_iban), 
+                    auto_submit=False)
+                if inserted_payment_entry:
+                    new_payment_entries.append(inserted_payment_entry.name)
+                
+    message = _("Successfully imported {0} payments.".format(len(new_payment_entries)))
+    
+    return { "message": message, "records": new_payment_entries } 

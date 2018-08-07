@@ -50,7 +50,6 @@ frappe.bankimport = {
 				// assign load event to process the file
 				reader.onload = function (event) {
 					// enable waiting gif
-					//page.main.find(".waiting-gif").removeClass("hide");
 					frappe.bankimport.start_wait();
                     
 					// read file content
@@ -68,17 +67,7 @@ frappe.bankimport = {
                             },
                             callback: function(r) {
                                 if (r.message) {
-                                    var parent = page.main.find(".insert-log-messages").empty();
-                                    $('<p>' + __(r.message.message) + '</p>').appendTo(parent);
-                                    frappe.msgprint(__(r.message.message));
-                                    for (var i = 0; i < r.message.records.length; i++) {
-                                        $('<p><a href="/desk#Form/Payment Entry/'
-                                          + r.message.records[i] + '">' 
-                                          + r.message.records[i] + '</a></p>').appendTo(parent);
-                                    }
-                                    // disable waiting gif
-                                    //page.main.find(".waiting-gif").addClass("hide");
-                                    frappe.bankimport.end_wait();
+                                    frappe.bankimport.render_response(page, r.message);
                                 } 
                             }
                         }); 
@@ -95,17 +84,24 @@ frappe.bankimport = {
                             },
                             callback: function(r) {
                                 if (r.message) {
-                                    var parent = page.main.find(".insert-log-messages").empty();
-                                    $('<p>' + __(r.message.message) + '</p>').appendTo(parent);
-                                    frappe.msgprint(__(r.message.message));
-                                    for (var i = 0; i < r.message.records.length; i++) {
-                                        $('<p><a href="/desk#Form/Payment Entry/'
-                                          + r.message.records[i] + '">' 
-                                          + r.message.records[i] + '</a></p>').appendTo(parent);
-                                    }
-                                    // disable waiting gif
-                                    //page.main.find(".waiting-gif").addClass("hide");
-                                    frappe.bankimport.end_wait();
+                                    frappe.bankimport.render_response(page, r.message);
+                                } 
+                            }
+                        });
+                    }
+                    else if (format == "camt053") {
+                        // call bankimport method with file content
+                        frappe.call({
+                            method: 'erpnextswiss.erpnextswiss.page.bankimport.bankimport.read_camt053',
+                            args: {
+                                content: content,
+                                bank: bank,
+                                account: account,
+                                auto_submit: auto_submit
+                            },
+                            callback: function(r) {
+                                if (r.message) {
+                                    frappe.bankimport.render_response(page, r.message);
                                 } 
                             }
                         });
@@ -150,6 +146,20 @@ frappe.bankimport = {
         document.getElementById("waitingScreen").style.display = "block";
     },
     end_wait: function() {
-    document.getElementById("waitingScreen").style.display = "none";
-}
+        document.getElementById("waitingScreen").style.display = "none";
+    },
+    render_response: function(page, message) {
+        // disable waiting gif
+        frappe.bankimport.end_wait();
+        var parent = page.main.find(".insert-log-messages").empty();
+        $('<p>' + __(message.message) + '</p>').appendTo(parent);
+        frappe.msgprint(__(message.message));
+        if (message.records) {
+            for (var i = 0; i < message.records.length; i++) {
+                $('<p><a href="/desk#Form/Payment Entry/'
+                  + message.records[i] + '">' 
+                  + message.records[i] + '</a></p>').appendTo(parent);
+            }
+        }
+    }
 }

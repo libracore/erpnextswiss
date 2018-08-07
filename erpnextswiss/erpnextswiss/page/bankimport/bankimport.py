@@ -442,15 +442,52 @@ def get_bank_accounts():
     return {'accounts': selectable_accounts }
 
 @frappe.whitelist()
+def read_camt053(content, bank, account, auto_submit=False):
+    doc = xmltodict.parse(content)
+    
+    # general information
+    try:
+        iban = doc['Document']['BkToCstmrStmt']['Stmt']['Acct']['Id']['IBAN']
+    except:
+        # node not found, probably wrong format
+        return { "message": _("Unable to read structure. Please make sure that you have selected the correct format."), "records": None }
+            
+    # transactions
+    new_payment_entries = read_camt_transactions(doc['Document']['BkToCstmrStmt']['Stmt']['Ntry'], bank, account, auto_submit)
+                
+    message = _("Successfully imported {0} payments.".format(len(new_payment_entries)))
+    
+    return { "message": message, "records": new_payment_entries } 
+    
+@frappe.whitelist()
 def read_camt054(content, bank, account, auto_submit=False):
     doc = xmltodict.parse(content)
-    new_payment_entries = []
+    
     # general information
-    iban = doc['Document']['BkToCstmrDbtCdtNtfctn']['Ntfctn']['Acct']['Id']['IBAN']
+    try:
+        iban = doc['Document']['BkToCstmrDbtCdtNtfctn']['Ntfctn']['Acct']['Id']['IBAN']
+    except:
+        # node not found, probably wrong format
+        return { "message": _("Unable to read structure. Please make sure that you have selected the correct format."), "records": None }
+        
     # transactions
-    for entry in doc['Document']['BkToCstmrDbtCdtNtfctn']['Ntfctn']['Ntry']:
+    new_payment_entries = read_camt_transactions(doc['Document']['BkToCstmrDbtCdtNtfctn']['Ntfctn']['Ntry'], bank, account, auto_submit)
+                
+    message = _("Successfully imported {0} payments.".format(len(new_payment_entries)))
+    
+    return { "message": message, "records": new_payment_entries } 
+
+def read_camt_transactions(transaction_entries, bank, account, auto_submit=False):
+    new_payment_entries = []
+    for entry in transaction_entries:
         date = entry['BookgDt']['Dt']
         for transaction in entry['NtryDtls']['TxDtls']:
+            #frappe.throw(str(type(transaction)))
+            #for k,v in transaction.iteritems():
+            #    if k == 'Refs':
+            #        for k2,v2 in v.iteritems():
+            #            if k2 == 'AcctSvcrRef':
+            #                unique_reference = v2
             unique_reference = transaction['Refs']['AcctSvcrRef']
             amount = float(transaction['Amt']['#text'])
             currency = transaction['Amt']['@Ccy']
@@ -519,7 +556,4 @@ def read_camt054(content, bank, account, auto_submit=False):
                     auto_submit=False)
                 if inserted_payment_entry:
                     new_payment_entries.append(inserted_payment_entry.name)
-                
-    message = _("Successfully imported {0} payments.".format(len(new_payment_entries)))
-    
-    return { "message": message, "records": new_payment_entries } 
+    return new_payment_entries

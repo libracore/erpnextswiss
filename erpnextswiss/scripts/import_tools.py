@@ -11,6 +11,13 @@
 from __future__ import unicode_literals
 import frappe
 
+# color config
+BLUE = '\033[94m'
+GREEN = '\033[92m'
+WARNING = '\033[93m'
+FAIL = '\033[91m'
+ENDC = '\033[0m'
+
 # Parser config
 ROW_SEPARATOR = "\n"
 CELL_SEPARATOR = "\t"
@@ -427,13 +434,13 @@ def import_pinv(filename):
                }],
                'discount_amount': float(cells[3]),
             })
-            #try:
-            new_pinv.insert()
-            new_pinv.submit()
-            frappe.db.commit()
-            print("Inserted {0}".format(cells[4]))
-            #except:
-            #    print("Error on item {0}".format(cells[4]))
+            try:
+                new_pinv.insert()
+                new_pinv.submit()
+                frappe.db.commit()
+                print("Inserted {0}".format(cells[4]))
+            except Exception as e:
+                print(FAIL + "Error on item {0} ({1})".format(cells[4], e) + ENDC)
     file.close()
     return
 
@@ -470,13 +477,13 @@ def import_sinv(filename):
                'discount_amount': float(cells[8]),
                'debit_to': '1050 - Debitoren - MU'
             })
-            #try:
-            new_sinv.insert()
-            new_sinv.submit()
-            frappe.db.commit()
-            print("Inserted {0}".format(cells[9]))
-            #except:
-            #    print("Error on item {0}".format(cells[9]))
+            try:
+                new_sinv.insert()
+                new_sinv.submit()
+                frappe.db.commit()
+                print("Inserted {0}".format(cells[9]))
+            except Exception as e:
+                print(FAIL + "Error on item {0} ({1})".format(cells[9], e) + ENDC)
     file.close()
     return
 

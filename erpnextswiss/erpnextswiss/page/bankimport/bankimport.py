@@ -455,14 +455,7 @@ def read_camt053(content, bank, account, auto_submit=False):
         return { "message": _("Unable to read structure. Please make sure that you have selected the correct format."), "records": None }
             
     # transactions
-    #new_payment_entries = read_camt_transactions(doc['Document']['BkToCstmrStmt']['Stmt']['Ntry'], bank, account, auto_submit)
-    new_payment_entries = []
-    for entry in doc['Document']['BkToCstmrStmt']['Stmt']['Ntry']:
-        frappe.msgprint(json.dumps(entry))
-        date = entry['BookgDt']['Dt']
-        for transaction in entry['NtryDtls']['TxDtls']:
-            unique_reference = transaction['Refs']['AcctSvcrRef']
-            frappe.msgprint("{0}:{1}".format(date, unique_reference))
+    new_payment_entries = read_camt_transactions(doc['Document']['BkToCstmrStmt']['Stmt']['Ntry'], bank, account, auto_submit)
                 
     message = _("Successfully imported {0} payments.".format(len(new_payment_entries)))
     

@@ -1,24 +1,36 @@
 <div style="margin: 5px; margin-top: 0px; border-top: 1px solid white; ">
-  <h3>{{ __("Match payments") }}</h3>
   <p class="text-muted">{{ __("Helps to match unpaid sales invoices against received payments") }}</p>
 
-  <h4>{{ __("Sales invoices") }}</h4>
-  <div class="sales-invoice-table">
-  
-  </div>  
-  
-  <h4>{{ __("Payment entries") }}</h4>
-  <div class="payment-table">
-  
-  </div>  
-  
   <h4>{{ __("Match") }}</h4>
   <div class="row">
-  	  <div class="form-column col-sm-4">
+  	  <div class="form-column col-sm-12">
         <button type="submit" class="btn btn-sm btn-primary btn-match">{{ __("Match") }}</button>
         <button type="submit" class="btn btn-sm btn-auto-match-id">{{ __("Auto match by ID") }}</button>
         <div class="waiting-gif hide"><img src="/assets/frappe/images/ui/ajax-loader.gif" /></div>
 	  </div>
       
   </div>
+  
+<div class="row" style="margin-right: 10px;">
+  <div class="col-sm-6">
+      <h4>{{ __("Sales invoices") }}</h4>
+      <div class="sales-invoice-table">
+      
+      </div>   
+  </div>
+  
+  <div class="col-sm-6">
+      <h4>{{ __("Payment entries") }}</h4>
+      <div class="payment-table">
+      
+      </div>    
+  </div>
+</div>
+
+<!-- use full browser width -->
+<style>
+.container {
+    width: 100% !important;
+}
+</style>
 </div>

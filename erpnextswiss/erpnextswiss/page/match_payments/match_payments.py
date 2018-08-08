@@ -9,19 +9,21 @@ from erpnextswiss.erpnextswiss.page.bankimport.bankimport import create_referenc
 @frappe.whitelist()
 def get_open_sales_invoices():
     # get unpaid sales invoices
-    sql_query = ("SELECT `name`, `customer`, `base_grand_total`, `outstanding_amount`, `due_date` " +
-                "FROM `tabSales Invoice` " +
-                "WHERE `docstatus` = 1 AND `outstanding_amount` > 0 ")
+    sql_query = ("""SELECT `name`, `customer`, `base_grand_total`, `outstanding_amount`, `due_date` 
+                FROM `tabSales Invoice` 
+                WHERE `docstatus` = 1 AND `outstanding_amount` > 0 
+                ORDER BY `due_date` ASC""")
     unpaid_sales_invoices = frappe.db.sql(sql_query, as_dict=True)
     return {'unpaid_sales_invoices': unpaid_sales_invoices }
 
 @frappe.whitelist()
 def get_unallocated_payment_entries():
     # get unallocated payment entries
-    sql_query = ("SELECT `name`, `party`, `paid_amount`, `posting_date`, `remarks` " +
-                "FROM `tabPayment Entry` " +
-                "WHERE `docstatus` = 0 " + 
-                "AND `payment_type` = 'Receive'")
+    sql_query = ("""SELECT `name`, `party`, `paid_amount`, `posting_date`, `remarks` 
+                FROM `tabPayment Entry` 
+                WHERE `docstatus` = 0  
+                  AND `payment_type` = 'Receive' 
+                ORDER BY `posting_date` ASC""")
     unallocated_payment_entries = frappe.db.sql(sql_query, as_dict=True)
     return {'unallocated_payment_entries': unallocated_payment_entries }
 

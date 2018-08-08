@@ -7,6 +7,7 @@ import frappe
 from frappe import throw, _
 import hashlib
 import xmltodict
+import json
 
 def parse_ubs(content, account, auto_submit=False):
     # parse a ubs bank extract csv
@@ -443,6 +444,7 @@ def get_bank_accounts():
 
 @frappe.whitelist()
 def read_camt053(content, bank, account, auto_submit=False):
+    #read_camt_transactions_re(content)
     doc = xmltodict.parse(content)
     
     # general information
@@ -453,7 +455,14 @@ def read_camt053(content, bank, account, auto_submit=False):
         return { "message": _("Unable to read structure. Please make sure that you have selected the correct format."), "records": None }
             
     # transactions
-    new_payment_entries = read_camt_transactions(doc['Document']['BkToCstmrStmt']['Stmt']['Ntry'], bank, account, auto_submit)
+    #new_payment_entries = read_camt_transactions(doc['Document']['BkToCstmrStmt']['Stmt']['Ntry'], bank, account, auto_submit)
+    new_payment_entries = []
+    for entry in doc['Document']['BkToCstmrStmt']['Stmt']['Ntry']:
+        frappe.msgprint(json.dumps(entry))
+        date = entry['BookgDt']['Dt']
+        for transaction in entry['NtryDtls']['TxDtls']:
+            unique_reference = transaction['Refs']['AcctSvcrRef']
+            frappe.msgprint("{0}:{1}".format(date, unique_reference))
                 
     message = _("Successfully imported {0} payments.".format(len(new_payment_entries)))
     
@@ -476,84 +485,82 @@ def read_camt054(content, bank, account, auto_submit=False):
     message = _("Successfully imported {0} payments.".format(len(new_payment_entries)))
     
     return { "message": message, "records": new_payment_entries } 
-
+    
 def read_camt_transactions(transaction_entries, bank, account, auto_submit=False):
     new_payment_entries = []
     for entry in transaction_entries:
         date = entry['BookgDt']['Dt']
         for transaction in entry['NtryDtls']['TxDtls']:
-            #frappe.throw(str(type(transaction)))
-            #for k,v in transaction.iteritems():
-            #    if k == 'Refs':
-            #        for k2,v2 in v.iteritems():
-            #            if k2 == 'AcctSvcrRef':
-            #                unique_reference = v2
-            unique_reference = transaction['Refs']['AcctSvcrRef']
-            amount = float(transaction['Amt']['#text'])
-            currency = transaction['Amt']['@Ccy']
             try:
-                customer = transaction['RltdPties']['Dbtr']
-                customer_name = customer['Nm']
+                unique_reference = transaction['Refs']['AcctSvcrRef']
+                amount = float(transaction['Amt']['#text'])
+                currency = transaction['Amt']['@Ccy']
                 try:
-                    street = customer['PstlAdr']['StrtNm']
+                    customer = transaction['RltdPties']['Dbtr']
+                    customer_name = customer['Nm']
                     try:
-                        street_number = customer['PstlAdr']['BldgNb']
-                        address_line = "{0} {1}".format(street, street_number)
+                        street = customer['PstlAdr']['StrtNm']
+                        try:
+                            street_number = customer['PstlAdr']['BldgNb']
+                            address_line = "{0} {1}".format(street, street_number)
+                        except:
+                            address_line = street
+                            
                     except:
-                        address_line = street
-                        
+                        address_line = ""
+                    try:
+                        plz = customer['PstlAdr']['PstCd']
+                    except:
+                        plz = ""
+                    try:
+                        town = customer['PstlAdr']['TwnNm']
+                    except:
+                        town = ""
+                    try:
+                        country = customer['PstlAdr']['Ctry']
+                    except:
+                        country = ""
+                    customer_address = "{0}, {1} {2}, {3}".format(
+                        address_line,
+                        plz,
+                        town,
+                        country)
+                    try:
+                        customer_iban = transaction['RltdPties']['DbtrAcct']['Id']['IBAN']
+                    except:
+                        customer_iban = ""
                 except:
-                    address_line = ""
-                try:
-                    plz = customer['PstlAdr']['PstCd']
-                except:
-                    plz = ""
-                try:
-                    town = customer['PstlAdr']['TwnNm']
-                except:
-                    town = ""
-                try:
-                    country = customer['PstlAdr']['Ctry']
-                except:
-                    country = ""
-                customer_address = "{0}, {1} {2}, {3}".format(
-                    address_line,
-                    plz,
-                    town,
-                    country)
-                try:
-                    customer_iban = transaction['RltdPties']['DbtrAcct']['Id']['IBAN']
-                except:
+                    # key related parties not found / no customer info
+                    customer_name = "Postschalter"
+                    customer_address = ""
                     customer_iban = ""
-            except:
-                # key related parties not found / no customer info
-                customer_name = "Postschalter"
-                customer_address = ""
-                customer_iban = ""
-            try:
-                charges = float(transaction['Chrgs']['TtlChrgsAndTaxAmt']['#text'])
-            except:
-                charges = 0.0
-            # paid or received: (DBIT: paid, CRDT: received)
-            credit_debit = transaction['CdtDbtInd']
-            try:
-                # try to find ESR reference
-                transaction_reference = transaction['RmtInf']['Strd']['CdtrRefInf']['Ref']
-            except:
                 try:
-                    # try to find a user-defined reference (e.g. SINV.)
-                    transaction_reference = transaction['RmtInf']['Ustrd']
+                    charges = float(transaction['Chrgs']['TtlChrgsAndTaxAmt']['#text'])
+                except:
+                    charges = 0.0
+                # paid or received: (DBIT: paid, CRDT: received)
+                credit_debit = transaction['CdtDbtInd']
+                try:
+                    # try to find ESR reference
+                    transaction_reference = transaction['RmtInf']['Strd']['CdtrRefInf']['Ref']
                 except:
                     try:
-                        # try to find an end-to-end ID
-                        transaction_reference = transaction['Refs']['EndToEndId']
+                        # try to find a user-defined reference (e.g. SINV.)
+                        transaction_reference = transaction['RmtInf']['Ustrd']
                     except:
-                        transaction_reference = unique_reference
-            if credit_debit == "CRDT":
-                inserted_payment_entry = create_payment_entry(date=date, to_account=account, received_amount=amount, 
-                    transaction_id=unique_reference, remarks="ESR: {0}, {1}, {2}, IBAN: {3}".format(
-                    transaction_reference, customer_name, customer_address, customer_iban), 
-                    auto_submit=False)
-                if inserted_payment_entry:
-                    new_payment_entries.append(inserted_payment_entry.name)
+                        try:
+                            # try to find an end-to-end ID
+                            transaction_reference = transaction['Refs']['EndToEndId']
+                        except:
+                            transaction_reference = unique_reference
+                if credit_debit == "CRDT":
+                    inserted_payment_entry = create_payment_entry(date=date, to_account=account, received_amount=amount, 
+                        transaction_id=unique_reference, remarks="ESR: {0}, {1}, {2}, IBAN: {3}".format(
+                        transaction_reference, customer_name, customer_address, customer_iban), 
+                        auto_submit=False)
+                    if inserted_payment_entry:
+                        new_payment_entries.append(inserted_payment_entry.name)
+            except Exception as e:
+                frappe.msgprint("Parsing error: {0}:{1}".format(str(transaction), e))
+                pass
     return new_payment_entries

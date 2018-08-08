@@ -19,6 +19,10 @@ Page: bankimport,Parse,Einlesen
 Page: bankimport,File,Datei
 Page: bankimport,Please select a file.,Bitte eine Datei wählen
 Page: bankimport,Error reading file,Fehler beim lesen der Datei
+Page: bankimport,Successfully imported {0} payments.,{0} Zahlugen erfolgreich importiert.
+Page: bankimport,CAMT.054 Transaction Notification,CAMT.054 Zahlungsinformationen
+Page: bankimport,CAMT.053 Bank Statement,CAMT.053 Kontoauszug
+Page: bankimport,Unable to read structure. Please make sure that you have selected the correct format.,"Struktur kann nicht gelesen werden. Bitte prüfen Sie, ob Sie das korrekte Format ausgewählt haben."
 Page: payment_export,Please select at least one payment.,Bitte mindestens eine Zahlung auswählen.
 Page: payment_export,No payment entries to be paid found with status draft,Es wurden keine Zahlungen mit Status Entwurf gefunden
 DocType: VAT Declaration,End,Ende

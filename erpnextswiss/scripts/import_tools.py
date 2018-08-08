@@ -11,6 +11,13 @@
 from __future__ import unicode_literals
 import frappe
 
+# color config
+BLUE = '\033[94m'
+GREEN = '\033[92m'
+WARNING = '\033[93m'
+FAIL = '\033[91m'
+ENDC = '\033[0m'
+
 # Parser config
 ROW_SEPARATOR = "\n"
 CELL_SEPARATOR = "\t"
@@ -399,5 +406,84 @@ def load_images(filename):
                 item.image = get_field(cells[URL])
                 item.save()
                 print("Updated {0} ({1}) with {2}".format(get_field(cells[ITEM_CODE]),  matches[0]['parent'], get_field(cells[URL])))
+    return
+
+def import_pinv(filename):
+    # read input file
+    file = open(filename, "rU")
+    data = file.read().decode('utf-8')
+    rows = data.split(ROW_SEPARATOR)
+    print("Rows: {0}".format(len(rows)))
+    for i in range(1, len(rows)):
+        #print(row)
+        cells = rows[i].split(";")
+
+        if len(cells) > 1:
+            print("Cells: {0}".format(len(cells)))
+            new_pinv = frappe.get_doc({
+               'doctype': 'Purchase Invoice',
+               'naming_series': cells[0],
+               'posting_date': cells[1],
+               'set_posting_time': 1,
+               'company': cells[2],
+               'total': cells[3],
+               'items': [{
+                  'item_code': cells[4],
+                  'qty': cells[5],
+                  'rate': cells[6]
+               }],
+               'discount_amount': float(cells[3]),
+            })
+            try:
+                new_pinv.insert()
+                new_pinv.submit()
+                frappe.db.commit()
+                print("Inserted {0}".format(cells[4]))
+            except Exception as e:
+                print(FAIL + "Error on item {0} ({1})".format(cells[4], e) + ENDC)
+    file.close()
+    return
+
+def import_sinv(filename):
+    # read input file
+    file = open(filename, "rU")
+    data = file.read().decode('utf-8')
+    rows = data.split(ROW_SEPARATOR)
+    print("Rows: {0}".format(len(rows)))
+    for i in range(1, len(rows)):
+        #print(row)
+        cells = rows[i].split(";")
+
+        if len(cells) > 1:
+            print("Cells: {0}".format(len(cells)))
+            new_sinv = frappe.get_doc({
+               'doctype': 'Sales Invoice',
+               'naming_series': cells[0],
+               'posting_date': cells[1],
+               'due_date': cells[1],
+               'set_posting_time': 1,
+               'company': cells[2],
+               'currency': cells[3],
+               'conversion_rate': cells[4],
+               'selling_price_list': cells[5],
+               'price_list_currency': cells[6],
+               'plc_conversion_rate': cells[7],
+               'base_net_total': float(cells[8]),
+               'items': [{
+                  'item_code': cells[9],
+                  'qty': cells[10],
+                  'rate': cells[11]
+               }],
+               'discount_amount': float(cells[8]),
+               'debit_to': '1050 - Debitoren - MU'
+            })
+            try:
+                new_sinv.insert()
+                new_sinv.submit()
+                frappe.db.commit()
+                print("Inserted {0}".format(cells[9]))
+            except Exception as e:
+                print(FAIL + "Error on item {0} ({1})".format(cells[9], e) + ENDC)
+    file.close()
     return
 

@@ -1,5 +1,8 @@
 {
     "js/swiss_common.js": [
         "public/js/swiss_common.js"
+    ],
+    "js/pos_swiss_extensions.js": [
+        "public/js/pos_swiss_extensions.js"
     ]
 }

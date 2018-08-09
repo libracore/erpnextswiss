@@ -24,6 +24,10 @@ app_include_js = "/assets/erpnextswiss/js/swiss_common.js"
 
 # include js in page
 # page_js = {"page" : "public/js/file.js"}
+page_js = {
+    "pos": "public/js/pos_swiss_extensions.js",
+    "point-of-sale": "public/js/pos_swiss_extensions.js"
+}
 
 # include js in doctype views
 # doctype_js = {"doctype" : "public/js/doctype.js"}

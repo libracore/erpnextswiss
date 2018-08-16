@@ -6,11 +6,19 @@ from __future__ import unicode_literals
 import frappe
 from frappe import throw, _
 
+# this function crops document names because Abacus only support 10 characters
+def get_abacus_docname(docname):
+    docname = docname.replace("SINV-", "SI")
+    docname = docname.replace("PINV-", "PI")
+    docname = docname.replace("PE-", "PE")
+    docname = docname.replace("JV-", "JV")
+    return docname
+    
 @frappe.whitelist()
 def generate_transfer_file(start_date, end_date):
     # creates a transfer file for abacus
 
-    #try:        
+    try:        
         # create xml header
         content = make_line("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
         # define xml root node
@@ -65,7 +73,7 @@ def generate_transfer_file(start_date, end_date):
             content += make_line("     <IntercompanyId>0</IntercompanyId>")
             content += make_line("     <IntercompanyCode></IntercompanyCode>")
             content += make_line("     <Text1>Sammelbuchung</Text1>")
-            content += make_line("     <DocumentNumber>{0}</DocumentNumber>").format(item.name)
+            content += make_line("     <DocumentNumber>{0}</DocumentNumber>").format(get_abacus_docname(item.name))
             content += make_line("     <SingleCount>0</SingleCount>")
             content += make_line("    </CollectiveInformation>")
             content += make_line("    <SingleInformation mode=\"SAVE\">")
@@ -86,7 +94,7 @@ def generate_transfer_file(start_date, end_date):
             content += make_line("     <IntercompanyCode></IntercompanyCode>")
             content += make_line("     <BookingLevel1>650</BookingLevel1>")
             content += make_line("     <Text1>Sammelbuchung</Text1>")
-            content += make_line("     <DocumentNumber>{0}</DocumentNumber>").format(item.name)
+            content += make_line("     <DocumentNumber>{0}</DocumentNumber>").format(get_abacus_docname(item.name))
             content += make_line("     <SelectionCode></SelectionCode>")
             if taxes:
                 content += make_line("     <TaxData mode=\"SAVE\">")
@@ -146,7 +154,7 @@ def generate_transfer_file(start_date, end_date):
             content += make_line("     <IntercompanyId>0</IntercompanyId>")
             content += make_line("     <IntercompanyCode></IntercompanyCode>")
             content += make_line("     <Text1>Sammelbuchung</Text1>")
-            content += make_line("     <DocumentNumber>{0}</DocumentNumber>").format(item.name)
+            content += make_line("     <DocumentNumber>{0}</DocumentNumber>").format(get_abacus_docname(item.name))
             content += make_line("     <SingleCount>0</SingleCount>")
             content += make_line("    </CollectiveInformation>")
             content += make_line("    <SingleInformation mode=\"SAVE\">")
@@ -163,7 +171,7 @@ def generate_transfer_file(start_date, end_date):
             content += make_line("     <IntercompanyId>0</IntercompanyId>")
             content += make_line("     <IntercompanyCode></IntercompanyCode>")
             content += make_line("     <Text1>Sammelbuchung</Text1>")
-            content += make_line("     <DocumentNumber>{0}</DocumentNumber>").format(item.name)
+            content += make_line("     <DocumentNumber>{0}</DocumentNumber>").format(get_abacus_docname(item.name))
             content += make_line("     <SelectionCode></SelectionCode>")
             content += make_line("    </SingleInformation>")
             content += make_line("   </Entry>")
@@ -175,12 +183,12 @@ def generate_transfer_file(start_date, end_date):
         content = content.replace(transaction_count_identifier, "{0}".format(transaction_count))
         
         return { 'content': content }
-    #except IndexError:
-    #    frappe.msgprint( _("Please select at least one payment."), _("Information") )
-    #    return
-    #except:
-    #    frappe.throw( _("Error while generating xml. Make sure that you made required customisations to the DocTypes.") )
-    #    return
+    except IndexError:
+        frappe.msgprint( _("Please select at least one payment."), _("Information") )
+        return
+    except:
+        frappe.throw( _("Error while generating xml. Make sure that you made required customisations to the DocTypes.") )
+        return
 
 # adds Windows-compatible line endings (to make the xml look nice)    
 def make_line(line):

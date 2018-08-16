@@ -246,38 +246,58 @@ def add_creditor_info(payment_record):
     payment_content = ""
     # creditor information
     payment_content += make_line("        <Cdtr>") 
-    # name of the creditor/supplier           
-    payment_content += make_line("          <Nm>" + 
-        payment_record.party + "</Nm>")
+    # name of the creditor/supplier
+    name = payment_record.party
+    if payment_record.party_type == "Employee":
+        name = frappe.get_value("Employee", payment_record.party, "employee_name")
+    payment_content += make_line("          <Nm>" + name  + "</Nm>")
     # address of creditor/supplier (should contain at least country and first address line
     # get supplier address
-    supplier_address = get_billing_address(payment_record.party)
-    if supplier_address == None:
+    if payment_record.party_type == "Supplier" or payment_record.party_type == "Customer":
+        supplier_address = get_billing_address(payment_record.party, payment_record.party_type)
+        if supplier_address == None:
+            return None
+        street = get_street_name(supplier_address.address_line1)
+        building = get_building_number(supplier_address.address_line1)
+        plz = supplier_address.pincode
+        city = supplier_address.city 
+        # country (has to be a two-digit code)
+        try:
+            country_code = frappe.get_value('Country', supplier_address.country, 'code').upper()
+        except:
+            country_code = "CH"
+    elif payment_record.party_type == "Employee":
+        employee = frappe.get_doc("Employee", payment_record.party)
+        if employee.permanent_address:
+           address = employee.permanent_address
+        elif employee.current_address:
+            address = employee.current_address
+        else:
+            # no address found
+            return None
+        try:
+            lines = address.split("\n")
+            street = get_street_name(lines[0])
+            building = get_building_number(lines[0])
+            plz = get_pincode(lines[1])
+            city = get_city(lines[1])
+            country_code = "CH"                
+        except:
+            # invalid address
+            return None
+    else:
+        # unknown supplier type
         return None
     payment_content += make_line("          <PstlAdr>")
     # street name
-    payment_content += make_line("            <StrtNm>" +
-        get_street_name(supplier_address.address_line1) + "</StrtNm>")
+    payment_content += make_line("            <StrtNm>" + street + "</StrtNm>")
     # building number
-    payment_content += make_line("            <BldgNb>" +
-        get_building_number(supplier_address.address_line1) + "</BldgNb>")
+    payment_content += make_line("            <BldgNb>" + building + "</BldgNb>")
     # postal code
-    payment_content += make_line("            <PstCd>{0}</PstCd>".format(
-        supplier_address.pincode))
+    payment_content += make_line("            <PstCd>{0}</PstCd>".format(plz))
     # town name
-    payment_content += make_line("            <TwnNm>" +
-        supplier_address.city + "</TwnNm>")
-    # country (has to be a two-digit code)
-    try:
-        country_code = frappe.get_value('Country', supplier_address.country, 'code').upper()
-    except:
-        frappe.throw( _("Unable to find country code for {0}").format(supplier_address.country))
-    if country_code:
-        payment_content += make_line("            <Ctry>" +
-            country_code + "</Ctry>")
-    else:
-        # country code not found (not valid)
-        return None
+    payment_content += make_line("            <TwnNm>" + city + "</TwnNm>")
+    payment_content += make_line("            <Ctry>" + country_code + "</Ctry>")
     payment_content += make_line("          </PstlAdr>")
     payment_content += make_line("        </Cdtr>") 
     return payment_content
@@ -303,14 +323,23 @@ def add_invalid_remark(remark):
     return make_line("    <!-- " + remark + " -->")
     
 # try to find the optimal billing address
-def get_billing_address(supplier_name):
-    linked_addresses = frappe.get_all('Dynamic Link', 
+def get_billing_address(supplier_name, supplier_type="Supplier"):
+    if supplier_type == "Customer":
+        linked_addresses = frappe.get_all('Dynamic Link', 
+        filters={
+            'link_doctype': 'customer', 
+            'link_name': supplier_name, 
+            'parenttype': 'Address'
+        }, 
+        fields=['parent'])         
+    else:
+        linked_addresses = frappe.get_all('Dynamic Link', 
         filters={
             'link_doctype': 'supplier', 
             'link_name': supplier_name, 
             'parenttype': 'Address'
         }, 
-        fields=['parent'])
+        fields=['parent'])     
     if len(linked_addresses) > 0:
         if len(linked_addresses) > 1:
             for address_name in linked_addresses:
@@ -348,11 +377,27 @@ def get_building_number(address_line):
         return parts[-1]
     else:
         return None
+        
 # get street name from address line
 def get_street_name(address_line):
     parts = address_line.split(" ")
     if len(parts) > 1:
-        return "".join(parts[:-1])
+        return " ".join(parts[:-1])
     else:
         return address_line
         
+# get pincode from address line
+def get_pincode(address_line):
+    parts = address_line.split(" ")
+    if len(parts) > 1:
+        return parts[0]
+    else:
+        return None
+
+# get city from address line
+def get_city(address_line):
+    parts = address_line.split(" ")
+    if len(parts) > 1:
+        return " ".join(parts[1:])
+    else:
+        return address_line

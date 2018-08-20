@@ -82,10 +82,10 @@ def auto_match(method="docid"):
                     matched_payment_entry = match(unpaid_sales_invoice['name'], payment['name'])['payment_entry']
                     matched_payments.append(matched_payment_entry)
         elif method == "esr":
-            payment_match = frappe.get_all("Payment Entry", 
-                filters={'reference_no': unpaid_sales_invoice['esr_reference']},
-                fields=['name'])
-            if payment_match:
-                matched_payment_entry = match(unpaid_sales_invoice['name'], payment_match[0]['name'])
-                matched_payments.append(matched_payment_entry)
+            # only check Sales Invoice records with an ESR reference
+            if unpaid_sales_invoice['esr_reference']:
+                for payment in new_payments:
+                    if unpaid_sales_invoice['esr_reference'].replace(' ', '') in payment['remarks']:
+                        matched_payment_entry = match(unpaid_sales_invoice['name'], payment['name'])['payment_entry']
+                        matched_payments.append(matched_payment_entry)
     return { 'message': "Done", 'payments': matched_payments }

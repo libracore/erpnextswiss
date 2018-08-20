@@ -92,7 +92,7 @@ function match(page) {
             //frappe.msgprint("Match " + sales_invoice + " with " + payment_entry);
                     
             // enable waiting gif
-            frappe.bankimport.start_wait();
+            frappe.match_payments.start_wait();
             
             // call match method 
             frappe.call({
@@ -120,9 +120,9 @@ function match(page) {
 }
 
 function auto_match(page, method="docid") {
-    try {                   
+    //try {                   
         // enable waiting gif
-        frappe.bankimport.start_wait();
+        frappe.match_payments.start_wait();
         
         // call match method 
         frappe.call({
@@ -142,10 +142,10 @@ function auto_match(page, method="docid") {
                 } 
             }
         }); 
-    }
-    catch (err) {
-         frappe.msgprint( __("Please select a payment entry.") );
-    }
+    //}
+    //catch (err) {
+    //     frappe.msgprint( __("Please select a payment entry.") );
+    //}
 }
 
 function submit(payment_entry, page) {
@@ -178,7 +178,7 @@ function submit_all(payments, page) {
 
 function completed(page, reload=true) {
     // disable waiting gif
-    frappe.bankimport.end_wait();
+    frappe.match_payments.end_wait();
     
     // refresh
     if (reload) {

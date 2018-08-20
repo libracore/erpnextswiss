@@ -83,7 +83,7 @@ def auto_match(method="docid"):
                     matched_payments.append(matched_payment_entry)
         elif method == "esr":
             payment_match = frappe.get_all("Payment Entry", 
-                filters={'reference_no': unpaid_sales_invoice['esr_reference']}
+                filters={'reference_no': unpaid_sales_invoice['esr_reference']},
                 fields=['name'])
             if payment_match:
                 matched_payment_entry = match(unpaid_sales_invoice['name'], payment_match[0]['name'])

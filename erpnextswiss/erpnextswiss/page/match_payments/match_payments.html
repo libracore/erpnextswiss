@@ -6,7 +6,7 @@
   	  <div class="form-column col-sm-12">
         <button type="submit" class="btn btn-sm btn-primary btn-match">{{ __("Match") }}</button>
         <button type="submit" class="btn btn-sm btn-auto-match-id">{{ __("Auto match by ID") }}</button>
-        <div class="waiting-gif hide"><img src="/assets/frappe/images/ui/ajax-loader.gif" /></div>
+        <button type="submit" class="btn btn-sm btn-auto-match-esr">{{ __("Auto match by ESR") }}</button>
 	  </div>
       
   </div>
@@ -33,4 +33,13 @@
     width: 100% !important;
 }
 </style>
+</div>
+
+<!-- full screen waiting gif -->
+<div id="waitingScreen" class="overlay">
+	<!-- Overlay content -->
+  <div class="overlay-content">
+    <p><i class="fa fa-spinner fa-spin" style="font-size:80px"></i></p>
+    <p>{{ __("Please wait, parsing data...") }}</p>
+  </div>
 </div>

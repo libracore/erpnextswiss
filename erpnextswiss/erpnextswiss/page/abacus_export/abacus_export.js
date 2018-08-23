@@ -46,78 +46,84 @@ frappe.abacus_export = {
         input_end.onchange = function() { frappe.abacus_export.update_preview(); };
     },
     update_preview: function() {
-		// get date values
-		start_date = document.getElementById("start_date").value;
-		end_date = document.getElementById("end_date").value;
-		if (end_date < start_date) {
-			// switch values
-			document.getElementById("start_date").value = end_date;
-			document.getElementById("end_date").value = start_date;
-			var temp = start_date;
-			start_date = end_date;
-			end_date = temp;
-		}
+        // get date values
+        start_date = document.getElementById("start_date").value;
+        end_date = document.getElementById("end_date").value;
+        if ((start_date == null) || (start_date == "")) {
+            start_date = "2000-01-01";
+        }
+        if ((end_date == null) || (end_date == "")) {
+            end_date = "2999-01-01";
+        }
+        if (end_date < start_date) {
+            // switch values
+            document.getElementById("start_date").value = end_date;
+            document.getElementById("end_date").value = start_date;
+            var temp = start_date;
+            start_date = end_date;
+            end_date = temp;
+        }
         // get GL entries from this period
         frappe.call({
             method: "frappe.client.get_list",
             args: {
-				doctype:"GL Entry",
-				filters: [
-					["posting_date",">=", start_date],
-					["posting_date","<=", end_date],
-					["docstatus","=", 1]
-				],
+                doctype:"GL Entry",
+                filters: [
+                    ["posting_date",">=", start_date],
+                    ["posting_date","<=", end_date],
+                    ["docstatus","=", 1]
+                ],
                 fields: ["posting_date", "debit", "credit", "account", "voucher_type", "voucher_no"],
                 order_by: "posting_date"
             },
-			callback: function(response) {
-				var preview_container = document.getElementById("preview");
-				preview_container.innerHTML = "";
+            callback: function(response) {
+                var preview_container = document.getElementById("preview");
+                preview_container.innerHTML = "";
                 if (response.message) {
                     if (response.message.length > 0) {
-                        preview_container.innerHTML += frappe.render_template('gl_entry_table', response);
+                    preview_container.innerHTML += frappe.render_template('gl_entry_table', response);
                     } 
                     if (response.message.length == 20) {
-						preview_container.innerHTML += '<p class="text-muted">' + __("more records available (not shown)") + '</p>';
-					}
+                    preview_container.innerHTML += '<p class="text-muted">' + __("more records available (not shown)") + '</p>';
+                    }
                 } else {
-					preview_container.innerHTML += '<p class="text-muted">' + __("No general ledger entries found.") + '</p>';
-				}
+                    preview_container.innerHTML += '<p class="text-muted">' + __("No general ledger entries found.") + '</p>';
+                }
             }
         });
     },
     create_transfer_file: function() {
-		// enable waiting gif
-		document.getElementById("waiting-gif").classList.remove("hide");
-		// get date range
-		start_date = document.getElementById("start_date").value;
-		end_date = document.getElementById("end_date").value;
-		// generate payment file
-		frappe.call({
-			method: 'erpnextswiss.erpnextswiss.page.abacus_export.abacus_export.generate_transfer_file',
-			args: { 
-				'start_date': start_date,
-				'end_date': end_date
-			},
-			callback: function(r) {
-				if (r.message) {
-					// prepare the xml file for download
-					frappe.abacus_export.download("transfer.xml", r.message.content);
-					
-					// disable waiting gif
-					document.getElementById("waiting-gif").classList.add("hide");
-				} 
-			}
-		});
-	},
+        // enable waiting gif
+        document.getElementById("waiting-gif").classList.remove("hide");
+        // get date range
+        start_date = document.getElementById("start_date").value;
+        end_date = document.getElementById("end_date").value;
+        // generate payment file
+        frappe.call({
+            method: 'erpnextswiss.erpnextswiss.page.abacus_export.abacus_export.generate_transfer_file',
+            args: { 
+            'start_date': start_date,
+            'end_date': end_date
+            },
+            callback: function(r) {
+                if (r.message) {
+                // prepare the xml file for download
+                frappe.abacus_export.download("transfer.xml", r.message.content);
+                
+                // disable waiting gif
+                document.getElementById("waiting-gif").classList.add("hide");
+                } 
+            }
+        });
+    },
     download: function (filename, content) {
-		var element = document.createElement('a');
-		element.setAttribute('href', 'data:application/octet-stream;charset=utf-8,' + encodeURIComponent(content));
-		element.setAttribute('download', filename);
-		element.style.display = 'none';
-		document.body.appendChild(element);
-		element.click();
-		document.body.removeChild(element);
-	}
+        var element = document.createElement('a');
+        element.setAttribute('href', 'data:application/octet-stream;charset=utf-8,' + encodeURIComponent(content));
+        element.setAttribute('download', filename);
+        element.style.display = 'none';
+        document.body.appendChild(element);
+        element.click();
+        document.body.removeChild(element);
+    }
 }
 

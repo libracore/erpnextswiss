@@ -5,13 +5,13 @@
 from __future__ import unicode_literals
 import frappe
 from frappe import throw, _
-import haslib
+import hashlib
     
 @frappe.whitelist()
 def generate_transfer_file(start_date, end_date):
     # creates a transfer file for abacus
 
-    try:        
+    #try:        
         # create xml header
         content = make_line("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
         # define xml root node
@@ -35,23 +35,25 @@ def generate_transfer_file(start_date, end_date):
                       `tabAccount`.`account_number`, 
                       SUM(`tabGL Entry`.`debit`) AS `debit`, 
                       SUM(`tabGL Entry`.`credit`) AS `credit`,
-                      `tabGL Entry`.`account_currency` AS `currency`					  
+                      `tabGL Entry`.`account_currency` AS `currency`                      
                     FROM `tabGL Entry`
                     LEFT JOIN `tabAccount` ON `tabGL Entry`.`account` = `tabAccount`.`name`
                     WHERE `tabGL Entry`.`posting_date` >= '{start_date}' 
                       AND `tabGL Entry`.`posting_date` <= '{end_date}'
-                      AND `docstatus`= 1
+                      AND `tabGL Entry`.`docstatus`= 1
                     GROUP BY `tabAccount`.`account_number`;
             """.format(start_date=start_date, end_date=end_date)
         items = frappe.db.sql(sql_query, as_dict=True)
         for item in items:
             if item.account_number:
-			    if item.credit <> 0:
+                if item.credit != 0:
                     transaction_count += 1        
-                    content += add_transaction_block(item.account_number, item.credit, "C", end_date, item.currency)
-				if item.debit <> 0:
-				    transaction_count += 1        
-                    content += add_transaction_block(item.account_number, item.debit, "D", end_date, item.currency)
+                    content += add_transaction_block(item.account_number, item.credit, 
+                        "C", end_date, item.currency, transaction_count)
+                if item.debit != 0:
+                    transaction_count += 1        
+                    content += add_transaction_block(item.account_number, item.debit, 
+                        "D", end_date, item.currency, transaction_count)
         # add footer
         content += make_line(" </Task>")
         content += make_line("</AbaConnectContainer>")
@@ -59,18 +61,18 @@ def generate_transfer_file(start_date, end_date):
         content = content.replace(transaction_count_identifier, "{0}".format(transaction_count))
         
         return { 'content': content }
-    except IndexError:
-        frappe.msgprint( _("Please select at least one payment."), _("Information") )
-        return
-    except:
-        frappe.throw( _("Error while generating xml. Make sure that you made required customisations to the DocTypes.") )
-        return
+    #except IndexError:
+    #    frappe.msgprint( _("Please select at least one payment."), _("Information") )
+    #    return
+    #except:
+    #    frappe.throw( _("Error while generating xml. Make sure that you made required customisations to the DocTypes.") )
+    #    return
 
 # Params
 #  debit_credit: "D" or "C"
-def add_transaction_block(account, amount, debit_credit, date, curency):
+def add_transaction_block(account, amount, debit_credit, date, currency, transaction_count):
     transaction_reference = "{0} {1} {2} {3}".format(date, account, debit_credit, amount)
-	short_reference = hashlib.md5(mystring).hexdigest()[0:10]
+    short_reference = hashlib.md5(transaction_reference).hexdigest()[0:10]
     content = make_line("  <Transaction id=\"{0}\">").format(transaction_count)
     content += make_line("   <Entry mode=\"SAVE\">")
     content += make_line("    <CollectiveInformation mode=\"SAVE\">")

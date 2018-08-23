@@ -5,14 +5,7 @@
 from __future__ import unicode_literals
 import frappe
 from frappe import throw, _
-
-# this function crops document names because Abacus only support 10 characters
-def get_abacus_docname(docname):
-    docname = docname.replace("SINV-", "SI")
-    docname = docname.replace("PINV-", "PI")
-    docname = docname.replace("PE-", "PE")
-    docname = docname.replace("JV-", "JV")
-    return docname
+import haslib
     
 @frappe.whitelist()
 def generate_transfer_file(start_date, end_date):
@@ -76,6 +69,8 @@ def generate_transfer_file(start_date, end_date):
 # Params
 #  debit_credit: "D" or "C"
 def add_transaction_block(account, amount, debit_credit, date, curency):
+    transaction_reference = "{0} {1} {2} {3}".format(date, account, debit_credit, amount)
+	short_reference = hashlib.md5(mystring).hexdigest()[0:10]
     content = make_line("  <Transaction id=\"{0}\">").format(transaction_count)
     content += make_line("   <Entry mode=\"SAVE\">")
     content += make_line("    <CollectiveInformation mode=\"SAVE\">")
@@ -97,7 +92,7 @@ def add_transaction_block(account, amount, debit_credit, date, curency):
     content += make_line("     <IntercompanyId>0</IntercompanyId>")
     content += make_line("     <IntercompanyCode></IntercompanyCode>")
     content += make_line("     <Text1>Sammelbuchung</Text1>")
-    content += make_line("     <DocumentNumber>{0}</DocumentNumber>").format(get_abacus_docname(item.name))
+    content += make_line("     <DocumentNumber>{0}</DocumentNumber>").format(short_reference)
     content += make_line("     <SingleCount>0</SingleCount>")
     content += make_line("    </CollectiveInformation>")
     content += make_line("    <SingleInformation mode=\"SAVE\">")
@@ -114,7 +109,7 @@ def add_transaction_block(account, amount, debit_credit, date, curency):
     content += make_line("     <IntercompanyId>0</IntercompanyId>")
     content += make_line("     <IntercompanyCode></IntercompanyCode>")
     content += make_line("     <Text1>Sammelbuchung</Text1>")
-    content += make_line("     <DocumentNumber>{0}</DocumentNumber>").format(get_abacus_docname(item.name))
+    content += make_line("     <DocumentNumber>{0}</DocumentNumber>").format(short_reference)
     content += make_line("     <SelectionCode></SelectionCode>")
     content += make_line("    </SingleInformation>")
     content += make_line("   </Entry>")

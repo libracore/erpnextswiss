@@ -33,9 +33,12 @@ frappe.match_payments = {
 		});
         
         this.page.main.find(".btn-auto-match-id").on('click', function() {                   
-            auto_match_id(page);
+            auto_match(page, "docid");
 		});
 
+        this.page.main.find(".btn-auto-match-esr").on('click', function() {                   
+            auto_match(page, "esr");
+		});
 	},
 	run: function(page) {
 		// read unpaid sales invoices
@@ -68,7 +71,13 @@ frappe.match_payments = {
 				} 
 			}
 		});
-	}
+	},
+    start_wait: function() {
+        document.getElementById("waitingScreen").style.display = "block";
+    },
+    end_wait: function() {
+        document.getElementById("waitingScreen").style.display = "none";
+    }
 }
 
 function match(page) {
@@ -83,7 +92,7 @@ function match(page) {
             //frappe.msgprint("Match " + sales_invoice + " with " + payment_entry);
                     
             // enable waiting gif
-            page.main.find(".waiting-gif").removeClass("hide");
+            frappe.match_payments.start_wait();
             
             // call match method 
             frappe.call({
@@ -110,16 +119,16 @@ function match(page) {
     }
 }
 
-function auto_match_id(page) {
-    try {                   
+function auto_match(page, method="docid") {
+    //try {                   
         // enable waiting gif
-        page.main.find(".waiting-gif").removeClass("hide");
+        frappe.match_payments.start_wait();
         
         // call match method 
         frappe.call({
             method: 'erpnextswiss.erpnextswiss.page.match_payments.match_payments.auto_match',
             args: {
-                'method': 'docid'
+                'method': method
             },
             callback: function(r) {
                 if (r.message) {   
@@ -133,10 +142,10 @@ function auto_match_id(page) {
                 } 
             }
         }); 
-    }
-    catch (err) {
-         frappe.msgprint( __("Please select a payment entry.") );
-    }
+    //}
+    //catch (err) {
+    //     frappe.msgprint( __("Please select a payment entry.") );
+    //}
 }
 
 function submit(payment_entry, page) {
@@ -169,7 +178,7 @@ function submit_all(payments, page) {
 
 function completed(page, reload=true) {
     // disable waiting gif
-    page.main.find(".waiting-gif").addClass("hide");
+    frappe.match_payments.end_wait();
     
     // refresh
     if (reload) {

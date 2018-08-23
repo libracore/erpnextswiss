@@ -5,20 +5,13 @@
 from __future__ import unicode_literals
 import frappe
 from frappe import throw, _
-
-# this function crops document names because Abacus only support 10 characters
-def get_abacus_docname(docname):
-    docname = docname.replace("SINV-", "SI")
-    docname = docname.replace("PINV-", "PI")
-    docname = docname.replace("PE-", "PE")
-    docname = docname.replace("JV-", "JV")
-    return docname
+import hashlib
     
 @frappe.whitelist()
 def generate_transfer_file(start_date, end_date):
     # creates a transfer file for abacus
 
-    try:        
+    #try:        
         # create xml header
         content = make_line("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
         # define xml root node
@@ -36,146 +29,31 @@ def generate_transfer_file(start_date, end_date):
         content += make_line("   <MapId>AbaDefault</MapId>")
         content += make_line("   <Version>2015.00</Version>")
         content += make_line("  </Parameter>")
-        # add sales invoice transactions
-        sql_query = """SELECT 
-                `name`,
-                `posting_date`,
-                `debit_to`,
-                `currency`,
-                `grand_total`
-            FROM `tabSales Invoice`
-            WHERE
-            	`posting_date` >= '{start_date}'
-				AND `posting_date` <= '{end_date}'
-				AND `docstatus` = 1
-            """.format(start_date=start_date, end_date=end_date)
-        items = frappe.db.sql(sql_query, as_dict=True)
-        for item in items:
-            transaction_count += 1
-            content += make_line("  <Transaction id=\"{0}\">").format(transaction_count)
-            content += make_line("    <Entry mode=\"SAVE\">")
-            content += make_line("    <CollectiveInformation mode=\"SAVE\">")
-            content += make_line("     <EntryLevel>A</EntryLevel>")
-            content += make_line("     <EntryType>S</EntryType>")
-            content += make_line("     <Type>Normal</Type>")
-            content += make_line("     <DebitCredit>D</DebitCredit>")
-            content += make_line("     <Client></Client>")              # customer number
-            content += make_line("     <Division>0</Division>")
-            content += make_line("     <KeyCurrency>{0}</KeyCurrency>").format(item.currency)
-            content += make_line("     <EntryDate>{0}</EntryDate>").format(item.posting_date)
-            content += make_line("     <ValueDate></ValueDate>")
-            content += make_line("     <AmountData mode=\"SAVE\">")
-            content += make_line("      <Currency>{0}</Currency>").format(item.currency)
-            content += make_line("      <Amount>{0}</Amount>").format(item.grand_total)
-            content += make_line("     </AmountData>")
-            content += make_line("     <KeyAmount>{0}</KeyAmount>").format(item.grand_total)
-            content += make_line("     <Account>{0}</Account>").format(get_account_number(item.debit_to))
-            content += make_line("     <IntercompanyId>0</IntercompanyId>")
-            content += make_line("     <IntercompanyCode></IntercompanyCode>")
-            content += make_line("     <Text1>Sammelbuchung</Text1>")
-            content += make_line("     <DocumentNumber>{0}</DocumentNumber>").format(get_abacus_docname(item.name))
-            content += make_line("     <SingleCount>0</SingleCount>")
-            content += make_line("    </CollectiveInformation>")
-            content += make_line("    <SingleInformation mode=\"SAVE\">")
-            content += make_line("     <Type>Normal</Type>")
-            content += make_line("     <DebitCredit>D</DebitCredit>")
-            content += make_line("     <EntryDate>{0}</EntryDate>").format(item.posting_date)
-            content += make_line("     <ValueDate></ValueDate>")
-            content += make_line("     <AmountData mode=\"SAVE\">")
-            content += make_line("      <Currency>{0}</Currency>").format(item.currency)
-            content += make_line("      <Amount>{0}</Amount>").format(item.grand_total)
-            content += make_line("     </AmountData>")
-            content += make_line("     <KeyAmount>{0}</KeyAmount>").format(item.grand_total)
-            content += make_line("     <Account>{0}</Account>").format(get_income_account_number(item.name))
-            taxes = get_sales_taxes(item.name)
-            if taxes:
-                content += make_line("     <TaxAccount>{0}</TaxAccount>").format(taxes.account_number)
-            content += make_line("     <IntercompanyId>0</IntercompanyId>")
-            content += make_line("     <IntercompanyCode></IntercompanyCode>")
-            content += make_line("     <BookingLevel1>650</BookingLevel1>")
-            content += make_line("     <Text1>Sammelbuchung</Text1>")
-            content += make_line("     <DocumentNumber>{0}</DocumentNumber>").format(get_abacus_docname(item.name))
-            content += make_line("     <SelectionCode></SelectionCode>")
-            if taxes:
-                content += make_line("     <TaxData mode=\"SAVE\">")
-                content += make_line("      <TaxIncluded>I</TaxIncluded>")
-                content += make_line("      <TaxType>1</TaxType>")
-                content += make_line("      <UseCode>1</UseCode>")
-                content += make_line("      <AmountData mode=\"SAVE\">")
-                content += make_line("       <Currency>{0}</Currency>").format(item.currency)
-                content += make_line("       <Amount>0</Amount>")
-                content += make_line("      </AmountData>")
-                content += make_line("      <KeyAmount>-{0}</KeyAmount>").format(taxes.tax_amount)
-                content += make_line("      <TaxRate>{0}</TaxRate>").format(taxes.rate)
-                content += make_line("      <TaxCoefficient>100</TaxCoefficient>")
-                content += make_line("      <Country>CH</Country>")
-                content += make_line("      <TaxCode>312</TaxCode>")
-                content += make_line("      <Number></Number>")
-                content += make_line("      <FlatRate>0</FlatRate>")
-                content += make_line("     </TaxData>")
-            content += make_line("    </SingleInformation>")
-            content += make_line("   </Entry>")
-            content += make_line("  </Transaction>")
+
         # add payment entry transactions
         sql_query = """SELECT 
-                `name`, 
-                `paid_from_account_currency` AS `currency`, 
-                `posting_date`,
-                `paid_amount`,
-                `paid_to`,
-                `paid_from`
-            FROM `tabPayment Entry`
-            WHERE
-            	`posting_date` >= '{start_date}'
-				AND `posting_date` <= '{end_date}'
-				AND `docstatus` = 1
+                      `tabAccount`.`account_number`, 
+                      SUM(`tabGL Entry`.`debit`) AS `debit`, 
+                      SUM(`tabGL Entry`.`credit`) AS `credit`,
+                      `tabGL Entry`.`account_currency` AS `currency`                      
+                    FROM `tabGL Entry`
+                    LEFT JOIN `tabAccount` ON `tabGL Entry`.`account` = `tabAccount`.`name`
+                    WHERE `tabGL Entry`.`posting_date` >= '{start_date}' 
+                      AND `tabGL Entry`.`posting_date` <= '{end_date}'
+                      AND `tabGL Entry`.`docstatus`= 1
+                    GROUP BY `tabAccount`.`account_number`;
             """.format(start_date=start_date, end_date=end_date)
         items = frappe.db.sql(sql_query, as_dict=True)
         for item in items:
-            transaction_count += 1        
-            content += make_line("  <Transaction id=\"{0}\">").format(transaction_count)
-            content += make_line("   <Entry mode=\"SAVE\">")
-            content += make_line("    <CollectiveInformation mode=\"SAVE\">")
-            content += make_line("     <EntryLevel>A</EntryLevel>")
-            content += make_line("     <EntryType>S</EntryType>")
-            content += make_line("     <Type>Normal</Type>")
-            content += make_line("     <DebitCredit>D</DebitCredit>")
-            content += make_line("     <Client></Client>")              # customer number
-            content += make_line("     <Division>0</Division>")
-            content += make_line("     <KeyCurrency>{0}</KeyCurrency>").format(item.currency)
-            content += make_line("     <EntryDate>{0}</EntryDate>").format(item.posting_date)
-            content += make_line("     <ValueDate></ValueDate>")
-            content += make_line("     <AmountData mode=\"SAVE\">")
-            content += make_line("      <Currency>{0}</Currency>").format(item.currency)
-            content += make_line("      <Amount>{0}</Amount>").format(item.paid_amount)
-            content += make_line("     </AmountData>")
-            content += make_line("     <KeyAmount>{0}</KeyAmount>").format(item.paid_amount)
-            content += make_line("     <Account>{0}</Account>").format(get_account_number(item.paid_to))
-            content += make_line("     <IntercompanyId>0</IntercompanyId>")
-            content += make_line("     <IntercompanyCode></IntercompanyCode>")
-            content += make_line("     <Text1>Sammelbuchung</Text1>")
-            content += make_line("     <DocumentNumber>{0}</DocumentNumber>").format(get_abacus_docname(item.name))
-            content += make_line("     <SingleCount>0</SingleCount>")
-            content += make_line("    </CollectiveInformation>")
-            content += make_line("    <SingleInformation mode=\"SAVE\">")
-            content += make_line("     <Type>Normal</Type>")
-            content += make_line("     <DebitCredit>D</DebitCredit>")
-            content += make_line("     <EntryDate>{0}</EntryDate>").format(item.posting_date)
-            content += make_line("     <ValueDate></ValueDate>")
-            content += make_line("     <AmountData mode=\"SAVE\">")
-            content += make_line("      <Currency>{0}</Currency>").format(item.currency)
-            content += make_line("      <Amount>{0}</Amount>").format(item.paid_amount)
-            content += make_line("     </AmountData>")
-            content += make_line("     <KeyAmount>{0}</KeyAmount>").format(item.paid_amount)
-            content += make_line("     <Account>{0}</Account>").format(get_account_number(item.paid_from))
-            content += make_line("     <IntercompanyId>0</IntercompanyId>")
-            content += make_line("     <IntercompanyCode></IntercompanyCode>")
-            content += make_line("     <Text1>Sammelbuchung</Text1>")
-            content += make_line("     <DocumentNumber>{0}</DocumentNumber>").format(get_abacus_docname(item.name))
-            content += make_line("     <SelectionCode></SelectionCode>")
-            content += make_line("    </SingleInformation>")
-            content += make_line("   </Entry>")
-            content += make_line("  </Transaction>")
+            if item.account_number:
+                if item.credit != 0:
+                    transaction_count += 1        
+                    content += add_transaction_block(item.account_number, item.credit, 
+                        "C", end_date, item.currency, transaction_count)
+                if item.debit != 0:
+                    transaction_count += 1        
+                    content += add_transaction_block(item.account_number, item.debit, 
+                        "D", end_date, item.currency, transaction_count)
         # add footer
         content += make_line(" </Task>")
         content += make_line("</AbaConnectContainer>")
@@ -183,12 +61,62 @@ def generate_transfer_file(start_date, end_date):
         content = content.replace(transaction_count_identifier, "{0}".format(transaction_count))
         
         return { 'content': content }
-    except IndexError:
-        frappe.msgprint( _("Please select at least one payment."), _("Information") )
-        return
-    except:
-        frappe.throw( _("Error while generating xml. Make sure that you made required customisations to the DocTypes.") )
-        return
+    #except IndexError:
+    #    frappe.msgprint( _("Please select at least one payment."), _("Information") )
+    #    return
+    #except:
+    #    frappe.throw( _("Error while generating xml. Make sure that you made required customisations to the DocTypes.") )
+    #    return
+
+# Params
+#  debit_credit: "D" or "C"
+def add_transaction_block(account, amount, debit_credit, date, currency, transaction_count):
+    transaction_reference = "{0} {1} {2} {3}".format(date, account, debit_credit, amount)
+    short_reference = hashlib.md5(transaction_reference).hexdigest()[0:10]
+    content = make_line("  <Transaction id=\"{0}\">").format(transaction_count)
+    content += make_line("   <Entry mode=\"SAVE\">")
+    content += make_line("    <CollectiveInformation mode=\"SAVE\">")
+    content += make_line("     <EntryLevel>A</EntryLevel>")
+    content += make_line("     <EntryType>S</EntryType>")
+    content += make_line("     <Type>Normal</Type>")
+    content += make_line("     <DebitCredit>{0}</DebitCredit>").format(debit_credit)
+    content += make_line("     <Client></Client>")              # customer number
+    content += make_line("     <Division>0</Division>")
+    content += make_line("     <KeyCurrency>{0}</KeyCurrency>").format(currency)
+    content += make_line("     <EntryDate>{0}</EntryDate>").format(date)
+    content += make_line("     <ValueDate></ValueDate>")
+    content += make_line("     <AmountData mode=\"SAVE\">")
+    content += make_line("      <Currency>{0}</Currency>").format(currency)
+    content += make_line("      <Amount>{0}</Amount>").format(amount)
+    content += make_line("     </AmountData>")
+    content += make_line("     <KeyAmount>{0}</KeyAmount>").format(amount)
+    content += make_line("     <Account>{0}</Account>").format(account)
+    content += make_line("     <IntercompanyId>0</IntercompanyId>")
+    content += make_line("     <IntercompanyCode></IntercompanyCode>")
+    content += make_line("     <Text1>Sammelbuchung</Text1>")
+    content += make_line("     <DocumentNumber>{0}</DocumentNumber>").format(short_reference)
+    content += make_line("     <SingleCount>0</SingleCount>")
+    content += make_line("    </CollectiveInformation>")
+    content += make_line("    <SingleInformation mode=\"SAVE\">")
+    content += make_line("     <Type>Normal</Type>")
+    content += make_line("     <DebitCredit>D</DebitCredit>")
+    content += make_line("     <EntryDate>{0}</EntryDate>").format(date)
+    content += make_line("     <ValueDate></ValueDate>")
+    content += make_line("     <AmountData mode=\"SAVE\">")
+    content += make_line("      <Currency>{0}</Currency>").format(currency)
+    content += make_line("      <Amount>{0}</Amount>").format(amount)
+    content += make_line("     </AmountData>")
+    content += make_line("     <KeyAmount>{0}</KeyAmount>").format(amount)
+    content += make_line("     <Account>{0}</Account>").format(account)
+    content += make_line("     <IntercompanyId>0</IntercompanyId>")
+    content += make_line("     <IntercompanyCode></IntercompanyCode>")
+    content += make_line("     <Text1>Sammelbuchung</Text1>")
+    content += make_line("     <DocumentNumber>{0}</DocumentNumber>").format(short_reference)
+    content += make_line("     <SelectionCode></SelectionCode>")
+    content += make_line("    </SingleInformation>")
+    content += make_line("   </Entry>")
+    content += make_line("  </Transaction>")
+    return content
 
 # adds Windows-compatible line endings (to make the xml look nice)    
 def make_line(line):

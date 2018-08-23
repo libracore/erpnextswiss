@@ -171,3 +171,6 @@ Page: abacus_export,to,bis
 Page: abacus_export,Create File,Datei erstellen
 Page: abacus_export,more records available (not shown),es gibt weitere Einträge (nicht angezeigt)
 Page: abacus_export,No general ledger entries found.,Keine Transaktionen gefunden.
+DocType: ERPNextSwiss Settings,ERPNextSwiss Settings,ERPNextSwiss Einstellungen
+DocType: ERPNextSwiss Settings,Default Customer,Standardkunde
+DocType: ERPNextSwiss Settings,Use this to define a default customer,Setzt einen Standardkunden

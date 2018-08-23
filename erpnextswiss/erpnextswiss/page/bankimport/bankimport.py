@@ -16,7 +16,8 @@ def parse_ubs(content, account, auto_submit=False):
     lines = content.split("\n")
     # collect created payment entries
     new_payment_entries = []
-    
+    # get default customer
+    default_customer = get_default_customer()
     try:
         for i in range(1, len(lines)):
             #log("Reading {0} of {1} lines...".format(i, len(lines)))
@@ -45,7 +46,7 @@ def parse_ubs(content, account, auto_submit=False):
                         if customer:
                             new_payment_entry.party = customer
                         else:
-                            new_payment_entry.party = "Guest"
+                            new_payment_entry.party = default_customer
                         # date is in DD.MM.YYYY
                         date = convert_to_unc(fields[11])
                         new_payment_entry.posting_date = date
@@ -73,6 +74,8 @@ def parse_zkb(content, account, auto_submit=False):
     lines = content.replace("\"", "").split("\n")
     # collect created payment entries
     new_payment_entries = []
+    # get default customer
+    default_customer = get_default_customer()
     try:
         for i in range(1, len(lines)):
             #log("Reading {0} of {1} lines...".format(i, len(lines)))
@@ -104,7 +107,7 @@ def parse_zkb(content, account, auto_submit=False):
                         if customer:
                             new_payment_entry.party = customer
                         else:
-                            new_payment_entry.party = "Guest"
+                            new_payment_entry.party = default_customer
                         # date is in DD.MM.YYYY
                         date = convert_to_unc(fields[8])
                         new_payment_entry.posting_date = date
@@ -134,6 +137,8 @@ def parse_raiffeisen(content, account, auto_submit=False):
     lines = content.split("\n")
     # collect created payment entries
     new_payment_entries = []
+    # get default customer
+    default_customer = get_default_customer()
     try:
     # if True: # this is for detailed debug messages ;-)
         for i in range(1, len(lines)):
@@ -168,7 +173,7 @@ def parse_raiffeisen(content, account, auto_submit=False):
                             if customer:
                                 new_payment_entry.party = customer
                             else:
-                                new_payment_entry.party = "Guest"
+                                new_payment_entry.party = default_customer
                             # date is in "DD.MM.YYYY hh.mm" or "YYYY-MM-DD hh:mm" (bug #11)
                             date_time = fields[0].split(' ')
                             date = convert_to_unc(date_time[0])
@@ -196,7 +201,8 @@ def parse_cs(content, account, auto_submit=False):
     lines = content.split("\n")
     # collect created payment entries
     new_payment_entries = []
-    
+    # get default customer
+    default_customer = get_default_customer()
     try:
         for i in range(1, len(lines)):
             # skip line 0, it contains the column headers
@@ -222,7 +228,7 @@ def parse_cs(content, account, auto_submit=False):
                         if customer:
                             new_payment_entry.party = customer
                         else:
-                            new_payment_entry.party = "Guest"
+                            new_payment_entry.party = default_customer
                         # date is in DD.MM.YYYY
                         date = convert_to_unc(fields[4])
                         new_payment_entry.posting_date =  date
@@ -250,7 +256,8 @@ def parse_migrosbank(content, account, auto_submit=False):
     
     # collect created payment entries
     new_payment_entries = []
-    
+    # get default customer
+    default_customer = get_default_customer()
     try:
         for i in range(12, len(lines)):
             # skip line 0..11, it contains account information the column headers
@@ -270,7 +277,7 @@ def parse_migrosbank(content, account, auto_submit=False):
                         new_payment_entry = frappe.get_doc({'doctype': 'Payment Entry'})
                         new_payment_entry.payment_type = "Receive"
                         new_payment_entry.party_type = "Customer";
-                        new_payment_entry.party = "Guest"
+                        new_payment_entry.party = default_customer
                         # date is in DD.MM.YYYY
                         date = convert_to_unc(fields[0])
                         new_payment_entry.posting_date = date
@@ -344,12 +351,14 @@ def get_unpaid_sales_invoices_by_customer(customer):
 
 # create a payment entry
 def create_payment_entry(date, to_account, received_amount, transaction_id, remarks, auto_submit=False):
+    # get default customer
+    default_customer = get_default_customer()
     if not frappe.db.exists('Payment Entry', {'reference_no': transaction_id}):
         # create new payment entry
         new_payment_entry = frappe.get_doc({'doctype': 'Payment Entry'})
         new_payment_entry.payment_type = "Receive"
         new_payment_entry.party_type = "Customer";
-        new_payment_entry.party = "Guest"
+        new_payment_entry.party = default_customer
         # date is in DD.MM.YYYY
         new_payment_entry.posting_date = date
         new_payment_entry.paid_to = to_account
@@ -408,6 +417,12 @@ def convert_to_unc(ch_date):
         return date_parts[2] + "-" + date_parts[1] + "-" + date_parts[0]
     else:
         return ch_date
+
+def get_default_customer():
+    default_customer = frappe.get_value("ERPNextSwiss Settings", "ERPNextSwiss Settings", "default_customer")
+    if not default_customer:
+        default_customer = "Guest"
+    return default_customer
 
 @frappe.whitelist()
 def parse_file(content, bank, account, auto_submit=False):

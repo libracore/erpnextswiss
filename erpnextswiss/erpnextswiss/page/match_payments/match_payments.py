@@ -9,7 +9,7 @@ from erpnextswiss.erpnextswiss.page.bankimport.bankimport import create_referenc
 @frappe.whitelist()
 def get_open_sales_invoices():
     # get unpaid sales invoices
-    sql_query = ("""SELECT `name`, `customer`, `base_grand_total`, `outstanding_amount`, `due_date` 
+    sql_query = ("""SELECT `name`, `customer`, `base_grand_total`, `outstanding_amount`, `due_date`, `esr_reference` 
                 FROM `tabSales Invoice` 
                 WHERE `docstatus` = 1 AND `outstanding_amount` > 0 
                 ORDER BY `due_date` ASC""")
@@ -67,6 +67,8 @@ def submit_all(payment_entries):
 
 @frappe.whitelist()
 def auto_match(method="docid"):
+    # make method lower case
+    method = method.lower()
     # prepare array of matched payments
     matched_payments = []
     # read all new payments
@@ -79,4 +81,11 @@ def auto_match(method="docid"):
                 if unpaid_sales_invoice['name'] in payment['remarks']:
                     matched_payment_entry = match(unpaid_sales_invoice['name'], payment['name'])['payment_entry']
                     matched_payments.append(matched_payment_entry)
+        elif method == "esr":
+            # only check Sales Invoice records with an ESR reference
+            if unpaid_sales_invoice['esr_reference']:
+                for payment in new_payments:
+                    if unpaid_sales_invoice['esr_reference'].replace(' ', '') in payment['remarks']:
+                        matched_payment_entry = match(unpaid_sales_invoice['name'], payment['name'])['payment_entry']
+                        matched_payments.append(matched_payment_entry)
     return { 'message': "Done", 'payments': matched_payments }

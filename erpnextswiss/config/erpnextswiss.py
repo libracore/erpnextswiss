@@ -66,7 +66,13 @@ def get_data():
                        "name": "Pincode",
                        "label": _("Pincode"),
                        "description": _("Pincode")                   
-                   }                   
+                   },
+                   {
+                       "type": "doctype",
+                       "name": "ERPNextSwiss Settings",
+                       "label": _("ERPNextSwiss Settings"),
+                       "description": _("ERPNextSwiss Settings")                   
+                   }                        
             ]
         },
         {

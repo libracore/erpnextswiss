@@ -72,7 +72,7 @@ def generate_transfer_file(start_date, end_date):
 #  debit_credit: "D" or "C"
 def add_transaction_block(account, amount, debit_credit, date, currency, transaction_count):
     transaction_reference = "{0} {1} {2} {3}".format(date, account, debit_credit, amount)
-    short_reference = hashlib.md5(transaction_reference).hexdigest()[0:10]
+    short_reference = "{0}{1}{2}{3}".format(date[0:4], date[5:7], date[8:10], transaction_count)
     content = make_line("  <Transaction id=\"{0}\">").format(transaction_count)
     content += make_line("   <Entry mode=\"SAVE\">")
     content += make_line("    <CollectiveInformation mode=\"SAVE\">")

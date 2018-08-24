@@ -27,6 +27,11 @@ frappe.abacus_export = {
         this.page.main.find(".btn-create-file").on('click', function() {
             frappe.abacus_export.create_transfer_file();
         });
+        
+        // add menu button
+        this.page.add_menu_item(__("Reset export flags"), function() {
+            frappe.abacus_export.reset_export_flags();
+        });
     },
     run: function() {
         // set beginning of the year as start and today as current date
@@ -71,7 +76,8 @@ frappe.abacus_export = {
                 filters: [
                     ["posting_date",">=", start_date],
                     ["posting_date","<=", end_date],
-                    ["docstatus","=", 1]
+                    ["docstatus","=", 1],
+		    ["exported_to_abacus","=",0]
                 ],
                 fields: ["posting_date", "debit", "credit", "account", "voucher_type", "voucher_no"],
                 order_by: "posting_date"
@@ -81,10 +87,10 @@ frappe.abacus_export = {
                 preview_container.innerHTML = "";
                 if (response.message) {
                     if (response.message.length > 0) {
-                    preview_container.innerHTML += frappe.render_template('gl_entry_table', response);
+                        preview_container.innerHTML += frappe.render_template('gl_entry_table', response);
                     } 
                     if (response.message.length == 20) {
-                    preview_container.innerHTML += '<p class="text-muted">' + __("more records available (not shown)") + '</p>';
+                        preview_container.innerHTML += '<p class="text-muted">' + __("more records available (not shown)") + '</p>';
                     }
                 } else {
                     preview_container.innerHTML += '<p class="text-muted">' + __("No general ledger entries found.") + '</p>';
@@ -107,11 +113,14 @@ frappe.abacus_export = {
             },
             callback: function(r) {
                 if (r.message) {
-                // prepare the xml file for download
-                frappe.abacus_export.download("transfer.xml", r.message.content);
-                
-                // disable waiting gif
-                document.getElementById("waiting-gif").classList.add("hide");
+                    // prepare the xml file for download
+                    frappe.abacus_export.download("transfer.xml", r.message.content);
+                    
+                    // disable waiting gif
+                    document.getElementById("waiting-gif").classList.add("hide");
+		    
+		    // update content
+		    frappe.abacus_export.update_preview();
                 } 
             }
         });
@@ -124,6 +133,17 @@ frappe.abacus_export = {
         document.body.appendChild(element);
         element.click();
         document.body.removeChild(element);
+    },
+    reset_export_flags: function () {
+        frappe.call({
+            method: 'erpnextswiss.erpnextswiss.page.abacus_export.abacus_export.reset_export_flags',
+            callback: function(r) {
+                if (r.message) {
+                    frappe.show_alert( __("Export flags reset") );
+		    frappe.abacus_export.update_preview();
+                } 
+            }
+        });
     }
 }
 

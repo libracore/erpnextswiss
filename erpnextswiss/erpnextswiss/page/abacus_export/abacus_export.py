@@ -40,10 +40,21 @@ def generate_transfer_file(start_date, end_date):
                     LEFT JOIN `tabAccount` ON `tabGL Entry`.`account` = `tabAccount`.`name`
                     WHERE `tabGL Entry`.`posting_date` >= '{start_date}' 
                       AND `tabGL Entry`.`posting_date` <= '{end_date}'
-                      AND `tabGL Entry`.`docstatus`= 1
+                      AND `tabGL Entry`.`docstatus` = 1
+                      AND `tabGL Entry`.`exported_to_abacus` = 0
                     GROUP BY `tabAccount`.`account_number`;
             """.format(start_date=start_date, end_date=end_date)
         items = frappe.db.sql(sql_query, as_dict=True)
+        # mark all entries as exported
+        export_matches = frappe.get_all("GL Entry", filters=[
+            ["posting_date",">=", start_date],
+            ["posting_date","<=", end_date],
+            ["docstatus","=", 1],
+		    ["exported_to_abacus","=",0]], fields=['name'])
+        for export_match in export_matches:
+            record = frappe.get_doc("GL Entry", export_match['name'])
+            record.exported_to_abacus = 1
+            record.save(ignore_permissions=True)
         for item in items:
             if item.account_number:
                 if item.credit != 0:
@@ -72,7 +83,7 @@ def generate_transfer_file(start_date, end_date):
 #  debit_credit: "D" or "C"
 def add_transaction_block(account, amount, debit_credit, date, currency, transaction_count):
     transaction_reference = "{0} {1} {2} {3}".format(date, account, debit_credit, amount)
-    short_reference = "{0}{1}{2}{3}".format(date[0:4], date[5:7], date[8:10], transaction_count)
+    short_reference = "{0}{1}{2}{3}".format(date[2:4], date[5:7], date[8:10], transaction_count)
     content = make_line("  <Transaction id=\"{0}\">").format(transaction_count)
     content += make_line("   <Entry mode=\"SAVE\">")
     content += make_line("    <CollectiveInformation mode=\"SAVE\">")
@@ -169,3 +180,10 @@ def get_sales_taxes(sales_invoice):
         return items[0]
     else:
         return None
+
+# this will reset the export flags
+@frappe.whitelist()
+def reset_export_flags():
+    sql_query = """UPDATE `tabGL Entry` SET `exported_to_abacus` = 0;"""
+    frappe.db.sql(sql_query, as_dict=True)
+    return { 'message': 'OK' }

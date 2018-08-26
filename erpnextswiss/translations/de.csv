@@ -177,3 +177,9 @@ Page: abacus_export,Reset export flags,Export-Markierungen entfernen
 DocType: ERPNextSwiss Settings,ERPNextSwiss Settings,ERPNextSwiss Einstellungen
 DocType: ERPNextSwiss Settings,Default Customer,Standardkunde
 DocType: ERPNextSwiss Settings,Use this to define a default customer,Setzt einen Standardkunden
+DocType: Payment Reminder,Payment Reminder,Mahnung
+DocType: Payment Reminder,Payment Reminder Level,Mahnungsstufe
+DocType: Payment Reminder,Exclude From Payment Reminder Until,Von Mahnungsläufen ausschliessen bis
+DocType: Payment Reminder,Level,Stufe
+DocType: Payment Reminder,Create Payment Reminders,Mahnlauf durchführen
+DocType: Payment Reminder,Payment Reminders created,Mahnlauf durchgeführt

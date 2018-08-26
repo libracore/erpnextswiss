@@ -1,7 +1,7 @@
 frappe.listview_settings['Payment Reminder'] = {
     onload: function(listview) {
         listview.page.add_menu_item( __("Create Payment Reminders"), function() {
-            reate_payment_reminders();
+            create_payment_reminders();
         });
     }
 }

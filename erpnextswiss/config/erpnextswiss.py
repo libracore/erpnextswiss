@@ -24,6 +24,12 @@ def get_data():
                        "name": "payment_export",
                        "label": _("Payment export"),
                        "description": _("Payment export")
+                   },
+                   {
+                       "type": "doctype",
+                       "name": "Payment Reminder",
+                       "label": _("Payment Reminder"),
+                       "description": _("Payment Reminder")
                    }
             ]
         },

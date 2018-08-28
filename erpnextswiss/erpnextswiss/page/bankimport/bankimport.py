@@ -6,8 +6,9 @@ from __future__ import unicode_literals
 import frappe
 from frappe import throw, _
 import hashlib
-import xmltodict
+#import xmltodict
 import json
+from bs4 import BeautifulSoup
 
 def parse_ubs(content, account, auto_submit=False):
     # parse a ubs bank extract csv
@@ -460,35 +461,42 @@ def get_bank_accounts():
 @frappe.whitelist()
 def read_camt053(content, bank, account, auto_submit=False):
     #read_camt_transactions_re(content)
-    doc = xmltodict.parse(content)
+    #doc = xmltodict.parse(content)
+    soup = BeautifulSoup(content, 'lxml')
     
     # general information
     try:
-        iban = doc['Document']['BkToCstmrStmt']['Stmt']['Acct']['Id']['IBAN']
+        #iban = doc['Document']['BkToCstmrStmt']['Stmt']['Acct']['Id']['IBAN']
+        iban = soup.document.bktocstmrstmt.stmt.acct.id.iban.get_text()
     except:
         # node not found, probably wrong format
         return { "message": _("Unable to read structure. Please make sure that you have selected the correct format."), "records": None }
             
     # transactions
-    new_payment_entries = read_camt_transactions(doc['Document']['BkToCstmrStmt']['Stmt']['Ntry'], bank, account, auto_submit)
-                
+    #new_payment_entries = read_camt_transactions(doc['Document']['BkToCstmrStmt']['Stmt']['Ntry'], bank, account, auto_submit)
+    entries = soup.find_all('ntry')
+    new_payment_entries = read_camt_transactions(entries, bank, account, auto_submit)
+    
     message = _("Successfully imported {0} payments.".format(len(new_payment_entries)))
     
     return { "message": message, "records": new_payment_entries } 
     
 @frappe.whitelist()
 def read_camt054(content, bank, account, auto_submit=False):
-    doc = xmltodict.parse(content)
+    #doc = xmltodict.parse(content)
+    soup = BeautifulSoup(content, 'lxml')
     
     # general information
     try:
-        iban = doc['Document']['BkToCstmrDbtCdtNtfctn']['Ntfctn']['Acct']['Id']['IBAN']
+        #iban = doc['Document']['BkToCstmrDbtCdtNtfctn']['Ntfctn']['Acct']['Id']['IBAN']
+        iban = soup.document.bktocstmrdbtcdtntfctn.ntfctn.acct.id.iban.get_text()
     except:
         # node not found, probably wrong format
         return { "message": _("Unable to read structure. Please make sure that you have selected the correct format."), "records": None }
         
     # transactions
-    new_payment_entries = read_camt_transactions(doc['Document']['BkToCstmrDbtCdtNtfctn']['Ntfctn']['Ntry'], bank, account, auto_submit)
+    entries = soup.find_all('ntry')
+    new_payment_entries = read_camt_transactions(entries, bank, account, auto_submit)
                 
     message = _("Successfully imported {0} payments.".format(len(new_payment_entries)))
     
@@ -497,78 +505,103 @@ def read_camt054(content, bank, account, auto_submit=False):
 def read_camt_transactions(transaction_entries, bank, account, auto_submit=False):
     new_payment_entries = []
     for entry in transaction_entries:
-        date = entry['BookgDt']['Dt']
-        for transaction in entry['NtryDtls']['TxDtls']:
+        entry_soup = BeautifulSoup(str(entry), 'lxml')
+        date = entry_soup.bookgdt.dt.get_text()
+        transactions = entry_soup.find_all('ntrydtls')
+        for transaction in transactions:
+            transaction_soup = BeautifulSoup(str(transaction), 'lxml')
+            # paid or received: (DBIT: paid, CRDT: received)
             try:
-                unique_reference = transaction['Refs']['AcctSvcrRef']
-                amount = float(transaction['Amt']['#text'])
-                currency = transaction['Amt']['@Ccy']
+                credit_debit = transaction_soup.cdtdbtind.get_text()
+            except:
+                # fallback to entry indicator
+                credit_debit = entry_soup.cdtdbtind.get_text()
+            
+            #try:
+            try:
+                # try to use the account service reference
+                unique_reference = transaction_soup.txdtls.refs.acctsvcrref.get_text()
+            except:
+                # fallback: use tx id
+                unique_reference = transaction_soup.txdtls.refs.txid.get_text()
+            amount = float(transaction_soup.txdtls.amt.get_text())
+            currency = transaction_soup.txdtls.amt['ccy']
+            try:
+                if credit_debit == "DBIT":
+                    # use RltdPties:Cdtr
+                    party_soup = BeautifulSoup(str(transaction_soup.txdtls.rltdpties.cbtr)) 
+                    try:
+                        party_iban = transaction_soup.cbtracct.id.iban.get_text()
+                    except:
+                        party_iban = ""
+                else:
+                    # CRDT: use RltdPties:Dbtr
+                    party_soup = BeautifulSoup(str(transaction_soup.txdtls.rltdpties.dbtr)) 
+                    try:
+                        party_iban = transaction_soup.dbtracct.id.iban.get_text()
+                    except:
+                        party_iban = ""
+                customer_address = BeautifulSoup(str(transaction_soup.txdtls.rltdpties.dbtr))
+                customer_name = party_soup.nm.get_text()
                 try:
-                    customer = transaction['RltdPties']['Dbtr']
-                    customer_name = customer['Nm']
+                    street = party_soup.strtnm.get_text()
                     try:
-                        street = customer['PstlAdr']['StrtNm']
-                        try:
-                            street_number = customer['PstlAdr']['BldgNb']
-                            address_line = "{0} {1}".format(street, street_number)
-                        except:
-                            address_line = street
-                            
+                        street_number = party_soup.bldgnb.get_text()
+                        address_line = "{0} {1}".format(street, street_number)
                     except:
-                        address_line = ""
-                    try:
-                        plz = customer['PstlAdr']['PstCd']
-                    except:
-                        plz = ""
-                    try:
-                        town = customer['PstlAdr']['TwnNm']
-                    except:
-                        town = ""
-                    try:
-                        country = customer['PstlAdr']['Ctry']
-                    except:
-                        country = ""
-                    customer_address = "{0}, {1} {2}, {3}".format(
-                        address_line,
-                        plz,
-                        town,
-                        country)
-                    try:
-                        customer_iban = transaction['RltdPties']['DbtrAcct']['Id']['IBAN']
-                    except:
-                        customer_iban = ""
+                        address_line = street
+                        
                 except:
-                    # key related parties not found / no customer info
-                    customer_name = "Postschalter"
-                    customer_address = ""
-                    customer_iban = ""
+                    address_line = ""
                 try:
-                    charges = float(transaction['Chrgs']['TtlChrgsAndTaxAmt']['#text'])
+                    plz = party_soup.pstcd.get_text()
                 except:
-                    charges = 0.0
-                # paid or received: (DBIT: paid, CRDT: received)
-                credit_debit = transaction['CdtDbtInd']
+                    plz = ""
                 try:
-                    # try to find ESR reference
-                    transaction_reference = transaction['RmtInf']['Strd']['CdtrRefInf']['Ref']
+                    town = party_soup.twnnm.get_text()
+                except:
+                    town = ""
+                try:
+                    country = party_soup.ctry.get_text()
+                except:
+                    country = ""
+                customer_address = "{0}, {1} {2}, {3}".format(
+                    address_line,
+                    plz,
+                    town,
+                    country)
+                
+            except:
+                # key related parties not found / no customer info
+                customer_name = "Postschalter"
+                customer_address = ""
+                customer_iban = ""
+            try:
+                charges = float(transaction_soup.chrgs.ttlchrgsandtaxamt[text])
+            except:
+                charges = 0.0
+
+            try:
+                # try to find ESR reference
+                transaction_reference = transaction_soup.rmtinf.strd.cdtrrefinf.ref.get_text()
+            except:
+                try:
+                    # try to find a user-defined reference (e.g. SINV.)
+                    transaction_reference = transaction_soup.rmtinf.ustrd.get_text() 
                 except:
                     try:
-                        # try to find a user-defined reference (e.g. SINV.)
-                        transaction_reference = transaction['RmtInf']['Ustrd']
+                        # try to find an end-to-end ID
+                        transaction_reference = transaction_soup.cdtdbtind.get_text() 
                     except:
-                        try:
-                            # try to find an end-to-end ID
-                            transaction_reference = transaction['Refs']['EndToEndId']
-                        except:
-                            transaction_reference = unique_reference
-                if credit_debit == "CRDT":
-                    inserted_payment_entry = create_payment_entry(date=date, to_account=account, received_amount=amount, 
-                        transaction_id=unique_reference, remarks="ESR: {0}, {1}, {2}, IBAN: {3}".format(
-                        transaction_reference, customer_name, customer_address, customer_iban), 
-                        auto_submit=False)
-                    if inserted_payment_entry:
-                        new_payment_entries.append(inserted_payment_entry.name)
-            except Exception as e:
-                frappe.msgprint("Parsing error: {0}:{1}".format(str(transaction), e))
-                pass
+                        transaction_reference = unique_reference
+            if credit_debit == "CRDT":
+                inserted_payment_entry = create_payment_entry(date=date, to_account=account, received_amount=amount, 
+                    transaction_id=unique_reference, remarks="ESR: {0}, {1}, {2}, IBAN: {3}".format(
+                    transaction_reference, customer_name, customer_address, customer_iban), 
+                    auto_submit=False)
+                if inserted_payment_entry:
+                    new_payment_entries.append(inserted_payment_entry.name)
+            #except Exception as e:
+            #    frappe.msgprint("Parsing error: {0}:{1}".format(str(transaction), e))
+            #    pass
     return new_payment_entries

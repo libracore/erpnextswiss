@@ -20,6 +20,8 @@ class PaymentReminder(Document):
 # this function will create new payment reminders
 @frappe.whitelist()
 def create_payment_reminders():
+    # check auto submit
+    auto_submit = frappe.get_value("ERPNextSwiss Settings", "ERPNextSwiss Settings", "payment_reminder_auto_submit")
     # get all customers with open sales invoices
     sql_query = ("""SELECT `customer` 
             FROM `tabSales Invoice` 
@@ -32,7 +34,7 @@ def create_payment_reminders():
     # get all sales invoices that are overdue
     if customers:
         for customer in customers:
-            sql_query = ("""SELECT `name`, `due_date`, `payment_reminder_level`, `grand_total` 
+            sql_query = ("""SELECT `name`, `due_date`, `posting_date`, `payment_reminder_level`, `grand_total`, `outstanding_amount` 
                     FROM `tabSales Invoice` 
                     WHERE `outstanding_amount` > 0 AND `customer` = '{0}'
                       AND `docstatus` = 1
@@ -42,21 +44,42 @@ def create_payment_reminders():
             if open_invoices:
                 now = datetime.now()
                 invoices = []
+                highest_level = 0
+                total_before_charges = 0
                 for invoice in open_invoices:
+                    level = invoice.payment_reminder_level + 1
                     new_invoice = { 
                         'sales_invoice': invoice.name,
                         'amount': invoice.grand_total,
+                        'outstanding_amount': invoice.outstanding_amount,
+                        'posting_date': invoice.posting_date,
                         'due_date': invoice.due_date,
-                        'reminder_level': invoice.payment_reminder_level + 1
+                        'reminder_level': level
                     }
+                    if level > highest_level:
+                        highest_level = level
+                    total_before_charges += invoice.outstanding_amount
                     invoices.append(new_invoice)
+                # find reminder charge
+                charge_matches = frappe.get_all("ERPNextSwiss Settings Payment Reminder Charge", 
+                    filters={ 'reminder_level': highest_level },
+                    fields=['reminder_charge'])
+                reminder_charge = 0
+                if charge_matches:
+                    reminder_charge = charge_matches[0]['reminder_charge']
                 new_reminder = frappe.get_doc({
                     "doctype": "Payment Reminder",
                     "customer": customer.customer,
                     "date": "{0}-{1}-{2}".format(now.year, now.month, now.day),
                     "title": "{0} {1}-{2}-{3}".format(customer.customer, now.year, now.month, now.day),
-                    "sales_invoices": invoices
+                    "sales_invoices": invoices,
+                    'highest_level': highest_level,
+                    'total_before_charge': total_before_charges,
+                    'reminder_charge': reminder_charge,
+                    'total_with_charge': (total_before_charges + reminder_charge)
                 })
-                new_reminder.insert()
+                reminder_record = new_reminder.insert()
+                if auto_submit:
+                    reminder_record.submit()
                 frappe.db.commit()
     return

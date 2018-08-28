@@ -183,3 +183,10 @@ DocType: Payment Reminder,Exclude From Payment Reminder Until,Von Mahnungsläufe
 DocType: Payment Reminder,Level,Stufe
 DocType: Payment Reminder,Create Payment Reminders,Mahnlauf durchführen
 DocType: Payment Reminder,Payment Reminders created,Mahnlauf durchgeführt
+DocType: Payment Reminder,Reminder Level,Mahnstufe
+DocType: Payment Reminder,Reminder Charge,Mahngebühr
+DocType: Payment Reminder,Auto Submit,Automatisch buchen
+DocType: Payment Reminder,Reminder Charges,Mahngebühren
+DocType: Payment Reminder,Highest Level,Höchste Stufe
+DocType: Payment Reminder,Total before Charge,Zwischensumme
+DocType: Payment Reminder,Total with Charge,Gesamtsumme

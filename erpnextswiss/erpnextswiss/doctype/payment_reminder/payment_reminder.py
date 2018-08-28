@@ -79,7 +79,8 @@ def create_payment_reminders():
                     'total_with_charge': (total_before_charges + reminder_charge)
                 })
                 reminder_record = new_reminder.insert()
-                if auto_submit:
+                if int(auto_submit) == 1:
+                    reminder_record.update_reminder_levels()
                     reminder_record.submit()
                 frappe.db.commit()
     return

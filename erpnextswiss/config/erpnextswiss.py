@@ -30,6 +30,12 @@ def get_data():
                        "name": "Payment Reminder",
                        "label": _("Payment Reminder"),
                        "description": _("Payment Reminder")
+                   },
+                   {
+                       "type": "doctype",
+                       "name": "Direct Debit Proposal",
+                       "label": _("Direct Debit Proposal"),
+                       "description": _("Direct Debit Proposal")
                    }
             ]
         },

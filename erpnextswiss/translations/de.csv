@@ -199,3 +199,5 @@ Module: ERPNextSwiss,Enable LSV,LSV aktivieren
 DocType: Direct Debit Proposal,Direct Debit Proposal,Lastschrifteinzugsvorschlag
 DocType: Direct Debit Proposal,Create Direct Debit Proposal,Lastschrifteinzug vorbereiten
 DocType: Direct Debit Proposal,No available sales invoices found.,Keine verfügbaren Zahlungen gefunden.
+DocType: Direct Debit Proposal,Download bank file,Bankdatei herunterladen
+DocType: Direct Debit Proposal,Receive to Account,Empfangendes Bankkonto

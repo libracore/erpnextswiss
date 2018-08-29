@@ -190,3 +190,7 @@ DocType: Payment Reminder,Reminder Charges,Mahngebühren
 DocType: Payment Reminder,Highest Level,Höchste Stufe
 DocType: Payment Reminder,Total before Charge,Zwischensumme
 DocType: Payment Reminder,Total with Charge,Gesamtsumme
+Module: ERPNextSwiss,Is proposed,Abgeholt
+Module: ERPNextSwiss,Skonto Percent,Skonto-Prozent
+Module: ERPNextSwiss,Skonto Days,Skonto-Tage
+Module: ERPNextSwiss,Enable LSV,LSV aktivieren

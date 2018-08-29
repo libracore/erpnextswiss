@@ -177,6 +177,8 @@ Page: abacus_export,Reset export flags,Export-Markierungen entfernen
 DocType: ERPNextSwiss Settings,ERPNextSwiss Settings,ERPNextSwiss Einstellungen
 DocType: ERPNextSwiss Settings,Default Customer,Standardkunde
 DocType: ERPNextSwiss Settings,Use this to define a default customer,Setzt einen Standardkunden
+DocType: ERPNextSwiss Settings,Automated Payments,Automatische Zahlungsabwicklung
+DocType: ERPNextSwiss Settings,Planning Period (Days),Planungszeitraum (Tage)
 DocType: Payment Reminder,Payment Reminder,Mahnung
 DocType: Payment Reminder,Payment Reminder Level,Mahnungsstufe
 DocType: Payment Reminder,Exclude From Payment Reminder Until,Von Mahnungsläufen ausschliessen bis
@@ -194,3 +196,6 @@ Module: ERPNextSwiss,Is proposed,Abgeholt
 Module: ERPNextSwiss,Skonto Percent,Skonto-Prozent
 Module: ERPNextSwiss,Skonto Days,Skonto-Tage
 Module: ERPNextSwiss,Enable LSV,LSV aktivieren
+DocType: Direct Debit Proposal,Direct Debit Proposal,Lastschrifteinzugsvorschlag
+DocType: Direct Debit Proposal,Create Direct Debit Proposal,Lastschrifteinzug vorbereiten
+DocType: Direct Debit Proposal,No available sales invoices found.,Keine verfügbaren Zahlungen gefunden.

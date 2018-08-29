@@ -70,8 +70,10 @@ def create_payment_reminders():
                 new_reminder = frappe.get_doc({
                     "doctype": "Payment Reminder",
                     "customer": customer.customer,
-                    "date": "{0}-{1}-{2}".format(now.year, now.month, now.day),
-                    "title": "{0} {1}-{2}-{3}".format(customer.customer, now.year, now.month, now.day),
+                    "date": "{year:04d}-{month:02d}-{day:02d}".format(
+                        year=now.year, month=now.month, day=now.day),
+                    "title": "{customer} {year:04d}-{month:02d}-{day:02d}".format(
+                        customer=customer.customer, year=now.year, month=now.month, day=now.day),
                     "sales_invoices": invoices,
                     'highest_level': highest_level,
                     'total_before_charge': total_before_charges,

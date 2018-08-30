@@ -19,9 +19,11 @@ class DirectDebitProposal(Document):
         for customer in customers:
             amount = 0
             references = []
+            currency = ""
             for sales_invoice in self.sales_invoices:
                 if sales_invoice.customer == customer:
                     amount += sales_invoice.amount
+                    currency = sales_invoce.currency
                     references.append(sales_invoice.sales_invoice)
                     # mark sales invoices as proposed
                     invoice = frappe.get_doc("Sales Invoice", sales_invoice.sales_invoice)
@@ -31,6 +33,7 @@ class DirectDebitProposal(Document):
             new_payment = self.append('payments', {})
             new_payment.customer = customer
             new_payment.amount = amount
+            new_payment.currency = currency
             new_payment.reference = " ".join(references)
 
         # save
@@ -61,84 +64,86 @@ class DirectDebitProposal(Document):
         # initiating party requires at least name or identification
         content += make_line("      <InitgPty>")
         # initiating party name ( e.g. MUSTER AG )
-        content += make_line("        <Nm>" + get_company_name(self.sales_invoices[0].sales_invoice) + "</Nm>")
+        company_name = get_company_name(self.sales_invoices[0].sales_invoice)
+        content += make_line("        <Nm>{0}</Nm>".format(company_name))
         content += make_line("      </InitgPty>")
         content += make_line("    </GrpHdr>")
         
         ### level B
         company_account = frappe.get_doc('Account', self.receive_to_account)
         content += make_line("    <PmtInf>")
-        content += make_line("<PmtInfId>{0}</PmtInfId>".format(self.name))
-        content += make_line("<PmtMtd>DD</PmtMtd>")
-        content += make_line("<PmtTpInf>")
-        content += make_line("<SvcLvl>")
-        content += make_line("  <Cd>SEPA</Cd>")
-        content += make_line("</SvcLvl>")
-        content += make_line("<LclInstrm>")
-        content += make_line("  <Cd>CORE</Cd>")
-        content += make_line("</LclInstrm>")
-        content += make_line("<SeqTp>RCUR</SeqTp>")
-        content += make_line("</PmtTpInf>")
-        content += make_line("<ReqdColltnDt>{0}</ReqdColltnDt>".format(self.date))
-        content += make_line("<Cdtr>")
-        content += make_line("<Nm>Fink Zeitsysteme GmbH</Nm>")
-        content += make_line("</Cdtr>")
-        content += make_line("<CdtrAcct>")
-        content += make_line("<Id>")
-        content += make_line("  <IBAN>{0}</IBAN>".format(company_account.iban))
-        content += make_line("</Id>")
-        content += make_line("</CdtrAcct>")
-        content += make_line("<CdtrAgt>")
-        content += make_line("<FinInstnId>")
-        content += make_line("  <BIC>{0}</BIC>".format(company_account.bic))
-        content += make_line("</FinInstnId>")
-        content += make_line("</CdtrAgt>")
-        content += make_line("<ChrgBr>SLEV</ChrgBr>")
+        content += make_line("     <PmtInfId>{0}</PmtInfId>".format(self.name))
+        content += make_line("     <PmtMtd>DD</PmtMtd>")
+        content += make_line("     <PmtTpInf>")
+        content += make_line("      <SvcLvl>")
+        content += make_line("       <Cd>SEPA</Cd>")
+        content += make_line("      </SvcLvl>")
+        content += make_line("      <LclInstrm>")
+        content += make_line("       <Cd>CORE</Cd>")
+        content += make_line("      </LclInstrm>")
+        content += make_line("      <SeqTp>RCUR</SeqTp>")
+        content += make_line("     </PmtTpInf>")
+        content += make_line("     <ReqdColltnDt>{0}</ReqdColltnDt>".format(self.date))
+        content += make_line("     <Cdtr>")
+        content += make_line("      <Nm>{0}</Nm>".format(company_name))
+        content += make_line("     </Cdtr>")
+        content += make_line("     <CdtrAcct>")
+        content += make_line("      <Id>")
+        content += make_line("       <IBAN>{0}</IBAN>".format(company_account.iban))
+        content += make_line("      </Id>")
+        content += make_line("     </CdtrAcct>")
+        content += make_line("     <CdtrAgt>")
+        content += make_line("      <FinInstnId>")
+        content += make_line("       <BIC>{0}</BIC>".format(company_account.bic))
+        content += make_line("      </FinInstnId>")
+        content += make_line("     </CdtrAgt>")
+        content += make_line("     <ChrgBr>SLEV</ChrgBr>")
         
         # payments
         for payment in self.payments:
             transaction_count += 1
+            customer = frappe.get_doc("Customer", payment.customer)
             content += make_line("<DrctDbtTxInf>")
-            content += make_line("<PmtId>")
+            content += make_line(" <PmtId>")
             content += make_line("  <InstrId>SEPA1-{0}-{1}</InstrId>".format(self.date, transaction_count))
-            content += make_line("  <EndToEndId>{0}-{1}</EndToEndId>".format(self.name, transaction_count)"
-            content += make_line("</PmtId>")
-            content += make_line("<InstdAmt Ccy="{0}">{1}</InstdAmt>".format(payment.currency, payment.amount))
-            content += make_line("        <DrctDbtTx>")
+            content += make_line("  <EndToEndId>{0}-{1}</EndToEndId>".format(self.name, transaction_count))
+            content += make_line(" </PmtId>")
+            content += make_line(" <InstdAmt Ccy="{0}">{1}</InstdAmt>".format(payment.currency, payment.amount))
+            content += make_line(" <DrctDbtTx>")
             content += make_line("  <MndtRltdInf>")
-            content += make_line("    <MndtId>{0}_{1}</MndtId>".format(customer.lsv_code)) ## TODO ???
-            content += make_line("    <DtOfSgntr>{0}</DtOfSgntr>".format(customer.lsv_date)) ## TODO ??
-            content += make_line("    <AmdmntInd>false</AmdmntInd>")
+            content += make_line("   <MndtId>{0}_{1}</MndtId>".format(customer.lsv_code)) ## TODO ???
+            content += make_line("   <DtOfSgntr>{0}</DtOfSgntr>".format(customer.lsv_date)) ## TODO ??
+            content += make_line("   <AmdmntInd>false</AmdmntInd>")
             content += make_line("  </MndtRltdInf>")
             content += make_line("  <CdtrSchmeId>")
-            content += make_line("    <Id>")
-            content += make_line("      <PrvtId>")
-            content += make_line("        <Othr>")
-            content += make_line("          <Id>{0}-{1}</Id>".format(self.name, transaction_count))
-            content += make_line("          <SchmeNm>")
-            content += make_line("            <Prtry>SEPA</Prtry>")
-            content += make_line("          </SchmeNm>")
-            content += make_line("        </Othr>")
-            content += make_line("      </PrvtId>")
-            content += make_line("    </Id>")
+            content += make_line("   <Id>")
+            content += make_line("    <PrvtId>")
+            content += make_line("     <Othr>")
+            content += make_line("      <Id>{0}-{1}</Id>".format(self.name, transaction_count))
+            content += make_line("      <SchmeNm>")
+            content += make_line("       <Prtry>SEPA</Prtry>")
+            content += make_line("      </SchmeNm>")
+            content += make_line("     </Othr>")
+            content += make_line("    </PrvtId>")
+            content += make_line("   </Id>")
             content += make_line("  </CdtrSchmeId>")
-            content += make_line("</DrctDbtTx>")
-            content += make_line("<DbtrAgt>")
+            content += make_line(" </DrctDbtTx>")
+            content += make_line(" <DbtrAgt>")
             content += make_line("  <FinInstnId>")
             content += make_line("    <BIC>{0}</BIC>".format(customer.bic))
             content += make_line("  </FinInstnId>")
-            content += make_line("</DbtrAgt>")
-            content += make_line("<Dbtr>")
-            content += make_line("  <Nm>{0}</Nm>".format(customer.full_name))
-            content += make_line("</Dbtr>")
-            content += make_line("<DbtrAcct>")
+            content += make_line(" </DbtrAgt>")
+            content += make_line(" <Dbtr>")
+            content += make_line("  <Nm>{0}</Nm>".format(customer.customer_name))
+            content += make_line(" </Dbtr>")
+            content += make_line(" <DbtrAcct>")
             content += make_line("  <Id>")
-            content += make_line("    <IBAN>{0}</IBAN>".format(customer.iban))
+            content += make_line("   <IBAN>{0}</IBAN>".format(customer.iban))
             content += make_line("  </Id>")
-            content += make_line("</DbtrAcct>")
-            content += make_line("<RmtInf>")
+            content += make_line(" </DbtrAcct>")
+            content += make_line(" <RmtInf>")
             content += make_line("  <Ustrd>{0}</Ustrd>".format(payment.reference))
-            content += make_line("</RmtInf>")
+            content += make_line(" </RmtInf>")
             content += make_line("</DrctDbtTxInf>")
       
         # add footer
@@ -159,7 +164,7 @@ def get_company_name(sales_invoice):
 @frappe.whitelist()
 def create_direct_debit_proposal():
     # get all customers with open sales invoices
-    sql_query = ("""SELECT `customer`, `name`,  `outstanding_amount`, `due_date`
+    sql_query = ("""SELECT `customer`, `name`,  `outstanding_amount`, `due_date`, `currency`
             FROM `tabSales Invoice` 
             WHERE `docstatus` = 1 
               AND `outstanding_amount` > 0
@@ -176,7 +181,8 @@ def create_direct_debit_proposal():
                 'customer': invoice.customer,
                 'sales_invoice': invoice.name,
                 'amount': invoice.outstanding_amount,
-                'due_date': invoice.due_date
+                'due_date': invoice.due_date,
+                'currency': invoice.currency
             }
             invoices.append(new_invoice)
         # create new record

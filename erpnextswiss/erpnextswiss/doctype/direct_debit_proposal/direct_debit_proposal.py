@@ -6,9 +6,12 @@ from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
 from datetime import datetime
+import time
 
 class DirectDebitProposal(Document):
     def on_submit(self):
+        # clean payments (to prevent accumulation on re-submit)
+        self.payments = {}
         # create the aggregated payment table
         # collect customers
         customers = []
@@ -23,7 +26,7 @@ class DirectDebitProposal(Document):
             for sales_invoice in self.sales_invoices:
                 if sales_invoice.customer == customer:
                     amount += sales_invoice.amount
-                    currency = sales_invoce.currency
+                    currency = sales_invoice.currency
                     references.append(sales_invoice.sales_invoice)
                     # mark sales invoices as proposed
                     invoice = frappe.get_doc("Sales Invoice", sales_invoice.sales_invoice)
@@ -109,10 +112,11 @@ class DirectDebitProposal(Document):
             content += make_line("  <EndToEndId>{0}-{1}</EndToEndId>".format(self.name, transaction_count))
             content += make_line(" </PmtId>")
             content += make_line(" <InstdAmt Ccy=\"{0}\">{1}</InstdAmt>".format(payment.currency, payment.amount))
+            control_sum += payment.amount
             content += make_line(" <DrctDbtTx>")
             content += make_line("  <MndtRltdInf>")
-            content += make_line("   <MndtId>{0}_{1}</MndtId>".format(customer.lsv_code)) ## TODO ???
-            content += make_line("   <DtOfSgntr>{0}</DtOfSgntr>".format(customer.lsv_date)) ## TODO ??
+            content += make_line("   <MndtId>{0}</MndtId>".format(customer.lsv_code))
+            content += make_line("   <DtOfSgntr>{0}</DtOfSgntr>".format(customer.lsv_date))
             content += make_line("   <AmdmntInd>false</AmdmntInd>")
             content += make_line("  </MndtRltdInf>")
             content += make_line("  <CdtrSchmeId>")
@@ -196,3 +200,7 @@ def create_direct_debit_proposal():
         new_record = proposal_record.name
         frappe.db.commit()
     return new_record
+
+# adds Windows-compatible line endings (to make the xml look nice)    
+def make_line(line):
+    return line + "\r\n"

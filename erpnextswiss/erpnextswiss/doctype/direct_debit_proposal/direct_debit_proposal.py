@@ -108,7 +108,7 @@ class DirectDebitProposal(Document):
             content += make_line("  <InstrId>SEPA1-{0}-{1}</InstrId>".format(self.date, transaction_count))
             content += make_line("  <EndToEndId>{0}-{1}</EndToEndId>".format(self.name, transaction_count))
             content += make_line(" </PmtId>")
-            content += make_line(" <InstdAmt Ccy="{0}">{1}</InstdAmt>".format(payment.currency, payment.amount))
+            content += make_line(" <InstdAmt Ccy=\"{0}\">{1}</InstdAmt>".format(payment.currency, payment.amount))
             content += make_line(" <DrctDbtTx>")
             content += make_line("  <MndtRltdInf>")
             content += make_line("   <MndtId>{0}_{1}</MndtId>".format(customer.lsv_code)) ## TODO ???

@@ -106,8 +106,7 @@ def generate_payment_file(payments):
                 # debitor agent (sender) - BIC
                 payment_content += make_line("      <DbtrAgt>")
                 payment_content += make_line("        <FinInstnId>")
-                payment_content += make_line("          <BIC>" +
-                    payment_account.bic + "</BIC>")
+                payment_content += make_line("          <BIC>{0}</BIC>".format(payment_account.bic))
                 payment_content += make_line("        </FinInstnId>")
                 payment_content += make_line("      </DbtrAgt>")
                 

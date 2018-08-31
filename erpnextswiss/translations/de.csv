@@ -205,3 +205,6 @@ DocType: Direct Debit Proposal,Banking,Bankverbindung
 DocType: Direct Debit Proposal,LSV Code,LSV-Code
 DocType: Direct Debit Proposal,LSV Date,LSV-Datum
 DocType: Direct Debit Proposal,Please select an account to receive to.,Bitte wählen Sie ein Zielkonto aus.
+DocType: Payment Proposal,Create Payment Proposal,Zahlungsvorschlag erstellen
+DocType: Payment Proposal,Payment Proposal,Zahlungsvorschlag
+DocType: Payment Proposal,No suitable invoices found.,Keine passenden Rechnungen gefunden.

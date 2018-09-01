@@ -26,36 +26,44 @@ class PaymentProposal(Document):
             currency = ""
             address = ""
             # try executing in 30 days (will be reduced by actual due dates)
-            exec_date = self.date + timedelta(days=30)
+            exec_date = datetime.strptime(self.date, "%Y-%m-%d") + timedelta(days=30)
             for purchase_invoice in self.purchase_invoices:
                 if purchase_invoice.supplier == supplier:
                     currency = purchase_invoice.currency
-                    address = purchase_invoice.supplier_address
-                    references.append(purchase_invoice.sales_invoice)
+                    pinv = frappe.get_doc("Purchase Invoice", purchase_invoice.purchase_invoice)
+                    address = pinv.supplier_address
+                    references.append(purchase_invoice.purchase_invoice)
                     # find if skonto applies
-                    if (purchase_invoice.skonto_date) and (purchase_invoice.skonto_date > datetime.now()):
-						amount += purchase_invoice.skonto_amount
-						if exec_date > purchase_invoice.skonto_date:
-							exec_date > purchase_invoice.skonto_date					 
-					else:
-						amount += purchase_invoice.amount
-						if exec_date > purchase_invoice.due_date:
-							exec_date > purchase_invoice.due_date
+                    if purchase_invoice.skonto_date:
+						skonto_date = datetime.strptime(purchase_invoice.skonto_date, "%Y-%m-%d")
+                    due_date = datetime.strptime(purchase_invoice.due_date, "%Y-%m-%d")
+                    if (purchase_invoice.skonto_date) and (skonto_date > datetime.now()):
+                        amount += purchase_invoice.skonto_amount       
+                        if exec_date > skonto_date:
+                            exec_date = skonto_date
+                    else:
+                        amount += purchase_invoice.amount
+                        if exec_date > due_date:
+                            exec_date = due_date
                     # mark sales invoices as proposed
                     invoice = frappe.get_doc("Purchase Invoice", purchase_invoice.purchase_invoice)
                     invoice.is_proposed = 1
                     invoice.save()
             # make sure execution date is valid
             if exec_date <= datetime.now():
-				exec_date = datetime.now() + timedelta(days=1)
+                exec_date = datetime.now() + timedelta(days=1)
             # add new payment record
             new_payment = self.append('payments', {})
             supl = frappe.get_doc("Supplier", supplier)
             new_payment.receiver = supl.supplier_name
-            new_pamyent.iban = supl.iban
-			addr = frappe.get_doc("Address", address)
-			new_payment.receiver_address_line1 = format(addr.address_line1)
-			new_payment.receiver_address_line2 = "{0} {1}".format(addr.pincode, addr.city)
+            new_payment.iban = supl.iban
+            try:
+                addr = frappe.get_doc("Address", address)
+                new_payment.receiver_address_line1 = format(addr.address_line1)
+                new_payment.receiver_address_line2 = "{0} {1}".format(addr.pincode, addr.city)
+            except:
+                new_payment.receiver_address_line1 = ""
+                new_payment.receiver_address_line2 = ""                
             new_payment.amount = amount
             new_payment.currency = currency
             new_payment.reference = " ".join(references)
@@ -63,7 +71,8 @@ class PaymentProposal(Document):
             
         # collect employees
         employees = []
-        for expense_claim in self.expense_claims:
+        account_currency = frappe.get_value("Account", self.pay_from_account, 'account_currency')
+        for expense_claim in self.expenses:
             if expense_claim.employee not in employees:
                 employees.append(expense_claim.employee)
         # aggregate expense claims
@@ -71,10 +80,10 @@ class PaymentProposal(Document):
             amount = 0
             references = []
             currency = ""
-            for expense_claim in self.expense_claims:
+            for expense_claim in self.expenses:
                 if expense_claim.employee == employee:
                     amount += expense_claim.amount
-                    currency = expense_claim.currency
+                    currency = account_currency
                     references.append(expense_claim.expense_claim)
                     # mark expense claim as proposed
                     invoice = frappe.get_doc("Expense Claim", expense_claim.expense_claim)
@@ -83,14 +92,14 @@ class PaymentProposal(Document):
             # add new payment record
             new_payment = self.append('payments', {})
             emp = frappe.get_doc("Employee", employee)
-            new_payment.receiver = emp.full_name
-            new_pamyent.iban = emp.bank_ac_no
+            new_payment.receiver = emp.employee_name
+            new_payment.iban = emp.bank_ac_no
             try:
-				address_lines = emp.permanent_address.split("\n")
-				new_payment.receiver_address_line1 = address_lines[0]
-				new_payment.receiver_address_line2 = address_lines[1]
-			except:
-				frappe.throw( _("Employee address not valid"))
+                address_lines = emp.permanent_address.split("\n")
+                new_payment.receiver_address_line1 = address_lines[0]
+                new_payment.receiver_address_line2 = address_lines[1]
+            except:
+                frappe.throw( _("Employee address not valid"))
             new_payment.amount = amount
             new_payment.currency = currency
             new_payment.reference = " ".join(references)
@@ -112,6 +121,8 @@ class PaymentProposal(Document):
 def create_payment_proposal():
     # get planning days
     planning_days = frappe.get_value("ERPNextSwiss Settings", "ERPNextSwiss Settings", 'planning_days')
+    if not planning_days:
+        frappe.throw( "Please configure the planning period in ERPNextSwiss Settings.")
     # get all suppliers with open purchase invoices
     sql_query = ("""SELECT 
                   `tabPurchase Invoice`.`supplier` AS `supplier`, 
@@ -139,7 +150,7 @@ def create_payment_proposal():
             'due_date': invoice.due_date,
             'currency': invoice.currency,
             'skonto_date': invoice.skonto_date,
-            'skonot_amount': invoice.skonto_amount
+            'skonto_amount': invoice.skonto_amount
         }
         invoices.append(new_invoice)
     # get all open expense claims
@@ -171,7 +182,7 @@ def create_payment_proposal():
         'title': "{year:04d}-{month:02d}-{day:02d}".format(year=now.year, month=now.month, day=now.day),
         'date': "{year:04d}-{month:02d}-{day:02d}".format(year=date.year, month=date.month, day=date.day),
         'purchase_invoices': invoices,
-        'expense_claims': expenses
+        'expenses': expenses
     })
     proposal_record = new_proposal.insert()
     new_record = proposal_record.name

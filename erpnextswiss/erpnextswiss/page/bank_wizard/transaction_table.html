@@ -1,0 +1,18 @@
+<table  class="table">
+    <tr>
+        <th>{{ __("Date") }}</th>
+        <th>{{ __("Amount") }}</th>
+        <th>{{ __("Reference") }}</th>
+        <th>{{ __("C/D") }}</th>
+        <th>{{ __("Action") }}</th>
+    </tr>
+    {% for transaction in transactions %}
+    <tr>
+        <td>{{ transaction.date }}</td>
+        <td>{{ transaction.currency }} {{ transaction.amount }}</td>
+        <td>{{ transaction.transaction_reference }}</td>
+        <td>{{ transaction.credit_debit }}</td>
+        <td></td>
+    </tr>
+    {% endfor %}
+</table>

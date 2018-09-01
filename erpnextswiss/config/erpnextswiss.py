@@ -36,6 +36,18 @@ def get_data():
                        "name": "Direct Debit Proposal",
                        "label": _("Direct Debit Proposal"),
                        "description": _("Direct Debit Proposal")
+                   },
+                   {
+                       "type": "doctype",
+                       "name": "Payment Proposal",
+                       "label": _("Payment Proposal"),
+                       "description": _("Payment Proposal")
+                   },
+                   {
+                       "type": "page",
+                       "name": "bank_wizard",
+                       "label": _("Bank Wizard"),
+                       "description": _("Bank Wizard")
                    }
             ]
         },

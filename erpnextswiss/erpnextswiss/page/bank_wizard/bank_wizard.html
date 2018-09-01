@@ -1,0 +1,30 @@
+<div style="margin: 5px; margin-top: 0px; border-top: 1px solid white; ">
+  <p class="text-muted">{%= __("Import payment entries from bank account file") %}</p>
+
+  <div class="section-body">
+    <div class="row"> 
+	  <div class="form-column col-sm-4">
+	    <p>{{ __("Payment account") }}</p>
+	    <select id="payment_account">
+
+	    </select>
+	  </div>
+
+	  <div class="form-column col-sm-4">
+	    <p>{{ __("File") }} <input type="file" id="input_file" /></p>
+	    <button type="submit" class="btn btn-sm btn-primary btn-parse-file">{{ __("Parse") }}</button>
+	  </div>
+	  	  
+    </div>
+	    
+  </div>
+  
+</div>
+
+<div id="waitingScreen" class="overlay">
+	<!-- Overlay content -->
+  <div class="overlay-content">
+    <p><i class="fa fa-spinner fa-spin" style="font-size:80px"></i></p>
+    <p>{{ __("Please wait, parsing data...") }}</p>
+  </div>
+</div>

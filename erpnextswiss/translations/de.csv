@@ -208,3 +208,4 @@ DocType: Direct Debit Proposal,Please select an account to receive to.,Bitte wä
 DocType: Payment Proposal,Create Payment Proposal,Zahlungsvorschlag erstellen
 DocType: Payment Proposal,Payment Proposal,Zahlungsvorschlag
 DocType: Payment Proposal,No suitable invoices found.,Keine passenden Rechnungen gefunden.
+Page: Bank Wizard,Bank Wizard,Bankassistent

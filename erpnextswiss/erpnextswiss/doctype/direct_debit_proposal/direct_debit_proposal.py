@@ -166,14 +166,19 @@ def get_company_name(sales_invoice):
     
 # this function will create a new direct debit proposal
 @frappe.whitelist()
-def create_direct_debit_proposal():
+def create_direct_debit_proposal(company=None):
+    # check companies
+    if company == None:
+        companies = frappe.get_all("Company", filters={}, fields=['name'])
+        company = companies[0]['name']
     # get all customers with open sales invoices
     sql_query = ("""SELECT `customer`, `name`,  `outstanding_amount`, `due_date`, `currency`
             FROM `tabSales Invoice` 
             WHERE `docstatus` = 1 
               AND `outstanding_amount` > 0
               AND `enable_lsv` = 1
-              AND `is_proposed` = 0;""")
+              AND `is_proposed` = 0
+              AND `company` = '{0}';""".format(company))
     sales_invoices = frappe.db.sql(sql_query, as_dict=True)
     new_record = None
     # get all sales invoices that are overdue

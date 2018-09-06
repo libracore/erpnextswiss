@@ -20,7 +20,7 @@ frappe.ui.form.on('Payment Proposal', {
      },
      validate: function(frm) {
           if (frm.doc.pay_from_account == null) {
-               frappe.msgprint( __("Please select an account to receive to.") );
+               frappe.msgprint( __("Please select an account to pay from.") );
                frappe.validated = false;
           }
      }

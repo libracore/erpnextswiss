@@ -359,7 +359,7 @@ def create_payment_proposal(company=None):
                   `tabPurchase Invoice`.`outstanding_amount` AS `outstanding_amount`, 
                   `tabPurchase Invoice`.`due_date` AS `due_date`, 
                   `tabPurchase Invoice`.`currency` AS `currency`,
-                  (DATE_ADD(`tabPurchase Invoice`.`posting_date`, INTERVAL `tabPayment Terms Template`.`skonto_days` DAY)) AS `skonto_date`,
+                  (IF (`tabPayment Terms Template`.`skonto_days` = 0, `tabPurchase Invoice`.`due_date`, (DATE_ADD(`tabPurchase Invoice`.`posting_date`, INTERVAL `tabPayment Terms Template`.`skonto_days` DAY)))) AS `skonto_date`,
                   (((100 - `tabPayment Terms Template`.`skonto_percent`)/100) * `tabPurchase Invoice`.`outstanding_amount`) AS `skonto_amount`
                 FROM `tabPurchase Invoice` 
                 LEFT JOIN `tabPayment Terms Template` ON `tabPurchase Invoice`.`payment_terms_template` = `tabPayment Terms Template`.`name`

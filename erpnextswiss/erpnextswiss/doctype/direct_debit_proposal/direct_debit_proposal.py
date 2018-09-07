@@ -46,7 +46,12 @@ class DirectDebitProposal(Document):
         # create xml header
         content = make_line("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
         # define xml template reference
-        content += make_line("<Document xmlns=\"http://www.six-interbank-clearing.com/de/pain.008.001.03.ch.02.xsd\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.six-interbank-clearing.com/de/pain.008.001.03.ch.02.xsd  pain.008.001.03.ch.02.xsd\">")
+        # load namespace based on banking region
+        banking_region = frappe.get_value("ERPNextSwiss Settings", "ERPNextSwiss Settings", "banking_region")
+        if banking_region == "AT":
+            content += make_line("<Document xmlns=\"urn:iso:std:iso:20022:tech:xsd:pain.008.001.02\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"\">")
+        else:
+            content += make_line("<Document xmlns=\"http://www.six-interbank-clearing.com/de/pain.008.001.03.ch.02.xsd\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.six-interbank-clearing.com/de/pain.008.001.03.ch.02.xsd  pain.008.001.03.ch.02.xsd\">")
         # transaction holder
         content += make_line("  <CstmrDrctDbtInitn>")
         ### Group Header (GrpHdr, A-Level)
@@ -72,6 +77,8 @@ class DirectDebitProposal(Document):
         content += make_line("      </InitgPty>")
         content += make_line("    </GrpHdr>")
         
+        # get participation ID
+        participation_number = frappe.get_value("ERPNextSwiss Settings", "ERPNextSwiss Settings", "participation_number")
         ### level B
         company_account = frappe.get_doc('Account', self.receive_to_account)
         content += make_line("    <PmtInf>")
@@ -92,7 +99,7 @@ class DirectDebitProposal(Document):
         content += make_line("     </Cdtr>")
         content += make_line("     <CdtrAcct>")
         content += make_line("      <Id>")
-        content += make_line("       <IBAN>{0}</IBAN>".format(company_account.iban))
+        content += make_line("       <IBAN>{0}</IBAN>".format(company_account.iban.replace(" ", "")))
         content += make_line("      </Id>")
         content += make_line("     </CdtrAcct>")
         content += make_line("     <CdtrAgt>")
@@ -123,7 +130,7 @@ class DirectDebitProposal(Document):
             content += make_line("   <Id>")
             content += make_line("    <PrvtId>")
             content += make_line("     <Othr>")
-            content += make_line("      <Id>{0}-{1}</Id>".format(self.name, transaction_count))
+            content += make_line("      <Id>{0}</Id>".format(participation_number))
             content += make_line("      <SchmeNm>")
             content += make_line("       <Prtry>SEPA</Prtry>")
             content += make_line("      </SchmeNm>")
@@ -142,7 +149,7 @@ class DirectDebitProposal(Document):
             content += make_line(" </Dbtr>")
             content += make_line(" <DbtrAcct>")
             content += make_line("  <Id>")
-            content += make_line("   <IBAN>{0}</IBAN>".format(customer.iban))
+            content += make_line("   <IBAN>{0}</IBAN>".format(customer.iban.replace(" ", "")))
             content += make_line("  </Id>")
             content += make_line(" </DbtrAcct>")
             content += make_line(" <RmtInf>")

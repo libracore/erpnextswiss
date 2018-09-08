@@ -38,20 +38,25 @@ class PaymentProposal(Document):
                     if purchase_invoice.skonto_date:
                         skonto_date = datetime.strptime(purchase_invoice.skonto_date, "%Y-%m-%d")
                     due_date = datetime.strptime(purchase_invoice.due_date, "%Y-%m-%d")
-                    if (purchase_invoice.skonto_date) and (skonto_date > datetime.now()):
-                        amount += purchase_invoice.skonto_amount       
+                    if (purchase_invoice.skonto_date) and (skonto_date > datetime.now()):  
+                        this_amount = purchase_invoice.skonto_amount    
                         if exec_date > skonto_date:
                             exec_date = skonto_date
                     else:
-                        amount += purchase_invoice.amount
+                        this_amount = purchase_invoice.amount
                         if exec_date > due_date:
                             exec_date = due_date
                     payment_type = purchase_invoice.payment_type
                     if payment_type == "ESR":
                         # run as individual payment (not aggregated)
-                        # TODO
-                        pass
-                        
+                        supl = frappe.get_doc("Supplier", supplier)
+                        addr = frappe.get_doc("Address", address)
+                        self.add_payment(supl.supplier_name, supl.iban, payment_type,
+                            addr.address_line1, "{0} {1}".format(addr.pincode, addr.city), addr.country,
+                            this_amount, currency, " ".join(references), exec_date, 
+                            purchase_invoice.esr_reference, purchase_invoice.esr_participation_number)
+                    else:
+                        amount += this_amount
                     # mark sales invoices as proposed
                     invoice = frappe.get_doc("Purchase Invoice", purchase_invoice.purchase_invoice)
                     invoice.is_proposed = 1
@@ -60,23 +65,12 @@ class PaymentProposal(Document):
             if exec_date <= datetime.now():
                 exec_date = datetime.now() + timedelta(days=1)
             # add new payment record
-            new_payment = self.append('payments', {})
-            supl = frappe.get_doc("Supplier", supplier)
-            new_payment.receiver = supl.supplier_name
-            new_payment.iban = supl.iban
-            try:
+            if amount > 0:
+                supl = frappe.get_doc("Supplier", supplier)
                 addr = frappe.get_doc("Address", address)
-                new_payment.receiver_address_line1 = format(addr.address_line1)
-                new_payment.receiver_address_line2 = "{0} {1}".format(addr.pincode, addr.city)
-                new_payment.receiver_country = addr.country
-            except:
-                new_payment.receiver_address_line1 = ""
-                new_payment.receiver_address_line2 = ""
-                new_payment.receiver_country = "Switzerland"            
-            new_payment.amount = amount
-            new_payment.currency = currency
-            new_payment.reference = " ".join(references)
-            new_payment.execution_date = exec_date
+                self.add_payment(supl.supplier_name, supl.iban, payment_type,
+                    addr.address_line1, "{0} {1}".format(addr.pincode, addr.city), addr.country,
+                    amount, currency, " ".join(references), exec_date)
             
         # collect employees
         employees = []
@@ -99,24 +93,48 @@ class PaymentProposal(Document):
                     invoice.is_proposed = 1
                     invoice.save()
             # add new payment record
-            new_payment = self.append('payments', {})
             emp = frappe.get_doc("Employee", employee)
-            new_payment.receiver = emp.employee_name
-            new_payment.iban = emp.bank_ac_no
-            try:
-                address_lines = emp.permanent_address.split("\n")
-                new_payment.receiver_address_line1 = address_lines[0]
-                new_payment.receiver_address_line2 = address_lines[1]
-            except:
-                frappe.throw( _("Employee address not valid"))
-            new_payment.amount = amount
-            new_payment.currency = currency
-            new_payment.reference = " ".join(references)
-            new_payment.execution_date = self.date
-            
+            address_lines = emp.permanent_address.split("\n")
+            cntry = frappe.get_value("Company", emp.company, "country")
+            self.add_payment(emp.employee_name, emp.bank_ac_no, "IBAN",
+                address_lines[0], address_lines[1], cntry,
+                amount, currency, " ".join(references), self.date)
+
         # save
         self.save()
+
+    def on_cancel(self):
+        # reset is_proposed
+        for purchase_invoice in self.purchase_invoices:
+            # un-mark sales invoices as proposed
+            invoice = frappe.get_doc("Purchase Invoice", purchase_invoice.purchase_invoice)
+            invoice.is_proposed = 0
+            invoice.save()        
+        for expense_claim in self.expenses:
+            # un-mark expense claim as proposed
+            invoice = frappe.get_doc("Expense Claim", expense_claim.expense_claim)
+            invoice.is_proposed = 0
+            invoice.save()               
+        return
     
+    def add_payment(self, receiver_name, iban, payment_type, address_line1, 
+        address_line2, country, amount, currency, reference, execution_date, 
+        esr_reference=None, esr_participation_number=None):
+            new_payment = self.append('payments', {})
+            new_payment.receiver = receiver_name
+            new_payment.iban = iban
+            new_payment.payment_type = payment_type
+            new_payment.receiver_address_line1 = address_line1
+            new_payment.receiver_address_line2 = address_line2
+            new_payment.receiver_country = country           
+            new_payment.amount = amount
+            new_payment.currency = currency
+            new_payment.reference = reference
+            new_payment.execution_date = execution_date
+            new_payment.esr_reference = esr_reference
+            new_payment.esr_participation_number = esr_participation_number      
+            return
+        
     def create_bank_file(self):
         #try:
             # create xml header
@@ -242,9 +260,9 @@ class PaymentProposal(Document):
                     payment_content += make_line("          <Id>")
                     payment_content += make_line("            <Othr>")
                     # ESR participant number
-                    if payment.esr_participantion_number:
+                    if payment.esr_participation_number:
                         payment_content += make_line("              <Id>" +
-                            payment.esr_participantion_number + "</Id>")
+                            payment.esr_participation_number + "</Id>")
                     else:
                         # no particpiation number: not valid record, skip
                         frappe.throw( _("{0}: no ESR participation number found").format(payment) )
@@ -300,9 +318,8 @@ class PaymentProposal(Document):
                 payment_content += make_line("    </PmtInf>")
                 # once the payment is extracted for payment, submit the record
                 transaction_count += 1
-                control_sum += payment_record.paid_amount
+                control_sum += payment.amount
                 content += payment_content
-                payment_record.submit()
             # add footer
             content += make_line("  </CstmrCdtTrfInitn>")
             content += make_line("</Document>")
@@ -348,9 +365,9 @@ def create_payment_proposal(company=None):
     planning_days = frappe.get_value("ERPNextSwiss Settings", "ERPNextSwiss Settings", 'planning_days')
     if not planning_days:
         frappe.throw( "Please configure the planning period in ERPNextSwiss Settings.")
-    # check companies
+    # check companies (take first created if none specififed)
     if company == None:
-        companies = frappe.get_all("Company", filters={}, fields=['name'])
+        companies = frappe.get_all("Company", filters={}, fields=['name'], order_by='creation')
         company = companies[0]['name']
     # get all suppliers with open purchase invoices
     sql_query = ("""SELECT 
@@ -359,10 +376,14 @@ def create_payment_proposal(company=None):
                   `tabPurchase Invoice`.`outstanding_amount` AS `outstanding_amount`, 
                   `tabPurchase Invoice`.`due_date` AS `due_date`, 
                   `tabPurchase Invoice`.`currency` AS `currency`,
-                  (IF (`tabPayment Terms Template`.`skonto_days` = 0, `tabPurchase Invoice`.`due_date`, (DATE_ADD(`tabPurchase Invoice`.`posting_date`, INTERVAL `tabPayment Terms Template`.`skonto_days` DAY)))) AS `skonto_date`,
-                  (((100 - `tabPayment Terms Template`.`skonto_percent`)/100) * `tabPurchase Invoice`.`outstanding_amount`) AS `skonto_amount`
+                  (IF (IFNULL(`tabPayment Terms Template`.`skonto_days`, 0) = 0, `tabPurchase Invoice`.`due_date`, (DATE_ADD(`tabPurchase Invoice`.`posting_date`, INTERVAL `tabPayment Terms Template`.`skonto_days` DAY)))) AS `skonto_date`,
+                  (((100 - IFNULL(`tabPayment Terms Template`.`skonto_percent`, 0))/100) * `tabPurchase Invoice`.`outstanding_amount`) AS `skonto_amount`,
+                  `tabPurchase Invoice`.`payment_type` AS `payment_type`,
+                  `tabPurchase Invoice`.`esr_reference_number` AS `esr_reference`,
+                  `tabSupplier`.`esr_participation_number` AS `esr_participation_number`
                 FROM `tabPurchase Invoice` 
                 LEFT JOIN `tabPayment Terms Template` ON `tabPurchase Invoice`.`payment_terms_template` = `tabPayment Terms Template`.`name`
+                LEFT JOIN `tabSupplier` ON `tabPurchase Invoice`.`supplier` = `tabSupplier`.`name`
                 WHERE `tabPurchase Invoice`.`docstatus` = 1 
                   AND `tabPurchase Invoice`.`outstanding_amount` > 0
                   AND ((`tabPurchase Invoice`.`due_date` <= DATE_ADD(CURDATE(), INTERVAL {planning_days} DAY)) 
@@ -380,7 +401,10 @@ def create_payment_proposal(company=None):
             'due_date': invoice.due_date,
             'currency': invoice.currency,
             'skonto_date': invoice.skonto_date,
-            'skonto_amount': invoice.skonto_amount
+            'skonto_amount': invoice.skonto_amount,
+            'payment_type': invoice.payment_type,
+            'esr_reference': invoice.esr_reference,
+            'esr_participation_number': invoice.esr_participation_number
         }
         invoices.append(new_invoice)
     # get all open expense claims

@@ -23,6 +23,10 @@ frappe.ui.form.on('Payment Proposal', {
                frappe.msgprint( __("Please select an account to pay from.") );
                frappe.validated = false;
           }
+          if ((frm.doc.use_intermediate == 1) && (frm.doc.intermediate_account == null)) {
+               frappe.msgprint( __("Please select an intermediate account.") );
+               frappe.validated = false;
+		  }
      }
 });
 

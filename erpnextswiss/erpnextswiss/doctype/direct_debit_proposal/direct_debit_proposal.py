@@ -32,6 +32,11 @@ class DirectDebitProposal(Document):
                     invoice = frappe.get_doc("Sales Invoice", sales_invoice.sales_invoice)
                     invoice.is_proposed = 1
                     invoice.save()
+                    # create payment on intermediate
+                    if self.use_intermediate == 1:
+                        self.create_payment("Customer", customer, 
+                            "Sales Invoice", sales_invoice.sales_invoice, datetime.now(),
+                            sales_invoice.amount)
             # add new payment record
             new_payment = self.append('payments', {})
             new_payment.customer = customer
@@ -41,7 +46,37 @@ class DirectDebitProposal(Document):
 
         # save
         self.save()
-    
+
+    def create_payment(self, party_type, party_name, 
+                            reference_type, reference_name, date,
+                            amount):
+        # create new payment entry
+        new_payment_entry = frappe.get_doc({
+            'doctype': 'Payment Entry',
+            'payment_type': "Receive",
+            'party_type': party_type,
+            'party': party_name,
+            'posting_date': date,
+            'paid_to': self.intermediate_account,
+            'received_amount': amount,
+            'paid_amount': amount,
+            'reference_no': reference_name,
+            'reference_date': date,
+            'remarks': "From Direct Debit Proposal {0}".format(self.name),
+            'references': [{ 
+                'reference_doctype': reference_type,
+                'reference_name': reference_name,
+                'allocated_amount': amount,
+                'due_date': date,
+                'total_amount': amount,
+                'outstanding_amount': amount
+            }]
+        })
+        inserted_payment_entry = new_payment_entry.insert()
+        inserted_payment_entry.submit()
+        frappe.db.commit()
+        return inserted_payment_entry
+            
     def create_bank_file(self):
         # create xml header
         content = make_line("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")

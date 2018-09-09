@@ -61,6 +61,11 @@ class PaymentProposal(Document):
                     invoice = frappe.get_doc("Purchase Invoice", purchase_invoice.purchase_invoice)
                     invoice.is_proposed = 1
                     invoice.save()
+                    # create payment on intermediate
+                    if self.use_intermediate == 1:
+                        self.create_payment("Supplier", supplier, 
+                            "Purchase Invoice", purchase_invoice.purchase_invoice, exec_date,
+                            purchase_invoice.amount)
             # make sure execution date is valid
             if exec_date <= datetime.now():
                 exec_date = datetime.now() + timedelta(days=1)
@@ -92,6 +97,11 @@ class PaymentProposal(Document):
                     invoice = frappe.get_doc("Expense Claim", expense_claim.expense_claim)
                     invoice.is_proposed = 1
                     invoice.save()
+                    # create payment on intermediate
+                    if self.use_intermediate == 1:
+                        self.create_payment("Employee", employee, 
+                            "Expense Claim", expense_claim.expense_claim, exec_date,
+                            expense_claim.amount)
             # add new payment record
             emp = frappe.get_doc("Employee", employee)
             address_lines = emp.permanent_address.split("\n")
@@ -134,6 +144,36 @@ class PaymentProposal(Document):
             new_payment.esr_reference = esr_reference
             new_payment.esr_participation_number = esr_participation_number      
             return
+    
+    def create_payment(self, party_type, party_name, 
+                            reference_type, reference_name, date,
+                            amount):
+        # create new payment entry
+        new_payment_entry = frappe.get_doc({
+            'doctype': 'Payment Entry',
+            'payment_type': "Pay",
+            'party_type': party_type,
+            'party': party_name,
+            'posting_date': date,
+            'paid_from': self.intermediate_account,
+            'received_amount': amount,
+            'paid_amount': amount,
+            'reference_no': reference_name,
+            'reference_date': date,
+            'remarks': "From Payment Proposal {0}".format(self.name),
+            'references': [{ 
+                'reference_doctype': reference_type,
+                'reference_name': reference_name,
+                'allocated_amount': amount,
+                'due_date': date,
+                'total_amount': amount,
+                'outstanding_amount': amount
+            }]
+        })
+        inserted_payment_entry = new_payment_entry.insert()
+        inserted_payment_entry.submit()
+        frappe.db.commit()
+        return inserted_payment_entry
         
     def create_bank_file(self):
         #try:

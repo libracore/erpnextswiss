@@ -7,6 +7,7 @@ import frappe
 from frappe.model.document import Document
 from datetime import datetime
 import time
+import cgi
 
 class DirectDebitProposal(Document):
     def on_submit(self):
@@ -108,12 +109,12 @@ class DirectDebitProposal(Document):
         content += make_line("      <InitgPty>")
         # initiating party name ( e.g. MUSTER AG )
         company_name = get_company_name(self.sales_invoices[0].sales_invoice)
-        content += make_line("        <Nm>{0}</Nm>".format(company_name))
+        content += make_line("        <Nm>{0}</Nm>".format(cgi.escape(company_name)))
         content += make_line("      </InitgPty>")
         content += make_line("    </GrpHdr>")
         
         # get participation ID
-        participation_number = frappe.get_value("ERPNextSwiss Settings", "ERPNextSwiss Settings", "participation_number")
+        participation_number = frappe.get_value("ERPNextSwiss Settings", "ERPNextSwiss Settings", "participant_number")
         ### level B
         company_account = frappe.get_doc('Account', self.receive_to_account)
         content += make_line("    <PmtInf>")
@@ -130,7 +131,7 @@ class DirectDebitProposal(Document):
         content += make_line("     </PmtTpInf>")
         content += make_line("     <ReqdColltnDt>{0}</ReqdColltnDt>".format(self.date))
         content += make_line("     <Cdtr>")
-        content += make_line("      <Nm>{0}</Nm>".format(company_name))
+        content += make_line("      <Nm>{0}</Nm>".format(cgi.escape(company_name)))
         content += make_line("     </Cdtr>")
         content += make_line("     <CdtrAcct>")
         content += make_line("      <Id>")
@@ -180,7 +181,7 @@ class DirectDebitProposal(Document):
             content += make_line("  </FinInstnId>")
             content += make_line(" </DbtrAgt>")
             content += make_line(" <Dbtr>")
-            content += make_line("  <Nm>{0}</Nm>".format(customer.customer_name))
+            content += make_line("  <Nm>{0}</Nm>".format(cgi.escape(customer.customer_name)))
             content += make_line(" </Dbtr>")
             content += make_line(" <DbtrAcct>")
             content += make_line("  <Id>")
@@ -251,3 +252,5 @@ def create_direct_debit_proposal(company=None):
 # adds Windows-compatible line endings (to make the xml look nice)    
 def make_line(line):
     return line + "\r\n"
+
+

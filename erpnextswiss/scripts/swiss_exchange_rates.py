@@ -15,69 +15,53 @@
 #
 # Note: throws an error if the same currency exchange rate has been imported already on the same day
 #
-#Python 3: from urllib.request import urlopen
-import urllib2
-import xml.etree.ElementTree as ET
+from bs4 import BeautifulSoup
 import frappe
 from time import strftime
+import requests
 
-def read_rates(currencies=["EUR"]):
+def parse_estv_xml(url, currencies):
     # import content into a string from URL XML data
-    # in Python 3, use urllib.request
-    url = "http://www.afd.admin.ch/publicdb/newdb/mwst_kurse/estv/mittelkurse_xml.php"
-    #Python 3: html = urlopen(url)
-    html = urllib2.urlopen(url)
-    data = html.read()
-    html.close()
+    r = requests.get(url)
+    data = r.text
 
     # parse string to an XML object
-    # Refer to https://docs.python.org/2/library/xml.etree.elementtree.html
-    root = ET.fromstring(data)
-    # debug
-    # for child in root:
-    #     print(child.tag, child.attrib)
-    # Note: xml uses an xsl template
-    for currency in root.findall('{http://www.afd.admin.ch/publicdb/newdb/mwst_mittelkurse}devise'):
-        name = currency.find('{http://www.afd.admin.ch/publicdb/newdb/mwst_mittelkurse}waehrung')
+    root = BeautifulSoup(data, 'lxml')
+    for currency in root.find_all('devise'):
+        entry = BeautifulSoup(str(currency), 'lxml')
+        name = entry.waehrung.get_text()
         for selected_currency in currencies:
-            if selected_currency in name.text:
-                rate = currency.find('{http://www.afd.admin.ch/publicdb/newdb/mwst_mittelkurse}kurs')
-                print(name.text + " = " + rate.text + " CHF")
-
-                # insert a new record in ERPNext
-                new_exchange_rate = frappe.get_doc({"doctype": "Currency Exchange"})
-                new_exchange_rate.date = strftime("%Y-%m-%d")
-                new_exchange_rate.from_currency = selected_currency
-                new_exchange_rate.to_currency = "CHF"
-                # Exchange Rate (1 EUR = [?] CHF)
-                new_exchange_rate.exchange_rate = float(rate.text)
-                new_exchange_rate.insert()    
+            if selected_currency in name:
+                rate = entry.kurs.get_text()
+                print(name + " = " + rate + " CHF")
+                create_exchange_rate(selected_currency, float(rate), "CHF")
+    return
+    
+def read_rates(currencies=["EUR"]):
+    parse_estv_xml('http://www.pwebapps.ezv.admin.ch/apps/rates/estv/getavgxml', currencies)
+    return
 
 def read_daily_rates(currencies=["EUR"]):
-    # import content into a string from URL XML data
-    # in Python 3, use urllib.request
-    url = "http://www.pwebapps.ezv.admin.ch/apps/rates/rate/getxml?activeSearchType=today"
-    #Python 3: html = urlopen(url)
-    html = urllib2.urlopen(url)
-    data = html.read()
-    html.close()
+    parse_estv_xml('http://www.pwebapps.ezv.admin.ch/apps/rates/rate/getxml?activeSearchType=today', currencies)
+    return
 
-    # parse string to an XML object
-    # Refer to https://docs.python.org/2/library/xml.etree.elementtree.html
-    root = ET.fromstring(data)
-    # Note: xml uses an xsl template
-    for currency in root.findall('{http://www.pwebapps.ezv.admin.ch/apps/rates}devise'):
-        name = currency.find('{http://www.pwebapps.ezv.admin.ch/apps/rates}waehrung')
-        for selected_currency in currencies:
-            if selected_currency in name.text:
-                rate = currency.find('{http://www.pwebapps.ezv.admin.ch/apps/rates}kurs')
-                print(name.text + " = " + rate.text + " CHF")
-
-                # insert a new record in ERPNext
-                new_exchange_rate = frappe.get_doc({"doctype": "Currency Exchange"})
-                new_exchange_rate.date = strftime("%Y-%m-%d")
-                new_exchange_rate.from_currency = selected_currency
-                new_exchange_rate.to_currency = "CHF"
-                # Exchange Rate (1 EUR = [?] CHF)
-                new_exchange_rate.exchange_rate = float(rate.text)
-                new_exchange_rate.insert()  
+def create_exchange_rate(from_currency, rate, to_currency="CHF"):
+    # insert a new record in ERPNext
+    # Exchange Rate (1 EUR = [?] CHF)
+    date = strftime("%Y-%m-%d")
+    new_exchange_rate = frappe.get_doc({
+        'doctype': "Currency Exchange",
+        'date': date,
+        'from_currency': from_currency,
+        'to_currency': to_currency,
+        'exchange_rate': rate
+    })
+    try:
+        record = new_exchange_rate.insert()  
+    except frappe.exceptions.DuplicateEntryError:
+        print("There is already an exchange rate for {0} on {1}".format(from_currency, date))
+        record = None
+    except Exception as err:
+        print(err.message)
+        record = None
+    return record

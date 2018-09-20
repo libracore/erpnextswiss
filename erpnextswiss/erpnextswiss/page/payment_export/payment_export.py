@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe import throw, _
 import time
+from erpnextswiss.erpnextswiss.common_functions import get_building_number, get_street_name, get_pincode, get_city
 
 @frappe.whitelist()
 def get_payments():
@@ -369,34 +370,3 @@ def get_billing_address(supplier_name, supplier_type="Supplier"):
         # no address found
         return None
 
-# try to get building number from address line
-def get_building_number(address_line):
-    parts = address_line.split(" ")
-    if len(parts) > 1:
-        return parts[-1]
-    else:
-        return None
-        
-# get street name from address line
-def get_street_name(address_line):
-    parts = address_line.split(" ")
-    if len(parts) > 1:
-        return " ".join(parts[:-1])
-    else:
-        return address_line
-        
-# get pincode from address line
-def get_pincode(address_line):
-    parts = address_line.split(" ")
-    if len(parts) > 1:
-        return parts[0]
-    else:
-        return None
-
-# get city from address line
-def get_city(address_line):
-    parts = address_line.split(" ")
-    if len(parts) > 1:
-        return " ".join(parts[1:])
-    else:
-        return address_line

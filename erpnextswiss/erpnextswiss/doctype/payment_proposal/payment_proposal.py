@@ -8,6 +8,7 @@ from frappe.model.document import Document
 from frappe import _
 from datetime import datetime, timedelta
 import time
+from erpnextswiss.erpnextswiss.common_functions import get_building_number, get_street_name, get_pincode, get_city
 
 class PaymentProposal(Document):
     def on_submit(self):
@@ -33,7 +34,7 @@ class PaymentProposal(Document):
                     currency = purchase_invoice.currency
                     pinv = frappe.get_doc("Purchase Invoice", purchase_invoice.purchase_invoice)
                     address = pinv.supplier_address
-                    references.append(purchase_invoice.purchase_invoice)
+                    references.append(purchase_invoice.external_reference)
                     # find if skonto applies
                     if purchase_invoice.skonto_date:
                         skonto_date = datetime.strptime(purchase_invoice.skonto_date, "%Y-%m-%d")
@@ -219,14 +220,14 @@ class PaymentProposal(Document):
                 # create the payment entries
                 payment_content += make_line("    <PmtInf>")
                 # unique (in this file) identification for the payment ( e.g. PMTINF-01, PMTINF-PE-00005 )
-                payment_content += make_line("      <PmtInfId>PMTINF-" + payment.name + "</PmtInfId>")
+                payment_content += make_line("      <PmtInfId>PMTINF-{0}-{1}</PmtInfId>".format(self.name, transaction_count))
                 # payment method (TRF or TRA, no impact in Switzerland)
                 payment_content += make_line("      <PmtMtd>TRF</PmtMtd>")
                 # batch booking (true or false; recommended true)
                 payment_content += make_line("      <BtchBookg>true</BtchBookg>")
-                # Requested Execution Date (e.g. 2010-02-22)
+                # Requested Execution Date (e.g. 2010-02-22, remove time element)
                 payment_content += make_line("      <ReqdExctnDt>{0}</ReqdExctnDt>".format(
-                    payment.execution_date))
+                    payment.execution_date.split(" ")[0]))
                 # debitor (technically ignored, but recommended)   
                 payment_content += make_line("      <Dbtr>")
                 # debitor name
@@ -263,9 +264,9 @@ class PaymentProposal(Document):
                 # payment identification
                 payment_content += make_line("        <PmtId>")
                 # instruction identification 
-                payment_content += make_line("          <InstrId>INSTRID-" + payment.name + "</InstrId>")
+                payment_content += make_line("          <InstrId>INSTRID-{0}-{1}</InstrId>".format(self.name, transaction_count))
                 # end-to-end identification (should be used and unique within B-level; payment entry name)
-                payment_content += make_line("          <EndToEndId>" + payment.name + "</EndToEndId>")
+                payment_content += make_line("          <EndToEndId>{0}-{1}</EndToEndId>".format(self.name, transaction_count))
                 payment_content += make_line("        </PmtId>")
                 # payment type information
                 payment_content += make_line("        <PmtTpInf>")
@@ -390,13 +391,13 @@ class PaymentProposal(Document):
         # address of creditor/supplier (should contain at least country and first address line
         payment_content += make_line("          <PstlAdr>")
         # street name
-        payment_content += make_line("            <StrtNm>" + payment.receiver_address_line1[:-1] + "</StrtNm>")
+        payment_content += make_line("            <StrtNm>{0}</StrtNm>".format(get_street_name(payment.receiver_address_line1)))
         # building number
-        payment_content += make_line("            <BldgNb>" + payment.receiver_address_line1[-1] + "</BldgNb>")
+        payment_content += make_line("            <BldgNb>{0}</BldgNb>".format(get_building_number(payment.receiver_address_line1)))
         # postal code
-        payment_content += make_line("            <PstCd>{0}</PstCd>".format(payment.receiver_address_line2[0]))
+        payment_content += make_line("            <PstCd>{0}</PstCd>".format(get_pincode(payment.receiver_address_line2)))
         # town name
-        payment_content += make_line("            <TwnNm>" + payment.receiver_address_line2[1:] + "</TwnNm>")
+        payment_content += make_line("            <TwnNm>{0}</TwnNm>".format(get_city(payment.receiver_address_line2)))
         country = frappe.get_doc("Country", payment.receiver_country)
         payment_content += make_line("            <Ctry>" + country.code.upper() + "</Ctry>")
         payment_content += make_line("          </PstlAdr>")
@@ -421,6 +422,7 @@ def create_payment_proposal(company=None):
                   `tabPurchase Invoice`.`outstanding_amount` AS `outstanding_amount`, 
                   `tabPurchase Invoice`.`due_date` AS `due_date`, 
                   `tabPurchase Invoice`.`currency` AS `currency`,
+                  `tabPurchase Invoice`.`bill_no` AS `external_reference`,
                   (IF (IFNULL(`tabPayment Terms Template`.`skonto_days`, 0) = 0, `tabPurchase Invoice`.`due_date`, (DATE_ADD(`tabPurchase Invoice`.`posting_date`, INTERVAL `tabPayment Terms Template`.`skonto_days` DAY)))) AS `skonto_date`,
                   (((100 - IFNULL(`tabPayment Terms Template`.`skonto_percent`, 0))/100) * `tabPurchase Invoice`.`outstanding_amount`) AS `skonto_amount`,
                   `tabPurchase Invoice`.`payment_type` AS `payment_type`,
@@ -439,6 +441,7 @@ def create_payment_proposal(company=None):
     # get all purchase invoices that pending
     invoices = []
     for invoice in purchase_invoices:
+        reference = invoice.external_reference or invoice.name
         new_invoice = { 
             'supplier': invoice.supplier,
             'purchase_invoice': invoice.name,
@@ -449,7 +452,8 @@ def create_payment_proposal(company=None):
             'skonto_amount': invoice.skonto_amount,
             'payment_type': invoice.payment_type,
             'esr_reference': invoice.esr_reference,
-            'esr_participation_number': invoice.esr_participation_number
+            'esr_participation_number': invoice.esr_participation_number,
+            'external_reference': reference
         }
         invoices.append(new_invoice)
     # get all open expense claims

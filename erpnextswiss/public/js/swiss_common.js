@@ -81,7 +81,7 @@ function esr_sales_invoice(frm, participant_number) {
 }  
 
 // this function resolves a pin code and fills the city into the target field of a form
-function get_city_from_pincode(pincode, target_field) {
+function get_city_from_pincode(pincode, target_field, state_field="") {
     // find cities
     if (pincode) {
         frappe.call({
@@ -91,7 +91,7 @@ function get_city_from_pincode(pincode, target_field) {
                 filters: [
                     ['pincode','=', pincode]
                 ],
-                fields: ['name', 'pincode', 'city']
+                fields: ['name', 'pincode', 'city', 'canton_code']
             },
             async: false,
             callback: function(response) {
@@ -100,6 +100,9 @@ function get_city_from_pincode(pincode, target_field) {
                         // got exactly one city
                         var city = response.message[0].city;
                         cur_frm.set_value(target_field, city);
+                        if (state_field != "") {
+                            cur_frm.set_value(state_field, response.message[0].canton_code);
+                        }
                     } else {
                         // multiple cities found, show selection
                         var cities = "";
@@ -119,6 +122,9 @@ function get_city_from_pincode(pincode, target_field) {
                             function(values){
                                 var city = values.city;
                                 cur_frm.set_value(target_field, city);
+                                if (state_field != "") {
+                                    cur_frm.set_value(state_field, response.message[0].canton_code);
+                                }
                             },
                             __('City'),
                             __('Set')
@@ -127,6 +133,7 @@ function get_city_from_pincode(pincode, target_field) {
                 } else {
                     // got no match
                     cur_frm.set_value(target_field, "");
+                    console.log("No match");
                 }
             }
         });

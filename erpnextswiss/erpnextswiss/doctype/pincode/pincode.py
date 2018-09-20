@@ -11,6 +11,10 @@ import csv
 class Pincode(Document):
 	pass
 
+def import_pincodes_from_file(filename):
+    f = open(filename, "r")
+    import_pincodes(f.read())
+
 @frappe.whitelist()
 def import_pincodes(content):   
     isfirst = True

@@ -4,22 +4,24 @@
   <div class="section-body">
     <div class="row"> 
 	  <div class="form-column col-sm-4">
-	    <p>{{ __("Payment account") }}</p>
-	    <select id="payment_account">
+	    <p>{{ __("Bank Account") }}</p>
+	    <select id="bank_account">
 
 	    </select>
 	  </div>
 
 	  <div class="form-column col-sm-4">
 	    <p>{{ __("File") }} <input type="file" id="input_file" /></p>
-	    <button type="submit" class="btn btn-sm btn-primary btn-parse-file">{{ __("Parse") }}</button>
 	  </div>
-	  	  
+
+	  <div class="form-column col-sm-4">	  	
+	    <br><button type="submit" class="btn btn-sm btn-primary btn-parse-file">{{ __("Parse") }}</button>  
+	  </div>
     </div>
 	  
     <div class="row">
         <div class="col-sm-12">
-	    <div id="table_placeholder"></div>
+	    <div id="table_placeholder"></div>	    
 	</div>
     </div>
   </div>

@@ -3,16 +3,23 @@
         <th>{{ __("Date") }}</th>
         <th>{{ __("Amount") }}</th>
         <th>{{ __("Reference") }}</th>
-        <th>{{ __("C/D") }}</th>
         <th>{{ __("Action") }}</th>
     </tr>
     {% for transaction in transactions %}
     <tr>
         <td>{{ transaction.date }}</td>
-        <td>{{ transaction.currency }} {{ transaction.amount }}</td>
+        <td>
+            {% if transaction.credit_debit == "DBIT" %}
+                <span class="octicon octicon-repo-pull"></span>
+            {% else %}
+                <span class="octicon octicon-repo-push"></span>
+            {% endif %}
+            {{ transaction.currency }} {{ transaction.amount }}
+        </td>
         <td>{{ transaction.transaction_reference }}</td>
-        <td>{{ transaction.credit_debit }}</td>
-        <td></td>
+        <td>
+          <button type="submit" class="btn btn-sm btn-primary btn-close-intermediary-0">{{ __("Close against intermediate") }}</button>
+        </td>
     </tr>
     {% endfor %}
 </table>

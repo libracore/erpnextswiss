@@ -26,7 +26,7 @@ frappe.bank_wizard = {
             var me = frappe.bankimport;
             
             // get selected account
-            var account = document.getElementById("payment_account").value;
+            var account = document.getElementById("bank_account").value;
             
             // read the file 
             var file = document.getElementById("input_file").files[0];
@@ -79,7 +79,7 @@ frappe.bank_wizard = {
             args: { },
             callback: function(r) {
                 if (r.message) {
-                    var select = document.getElementById("payment_account");
+                    var select = document.getElementById("bank_account");
                     for (var i = 0; i < r.message.accounts.length; i++) {
                         var opt = document.createElement("option");
                         opt.value = r.message.accounts[i];
@@ -100,14 +100,23 @@ frappe.bank_wizard = {
         // disable waiting gif
         frappe.bank_wizard.end_wait();
     
-        console.log(message.transactions);
 	var container = document.getElementById("table_placeholder");
-	console.log("Container: " + container);
 	var content = frappe.render_template('transaction_table', message);
-	console.log("Content: " + content);
 	container.innerHTML = content;
     
         //frappe.msgprint(__(message.message));
-
+	// attach button handlers
+        this.page.main.find(".btn-close-intermediary-0").on('click', function() {
+	    /* frappe.set_route("Form", "Payment Entry",
+		{"payment_type": "Pay"}); */
+	    frappe.call({
+		method: "erpnextswiss.erpnextswiss.page.bank_wizard.bank_wizard.make_payment_entry",
+		args:{},
+            	callback: function(r)
+            	{
+		    frappe.set_route("Form", "Payment Entry", r.message.name)
+            	}
+	    });
+	});
     }
 }

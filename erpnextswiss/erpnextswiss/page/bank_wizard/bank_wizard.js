@@ -107,16 +107,26 @@ frappe.bank_wizard = {
         //frappe.msgprint(__(message.message));
 	// attach button handlers
         this.page.main.find(".btn-close-intermediary-0").on('click', function() {
-	    /* frappe.set_route("Form", "Payment Entry",
-		{"payment_type": "Pay"}); */
-	    frappe.call({
-		method: "erpnextswiss.erpnextswiss.page.bank_wizard.bank_wizard.make_payment_entry",
-		args:{},
-            	callback: function(r)
-            	{
-		    frappe.set_route("Form", "Payment Entry", r.message.name)
-            	}
-	    });
-	});
+	    frappe.bank_wizard.receive_to_intermediate(100, "2018-09-22", 'ZKB - LC', 'ZKB - LC', "123456");
+	}); 
+    },
+    receive_to_intermediate: function(amount, date, paid_from, paid_to, reference) {
+	console.log("receive to intermediate...");
+	frappe.call({
+	    method: "erpnextswiss.erpnextswiss.page.bank_wizard.bank_wizard.make_payment_entry",
+	    args:{
+		'amount': amount,
+		'date': date,
+		'paid_from': paid_from,
+		'paid_to': paid_to,
+		'reference_no': reference,
+		'type': "Internal Transfer"
+	    },
+	    callback: function(r)
+	    {
+		// frappe.set_route("Form", "Payment Entry", r.message)
+		window.open('/desk#Form/Payment Entry/' + r.message, '_blank');
+	    }
+	});	
     }
 }

@@ -302,8 +302,42 @@ def read_camt_transactions(transaction_entries, account):
     return txns
 
 @frappe.whitelist()
-def make_payment_entry():
-    payment_entry = frappe.new_doc("Payment Entry")
-    #payment_entry.party_type = "Supplier"
-    payment_entry.save()
-    return payment_entry.name
+def make_payment_entry(amount, date, reference_no, paid_from=None, paid_to=None, type="Receive", party=None):
+    if type == "Receive":
+        # receive
+        payment_entry = frappe.get_doc({
+            'doctype': 'Payment Entry',
+            'payment_type': 'Receive',
+            'party_type': 'Customer',
+            'party': party,
+            'paid_to': paid_to,
+            'paid_amount': amount,
+            'reference_no': reference_no,
+            'reference_date': date        
+        })
+    elif type == "Pay":
+        # pay
+        payment_entry = frappe.get_doc({
+            'doctype': 'Payment Entry',
+            'payment_type': 'Pay',
+            'party_type': 'Supplier',
+            'party': party,
+            'paid_from': paid_from,
+            'paid_amount': amount,
+            'reference_no': reference_no,
+            'reference_date': date        
+        })
+    else:
+        # internal transfer (against intermediate account)
+        payment_entry = frappe.get_doc({
+            'doctype': 'Payment Entry',
+            'payment_type': 'Internal Transfer',
+            'paid_from': paid_from,
+            'paid_to': paid_to,
+            'paid_amount': amount,
+            'received_amount': amount,
+            'reference_no': reference_no,
+            'reference_date': date        
+        })    
+    new_entry = payment_entry.insert()
+    return new_entry.name

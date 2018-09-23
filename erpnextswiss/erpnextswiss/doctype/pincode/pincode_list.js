@@ -15,7 +15,6 @@ frappe.listview_settings['Pincode'] = {
                 ],
                 primary_action: function() {
                     dlg.hide();
-                    frappe.show_alert( __("Importing data...") );
                     var file = document.getElementById("input_file").files[0];
                     import_pincodes(file);
                 },
@@ -37,7 +36,7 @@ function import_pincodes(file, meeting) {
             var data = e.target.result;
             // process file
             frappe.call({
-                "method": "erpnextswiss.erpnextswiss.doctype.pincode.pincode.import_pincodes",
+                "method": "erpnextswiss.erpnextswiss.doctype.pincode.pincode.enqueue_import_pincodes",
                 "args": {
                     "content": data
                 },

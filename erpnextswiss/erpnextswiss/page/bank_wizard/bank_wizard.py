@@ -142,7 +142,35 @@ def get_bank_accounts():
 def get_intermediate_account():
     account = frappe.get_value('ERPNextSwiss Settings', 'ERPNextSwiss Settings', 'intermediate_account')
     return {'account': account or "" }
+
+@frappe.whitelist()
+def get_default_customer():
+    customer = frappe.get_value('ERPNextSwiss Settings', 'ERPNextSwiss Settings', 'default_customer')
+    return {'customer': customer or "" }
     
+@frappe.whitelist()
+def get_default_supplier():
+    supplier = frappe.get_value('ERPNextSwiss Settings', 'ERPNextSwiss Settings', 'default_supplier')
+    return {'supplier': supplier or "" }
+    
+@frappe.whitelist()
+def get_receivable_account(company=None):
+    if not company:
+        company = get_first_company()
+    account = frappe.get_value('Company', company, 'default_receivable_account')
+    return {'account': account or "" }
+
+@frappe.whitelist()
+def get_payable_account(company=None):
+    if not company:
+        company = get_first_company()
+    account = frappe.get_value('Company', company, 'default_payable_account')
+    return {'account': account or "" }
+
+def get_first_company():
+    companies = frappe.get_all("Company", filters=None, fields=['name'])
+    return companies[0]['name']
+
 @frappe.whitelist()
 def read_camt053(content, account):
     #read_camt_transactions_re(content)
@@ -291,8 +319,9 @@ def read_camt_transactions(transaction_entries, account):
                         transaction_reference = transaction_soup.cdtdbtind.get_text() 
                     except:
                         transaction_reference = unique_reference
-            frappe.log_error("type:{type}\ndate:{date}\namount:{currency} {amount}\nunique ref:{unique}\nparty:{party}\nparty address:{address}\nparty iban:{iban}\nremarks:{remarks}".format(
-                type=credit_debit, date=date, currency=currency, amount=amount, unique=unique_reference, party=party_name, address=party_address, iban=party_iban, remarks=transaction_reference))
+            # debug: show collected record in error log
+            #frappe.log_error("type:{type}\ndate:{date}\namount:{currency} {amount}\nunique ref:{unique}\nparty:{party}\nparty address:{address}\nparty iban:{iban}\nremarks:{remarks}".format(
+            #    type=credit_debit, date=date, currency=currency, amount=amount, unique=unique_reference, party=party_name, address=party_address, iban=party_iban, remarks=transaction_reference))
             
             # check if this transaction is already recorded
             match_payment_entry = frappe.get_all('Payment Entry', filters={'reference_no': unique_reference}, fields=['name'])
@@ -312,44 +341,38 @@ def read_camt_transactions(transaction_entries, account):
                     'transaction_reference': transaction_reference
                 }
                 txns.append(new_txn)    
-            #if credit_debit == "CRDT":
-            #    inserted_payment_entry = create_payment_entry(date=date, to_account=account, received_amount=amount, 
-            #        transaction_id=unique_reference, remarks="ESR: {0}, {1}, {2}, IBAN: {3}".format(
-            #        transaction_reference, customer_name, customer_address, customer_iban), 
-            #        auto_submit=False)
-            #    if inserted_payment_entry:
-            #        new_payment_entries.append(inserted_payment_entry.name)
-            #except Exception as e:
-            #    frappe.msgprint("Parsing error: {0}:{1}".format(str(transaction), e))
-            #    pass
 
     return txns
 
 @frappe.whitelist()
-def make_payment_entry(amount, date, reference_no, paid_from=None, paid_to=None, type="Receive", party=None):
+def make_payment_entry(amount, date, reference_no, paid_from=None, paid_to=None, type="Receive", party=None, party_type=None):
     if type == "Receive":
         # receive
         payment_entry = frappe.get_doc({
             'doctype': 'Payment Entry',
             'payment_type': 'Receive',
-            'party_type': 'Customer',
+            'party_type': party_type,
             'party': party,
             'paid_to': paid_to,
-            'paid_amount': amount,
+            'paid_amount': float(amount),
+            'received_amount': float(amount),
             'reference_no': reference_no,
-            'reference_date': date        
+            'reference_date': date,
+            'posting_date': date
         })
     elif type == "Pay":
         # pay
         payment_entry = frappe.get_doc({
             'doctype': 'Payment Entry',
             'payment_type': 'Pay',
-            'party_type': 'Supplier',
+            'party_type': party_type,
             'party': party,
             'paid_from': paid_from,
-            'paid_amount': amount,
+            'paid_amount': float(amount),
+            'received_amount': float(amount),
             'reference_no': reference_no,
-            'reference_date': date        
+            'reference_date': date,
+            'posting_date': date        
         })
     else:
         # internal transfer (against intermediate account)
@@ -358,10 +381,12 @@ def make_payment_entry(amount, date, reference_no, paid_from=None, paid_to=None,
             'payment_type': 'Internal Transfer',
             'paid_from': paid_from,
             'paid_to': paid_to,
-            'paid_amount': amount,
-            'received_amount': amount,
+            'paid_amount': float(amount),
+            'received_amount': float(amount),
             'reference_no': reference_no,
-            'reference_date': date        
+            'reference_date': date,
+            'posting_date': date    
         })    
+    frappe.log_error(str(payment_entry))
     new_entry = payment_entry.insert()
     return new_entry.name

@@ -21,9 +21,9 @@
         <td>{{ transaction.transaction_reference }}</td>
         <td>
           {% if transaction.credit_debit == "DBIT" %}
-            <button type="submit" class="btn btn-xs btn-default" id="btn-close-payables-{{ transaction.txid }}">{{ __("Close against payales") }}</button>
+            <button type="submit" class="btn btn-xs btn-default" id="btn-close-payable-{{ transaction.txid }}">{{ __("Close against payales") }}</button>
           {% else %}
-            <button type="submit" class="btn btn-xs btn-default" id="btn-close-receivables-{{ transaction.txid }}">{{ __("Close against receivables") }}</button>
+            <button type="submit" class="btn btn-xs btn-default" id="btn-close-receivable-{{ transaction.txid }}">{{ __("Close against receivables") }}</button>
           {% endif %}
           <button type="submit" class="btn btn-xs btn-default" id="btn-close-intermediate-{{ transaction.txid }}">{{ __("Close against intermediate") }}</button>
         </td>

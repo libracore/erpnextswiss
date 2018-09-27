@@ -94,7 +94,48 @@ frappe.bank_wizard = {
                 if ((r.message) && (r.message.account != "")) {
                     document.getElementById("intermediate_account").value = r.message.account;
                 } else {
-		    frappe.msgprint( __("Please set the intermediate bank account in <a href=\"/desk#Form/ERPNextSwiss Settings\">ERPNextSwiss Settings</a>.") );
+		    frappe.msgprint( __("Please set the <b>intermediate bank account</b> in <a href=\"/desk#Form/ERPNextSwiss Settings\">ERPNextSwiss Settings</a>.") );
+		}
+            }
+        }); 
+        frappe.call({
+            method: 'erpnextswiss.erpnextswiss.page.bank_wizard.bank_wizard.get_payable_account',
+            callback: function(r) {
+                if ((r.message) && (r.message.account != "")) {
+                    document.getElementById("payable_account").value = r.message.account;
+		    
+                } else {
+		    frappe.msgprint( __("Please set the <b>default payable bank account</b> in the company.") );
+		}
+            }
+        }); 
+	frappe.call({
+            method: 'erpnextswiss.erpnextswiss.page.bank_wizard.bank_wizard.get_receivable_account',
+            callback: function(r) {
+                if ((r.message) && (r.message.account != "")) {
+                    document.getElementById("receivable_account").value = r.message.account;
+                } else {
+		    frappe.msgprint( __("Please set the <b>default receivable bank account</b> in the company.") );
+		}
+            }
+        }); 
+	frappe.call({
+            method: 'erpnextswiss.erpnextswiss.page.bank_wizard.bank_wizard.get_default_customer',
+            callback: function(r) {
+                if ((r.message) && (r.message.customer != "")) {
+                    document.getElementById("default_customer").value = r.message.customer;
+                } else {
+		    frappe.msgprint( __("Please set the <b>default customer</b> in <a href=\"/desk#Form/ERPNextSwiss Settings\">ERPNextSwiss Settings</a>.") );
+		}
+            }
+        }); 
+	frappe.call({
+            method: 'erpnextswiss.erpnextswiss.page.bank_wizard.bank_wizard.get_default_supplier',
+            callback: function(r) {
+                if ((r.message) && (r.message.supplier != "")) {
+                    document.getElementById("default_supplier").value = r.message.supplier;
+                } else {
+		    frappe.msgprint( __("Please set the <b>default supplier</b> in <a href=\"/desk#Form/ERPNextSwiss Settings\">ERPNextSwiss Settings</a>.") );
 		}
             }
         }); 
@@ -117,41 +158,73 @@ frappe.bank_wizard = {
         // attach button handlers
         var bank_account = document.getElementById("bank_account").value;
         var intermediate_account = document.getElementById("intermediate_account").value;
+        var payable_account = document.getElementById("payable_account").value;
+        var receivable_account = document.getElementById("receivable_account").value;
+        var default_customer = document.getElementById("default_customer").value;
+        var default_supplier = document.getElementById("default_supplier").value;
         message.transactions.forEach(function (transaction) {
+	    // add generic payables/receivables handler
+	    if (transaction.credit_debit == "DBIT") {
+		// payables
+		var button = document.getElementById("btn-close-payable-" + transaction.txid);
+		button.addEventListener("click", function() {
+		    var payment = {
+			'amount': transaction.amount,
+			'date': transaction.date,
+			'paid_from': bank_account,
+			'paid_to': payable_account,
+			'reference_no': transaction.unique_reference,
+			'type': "Pay",
+			'party_type': "Supplier",
+			'party': default_supplier
+		    }
+		    frappe.bank_wizard.create_payment_entry(payment);
+		});		
+	    } else {
+		// receivables
+		var button = document.getElementById("btn-close-receivable-" + transaction.txid);
+		button.addEventListener("click", function() {
+		    var payment = {
+			'amount': transaction.amount,
+			'date': transaction.date,
+			'paid_from': receivable_account,
+			'paid_to': bank_account,
+			'reference_no': transaction.unique_reference,
+			'type': "Receive",
+			'party_type': "Customer",
+			'party': default_customer
+		    }
+		    frappe.bank_wizard.create_payment_entry(payment);
+		});		
+	    }
+	    // add intermediate account handler
             var button = document.getElementById("btn-close-intermediate-" + transaction.txid);
             button.addEventListener("click", function() {
-                var paid_to = intermediate_account;
-                var paid_from = bank_account;
+                var paid_to = bank_account;
+                var paid_from = intermediate_account;
                 if (transaction.credit_debit == "DBIT") {
-                    paid_from = intermediate_account;
-                    paid_to = bank_account;
+                    paid_from = bank_account;
+                    paid_to = intermediate_account;
                 }
 		// note: currency is defined through account currencies of the bank account
-                frappe.bank_wizard.receive_to_intermediate(
-                    transaction.amount, 
-		    transaction.currency,
-                    transaction.date, 
-                    paid_to, 
-                    paid_from, 
-                    transaction.unique_reference);
+		var payment = {
+		    'amount': transaction.amount,
+		    'date': transaction.date,
+		    'paid_from': paid_from,
+		    'paid_to': paid_to,
+		    'reference_no': transaction.unique_reference,
+		    'type': "Internal Transfer"
+		}
+                frappe.bank_wizard.create_payment_entry(payment);
             });
         }); 
     },
-    receive_to_intermediate: function(amount, date, paid_from, paid_to, reference) {
-        console.log("receive to intermediate...");
+    create_payment_entry: function(payment) {
         frappe.call({
             method: "erpnextswiss.erpnextswiss.page.bank_wizard.bank_wizard.make_payment_entry",
-            args:{
-                'amount': amount,
-                'date': date,
-                'paid_from': paid_from,
-                'paid_to': paid_to,
-                'reference_no': reference,
-                'type': "Internal Transfer"
-            },
+            args: payment,
             callback: function(r)
             {
-                // frappe.set_route("Form", "Payment Entry", r.message)
                 window.open('/desk#Form/Payment Entry/' + r.message, '_blank');
             }
         });    

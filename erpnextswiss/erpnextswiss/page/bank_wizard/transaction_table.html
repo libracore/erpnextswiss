@@ -20,7 +20,12 @@
         <td>{{ transaction.party_name }}{% if transaction.party_address %}<br> {{ transaction.party_address }}{% endif %}</td>
         <td>{{ transaction.transaction_reference }}</td>
         <td>
-          <button type="submit" class="btn btn-sm btn-primary" id="btn-close-intermediate-{{ transaction.txid }}">{{ __("Close against intermediate") }}</button>
+          {% if transaction.credit_debit == "DBIT" %}
+            <button type="submit" class="btn btn-xs btn-default" id="btn-close-payables-{{ transaction.txid }}">{{ __("Close against payales") }}</button>
+          {% else %}
+            <button type="submit" class="btn btn-xs btn-default" id="btn-close-receivables-{{ transaction.txid }}">{{ __("Close against receivables") }}</button>
+          {% endif %}
+          <button type="submit" class="btn btn-xs btn-default" id="btn-close-intermediate-{{ transaction.txid }}">{{ __("Close against intermediate") }}</button>
         </td>
     </tr>
     {% endfor %}

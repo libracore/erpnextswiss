@@ -126,8 +126,10 @@ frappe.bank_wizard = {
                     paid_from = intermediate_account;
                     paid_to = bank_account;
                 }
+		// note: currency is defined through account currencies of the bank account
                 frappe.bank_wizard.receive_to_intermediate(
                     transaction.amount, 
+		    transaction.currency,
                     transaction.date, 
                     paid_to, 
                     paid_from, 

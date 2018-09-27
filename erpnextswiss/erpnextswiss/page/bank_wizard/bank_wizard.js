@@ -91,9 +91,11 @@ frappe.bank_wizard = {
         frappe.call({
             method: 'erpnextswiss.erpnextswiss.page.bank_wizard.bank_wizard.get_intermediate_account',
             callback: function(r) {
-                if (r.message) {
+                if ((r.message) && (r.message.account != "")) {
                     document.getElementById("intermediate_account").value = r.message.account;
-                } 
+                } else {
+		    frappe.msgprint( __("Please set the intermediate bank account in <a href=\"/desk#Form/ERPNextSwiss Settings\">ERPNextSwiss Settings</a>.") );
+		}
             }
         }); 
     },

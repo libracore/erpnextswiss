@@ -2,6 +2,7 @@
     <tr>
         <th>{{ __("Date") }}</th>
         <th>{{ __("Amount") }}</th>
+        <th>{{ __("Party") }}</th>
         <th>{{ __("Reference") }}</th>
         <th>{{ __("Action") }}</th>
     </tr>
@@ -16,10 +17,10 @@
             {% endif %}
             {{ transaction.currency }} {{ transaction.amount }}
         </td>
+        <td>{{ transaction.party_name }}{% if transaction.party_address %}<br> {{ transaction.party_address }}{% endif %}</td>
         <td>{{ transaction.transaction_reference }}</td>
         <td>
           <button type="submit" class="btn btn-sm btn-primary" id="btn-close-intermediate-{{ transaction.txid }}">{{ __("Close against intermediate") }}</button>
-          <!-- frappe.bank_wizard.receive_to_intermediate(100, '2018-09-22', 'ZKB - LC', 'ZKB - LC', '123456'); -->
         </td>
     </tr>
     {% endfor %}

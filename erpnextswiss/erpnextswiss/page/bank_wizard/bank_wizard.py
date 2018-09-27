@@ -174,7 +174,7 @@ def read_camt_transactions(transaction_entries, account):
         entry_currency = entry_soup.amt['ccy']
         for transaction in transactions:
             transaction_soup = BeautifulSoup(str(transaction), 'lxml')
-            # paid or received: (DBIT: paid, CRDT: received)
+            # --- find transaction type: paid or received: (DBIT: paid, CRDT: received)
             try:
                 credit_debit = transaction_soup.cdtdbtind.get_text()
             except:
@@ -182,6 +182,7 @@ def read_camt_transactions(transaction_entries, account):
                 credit_debit = entry_soup.cdtdbtind.get_text()
             
             #try:
+            # --- find unique reference
             try:
                 # try to use the account service reference
                 unique_reference = transaction_soup.txdtls.refs.acctsvcrref.get_text()
@@ -192,6 +193,7 @@ def read_camt_transactions(transaction_entries, account):
                 except:
                     # fallback to pmtinfid
                     unique_reference = transaction_soup.pmtinfid.get_text()
+            # --- find amount and currency
             try:
                 amount = float(transaction_soup.txdtls.amt.get_text())
                 currency = transaction_soup.txdtls.amt['ccy']
@@ -200,6 +202,7 @@ def read_camt_transactions(transaction_entries, account):
                 amount = entry_amount
                 currency = entry_currency
             try:
+                # --- find party IBAN
                 if credit_debit == "DBIT":
                     # use RltdPties:Cdtr
                     party_soup = BeautifulSoup(str(transaction_soup.txdtls.rltdpties.cdtr)) 
@@ -239,9 +242,14 @@ def read_camt_transactions(transaction_entries, account):
                         address_line2 = "{0} {1}".format(plz, town)
                     else:
                         # parse by address lines
-                        address_lines = party_soup.find_all("adrline")
-                        address_line1 = address_lines[0].get_text()
-                        address_line2 = address_lines[1].get_text()
+                        try:
+                            address_lines = party_soup.find_all("adrline")
+                            address_line1 = address_lines[0].get_text()
+                            address_line2 = address_lines[1].get_text()
+                        except:
+                            # in case no address is provided
+                            address_line1 = ""
+                            address_line2 = ""                            
                 except:
                     # party is not defined (e.g. DBIT from Bank)
                     party_name = "not found"
@@ -251,10 +259,15 @@ def read_camt_transactions(transaction_entries, account):
                     country = party_soup.ctry.get_text()
                 except:
                     country = ""
-                party_address = "{0}, {1}, {2}".format(
-                    address_line1,
-                    address_line2,
-                    country)
+                if (address_line1 != "") and (address_line2 != ""):
+                    party_address = "{0}, {1}, {2}".format(
+                        address_line1,
+                        address_line2,
+                        country)
+                elif (address_line1 != ""):
+                    party_address = "{0}, {1}".format(address_line1, country)
+                else:
+                    party_address = "{0}".format(country)
             except:
                 # key related parties not found / no customer info
                 party_name = ""

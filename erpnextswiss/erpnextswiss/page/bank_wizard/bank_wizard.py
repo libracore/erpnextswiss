@@ -387,6 +387,5 @@ def make_payment_entry(amount, date, reference_no, paid_from=None, paid_to=None,
             'reference_date': date,
             'posting_date': date    
         })    
-    frappe.log_error(str(payment_entry))
     new_entry = payment_entry.insert()
     return new_entry.name

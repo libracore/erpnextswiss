@@ -178,7 +178,7 @@ frappe.bank_wizard = {
 			'party_type': "Supplier",
 			'party': default_supplier
 		    }
-		    frappe.bank_wizard.create_payment_entry(payment);
+		    frappe.bank_wizard.create_payment_entry(payment, transaction.txid);
 		});		
 	    } else {
 		// receivables
@@ -194,7 +194,7 @@ frappe.bank_wizard = {
 			'party_type': "Customer",
 			'party': default_customer
 		    }
-		    frappe.bank_wizard.create_payment_entry(payment);
+		    frappe.bank_wizard.create_payment_entry(payment, transaction.txid);
 		});		
 	    }
 	    // add intermediate account handler
@@ -215,17 +215,21 @@ frappe.bank_wizard = {
 		    'reference_no': transaction.unique_reference,
 		    'type': "Internal Transfer"
 		}
-                frappe.bank_wizard.create_payment_entry(payment);
+                frappe.bank_wizard.create_payment_entry(payment, transaction.txid);
             });
         }); 
     },
-    create_payment_entry: function(payment) {
+    create_payment_entry: function(payment, txid) {
         frappe.call({
             method: "erpnextswiss.erpnextswiss.page.bank_wizard.bank_wizard.make_payment_entry",
             args: payment,
             callback: function(r)
             {
-                window.open('/desk#Form/Payment Entry/' + r.message, '_blank');
+                // open new record in a separate tab
+		window.open('/desk#Form/Payment Entry/' + r.message, '_blank');
+		// close the entry in the list
+		var table_row = document.getElementById("row-transaction-" + txid);
+		table_row.classList.add("hidden");
             }
         });    
     }

@@ -140,7 +140,7 @@ def get_bank_accounts():
 
 @frappe.whitelist()
 def get_intermediate_account():
-    account = frappe.get_value('ERPNextSwiss', 'ERPNextSwiss', 'intermediate_account')
+    account = frappe.get_value('ERPNextSwiss Settings', 'ERPNextSwiss Settings', 'intermediate_account')
     return {'account': account or "" }
     
 @frappe.whitelist()
@@ -284,9 +284,10 @@ def read_camt_transactions(transaction_entries, account):
             # check if this transaction is already recorded
             match_payment_entry = frappe.get_all('Payment Entry', filters={'reference_no': unique_reference}, fields=['name'])
             if match_payment_entry:
-                frappe.log_error("Transaction {0} is already imported in {1}.".format(uique_reference, match_payment_entry[0]['name']))
+                frappe.log_error("Transaction {0} is already imported in {1}.".format(unique_reference, match_payment_entry[0]['name']))
             else:
                 new_txn = {
+                    'txid': len(txns),
                     'date': date,
                     'currency': currency,
                     'amount': amount,

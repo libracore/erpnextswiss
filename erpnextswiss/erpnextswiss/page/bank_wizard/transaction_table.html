@@ -5,9 +5,8 @@
         <th>{{ __("Reference") }}</th>
         <th>{{ __("Action") }}</th>
     </tr>
-    {% set txid = 0 %}
     {% for transaction in transactions %}
-    <tr id="row-transaction-{{ txid }}">
+    <tr id="row-transaction-{{ transaction.txid }}">
         <td>{{ transaction.date }}</td>
         <td>
             {% if transaction.credit_debit == "DBIT" %}
@@ -19,10 +18,9 @@
         </td>
         <td>{{ transaction.transaction_reference }}</td>
         <td>
-          <button type="submit" class="btn btn-sm btn-primary btn-close-intermediate-{{ txid }}">{{ __("Close against intermediate") }}</button>
+          <button type="submit" class="btn btn-sm btn-primary" id="btn-close-intermediate-{{ transaction.txid }}">{{ __("Close against intermediate") }}</button>
           <!-- frappe.bank_wizard.receive_to_intermediate(100, '2018-09-22', 'ZKB - LC', 'ZKB - LC', '123456'); -->
         </td>
     </tr>
-    {% set txid = txid + 1 %}
     {% endfor %}
 </table>

@@ -107,22 +107,22 @@ frappe.bank_wizard = {
         // disable waiting gif
         frappe.bank_wizard.end_wait();
     
+        // display the transactions as table
         var container = document.getElementById("table_placeholder");
         var content = frappe.render_template('transaction_table', message);
         container.innerHTML = content;
     
-        //frappe.msgprint(__(message.message));
         // attach button handlers
-        var txid = 0;
         var bank_account = document.getElementById("bank_account").value;
         var intermediate_account = document.getElementById("intermediate_account").value;
-        response.message.forEach(function (transaction) {
-            this.page.main.find(".btn-close-intermediate-" + txid).on('click', function() {
-                var paid_to = account;
-                var paid_from = intermediate_account;
+        message.transactions.forEach(function (transaction) {
+            var button = document.getElementById("btn-close-intermediate-" + transaction.txid);
+            button.addEventListener("click", function() {
+                var paid_to = intermediate_account;
+                var paid_from = bank_account;
                 if (transaction.credit_debit == "DBIT") {
-                    paid_from = accoount;
-                    paid_to = intermediate_account
+                    paid_from = intermediate_account;
+                    paid_to = bank_account;
                 }
                 frappe.bank_wizard.receive_to_intermediate(
                     transaction.amount, 
@@ -131,7 +131,6 @@ frappe.bank_wizard = {
                     paid_from, 
                     transaction.unique_reference);
             });
-            txid += 1;
         }); 
     },
     receive_to_intermediate: function(amount, date, paid_from, paid_to, reference) {

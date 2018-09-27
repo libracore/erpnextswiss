@@ -139,6 +139,11 @@ def get_bank_accounts():
     return {'accounts': selectable_accounts }
 
 @frappe.whitelist()
+def get_intermediate_account():
+    account = frappe.get_value('ERPNextSwiss', 'ERPNextSwiss', 'intermediate_account')
+    return {'account': account or "" }
+    
+@frappe.whitelist()
 def read_camt053(content, account):
     #read_camt_transactions_re(content)
     soup = BeautifulSoup(content, 'lxml')
@@ -276,18 +281,23 @@ def read_camt_transactions(transaction_entries, account):
             frappe.log_error("type:{type}\ndate:{date}\namount:{currency} {amount}\nunique ref:{unique}\nparty:{party}\nparty address:{address}\nparty iban:{iban}\nremarks:{remarks}".format(
                 type=credit_debit, date=date, currency=currency, amount=amount, unique=unique_reference, party=party_name, address=party_address, iban=party_iban, remarks=transaction_reference))
             
-            new_txn = {
-                'date': date,
-                'currency': currency,
-                'amount': amount,
-                'party_name': party_name,
-                'party_address': party_address,
-                'credit_debit': credit_debit,
-                'party_iban': party_iban,
-                'unique_reference': unique_reference,
-                'transaction_reference': transaction_reference
-            }
-            txns.append(new_txn)    
+            # check if this transaction is already recorded
+            match_payment_entry = frappe.get_all('Payment Entry', filters={'reference_no': unique_reference}, fields=['name'])
+            if match_payment_entry:
+                frappe.log_error("Transaction {0} is already imported in {1}.".format(uique_reference, match_payment_entry[0]['name']))
+            else:
+                new_txn = {
+                    'date': date,
+                    'currency': currency,
+                    'amount': amount,
+                    'party_name': party_name,
+                    'party_address': party_address,
+                    'credit_debit': credit_debit,
+                    'party_iban': party_iban,
+                    'unique_reference': unique_reference,
+                    'transaction_reference': transaction_reference
+                }
+                txns.append(new_txn)    
             #if credit_debit == "CRDT":
             #    inserted_payment_entry = create_payment_entry(date=date, to_account=account, received_amount=amount, 
             #        transaction_id=unique_reference, remarks="ESR: {0}, {1}, {2}, IBAN: {3}".format(

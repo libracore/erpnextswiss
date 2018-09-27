@@ -76,7 +76,6 @@ frappe.bank_wizard = {
         // populate bank accounts
         frappe.call({
             method: 'erpnextswiss.erpnextswiss.page.bank_wizard.bank_wizard.get_bank_accounts',
-            args: { },
             callback: function(r) {
                 if (r.message) {
                     var select = document.getElementById("bank_account");
@@ -86,6 +85,14 @@ frappe.bank_wizard = {
                         opt.innerHTML = r.message.accounts[i];
                         select.appendChild(opt);
                     }
+                } 
+            }
+        }); 
+        frappe.call({
+            method: 'erpnextswiss.erpnextswiss.page.bank_wizard.bank_wizard.get_intermediate_account',
+            callback: function(r) {
+                if (r.message) {
+                    document.getElementById("intermediate_account").value = r.message.account;
                 } 
             }
         }); 
@@ -100,33 +107,50 @@ frappe.bank_wizard = {
         // disable waiting gif
         frappe.bank_wizard.end_wait();
     
-	var container = document.getElementById("table_placeholder");
-	var content = frappe.render_template('transaction_table', message);
-	container.innerHTML = content;
+        var container = document.getElementById("table_placeholder");
+        var content = frappe.render_template('transaction_table', message);
+        container.innerHTML = content;
     
         //frappe.msgprint(__(message.message));
-	// attach button handlers
-        this.page.main.find(".btn-close-intermediary-0").on('click', function() {
-	    frappe.bank_wizard.receive_to_intermediate(100, "2018-09-22", 'ZKB - LC', 'ZKB - LC', "123456");
-	}); 
+        // attach button handlers
+        var txid = 0;
+        var bank_account = document.getElementById("bank_account").value;
+        var intermediate_account = document.getElementById("intermediate_account").value;
+        response.message.forEach(function (transaction) {
+            this.page.main.find(".btn-close-intermediate-" + txid).on('click', function() {
+                var paid_to = account;
+                var paid_from = intermediate_account;
+                if (transaction.credit_debit == "DBIT") {
+                    paid_from = accoount;
+                    paid_to = intermediate_account
+                }
+                frappe.bank_wizard.receive_to_intermediate(
+                    transaction.amount, 
+                    transaction.date, 
+                    paid_to, 
+                    paid_from, 
+                    transaction.unique_reference);
+            });
+            txid += 1;
+        }); 
     },
     receive_to_intermediate: function(amount, date, paid_from, paid_to, reference) {
-	console.log("receive to intermediate...");
-	frappe.call({
-	    method: "erpnextswiss.erpnextswiss.page.bank_wizard.bank_wizard.make_payment_entry",
-	    args:{
-		'amount': amount,
-		'date': date,
-		'paid_from': paid_from,
-		'paid_to': paid_to,
-		'reference_no': reference,
-		'type': "Internal Transfer"
-	    },
-	    callback: function(r)
-	    {
-		// frappe.set_route("Form", "Payment Entry", r.message)
-		window.open('/desk#Form/Payment Entry/' + r.message, '_blank');
-	    }
-	});	
+        console.log("receive to intermediate...");
+        frappe.call({
+            method: "erpnextswiss.erpnextswiss.page.bank_wizard.bank_wizard.make_payment_entry",
+            args:{
+                'amount': amount,
+                'date': date,
+                'paid_from': paid_from,
+                'paid_to': paid_to,
+                'reference_no': reference,
+                'type': "Internal Transfer"
+            },
+            callback: function(r)
+            {
+                // frappe.set_route("Form", "Payment Entry", r.message)
+                window.open('/desk#Form/Payment Entry/' + r.message, '_blank');
+            }
+        });    
     }
 }

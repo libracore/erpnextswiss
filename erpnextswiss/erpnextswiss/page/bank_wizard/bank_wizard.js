@@ -165,61 +165,138 @@ frappe.bank_wizard = {
         message.transactions.forEach(function (transaction) {
 	    // add generic payables/receivables handler
 	    if (transaction.credit_debit == "DBIT") {
+		// purchase invoice match
+		var button = document.getElementById("btn-close-pinv-" + transaction.txid);
+		if (button) {
+		    button.addEventListener("click", function() {
+			var payment = {
+			    'amount': transaction.amount,
+			    'date': transaction.date,
+			    'paid_from': bank_account,
+			    'paid_to': payable_account,
+			    'reference_no': transaction.unique_reference,
+			    'type': "Pay",
+			    'party_type': "Supplier",
+			    'party': transaction.party_match,
+			    'references': transaction.invoice_matches
+			}
+			frappe.bank_wizard.create_payment_entry(payment, transaction.txid);
+		    });
+		}
+		// supplier match
+		var button = document.getElementById("btn-close-supplier-" + transaction.txid);
+		if (button) {
+		    button.addEventListener("click", function() {
+			var payment = {
+			    'amount': transaction.amount,
+			    'date': transaction.date,
+			    'paid_from': bank_account,
+			    'paid_to': payable_account,
+			    'reference_no': transaction.unique_reference,
+			    'type': "Pay",
+			    'party_type': "Supplier",
+			    'party': transaction.party_match
+			}
+			frappe.bank_wizard.create_payment_entry(payment, transaction.txid);
+		    });
+		}
 		// payables
 		var button = document.getElementById("btn-close-payable-" + transaction.txid);
-		button.addEventListener("click", function() {
-		    var payment = {
-			'amount': transaction.amount,
-			'date': transaction.date,
-			'paid_from': bank_account,
-			'paid_to': payable_account,
-			'reference_no': transaction.unique_reference,
-			'type': "Pay",
-			'party_type': "Supplier",
-			'party': default_supplier
-		    }
-		    frappe.bank_wizard.create_payment_entry(payment, transaction.txid);
-		});		
+		if (button) {
+		    button.addEventListener("click", function() {
+			var payment = {
+			    'amount': transaction.amount,
+			    'date': transaction.date,
+			    'paid_from': bank_account,
+			    'paid_to': payable_account,
+			    'reference_no': transaction.unique_reference,
+			    'type': "Pay",
+			    'party_type': "Supplier",
+			    'party': default_supplier
+			}
+			frappe.bank_wizard.create_payment_entry(payment, transaction.txid);
+		    });
+		}
 	    } else {
+		// sales invoice match
+		var button = document.getElementById("btn-close-sinv-" + transaction.txid);
+		if (button) {
+		    button.addEventListener("click", function() {
+			var payment = {
+			    'amount': transaction.amount,
+			    'date': transaction.date,
+			    'paid_from': receivable_account,
+			    'paid_to': bank_account,
+			    'reference_no': transaction.unique_reference,
+			    'type': "Receive",
+			    'party_type': "Customer",
+			    'party': transaction.party_match,
+			    'references': transaction.invoice_matches
+			}
+			frappe.bank_wizard.create_payment_entry(payment, transaction.txid);
+		    });
+		}
+		// customer match
+		var button = document.getElementById("btn-close-customer-" + transaction.txid);
+		if (button) {
+		    button.addEventListener("click", function() {
+			var payment = {
+			    'amount': transaction.amount,
+			    'date': transaction.date,
+			    'paid_from': receivable_account,
+			    'paid_to': bank_account,
+			    'reference_no': transaction.unique_reference,
+			    'type': "Receive",
+			    'party_type': "Customer",
+			    'party': transaction.party_match
+			}
+			frappe.bank_wizard.create_payment_entry(payment, transaction.txid);
+		    });
+		}
 		// receivables
 		var button = document.getElementById("btn-close-receivable-" + transaction.txid);
-		button.addEventListener("click", function() {
-		    var payment = {
-			'amount': transaction.amount,
-			'date': transaction.date,
-			'paid_from': receivable_account,
-			'paid_to': bank_account,
-			'reference_no': transaction.unique_reference,
-			'type': "Receive",
-			'party_type': "Customer",
-			'party': default_customer
-		    }
-		    frappe.bank_wizard.create_payment_entry(payment, transaction.txid);
-		});		
+		if (button) {
+		    button.addEventListener("click", function() {
+			var payment = {
+			    'amount': transaction.amount,
+			    'date': transaction.date,
+			    'paid_from': receivable_account,
+			    'paid_to': bank_account,
+			    'reference_no': transaction.unique_reference,
+			    'type': "Receive",
+			    'party_type': "Customer",
+			    'party': default_customer
+			}
+			frappe.bank_wizard.create_payment_entry(payment, transaction.txid);
+		    });
+		}		
 	    }
 	    // add intermediate account handler
             var button = document.getElementById("btn-close-intermediate-" + transaction.txid);
-            button.addEventListener("click", function() {
-                var paid_to = bank_account;
-                var paid_from = intermediate_account;
-                if (transaction.credit_debit == "DBIT") {
-                    paid_from = bank_account;
-                    paid_to = intermediate_account;
-                }
-		// note: currency is defined through account currencies of the bank account
-		var payment = {
-		    'amount': transaction.amount,
-		    'date': transaction.date,
-		    'paid_from': paid_from,
-		    'paid_to': paid_to,
-		    'reference_no': transaction.unique_reference,
-		    'type': "Internal Transfer"
-		}
-                frappe.bank_wizard.create_payment_entry(payment, transaction.txid);
-            });
+	    if (button) {
+		button.addEventListener("click", function() {
+		    var paid_to = bank_account;
+		    var paid_from = intermediate_account;
+		    if (transaction.credit_debit == "DBIT") {
+			paid_from = bank_account;
+			paid_to = intermediate_account;
+		    }
+		    // note: currency is defined through account currencies of the bank account
+		    var payment = {
+			'amount': transaction.amount,
+			'date': transaction.date,
+			'paid_from': paid_from,
+			'paid_to': paid_to,
+			'reference_no': transaction.unique_reference,
+			'type': "Internal Transfer"
+		    }
+		    frappe.bank_wizard.create_payment_entry(payment, transaction.txid);
+		});
+	    }
         }); 
     },
     create_payment_entry: function(payment, txid) {
+	//console.log(payment.toSource());
         frappe.call({
             method: "erpnextswiss.erpnextswiss.page.bank_wizard.bank_wizard.make_payment_entry",
             args: payment,

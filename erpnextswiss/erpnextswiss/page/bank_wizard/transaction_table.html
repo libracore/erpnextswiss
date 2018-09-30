@@ -21,11 +21,25 @@
         <td>{{ transaction.transaction_reference }}</td>
         <td>
           {% if transaction.credit_debit == "DBIT" %}
-            <button type="submit" class="btn btn-xs btn-default" id="btn-close-payable-{{ transaction.txid }}">{{ __("Close against payales") }}</button>
+            <!-- Supplier -->
+            {% if transaction.invoice_matches %}
+             <button type="submit" class="btn btn-xs btn-success" id="btn-close-pinv-{{ transaction.txid }}">{{ __("Purchase Invoice") }}</button>
+            {% endif %}
+            {% if transaction.party_match %}
+             <button type="submit" class="btn btn-xs btn-warning" id="btn-close-supplier-{{ transaction.txid }}">{{ __("Supplier") }}</button>
+            {% endif %}
+            <button type="submit" class="btn btn-xs btn-default" id="btn-close-payable-{{ transaction.txid }}">{{ __("Payables") }}</button>
           {% else %}
-            <button type="submit" class="btn btn-xs btn-default" id="btn-close-receivable-{{ transaction.txid }}">{{ __("Close against receivables") }}</button>
+            <!-- Customer -->
+            {% if transaction.invoice_matches %}
+             <button type="submit" class="btn btn-xs btn-success" id="btn-close-sinv-{{ transaction.txid }}">{{ __("Sales Invoice") }}</button>
+            {% endif %}
+            {% if transaction.party_match %}
+             <button type="submit" class="btn btn-xs btn-warning" id="btn-close-customer-{{ transaction.txid }}">{{ __("Customer") }}</button>
+            {% endif %}
+            <button type="submit" class="btn btn-xs btn-default" id="btn-close-receivable-{{ transaction.txid }}">{{ __("Receivables") }}</button>
           {% endif %}
-          <button type="submit" class="btn btn-xs btn-default" id="btn-close-intermediate-{{ transaction.txid }}">{{ __("Close against intermediate") }}</button>
+          <button type="submit" class="btn btn-xs btn-default" id="btn-close-intermediate-{{ transaction.txid }}">{{ __("Intermediate") }}</button>
         </td>
     </tr>
     {% endfor %}

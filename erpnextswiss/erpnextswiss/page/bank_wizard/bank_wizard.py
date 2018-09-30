@@ -8,7 +8,8 @@ from frappe import throw, _
 import hashlib
 import json
 from bs4 import BeautifulSoup
-      
+import ast
+
 # this function tries to match the amount to an open sales invoice
 #
 # returns the sales invoice reference (name string) or None
@@ -328,6 +329,45 @@ def read_camt_transactions(transaction_entries, account):
             if match_payment_entry:
                 frappe.log_error("Transaction {0} is already imported in {1}.".format(unique_reference, match_payment_entry[0]['name']))
             else:
+                # try to find matching parties & invoices
+                party_match = None
+                invoice_matches = None
+                if credit_debit == "DBIT":
+                    # suppliers 
+                    match_suppliers = frappe.get_all("Supplier", filters={'supplier_name': party_name}, fields=['name'])
+                    if match_suppliers:
+                        party_match = match_suppliers[0]['name']
+                    # purchase invoices
+                    possible_pinvs = frappe.get_all("Purchase Invoice", filters=[['grand_total', '=', amount], ['outstanding_amount', '>', 0]], fields=['name', 'supplier'])
+                    if possible_pinvs:
+                        invoice_matches = []
+                        for pinv in possible_pinvs:
+                            if pinv['name'] in transaction_reference:
+                                invoice_matches.append(pinv['name'])
+                                if not party_match:
+                                    party_match = pinv['supplier']
+                                
+                else:
+                    # customers & sales invoices
+                    match_customers = frappe.get_all("Customer", filters={'customer_name': party_name}, fields=['name'])
+                    if match_customers:
+                        party_match = match_customers[0]['name']
+                    # sales invoices
+                    #possible_sinvs = frappe.get_all("Sales Invoice", filters=[['grand_total', '=', amount], ['outstanding_amount', '>', 0]], fields=['name', 'customer'])
+                    possible_sinvs = frappe.get_all("Sales Invoice", filters=[['outstanding_amount', '>', 0]], fields=['name', 'customer'])
+                    if possible_sinvs:
+                        invoice_matches = []
+                        for sinv in possible_sinvs:
+                            if sinv['name'] in transaction_reference:
+                                invoice_matches.append(sinv['name'])
+                                if not party_match:
+                                    party_match = sinv['supplier']
+                # reset invoice matches in case there are no matches
+                try:
+                    if len(invoice_matches) == 0:
+                        invoice_matches = None
+                except:
+                    pass                                                                                                
                 new_txn = {
                     'txid': len(txns),
                     'date': date,
@@ -338,16 +378,23 @@ def read_camt_transactions(transaction_entries, account):
                     'credit_debit': credit_debit,
                     'party_iban': party_iban,
                     'unique_reference': unique_reference,
-                    'transaction_reference': transaction_reference
+                    'transaction_reference': transaction_reference,
+                    'party_match': party_match,
+                    'invoice_matches': invoice_matches
                 }
                 txns.append(new_txn)    
 
     return txns
 
 @frappe.whitelist()
-def make_payment_entry(amount, date, reference_no, paid_from=None, paid_to=None, type="Receive", party=None, party_type=None):
+def make_payment_entry(amount, date, reference_no, paid_from=None, paid_to=None, type="Receive", party=None, party_type=None, references=None):
     if type == "Receive":
         # receive
+        ref_docs = []
+        if references:
+            references = ast.literal_eval(references)
+            for reference in references:
+                ref_docs.append({'reference_doctype': 'Sales Invoice', 'reference_name': reference})
         payment_entry = frappe.get_doc({
             'doctype': 'Payment Entry',
             'payment_type': 'Receive',
@@ -358,10 +405,16 @@ def make_payment_entry(amount, date, reference_no, paid_from=None, paid_to=None,
             'received_amount': float(amount),
             'reference_no': reference_no,
             'reference_date': date,
-            'posting_date': date
+            'posting_date': date,
+            'references': ref_docs
         })
     elif type == "Pay":
         # pay
+        ref_docs = []
+        if references:
+            references = ast.literal_eval(references)
+            for reference in references:
+                ref_docs.append({'reference_doctype': 'Purchase Invoice', 'reference_name': reference})
         payment_entry = frappe.get_doc({
             'doctype': 'Payment Entry',
             'payment_type': 'Pay',
@@ -372,7 +425,8 @@ def make_payment_entry(amount, date, reference_no, paid_from=None, paid_to=None,
             'received_amount': float(amount),
             'reference_no': reference_no,
             'reference_date': date,
-            'posting_date': date        
+            'posting_date': date,
+            'references': ref_docs       
         })
     else:
         # internal transfer (against intermediate account)

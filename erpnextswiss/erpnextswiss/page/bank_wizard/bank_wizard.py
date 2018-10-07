@@ -9,6 +9,7 @@ import hashlib
 import json
 from bs4 import BeautifulSoup
 import ast
+import cgi                              # (used to escape utf-8 to html)
 
 # this function tries to match the amount to an open sales invoice
 #
@@ -191,18 +192,18 @@ def read_camt053(content, account):
     transactions = read_camt_transactions(entries, account)
     
     return { 'transactions': transactions } 
-
+    
 def read_camt_transactions(transaction_entries, account):
     txns = []
     for entry in transaction_entries:
-        entry_soup = BeautifulSoup(str(entry), 'lxml')
+        entry_soup = BeautifulSoup(unicode(entry), 'lxml')
         date = entry_soup.bookgdt.dt.get_text()
         transactions = entry_soup.find_all('txdtls')
         # fetch entry amount as fallback
         entry_amount = float(entry_soup.amt.get_text())
         entry_currency = entry_soup.amt['ccy']
         for transaction in transactions:
-            transaction_soup = BeautifulSoup(str(transaction), 'lxml')
+            transaction_soup = BeautifulSoup(unicode(transaction), 'lxml')
             # --- find transaction type: paid or received: (DBIT: paid, CRDT: received)
             try:
                 credit_debit = transaction_soup.cdtdbtind.get_text()
@@ -234,14 +235,14 @@ def read_camt_transactions(transaction_entries, account):
                 # --- find party IBAN
                 if credit_debit == "DBIT":
                     # use RltdPties:Cdtr
-                    party_soup = BeautifulSoup(str(transaction_soup.txdtls.rltdpties.cdtr)) 
+                    party_soup = BeautifulSoup(unicode(transaction_soup.txdtls.rltdpties.cdtr)) 
                     try:
                         party_iban = transaction_soup.cdtracct.id.iban.get_text()
                     except:
                         party_iban = ""
                 else:
                     # CRDT: use RltdPties:Dbtr
-                    party_soup = BeautifulSoup(str(transaction_soup.txdtls.rltdpties.dbtr)) 
+                    party_soup = BeautifulSoup(unicode(transaction_soup.txdtls.rltdpties.dbtr)) 
                     try:
                         party_iban = transaction_soup.dbtracct.id.iban.get_text()
                     except:
@@ -313,7 +314,7 @@ def read_camt_transactions(transaction_entries, account):
             except:
                 try:
                     # try to find a user-defined reference (e.g. SINV.)
-                    transaction_reference = transaction_soup.rmtinf.ustrd.get_text() 
+                    transaction_reference = transaction_soup.rmtinf.ustrd.get_text()
                 except:
                     try:
                         # try to find an end-to-end ID

@@ -52,6 +52,7 @@ frappe.bank_wizard = {
                         },
                         callback: function(r) {
                             if (r.message) {
+				frappe.show_alert( r.message.transactions.length +  __(" transactions found") );
                                 frappe.bank_wizard.render_response(page, r.message);
                             } 
                         }

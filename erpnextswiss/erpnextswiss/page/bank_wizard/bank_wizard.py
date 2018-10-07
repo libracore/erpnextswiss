@@ -197,7 +197,7 @@ def read_camt_transactions(transaction_entries, account):
     for entry in transaction_entries:
         entry_soup = BeautifulSoup(str(entry), 'lxml')
         date = entry_soup.bookgdt.dt.get_text()
-        transactions = entry_soup.find_all('ntrydtls')
+        transactions = entry_soup.find_all('txdtls')
         # fetch entry amount as fallback
         entry_amount = float(entry_soup.amt.get_text())
         entry_currency = entry_soup.amt['ccy']

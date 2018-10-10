@@ -1,2 +1,2 @@
 frappe
-xmltodict
+bs4

@@ -20,11 +20,14 @@ frm.page.add_menu_item( __("Greeting"), function() {
 
 
 frappe.pages['pos'].refresh = function (wrapper) {
-    var action_bar = document.getElementsByClassName('page-actions');
-    var newButton = document.createElement("div");
-    if (action_bar.length > 0) {
-        // action_bar[0].addChild(newButton); // throws an error
-        action_bar[0].innerHTML += "<button class=\"btn btn-primary\"><span class=\"hidden-xs\">ERPNextSwiss</span></button>"; // this will override all buttons
-        console.log("button added");
-    }
+    // add entries to action menu
+    cur_page.page.page.add_action_item("Tagesabschluss erstellen", function() {
+        frappe.msgprint("Tagesabschluss erstellt");
+    });
+    cur_page.page.page.add_action_item("Wochenabschluss erstellen", function() {
+        frappe.msgprint("Wochenabschluss erstellt");
+    });
+    cur_page.page.page.add_action_item("Rücknahme buchen", function() {
+        frappe.msgprint("Rückname erstellt");
+    });
 }

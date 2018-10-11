@@ -20,7 +20,8 @@
 	  </div>
 
 	  <div class="form-column col-sm-4">	  	
-	    <br><button type="submit" class="btn btn-sm btn-primary btn-parse-file">{{ __("Parse") }}</button>  
+	    <br><button type="submit" id="btn-parse-file" class="btn btn-sm btn-primary btn-parse-file">{{ __("Parse") }}</button>  
+        <i id="waitingScreen" class="fa fa-spinner fa-spin hidden"></i>
 	  </div>
     </div>
 	  
@@ -31,12 +32,4 @@
     </div>
   </div>
   
-</div>
-
-<div id="waitingScreen" class="overlay">
-	<!-- Overlay content -->
-  <div class="overlay-content">
-    <p><i class="fa fa-spinner fa-spin" style="font-size:80px"></i></p>
-    <p>{{ __("Please wait, parsing data...") }}</p>
-  </div>
 </div>

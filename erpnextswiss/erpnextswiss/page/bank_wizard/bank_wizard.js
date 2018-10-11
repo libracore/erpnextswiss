@@ -142,10 +142,12 @@ frappe.bank_wizard = {
         }); 
     },
     start_wait: function() {
-        //document.getElementById("waitingScreen").style.display = "block";
+	document.getElementById("waitingScreen").classList.remove("hidden");
+	document.getElementById("btn-parse-file").classList.add("disabled");
     },
     end_wait: function() {
-        document.getElementById("waitingScreen").style.display = "none";
+	document.getElementById("waitingScreen").classList.add("hidden");
+	document.getElementById("btn-parse-file").classList.remove("disabled");
     },
     render_response: function(page, message) {
         // disable waiting gif
@@ -179,7 +181,8 @@ frappe.bank_wizard = {
 			    'type': "Pay",
 			    'party_type': "Supplier",
 			    'party': transaction.party_match,
-			    'references': transaction.invoice_matches
+			    'references': transaction.invoice_matches,
+			    'remarks': (transaction.transaction_reference + ", " + transaction.party_name + ", " + transaction.party_address)
 			}
 			frappe.bank_wizard.create_payment_entry(payment, transaction.txid);
 		    });
@@ -196,7 +199,8 @@ frappe.bank_wizard = {
 			    'reference_no': transaction.unique_reference,
 			    'type': "Pay",
 			    'party_type': "Supplier",
-			    'party': transaction.party_match
+			    'party': transaction.party_match,
+			    'remarks': (transaction.transaction_reference + ", " + transaction.party_name + ", " + transaction.party_address)
 			}
 			frappe.bank_wizard.create_payment_entry(payment, transaction.txid);
 		    });
@@ -213,7 +217,8 @@ frappe.bank_wizard = {
 			    'reference_no': transaction.unique_reference,
 			    'type': "Pay",
 			    'party_type': "Supplier",
-			    'party': default_supplier
+			    'party': default_supplier,
+			    'remarks': (transaction.transaction_reference + ", " + transaction.party_name + ", " + transaction.party_address)
 			}
 			frappe.bank_wizard.create_payment_entry(payment, transaction.txid);
 		    });
@@ -232,7 +237,8 @@ frappe.bank_wizard = {
 			    'type': "Receive",
 			    'party_type': "Customer",
 			    'party': transaction.party_match,
-			    'references': transaction.invoice_matches
+			    'references': transaction.invoice_matches,
+			    'remarks': (transaction.transaction_reference + ", " + transaction.party_name + ", " + transaction.party_address)
 			}
 			frappe.bank_wizard.create_payment_entry(payment, transaction.txid);
 		    });
@@ -249,7 +255,8 @@ frappe.bank_wizard = {
 			    'reference_no': transaction.unique_reference,
 			    'type': "Receive",
 			    'party_type': "Customer",
-			    'party': transaction.party_match
+			    'party': transaction.party_match,
+			    'remarks': (transaction.transaction_reference + ", " + transaction.party_name + ", " + transaction.party_address)
 			}
 			frappe.bank_wizard.create_payment_entry(payment, transaction.txid);
 		    });
@@ -266,7 +273,8 @@ frappe.bank_wizard = {
 			    'reference_no': transaction.unique_reference,
 			    'type': "Receive",
 			    'party_type': "Customer",
-			    'party': default_customer
+			    'party': default_customer,
+			    'remarks': (transaction.transaction_reference + ", " + transaction.party_name + ", " + transaction.party_address)
 			}
 			frappe.bank_wizard.create_payment_entry(payment, transaction.txid);
 		    });
@@ -289,7 +297,8 @@ frappe.bank_wizard = {
 			'paid_from': paid_from,
 			'paid_to': paid_to,
 			'reference_no': transaction.unique_reference,
-			'type': "Internal Transfer"
+			'type': "Internal Transfer",
+			'remarks': (transaction.transaction_reference + ", " + transaction.party_name + ", " + transaction.party_address)
 		    }
 		    frappe.bank_wizard.create_payment_entry(payment, transaction.txid);
 		});

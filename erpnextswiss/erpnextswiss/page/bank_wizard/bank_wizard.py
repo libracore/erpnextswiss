@@ -388,7 +388,7 @@ def read_camt_transactions(transaction_entries, account):
     return txns
 
 @frappe.whitelist()
-def make_payment_entry(amount, date, reference_no, paid_from=None, paid_to=None, type="Receive", party=None, party_type=None, references=None):
+def make_payment_entry(amount, date, reference_no, paid_from=None, paid_to=None, type="Receive", party=None, party_type=None, references=None, remarks=None):
     if type == "Receive":
         # receive
         ref_docs = []
@@ -407,7 +407,8 @@ def make_payment_entry(amount, date, reference_no, paid_from=None, paid_to=None,
             'reference_no': reference_no,
             'reference_date': date,
             'posting_date': date,
-            'references': ref_docs
+            'references': ref_docs,
+            'remarks': remarks
         })
     elif type == "Pay":
         # pay
@@ -427,7 +428,8 @@ def make_payment_entry(amount, date, reference_no, paid_from=None, paid_to=None,
             'reference_no': reference_no,
             'reference_date': date,
             'posting_date': date,
-            'references': ref_docs       
+            'references': ref_docs,
+            'remarks': remarks   
         })
     else:
         # internal transfer (against intermediate account)
@@ -440,7 +442,10 @@ def make_payment_entry(amount, date, reference_no, paid_from=None, paid_to=None,
             'received_amount': float(amount),
             'reference_no': reference_no,
             'reference_date': date,
-            'posting_date': date    
+            'posting_date': date,
+            'remarks': remarks  
         })    
     new_entry = payment_entry.insert()
+    # add remarks and references after insert (otherwise the are overwritten)
+    
     return new_entry.name

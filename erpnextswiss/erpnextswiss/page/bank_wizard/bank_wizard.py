@@ -10,6 +10,7 @@ import json
 from bs4 import BeautifulSoup
 import ast
 import cgi                              # (used to escape utf-8 to html)
+from erpnextswiss.erpnextswiss.page.bankimport.bankimport import create_reference
 
 # this function tries to match the amount to an open sales invoice
 #
@@ -395,7 +396,19 @@ def make_payment_entry(amount, date, reference_no, paid_from=None, paid_to=None,
         if references:
             references = ast.literal_eval(references)
             for reference in references:
-                ref_docs.append({'reference_doctype': 'Sales Invoice', 'reference_name': reference})
+                sales_invoice = frappe.get_doc("Sales Invoice", reference)
+                paid_amount = sales_invoice.paid_amount
+                if paid_amount > sales_invoice.outstanding_amount:
+                    allocated_amount = sales_invoice.outstanding_amount
+                else:
+                    allocated_amount = paid_amount
+                ref_docs.append({
+                    'reference_doctype': 'Sales Invoice', 
+                    'reference_name': reference, 
+                    'total_amount': sales_invoice.base_grand_total,
+                    'outstanding_amount': sales_invoice.outstanding_amount,
+                    'allocated_amount': allocated_amount
+                })
         payment_entry = frappe.get_doc({
             'doctype': 'Payment Entry',
             'payment_type': 'Receive',
@@ -446,6 +459,7 @@ def make_payment_entry(amount, date, reference_no, paid_from=None, paid_to=None,
             'remarks': remarks  
         })    
     new_entry = payment_entry.insert()
-    # add remarks and references after insert (otherwise the are overwritten)
-    
+    # add references after insert (otherwise the are overwritten)
+    #for reference in references:
+    #    create_reference(new_entry.name, reference)
     return new_entry.name

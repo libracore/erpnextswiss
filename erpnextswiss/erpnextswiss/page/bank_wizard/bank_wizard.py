@@ -390,25 +390,11 @@ def read_camt_transactions(transaction_entries, account):
 
 @frappe.whitelist()
 def make_payment_entry(amount, date, reference_no, paid_from=None, paid_to=None, type="Receive", party=None, party_type=None, references=None, remarks=None):
+    # assert list
+    if references:
+        references = ast.literal_eval(references)
     if type == "Receive":
         # receive
-        ref_docs = []
-        if references:
-            references = ast.literal_eval(references)
-            for reference in references:
-                sales_invoice = frappe.get_doc("Sales Invoice", reference)
-                paid_amount = sales_invoice.paid_amount
-                if paid_amount > sales_invoice.outstanding_amount:
-                    allocated_amount = sales_invoice.outstanding_amount
-                else:
-                    allocated_amount = paid_amount
-                ref_docs.append({
-                    'reference_doctype': 'Sales Invoice', 
-                    'reference_name': reference, 
-                    'total_amount': sales_invoice.base_grand_total,
-                    'outstanding_amount': sales_invoice.outstanding_amount,
-                    'allocated_amount': allocated_amount
-                })
         payment_entry = frappe.get_doc({
             'doctype': 'Payment Entry',
             'payment_type': 'Receive',
@@ -420,16 +406,10 @@ def make_payment_entry(amount, date, reference_no, paid_from=None, paid_to=None,
             'reference_no': reference_no,
             'reference_date': date,
             'posting_date': date,
-            'references': ref_docs,
             'remarks': remarks
         })
     elif type == "Pay":
         # pay
-        ref_docs = []
-        if references:
-            references = ast.literal_eval(references)
-            for reference in references:
-                ref_docs.append({'reference_doctype': 'Purchase Invoice', 'reference_name': reference})
         payment_entry = frappe.get_doc({
             'doctype': 'Payment Entry',
             'payment_type': 'Pay',
@@ -441,7 +421,6 @@ def make_payment_entry(amount, date, reference_no, paid_from=None, paid_to=None,
             'reference_no': reference_no,
             'reference_date': date,
             'posting_date': date,
-            'references': ref_docs,
             'remarks': remarks   
         })
     else:
@@ -460,6 +439,7 @@ def make_payment_entry(amount, date, reference_no, paid_from=None, paid_to=None,
         })    
     new_entry = payment_entry.insert()
     # add references after insert (otherwise the are overwritten)
-    #for reference in references:
-    #    create_reference(new_entry.name, reference)
+    if references:
+        for reference in references:
+            create_reference(new_entry.name, reference)
     return new_entry.name

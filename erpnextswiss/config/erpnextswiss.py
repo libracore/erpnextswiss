@@ -52,6 +52,18 @@ def get_data():
             ]
         },
         {
+            "label": _("Contracts"),
+            "icon": "octicon octicon-file-submodule",
+            "items": [
+                   {
+                       "type": "doctype",
+                       "name": "Contract",
+                       "label": _("Contract"),
+                       "description": _("Contract")                   
+                   }                   
+            ]
+        },
+        {
             "label": _("Configuration"),
             "icon": "fa fa-bank",
             "items": [
@@ -87,4 +99,4 @@ def get_data():
                    }                   
             ]
         },
-    ]
+]

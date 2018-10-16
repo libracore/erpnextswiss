@@ -178,3 +178,5 @@ Page: abacus_export,Reset export flags,Export-Markierungen entfernen
 DocType: ERPNextSwiss Settings,ERPNextSwiss Settings,ERPNextSwiss Einstellungen
 DocType: ERPNextSwiss Settings,Default Customer,Standardkunde
 DocType: ERPNextSwiss Settings,Use this to define a default customer,Setzt einen Standardkunden
+DocType: Contract,Contract,Vertrag
+DocType: Contract,Contracts,Verträge

@@ -406,11 +406,13 @@ class PaymentProposal(Document):
 
 # this function will create a new payment proposal
 @frappe.whitelist()
-def create_payment_proposal(company=None):
-    # get planning days
-    planning_days = frappe.get_value("ERPNextSwiss Settings", "ERPNextSwiss Settings", 'planning_days')
-    if not planning_days:
-        frappe.throw( "Please configure the planning period in ERPNextSwiss Settings.")
+def create_payment_proposal(date=None, company=None):
+    if not date:
+        # get planning days
+        planning_days = frappe.get_value("ERPNextSwiss Settings", "ERPNextSwiss Settings", 'planning_days')
+        date = datetime.now() + timedelta(days=planning_days) 
+        if not planning_days:
+            frappe.throw( "Please configure the planning period in ERPNextSwiss Settings.")
     # check companies (take first created if none specififed)
     if company == None:
         companies = frappe.get_all("Company", filters={}, fields=['name'], order_by='creation')
@@ -433,10 +435,10 @@ def create_payment_proposal(company=None):
                 LEFT JOIN `tabSupplier` ON `tabPurchase Invoice`.`supplier` = `tabSupplier`.`name`
                 WHERE `tabPurchase Invoice`.`docstatus` = 1 
                   AND `tabPurchase Invoice`.`outstanding_amount` > 0
-                  AND ((`tabPurchase Invoice`.`due_date` <= DATE_ADD(CURDATE(), INTERVAL {planning_days} DAY)) 
-                    OR ((DATE_ADD(`tabPurchase Invoice`.`posting_date`, INTERVAL `tabPayment Terms Template`.`skonto_days` DAY)) <= DATE_ADD(CURDATE(), INTERVAL {planning_days} DAY)))
+                  AND ((`tabPurchase Invoice`.`due_date` <= '{date}') 
+                    OR ((IF (IFNULL(`tabPayment Terms Template`.`skonto_days`, 0) = 0, `tabPurchase Invoice`.`due_date`, (DATE_ADD(`tabPurchase Invoice`.`posting_date`, INTERVAL `tabPayment Terms Template`.`skonto_days` DAY)))) <= '{date}'))
                   AND `tabPurchase Invoice`.`is_proposed` = 0
-                  AND `tabPurchase Invoice`.`company` = '{company}';""".format(planning_days=planning_days, company=company))
+                  AND `tabPurchase Invoice`.`company` = '{company}';""".format(date=date, company=company))
     purchase_invoices = frappe.db.sql(sql_query, as_dict=True)
     # get all purchase invoices that pending
     invoices = []

@@ -266,7 +266,7 @@ class PaymentProposal(Document):
                 # instruction identification 
                 payment_content += make_line("          <InstrId>INSTRID-{0}-{1}</InstrId>".format(self.name, transaction_count))
                 # end-to-end identification (should be used and unique within B-level; payment entry name)
-                payment_content += make_line("          <EndToEndId>{0}-{1}</EndToEndId>".format(self.name, transaction_count))
+                payment_content += make_line("          <EndToEndId>{0}</EndToEndId>".format(payment.reference))
                 payment_content += make_line("        </PmtId>")
                 # payment type information
                 payment_content += make_line("        <PmtTpInf>")

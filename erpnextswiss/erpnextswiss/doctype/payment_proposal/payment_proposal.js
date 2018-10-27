@@ -8,6 +8,11 @@ frappe.ui.form.on('Payment Proposal', {
              frm.add_custom_button(__("Download bank file"), function() {
                   generate_bank_file(frm);
              });
+        } else if (frm.doc.docstatus == 0) {
+             // add set payment date
+             frm.add_custom_button(__("Set Payment Date"), function() {
+                  set_payment_date(frm);
+             });
         }
         // filter for bank account
         cur_frm.fields_dict['pay_from_account'].get_query = function(doc) {
@@ -45,14 +50,34 @@ function generate_bank_file(frm) {
 }
 
 function download(filename, content) {
-  var element = document.createElement('a');
-  element.setAttribute('href', 'data:application/octet-stream;charset=utf-8,' + encodeURIComponent(content));
-  element.setAttribute('download', filename);
+    var element = document.createElement('a');
+    element.setAttribute('href', 'data:application/octet-stream;charset=utf-8,' + encodeURIComponent(content));
+    element.setAttribute('download', filename);
 
-  element.style.display = 'none';
-  document.body.appendChild(element);
+    element.style.display = 'none';
+    document.body.appendChild(element);
 
-  element.click();
+    element.click();
 
-  document.body.removeChild(element);
+    document.body.removeChild(element);
+}
+
+function set_payment_date(frm) {
+    var d = new Date();
+    d = new Date(d.setDate(d.getDate() + 1));
+    frappe.prompt([
+            {'fieldname': 'date', 'fieldtype': 'Date', 'label': 'Execute Payments On', 'reqd': 1, 'default': d}  
+        ],
+        function(values){
+            // loop through purchase invoices and set skonto date (this will be the execution date)
+            var items = cur_frm.doc.purchase_invoices;
+            items.forEach(function(entry) {
+                frappe.model.set_value(entry.doctype, entry.name, 'skonto_date', values.date);
+            });
+            // set execution date
+            cur_frm.set_value('date', values.date);
+        },
+        'Execution Date',
+        'Set'
+    );
 }

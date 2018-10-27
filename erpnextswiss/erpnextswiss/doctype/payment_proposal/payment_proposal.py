@@ -358,6 +358,10 @@ class PaymentProposal(Document):
                         frappe.throw( _("{0}: no IBAN found").format(payment) )
                     payment_content += make_line("          </Id>")
                     payment_content += make_line("        </CdtrAcct>")
+                    # Remittance Information
+                    payment_content += make_line("        <RmtInf>")
+                    payment_content += make_line("          <Ustrd>{0}</Ustrd>".format(payment.reference))
+                    payment_content += make_line("        </RmtInf>")
                                             
                 # close payment record
                 payment_content += make_line("      </CdtTrfTxInf>")

@@ -68,19 +68,15 @@ frappe.abacus_export = {
             start_date = end_date;
             end_date = temp;
         }
+        // write values to form
+        document.getElementById("start_date").value = start_date;
+        document.getElementById("end_date").value = end_date;
         // get GL entries from this period
         frappe.call({
-            method: "frappe.client.get_list",
+            method: "erpnextswiss.erpnextswiss.page.abacus_export.abacus_export.get_transactions",
             args: {
-                doctype:"GL Entry",
-                filters: [
-                    ["posting_date",">=", start_date],
-                    ["posting_date","<=", end_date],
-                    ["docstatus","=", 1],
-		    ["exported_to_abacus","=",0]
-                ],
-                fields: ["posting_date", "debit", "credit", "account", "voucher_type", "voucher_no"],
-                order_by: "posting_date"
+                'start_date': start_date,
+                'end_date': end_date
             },
             callback: function(response) {
                 var preview_container = document.getElementById("preview");

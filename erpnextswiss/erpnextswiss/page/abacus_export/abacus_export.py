@@ -11,7 +11,9 @@ import hashlib
 def generate_transfer_file(start_date, end_date, aggregated=0):
     # creates a transfer file for abacus
 
-    #try:        
+    #try:
+        # normalise parameters
+        aggregated = int(aggregated)
         # create xml header
         content = make_line("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
         # define xml root node
@@ -37,6 +39,7 @@ def generate_transfer_file(start_date, end_date, aggregated=0):
                   SUM(`tabSales Invoice`.`base_net_total`) AS `income`, `tabSales Invoice Item`.`income_account`,  
                   SUM(`tabSales Invoice`.`total_taxes_and_charges`) AS `tax`, `tabSales Taxes and Charges`.`account_head`,
                   `tabSales Invoice`.`taxes_and_charges`,
+                  `tabSales Taxes and Charges`.`rate`,
                   CONCAT(IFNULL(`tabSales Invoice`.`debit_to`, ""),
                     IFNULL(`tabSales Invoice Item`.`income_account`, ""),  
                     IFNULL(`tabSales Taxes and Charges`.`account_head`, "")
@@ -45,25 +48,26 @@ def generate_transfer_file(start_date, end_date, aggregated=0):
                 LEFT JOIN `tabSales Invoice Item` ON `tabSales Invoice`.`name` = `tabSales Invoice Item`.`parent`
                 LEFT JOIN `tabSales Taxes and Charges` ON `tabSales Invoice`.`name` = `tabSales Taxes and Charges`.`parent`
                 WHERE
-                    `posting_date` >= '{start_date}'
-                    AND `posting_date` <= '{end_date}'
-                    AND `docstatus` = 1
-                    AND `exported_to_abacus` = 0
+                    `tabSales Invoice`.`posting_date` >= '{start_date}'
+                    AND `tabSales Invoice`.`posting_date` <= '{end_date}'
+                    AND `tabSales Invoice`.`docstatus` = 1
+                    AND `tabSales Invoice`.`exported_to_abacus` = 0
                 GROUP BY `key`""".format(start_date=start_date, end_date=end_date)
         else:
             sql_query = """SELECT `tabSales Invoice`.`posting_date`, `tabSales Invoice`.`currency`, 
                   `tabSales Invoice`.`base_grand_total` AS `debit`, `tabSales Invoice`.`debit_to`,
                   `tabSales Invoice`.`base_net_total` AS `income`, `tabSales Invoice Item`.`income_account`,  
                   `tabSales Invoice`.`total_taxes_and_charges` AS `tax`, `tabSales Taxes and Charges`.`account_head`,
-                  `tabSales Invoice`.`taxes_and_charges`
+                  `tabSales Invoice`.`taxes_and_charges`,
+                  `tabSales Taxes and Charges`.`rate`
                 FROM `tabSales Invoice`
                 LEFT JOIN `tabSales Invoice Item` ON `tabSales Invoice`.`name` = `tabSales Invoice Item`.`parent`
                 LEFT JOIN `tabSales Taxes and Charges` ON `tabSales Invoice`.`name` = `tabSales Taxes and Charges`.`parent`
                 WHERE
-                    `posting_date` >= '{start_date}'
-                    AND `posting_date` <= '{end_date}'
-                    AND `docstatus` = 1
-                    AND `exported_to_abacus` = 0
+                    `tabSales Invoice`.`posting_date` >= '{start_date}'
+                    AND `tabSales Invoice`.`posting_date` <= '{end_date}'
+                    AND `tabSales Invoice`.`docstatus` = 1
+                    AND `tabSales Invoice`.`exported_to_abacus` = 0
                 """.format(start_date=start_date, end_date=end_date)
         items = frappe.db.sql(sql_query, as_dict=True)
         # mark all entries as exported
@@ -88,14 +92,14 @@ def generate_transfer_file(start_date, end_date, aggregated=0):
                 # create content block with taxes
                 content += add_transaction_block(account=item.debit_to, amount=item.debit, 
                     against_account=item.income_account, against_amount=item.income, 
-                    debit_credit="D", date, item.currency, transaction_count, 
-                    tax_account=item.account_head, tax_amount=item.tax, tax_rate=tax_record.rate, tax_code=tax_record.tax_code or "312")
+                    debit_credit="D", date=date, currency=item.currency, transaction_count=transaction_count, 
+                    tax_account=item.account_head, tax_amount=item.tax, tax_rate=item.rate, tax_code=tax_record.tax_code or "312")
             else:
                 # create content block without taxes
                 content += add_transaction_block(account=item.debit_to, amount=item.debit, 
                     against_account=item.income_account, against_amount=item.income, 
-                    debit_credit="D", date, item.currency, transaction_count, 
-                    tax_account=None, tax_amount=None, tax_rate=None, tax_code=None):
+                    debit_credit="D", date=date, currency=item.currency, transaction_count=transaction_count,
+                    tax_account=None, tax_amount=None, tax_rate=None, tax_code=None)
 
             transaction_count += 1        
         
@@ -149,11 +153,11 @@ def generate_transfer_file(start_date, end_date, aggregated=0):
                 date = end_date
             else:
                 date = item.posting_date
-            # create content block without taxes
+            # create content block
             content += add_transaction_block(account=item.paid_from, amount=item.amount, 
                 against_account=item.paid_to, against_amount=item.amount, 
-                debit_credit="C", date, item.currency, transaction_count, 
-                tax_account=None, tax_amount=None, tax_rate=None, tax_code=None):
+                debit_credit="C", date=date, currency=item.currency, transaction_count=transaction_count,
+                tax_account=None, tax_amount=None, tax_rate=None, tax_code=None)
 
             transaction_count += 1        
             
@@ -164,9 +168,6 @@ def generate_transfer_file(start_date, end_date, aggregated=0):
         content = content.replace(transaction_count_identifier, "{0}".format(transaction_count))
         
         return { 'content': content }
-    #except IndexError:
-    #    frappe.msgprint( _("Please select at least one payment."), _("Information") )
-    #    return
     #except:
     #    frappe.throw( _("Error while generating xml. Make sure that you made required customisations to the DocTypes.") )
     #    return
@@ -175,47 +176,50 @@ def generate_transfer_file(start_date, end_date, aggregated=0):
 #  debit_credit: "D" or "C"
 def add_transaction_block(account, amount, against_account, against_amount, 
         debit_credit, date, currency, transaction_count, tax_account=None, tax_amount=None, tax_rate=None, tax_code=None):
-    transaction_reference = "{0} {1} {2} {3}".format(date, account, debit_credit, amount)
-    short_reference = "{0}{1}{2}{3}".format(date[2:4], date[5:7], date[8:10], transaction_count)
+    date_str = unicode(date)
+    transaction_reference = "{0} {1} {2} {3}".format(date_str, account, debit_credit, amount)
+    short_reference = "{0}{1}{2}{3}".format(date_str[2:4], date_str[5:7], date_str[8:10], transaction_count)
     content = make_line("  <Transaction id=\"{0}\">").format(transaction_count)
     content += make_line("   <Entry mode=\"SAVE\">")
     content += make_line("    <CollectiveInformation mode=\"SAVE\">")
     content += make_line("     <EntryLevel>A</EntryLevel>")
     content += make_line("     <EntryType>S</EntryType>")
     content += make_line("     <Type>Normal</Type>")
-    content += make_line("     <DebitCredit>{0}</DebitCredit>").format(debit_credit)
+    content += make_line("     <DebitCredit>{0}</DebitCredit>".format(debit_credit))
     content += make_line("     <Client></Client>")              # customer number
     content += make_line("     <Division>0</Division>")
-    content += make_line("     <KeyCurrency>{0}</KeyCurrency>").format(currency)
-    content += make_line("     <EntryDate>{0}</EntryDate>").format(date)
+    content += make_line("     <KeyCurrency>{0}</KeyCurrency>".format(currency))
+    content += make_line("     <EntryDate>{0}</EntryDate>".format(date))
     content += make_line("     <ValueDate></ValueDate>")
     content += make_line("     <AmountData mode=\"SAVE\">")
-    content += make_line("      <Currency>{0}</Currency>").format(currency)
-    content += make_line("      <Amount>{0}</Amount>").format(amount)
+    content += make_line("      <Currency>{0}</Currency>".format(currency))
+    content += make_line("      <Amount>{0}</Amount>".format(amount))
     content += make_line("     </AmountData>")
-    content += make_line("     <KeyAmount>{0}</KeyAmount>").format(amount)
-    content += make_line("     <Account>{0}</Account>").format(account)
+    content += make_line("     <KeyAmount>{0}</KeyAmount>".format(amount))
+    content += make_line("     <Account>{0}</Account>".format(get_account_number(account)))
     content += make_line("     <IntercompanyId>0</IntercompanyId>")
     content += make_line("     <IntercompanyCode></IntercompanyCode>")
     content += make_line("     <Text1>Sammelbuchung</Text1>")
-    content += make_line("     <DocumentNumber>{0}</DocumentNumber>").format(short_reference)
+    content += make_line("     <DocumentNumber>{0}</DocumentNumber>".format(short_reference))
     content += make_line("     <SingleCount>0</SingleCount>")
     content += make_line("    </CollectiveInformation>")
     content += make_line("    <SingleInformation mode=\"SAVE\">")
     content += make_line("     <Type>Normal</Type>")
-    content += make_line("     <DebitCredit>D</DebitCredit>")
-    content += make_line("     <EntryDate>{0}</EntryDate>").format(date)
+    content += make_line("     <DebitCredit>{0}</DebitCredit>".format(debit_credit))
+    content += make_line("     <EntryDate>{0}</EntryDate>".format(date))
     content += make_line("     <ValueDate></ValueDate>")
     content += make_line("     <AmountData mode=\"SAVE\">")
-    content += make_line("      <Currency>{0}</Currency>").format(currency)
-    content += make_line("      <Amount>{0}</Amount>").format(against_amount)
+    content += make_line("      <Currency>{0}</Currency>".format(currency))
+    content += make_line("      <Amount>{0}</Amount>".format(amount))
     content += make_line("     </AmountData>")
-    content += make_line("     <KeyAmount>{0}</KeyAmount>").format(against_amount)
-    content += make_line("     <Account>{0}</Account>").format(against_account)
+    content += make_line("     <KeyAmount>{0}</KeyAmount>".format(amount))
+    content += make_line("     <Account>{0}</Account>".format(get_account_number(against_account)))
+    if tax_account:
+        content += make_line("     <TaxAccount>{0}</TaxAccount>".format(get_account_number(tax_account)))
     content += make_line("     <IntercompanyId>0</IntercompanyId>")
     content += make_line("     <IntercompanyCode></IntercompanyCode>")
     content += make_line("     <Text1>Sammelbuchung</Text1>")
-    content += make_line("     <DocumentNumber>{0}</DocumentNumber>").format(short_reference)
+    content += make_line("     <DocumentNumber>{0}</DocumentNumber>".format(short_reference))
     content += make_line("     <SelectionCode></SelectionCode>")
     if tax_account:
         content += make_line("     <TaxData mode=\"SAVE\">")
@@ -223,10 +227,10 @@ def add_transaction_block(account, amount, against_account, against_amount,
         content += make_line("      <TaxType>1</TaxType>")
         content += make_line("      <UseCode>1</UseCode>")
         content += make_line("      <AmountData mode=\"SAVE\">")
-        content += make_line("       <Currency>{0}</Currency>").format(currency)
+        content += make_line("       <Currency>{0}</Currency>".format(currency))
         content += make_line("       <Amount>0</Amount>")
         content += make_line("      </AmountData>")
-        content += make_line("      <KeyAmount>-{0}</KeyAmount>").format(tax_amount)
+        content += make_line("      <KeyAmount>-{0}</KeyAmount>".format(tax_amount))
         content += make_line("      <TaxRate>{0}</TaxRate>").format(tax_rate)
         content += make_line("      <TaxCoefficient>100</TaxCoefficient>")
         content += make_line("      <Country>CH</Country>")
@@ -296,4 +300,32 @@ def get_sales_taxes(sales_invoice):
 def reset_export_flags():
     sql_query = """UPDATE `tabGL Entry` SET `exported_to_abacus` = 0;"""
     frappe.db.sql(sql_query, as_dict=True)
+    sql_query = """UPDATE `tabSales Invoice` SET `exported_to_abacus` = 0;"""
+    frappe.db.sql(sql_query, as_dict=True)
+    sql_query = """UPDATE `tabPayment Entry` SET `exported_to_abacus` = 0;"""
+    frappe.db.sql(sql_query, as_dict=True)
     return { 'message': 'OK' }
+
+# get transactions
+@frappe.whitelist()
+def get_transactions(start_date, end_date):
+    sql_query = """SELECT `posting_date` AS `date`, `debit_to` AS `account`, `name`, `base_grand_total` AS `amount`, "Sales Invoice" AS `type` 
+        FROM `tabSales Invoice`
+        WHERE
+            `posting_date` >= '{start_date}'
+            AND `posting_date` <= '{end_date}'
+            AND `docstatus` = 1
+            AND `exported_to_abacus` = 0
+        UNION SELECT `posting_date` AS `date`, `paid_to` AS `account`, `name`, `paid_amount` AS `amount`, "Payment Entry" AS `type`
+        FROM `tabPayment Entry`
+        WHERE
+            `posting_date` >= '{start_date}'
+            AND `posting_date` <= '{end_date}'
+            AND `docstatus` = 1
+            AND `exported_to_abacus` = 0
+        ORDER BY `date` LIMIT 20""".format(start_date=start_date, end_date=end_date)
+    items = frappe.db.sql(sql_query, as_dict=True)
+    if items:
+        return items
+    else:
+        return None

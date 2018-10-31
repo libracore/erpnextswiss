@@ -1,15 +1,16 @@
 <div style="margin: 5px; margin-top: 0px; border-top: 1px solid white; ">
-  <p class="text-muted">{%= __("Export General Ledger to an Abacus transfer file") %}</p>
+  <p class="text-muted">{%= __("Export Sales Invoices and Payment Entries to an Abacus transfer file") %}</p>
 
   <div class="row">
-    <div class="form-column col-sm-4">
+    <div class="form-column col-sm-6">
       <p>{{ __("Period") }}</p>
       <input type="date" id="start_date" name="start_date" />
       <label for="start">&nbsp;{{ __("to") }}&nbsp;</label>
-      <input type="date" id="end_date" name="end_date" />
+      <input type="date" id="end_date" name="end_date" />&nbsp;
+      <input type="checkbox" id="chk-aggregated" name="aggregated"><label for="chk-aggregated">&nbsp;{{ __("Aggregated") }}&nbsp;</label>
     </div>
 
-    <div class="form-column col-sm-4">
+    <div class="form-column col-sm-6">
       <p>{{ __("Create File") }}</p>
       <button type="submit" class="btn btn-sm btn-primary btn-create-file">{{ __("Create File") }}</button>
       <div class="waiting-gif hide" id="waiting-gif"><img src="/assets/frappe/images/ui/ajax-loader.gif" /></div>

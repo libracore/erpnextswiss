@@ -1102,7 +1102,7 @@
   "width": null
  }, 
  {
-  "allow_on_submit": 0, 
+  "allow_on_submit": 1, 
   "bold": 0, 
   "collapsible": 0, 
   "collapsible_depends_on": null, 
@@ -1123,7 +1123,7 @@
   "in_standard_filter": 0, 
   "insert_after": "enable_lsv", 
   "label": "Exported to Abacus", 
-  "modified": "2018-10-31 09:21:42.188889", 
+  "modified": "2018-10-31 09:54:42.188889", 
   "name": "Sales Invoice-exported_to_abacus", 
   "no_copy": 0, 
   "options": null, 
@@ -1140,7 +1140,7 @@
   "width": null
  }, 
  {
-  "allow_on_submit": 0, 
+  "allow_on_submit": 1, 
   "bold": 0, 
   "collapsible": 0, 
   "collapsible_depends_on": null, 
@@ -1161,7 +1161,7 @@
   "in_standard_filter": 0, 
   "insert_after": "esr_reference", 
   "label": "Exported to Abacus", 
-  "modified": "2018-10-31 09:22:10.355304", 
+  "modified": "2018-10-31 09:54:10.355304", 
   "name": "Payment Entry-exported_to_abacus", 
   "no_copy": 0, 
   "options": null, 

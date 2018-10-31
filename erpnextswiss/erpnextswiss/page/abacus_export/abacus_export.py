@@ -99,6 +99,64 @@ def generate_transfer_file(start_date, end_date, aggregated=0):
 
             transaction_count += 1        
         
+        # add payment entry transactions
+        if aggregated == 1:
+            sql_query = """SELECT 
+                      `tabPayment Entry`.`posting_date`, `tabPayment Entry`.`paid_from_account_currency` AS `currency`,
+                      SUM(`tabPayment Entry`.`paid_amount`) AS `amount`, `tabPayment Entry`.`paid_from`,
+                      `tabPayment Entry`.`paid_to`,  
+                      CONCAT(IFNULL(`tabPayment Entry`.`paid_from`, ""),
+                        IFNULL(`tabPayment Entry`.`paid_to`, "")
+                      ) AS `key`
+                    FROM `tabPayment Entry`
+                    WHERE
+                        `posting_date` >= '{start_date}'
+                        AND `posting_date` <= '{end_date}'
+                        AND `docstatus` = 1
+                        AND `exported_to_abacus` = 0
+                    GROUP BY `key`;
+                """.format(start_date=start_date, end_date=end_date)
+        else:
+            sql_query = """SELECT 
+                      `tabPayment Entry`.`posting_date`, `tabPayment Entry`.`paid_from_account_currency` AS `currency`,
+                      `tabPayment Entry`.`paid_amount` AS `amount`, `tabPayment Entry`.`paid_from`,
+                      `tabPayment Entry`.`paid_to`,  
+                      CONCAT(IFNULL(`tabPayment Entry`.`paid_from`, ""),
+                        IFNULL(`tabPayment Entry`.`paid_to`, "")
+                      ) AS `key`
+                    FROM `tabPayment Entry`
+                    WHERE
+                        `posting_date` >= '{start_date}'
+                        AND `posting_date` <= '{end_date}'
+                        AND `docstatus` = 1
+                        AND `exported_to_abacus` = 0
+                """.format(start_date=start_date, end_date=end_date)
+
+        items = frappe.db.sql(sql_query, as_dict=True)
+        # mark all entries as exported
+        export_matches = frappe.get_all("Payment Entry", filters=[
+            ["posting_date",">=", start_date],
+            ["posting_date","<=", end_date],
+            ["docstatus","=", 1],
+		    ["exported_to_abacus","=",0]], fields=['name'])
+        for export_match in export_matches:
+            record = frappe.get_doc("Payment Entry", export_match['name'])
+            record.exported_to_abacus = 1
+            record.save(ignore_permissions=True)
+        # create item entries
+        for item in items:
+            if aggregated == 1:
+                date = end_date
+            else:
+                date = item.posting_date
+            # create content block without taxes
+            content += add_transaction_block(account=item.paid_from, amount=item.amount, 
+                against_account=item.paid_to, against_amount=item.amount, 
+                debit_credit="C", date, item.currency, transaction_count, 
+                tax_account=None, tax_amount=None, tax_rate=None, tax_code=None):
+
+            transaction_count += 1        
+            
         # add footer
         content += make_line(" </Task>")
         content += make_line("</AbaConnectContainer>")

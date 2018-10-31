@@ -30,41 +30,75 @@ def generate_transfer_file(start_date, end_date, aggregated=0):
         content += make_line("   <Version>2015.00</Version>")
         content += make_line("  </Parameter>")
 
-        # add payment entry transactions
-        sql_query = """SELECT 
-                      `tabAccount`.`account_number`, 
-                      SUM(`tabGL Entry`.`debit`) AS `debit`, 
-                      SUM(`tabGL Entry`.`credit`) AS `credit`,
-                      `tabGL Entry`.`account_currency` AS `currency`                      
-                    FROM `tabGL Entry`
-                    LEFT JOIN `tabAccount` ON `tabGL Entry`.`account` = `tabAccount`.`name`
-                    WHERE `tabGL Entry`.`posting_date` >= '{start_date}' 
-                      AND `tabGL Entry`.`posting_date` <= '{end_date}'
-                      AND `tabGL Entry`.`docstatus` = 1
-                      AND `tabGL Entry`.`exported_to_abacus` = 0
-                    GROUP BY `tabAccount`.`account_number`;
-            """.format(start_date=start_date, end_date=end_date)
+        # add sales invoice transactions
+        if aggregated == 1:
+            sql_query = """SELECT `tabSales Invoice`.`posting_date`, `tabSales Invoice`.`currency`, 
+                  SUM(`tabSales Invoice`.`base_grand_total`) AS `debit`, `tabSales Invoice`.`debit_to`,
+                  SUM(`tabSales Invoice`.`base_net_total`) AS `income`, `tabSales Invoice Item`.`income_account`,  
+                  SUM(`tabSales Invoice`.`total_taxes_and_charges`) AS `tax`, `tabSales Taxes and Charges`.`account_head`,
+                  `tabSales Invoice`.`taxes_and_charges`,
+                  CONCAT(IFNULL(`tabSales Invoice`.`debit_to`, ""),
+                    IFNULL(`tabSales Invoice Item`.`income_account`, ""),  
+                    IFNULL(`tabSales Taxes and Charges`.`account_head`, "")
+                  ) AS `key`
+                FROM `tabSales Invoice`
+                LEFT JOIN `tabSales Invoice Item` ON `tabSales Invoice`.`name` = `tabSales Invoice Item`.`parent`
+                LEFT JOIN `tabSales Taxes and Charges` ON `tabSales Invoice`.`name` = `tabSales Taxes and Charges`.`parent`
+                WHERE
+                    `posting_date` >= '{start_date}'
+                    AND `posting_date` <= '{end_date}'
+                    AND `docstatus` = 1
+                    AND `exported_to_abacus` = 0
+                GROUP BY `key`""".format(start_date=start_date, end_date=end_date)
+        else:
+            sql_query = """SELECT `tabSales Invoice`.`posting_date`, `tabSales Invoice`.`currency`, 
+                  `tabSales Invoice`.`base_grand_total` AS `debit`, `tabSales Invoice`.`debit_to`,
+                  `tabSales Invoice`.`base_net_total` AS `income`, `tabSales Invoice Item`.`income_account`,  
+                  `tabSales Invoice`.`total_taxes_and_charges` AS `tax`, `tabSales Taxes and Charges`.`account_head`,
+                  `tabSales Invoice`.`taxes_and_charges`
+                FROM `tabSales Invoice`
+                LEFT JOIN `tabSales Invoice Item` ON `tabSales Invoice`.`name` = `tabSales Invoice Item`.`parent`
+                LEFT JOIN `tabSales Taxes and Charges` ON `tabSales Invoice`.`name` = `tabSales Taxes and Charges`.`parent`
+                WHERE
+                    `posting_date` >= '{start_date}'
+                    AND `posting_date` <= '{end_date}'
+                    AND `docstatus` = 1
+                    AND `exported_to_abacus` = 0
+                """.format(start_date=start_date, end_date=end_date)
         items = frappe.db.sql(sql_query, as_dict=True)
         # mark all entries as exported
-        export_matches = frappe.get_all("GL Entry", filters=[
+        export_matches = frappe.get_all("Sales Invoice", filters=[
             ["posting_date",">=", start_date],
             ["posting_date","<=", end_date],
             ["docstatus","=", 1],
 		    ["exported_to_abacus","=",0]], fields=['name'])
         for export_match in export_matches:
-            record = frappe.get_doc("GL Entry", export_match['name'])
+            record = frappe.get_doc("Sales Invoice", export_match['name'])
             record.exported_to_abacus = 1
             record.save(ignore_permissions=True)
+        # create item entries
+        transaction_count = 0
         for item in items:
-            if item.account_number:
-                if item.credit != 0:
-                    transaction_count += 1        
-                    content += add_transaction_block(item.account_number, item.credit, 
-                        "C", end_date, item.currency, transaction_count)
-                if item.debit != 0:
-                    transaction_count += 1        
-                    content += add_transaction_block(item.account_number, item.debit, 
-                        "D", end_date, item.currency, transaction_count)
+            if aggregated == 1:
+                date = end_date
+            else:
+                date = item.posting_date
+            if item.taxes_and_charges:
+                tax_record = frappe.get_doc("Sales Taxes and Charges Template", item.taxes_and_charges)
+                # create content block with taxes
+                content += add_transaction_block(account=item.debit_to, amount=item.debit, 
+                    against_account=item.income_account, against_amount=item.income, 
+                    debit_credit="D", date, item.currency, transaction_count, 
+                    tax_account=item.account_head, tax_amount=item.tax, tax_rate=tax_record.rate, tax_code=tax_record.tax_code or "312")
+            else:
+                # create content block without taxes
+                content += add_transaction_block(account=item.debit_to, amount=item.debit, 
+                    against_account=item.income_account, against_amount=item.income, 
+                    debit_credit="D", date, item.currency, transaction_count, 
+                    tax_account=None, tax_amount=None, tax_rate=None, tax_code=None):
+
+            transaction_count += 1        
+        
         # add footer
         content += make_line(" </Task>")
         content += make_line("</AbaConnectContainer>")
@@ -116,10 +150,10 @@ def add_transaction_block(account, amount, against_account, against_amount,
     content += make_line("     <ValueDate></ValueDate>")
     content += make_line("     <AmountData mode=\"SAVE\">")
     content += make_line("      <Currency>{0}</Currency>").format(currency)
-    content += make_line("      <Amount>{0}</Amount>").format(amount)
+    content += make_line("      <Amount>{0}</Amount>").format(against_amount)
     content += make_line("     </AmountData>")
-    content += make_line("     <KeyAmount>{0}</KeyAmount>").format(amount)
-    content += make_line("     <Account>{0}</Account>").format(account)
+    content += make_line("     <KeyAmount>{0}</KeyAmount>").format(against_amount)
+    content += make_line("     <Account>{0}</Account>").format(against_account)
     content += make_line("     <IntercompanyId>0</IntercompanyId>")
     content += make_line("     <IntercompanyCode></IntercompanyCode>")
     content += make_line("     <Text1>Sammelbuchung</Text1>")

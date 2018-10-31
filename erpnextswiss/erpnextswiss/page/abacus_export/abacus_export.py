@@ -8,7 +8,7 @@ from frappe import throw, _
 import hashlib
     
 @frappe.whitelist()
-def generate_transfer_file(start_date, end_date):
+def generate_transfer_file(start_date, end_date, aggregated=0):
     # creates a transfer file for abacus
 
     #try:        
@@ -81,7 +81,8 @@ def generate_transfer_file(start_date, end_date):
 
 # Params
 #  debit_credit: "D" or "C"
-def add_transaction_block(account, amount, debit_credit, date, currency, transaction_count):
+def add_transaction_block(account, amount, against_account, against_amount, 
+        debit_credit, date, currency, transaction_count, tax_account=None, tax_amount=None, tax_rate=None, tax_code=None):
     transaction_reference = "{0} {1} {2} {3}".format(date, account, debit_credit, amount)
     short_reference = "{0}{1}{2}{3}".format(date[2:4], date[5:7], date[8:10], transaction_count)
     content = make_line("  <Transaction id=\"{0}\">").format(transaction_count)
@@ -124,6 +125,23 @@ def add_transaction_block(account, amount, debit_credit, date, currency, transac
     content += make_line("     <Text1>Sammelbuchung</Text1>")
     content += make_line("     <DocumentNumber>{0}</DocumentNumber>").format(short_reference)
     content += make_line("     <SelectionCode></SelectionCode>")
+    if tax_account:
+        content += make_line("     <TaxData mode=\"SAVE\">")
+        content += make_line("      <TaxIncluded>I</TaxIncluded>")
+        content += make_line("      <TaxType>1</TaxType>")
+        content += make_line("      <UseCode>1</UseCode>")
+        content += make_line("      <AmountData mode=\"SAVE\">")
+        content += make_line("       <Currency>{0}</Currency>").format(currency)
+        content += make_line("       <Amount>0</Amount>")
+        content += make_line("      </AmountData>")
+        content += make_line("      <KeyAmount>-{0}</KeyAmount>").format(tax_amount)
+        content += make_line("      <TaxRate>{0}</TaxRate>").format(tax_rate)
+        content += make_line("      <TaxCoefficient>100</TaxCoefficient>")
+        content += make_line("      <Country>CH</Country>")
+        content += make_line("      <TaxCode>{0}</TaxCode>".format(tax_code))
+        content += make_line("      <Number></Number>")
+        content += make_line("      <FlatRate>0</FlatRate>")
+        content += make_line("     </TaxData>")
     content += make_line("    </SingleInformation>")
     content += make_line("   </Entry>")
     content += make_line("  </Transaction>")

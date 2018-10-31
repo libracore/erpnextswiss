@@ -102,14 +102,19 @@ frappe.abacus_export = {
         // enable waiting gif
         document.getElementById("waiting-gif").classList.remove("hide");
         // get date range
-        start_date = document.getElementById("start_date").value;
-        end_date = document.getElementById("end_date").value;
+        var start_date = document.getElementById("start_date").value;
+        var end_date = document.getElementById("end_date").value;
+        var aggregated = 0;
+        if (document.getElementById("chk-aggregated").checked) {
+            aggregated = 1;
+        }
         // generate payment file
         frappe.call({
             method: 'erpnextswiss.erpnextswiss.page.abacus_export.abacus_export.generate_transfer_file',
             args: { 
-            'start_date': start_date,
-            'end_date': end_date
+                'start_date': start_date,
+                'end_date': end_date,
+                'aggregated': aggregated
             },
             callback: function(r) {
                 if (r.message) {
@@ -119,8 +124,8 @@ frappe.abacus_export = {
                     // disable waiting gif
                     document.getElementById("waiting-gif").classList.add("hide");
 		    
-		    // update content
-		    frappe.abacus_export.update_preview();
+                    // update content
+                    frappe.abacus_export.update_preview();
                 } 
             }
         });

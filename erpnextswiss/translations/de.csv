@@ -1,3 +1,6 @@
+Module: ERPNextSwiss,Fullsize,Ganzer Bildschirm
+Module: ERPNextSwiss,Fullsize View,Ganzer Bildschirm
+Module: ERPNextSwiss,Normal View,Normale Ansicht
 Page: bankimport,Bank import,Bankdaten importieren
 DocType: VAT Declaration,VAT Declaration,Mehrwertsteuerdeklaration
 Page: payment_export,Payment export,Zahlungsdatei erstellen

@@ -165,7 +165,16 @@ def parse_raiffeisen(content, account, auto_submit=False):
                     #log("Received amount {0}".format(received_amount))
                     if received_amount > 0:
                         # get unique transaction ID
-                        transaction_id = hashlib.md5("{0}{1}{2}".format(fields[BOOKED_AT], fields[TEXT], fields[AMOUNT])).hexdigest()
+                        transaction_id = hashlib.md5("{0}:{1}:{2}".format(fields[BOOKED_AT], fields[AMOUNT], fields[BALANCE])).hexdigest()
+                        try:
+                            nextline_fields = lines[i+1].split(';')
+                        except:
+                            nextline_fields = None
+                        if nextline_fields[AMOUNT] == "":
+                            # containes the end-to-end reference
+                            remarks = nextline_fields[TEXT]
+                        else:
+                            remarks = None
                         #log("Checking transaction {0}".format(transaction_id))
                         # cross-check if this transaction was already recorded
                         if not frappe.db.exists('Payment Entry', {'reference_no': transaction_id}):
@@ -193,7 +202,7 @@ def parse_raiffeisen(content, account, auto_submit=False):
                             new_payment_entry.reference_no = transaction_id
                             new_payment_entry.reference_date = date
                             if (i + 1) < len(lines):
-                                new_payment_entry.remarks = fields[TEXT]
+                                new_payment_entry.remarks = "{0} {1}".format(fields[TEXT], (remarks or ""))
                             inserted_payment_entry = new_payment_entry.insert()
                             if auto_submit:
                                 new_payment_entry.submit()

@@ -132,6 +132,17 @@ def parse_zkb(content, account, auto_submit=False):
 
 def parse_raiffeisen(content, account, auto_submit=False):
     # parse a raiffeisen bank extract csv
+    #
+    # Column definition:
+    # IBAN (0), Booket At (1), Text (2), Credit/Debit Amount (3), Balance (4), Valuta Date (5)
+    #
+    IBAN = 0
+    BOOKED_AT = 1
+    TEXT = 2
+    AMOUNT = 3
+    BALANCE = 4
+    VALUTA_DATE = 5
+    # cell separator: ;
     # collect all lines of the file
     #log("Starting parser...")
     lines = content.split("\n")
@@ -146,18 +157,15 @@ def parse_raiffeisen(content, account, auto_submit=False):
             # skip line 0, it contains the column headers
             # collect each fields (separated by semicolon)
             fields = lines[i].split(';')
-            
             # get received amount, only continue if this has a POSITIVE value
-            if len(fields) > 4:
-                if fields[2] != "":
+            if len(fields) > 5:
+                if fields[AMOUNT] != "":
                     # skip second lines (additional data for payments)
-                    received_amount = float(fields[2])
+                    received_amount = float(fields[AMOUNT])
                     #log("Received amount {0}".format(received_amount))
                     if received_amount > 0:
                         # get unique transaction ID
-                        next_line_fields = lines[i + 1].split(';')
-                        elements_in_comment = next_line_fields[1].split(' ')
-                        transaction_id = hashlib.md5(fields[0] + next_line_fields[1]).hexdigest()
+                        transaction_id = hashlib.md5("{0}{1}{2}".format(fields[BOOKED_AT], fields[TEXT], fields[AMOUNT])).hexdigest()
                         #log("Checking transaction {0}".format(transaction_id))
                         # cross-check if this transaction was already recorded
                         if not frappe.db.exists('Payment Entry', {'reference_no': transaction_id}):
@@ -166,8 +174,8 @@ def parse_raiffeisen(content, account, auto_submit=False):
                             new_payment_entry = frappe.get_doc({'doctype': 'Payment Entry'})
                             new_payment_entry.payment_type = "Receive"
                             new_payment_entry.party_type = "Customer";
-                            # get the customer name
-                            description = fields[1].split(" ")
+                            # get the customer name (TEXT is "Gutschrift [customer]" on debits)
+                            description = fields[TEXT].split(" ")
                             customer_name = " ".join(description[1:])
                             customer = frappe.get_value('Customer', customer_name, 'name')
                             if customer:
@@ -175,7 +183,7 @@ def parse_raiffeisen(content, account, auto_submit=False):
                             else:
                                 new_payment_entry.party = default_customer
                             # date is in "DD.MM.YYYY hh.mm" or "YYYY-MM-DD hh:mm" (bug #11)
-                            date_time = fields[0].split(' ')
+                            date_time = fields[BOOKED_AT].split(' ')
                             date = convert_to_unc(date_time[0])
                             new_payment_entry.posting_date = date
                             new_payment_entry.paid_to = account
@@ -185,7 +193,7 @@ def parse_raiffeisen(content, account, auto_submit=False):
                             new_payment_entry.reference_no = transaction_id
                             new_payment_entry.reference_date = date
                             if (i + 1) < len(lines):
-                                new_payment_entry.remarks = fields[1] + ", " + next_line_fields[1]
+                                new_payment_entry.remarks = fields[TEXT]
                             inserted_payment_entry = new_payment_entry.insert()
                             if auto_submit:
                                 new_payment_entry.submit()

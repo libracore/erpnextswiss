@@ -69,6 +69,7 @@ function get_values(frm) {
         get_total(frm, "viewVAT_332", 'amount_2');
     }
     get_total(frm, "viewVAT_382", 'additional_amount');
+    get_tax(frm, "viewVAT_382", 'additional_tax');
     // Pretaxes
     if (frm.doc.vat_type == "effective") {
         get_tax(frm, "viewVAT_400", 'pretax_material');
@@ -98,11 +99,11 @@ frappe.ui.form.on("VAT Declaration", "lodging_rate", function(frm) { update_tax_
 frappe.ui.form.on("VAT Declaration", "additional_tax", function(frm) { update_tax_amounts(frm) } );
 
 function update_tax_amounts(frm) {
-    normal_tax = frm.doc.normal_amount * (frm.doc.normal_rate / 100);
-    reduced_tax = frm.doc.reduced_amount * (frm.doc.reduced_rate / 100);
-    lodging_tax = frm.doc.lodging_amount * (frm.doc.lodging_rate / 100);
-    tax_1 = frm.doc.amount_1 * (frm.doc.rate_1 / 100);
-    tax_2 = frm.doc.amount_2 * (frm.doc.rate_2 / 100);
+    normal_tax = frm.doc.normal_amount - (frm.doc.normal_amount / ((frm.doc.normal_rate / 100) + 1));
+    reduced_tax = frm.doc.reduced_amount - (frm.doc.reduced_amount / ((frm.doc.reduced_rate / 100) + 1));
+    lodging_tax = frm.doc.lodging_amount - (frm.doc.lodging_amount / ((frm.doc.lodging_rate / 100) + 1));
+    tax_1 = frm.doc.amount_1 - (frm.doc.amount_1 / ((frm.doc.rate_1 / 100) + 1));
+    tax_2 = frm.doc.amount_2 - (frm.doc.amount_2 / ((frm.doc.rate_2 / 100) + 1));
     total_tax = normal_tax + reduced_tax + lodging_tax + tax_1 + tax_2 + frm.doc.additional_tax;
     frm.set_value('normal_tax', normal_tax);
     frm.set_value('reduced_tax', reduced_tax);

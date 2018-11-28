@@ -560,7 +560,7 @@ def read_camt_transactions(transaction_entries, bank, account, auto_submit=False
                     except:
                         customer_iban = ""
                 except Exception as e:
-                    frappe.log_error("Error parsing customer info: {0} ({1})".format(e, transaction_soup.dbtr.get_text()))
+                    frappe.log_error("Error parsing customer info: {0} ({1})".format(e, unicode(transaction_soup.dbtr)))
                     # key related parties not found / no customer info
                     customer_name = "Postschalter"
                     customer_address = ""
@@ -592,6 +592,6 @@ def read_camt_transactions(transaction_entries, bank, account, auto_submit=False
                     if inserted_payment_entry:
                         new_payment_entries.append(inserted_payment_entry.name)
             except Exception as e:
-                frappe.msgprint("Parsing error: {0}:{1}".format(str(transaction), e))
+                frappe.msgprint("Parsing error: {0}:{1}".format(unicode(transaction), e))
                 pass
     return new_payment_entries

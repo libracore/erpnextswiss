@@ -223,7 +223,11 @@ def read_camt_transactions(transaction_entries, account):
                     unique_reference = transaction_soup.txid.get_text()
                 except:
                     # fallback to pmtinfid
-                    unique_reference = transaction_soup.pmtinfid.get_text()
+                    try:
+                        unique_reference = transaction_soup.pmtinfid.get_text()
+                    except:
+                        # fallback to ustrd
+                        unique_reference = transaction_soup.ustrd.get_text()
             # --- find amount and currency
             try:
                 amount = float(transaction_soup.txdtls.amt.get_text())

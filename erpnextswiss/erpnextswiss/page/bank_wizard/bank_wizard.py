@@ -10,7 +10,7 @@ import json
 from bs4 import BeautifulSoup
 import ast
 import cgi                              # (used to escape utf-8 to html)
-from erpnextswiss.erpnextswiss.page.bankimport.bankimport import create_reference
+#from erpnextswiss.erpnextswiss.page.bankimport.bankimport import create_reference
 
 # this function tries to match the amount to an open sales invoice
 #
@@ -410,7 +410,8 @@ def make_payment_entry(amount, date, reference_no, paid_from=None, paid_to=None,
             'reference_no': reference_no,
             'reference_date': date,
             'posting_date': date,
-            'remarks': remarks
+            'remarks': remarks,
+            'camt_amount': float(amount)
         })
     elif type == "Pay":
         # pay
@@ -425,7 +426,8 @@ def make_payment_entry(amount, date, reference_no, paid_from=None, paid_to=None,
             'reference_no': reference_no,
             'reference_date': date,
             'posting_date': date,
-            'remarks': remarks   
+            'remarks': remarks,
+            'camt_amount': float(amount)
         })
     else:
         # internal transfer (against intermediate account)
@@ -439,7 +441,8 @@ def make_payment_entry(amount, date, reference_no, paid_from=None, paid_to=None,
             'reference_no': reference_no,
             'reference_date': date,
             'posting_date': date,
-            'remarks': remarks  
+            'remarks': remarks,
+            'camt_amount': float(amount)
         })    
     new_entry = payment_entry.insert()
     # add references after insert (otherwise they are overwritten)
@@ -447,3 +450,26 @@ def make_payment_entry(amount, date, reference_no, paid_from=None, paid_to=None,
         for reference in references:
             create_reference(new_entry.name, reference)
     return new_entry.name
+
+# creates the reference record in a payment entry
+def create_reference(payment_entry, sales_invoice):
+    # create a new payment entry reference
+    reference_entry = frappe.get_doc({"doctype": "Payment Entry Reference"})
+    reference_entry.parent = payment_entry
+    reference_entry.parentfield = "references"
+    reference_entry.parenttype = "Payment Entry"
+    reference_entry.reference_doctype = "Sales Invoice"
+    reference_entry.reference_name = sales_invoice
+    reference_entry.total_amount = frappe.get_value("Sales Invoice", sales_invoice, "base_grand_total")
+    reference_entry.outstanding_amount = frappe.get_value("Sales Invoice", sales_invoice, "outstanding_amount")
+    paid_amount = frappe.get_value("Payment Entry", payment_entry, "paid_amount")
+    if paid_amount > reference_entry.outstanding_amount:
+        reference_entry.allocated_amount = reference_entry.outstanding_amount
+    else:
+        reference_entry.allocated_amount = paid_amount
+    reference_entry.insert();
+    # update unallocated amount
+    payment_record = frappe.get_doc("Payment Entry", payment_entry)
+    payment_record.unallocated_amount -= reference_entry.allocated_amount
+    payment_record.save()
+    return

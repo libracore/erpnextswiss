@@ -442,7 +442,7 @@ def make_payment_entry(amount, date, reference_no, paid_from=None, paid_to=None,
             'remarks': remarks  
         })    
     new_entry = payment_entry.insert()
-    # add references after insert (otherwise the are overwritten)
+    # add references after insert (otherwise they are overwritten)
     if references:
         for reference in references:
             create_reference(new_entry.name, reference)

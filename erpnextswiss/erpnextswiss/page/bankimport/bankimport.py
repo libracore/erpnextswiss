@@ -393,6 +393,10 @@ def create_reference(payment_entry, sales_invoice):
     else:
         reference_entry.allocated_amount = paid_amount
     reference_entry.insert();
+    # update unallocated amount
+    payment_record = frappe.get_doc("Payment Entry", payment_entry)
+    payment_record.unallocated_amount -= paid_amount
+    payment_record.save()
     return
     
 def log(comment):

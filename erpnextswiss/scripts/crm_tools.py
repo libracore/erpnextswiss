@@ -27,7 +27,7 @@ def get_customer_address(customer):
 
 # fetch the first available address from a customer
 @frappe.whitelist()
-def get_customer_address(supplier):
+def get_supplier_address(supplier):
     sql_query = u"""SELECT `parent` FROM `tabDynamic Link` WHERE
         `link_doctype` = "supplier"
         AND `link_name` = "{supplier}"

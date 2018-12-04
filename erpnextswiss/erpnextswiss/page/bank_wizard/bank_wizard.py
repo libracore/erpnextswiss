@@ -406,6 +406,7 @@ def make_payment_entry(amount, date, reference_no, paid_from=None, paid_to=None,
         references = ast.literal_eval(references)
     if str(auto_submit) == "1":
         auto_submit = True
+    reference_type = "Sales Invoice"
     if type == "Receive":
         # receive
         payment_entry = frappe.get_doc({
@@ -438,6 +439,7 @@ def make_payment_entry(amount, date, reference_no, paid_from=None, paid_to=None,
             'remarks': remarks,
             'camt_amount': float(amount)
         })
+        reference_type = "Purchase Invoice"
     else:
         # internal transfer (against intermediate account)
         payment_entry = frappe.get_doc({
@@ -457,7 +459,7 @@ def make_payment_entry(amount, date, reference_no, paid_from=None, paid_to=None,
     # add references after insert (otherwise they are overwritten)
     if references:
         for reference in references:
-            create_reference(new_entry.name, reference)
+            create_reference(new_entry.name, reference, reference_type)
     # automatically submit if enabled
     if auto_submit:
         matched_entry = frappe.get_doc("Payment Entry", new_entry.name)
@@ -465,16 +467,16 @@ def make_payment_entry(amount, date, reference_no, paid_from=None, paid_to=None,
     return new_entry.name
 
 # creates the reference record in a payment entry
-def create_reference(payment_entry, sales_invoice):
+def create_reference(payment_entry, invoice_reference, invoice_type="Sales Invoice"):
     # create a new payment entry reference
     reference_entry = frappe.get_doc({"doctype": "Payment Entry Reference"})
     reference_entry.parent = payment_entry
     reference_entry.parentfield = "references"
     reference_entry.parenttype = "Payment Entry"
-    reference_entry.reference_doctype = "Sales Invoice"
-    reference_entry.reference_name = sales_invoice
-    reference_entry.total_amount = frappe.get_value("Sales Invoice", sales_invoice, "base_grand_total")
-    reference_entry.outstanding_amount = frappe.get_value("Sales Invoice", sales_invoice, "outstanding_amount")
+    reference_entry.reference_doctype = invoice_type
+    reference_entry.reference_name = invoice_reference
+    reference_entry.total_amount = frappe.get_value(invoice_type, invoice_reference, "base_grand_total")
+    reference_entry.outstanding_amount = frappe.get_value(invoice_type, invoice_reference, "outstanding_amount")
     paid_amount = frappe.get_value("Payment Entry", payment_entry, "paid_amount")
     if paid_amount > reference_entry.outstanding_amount:
         reference_entry.allocated_amount = reference_entry.outstanding_amount

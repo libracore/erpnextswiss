@@ -460,7 +460,8 @@ def make_payment_entry(amount, date, reference_no, paid_from=None, paid_to=None,
             create_reference(new_entry.name, reference)
     # automatically submit if enabled
     if auto_submit:
-        new_entry.submit()
+        matched_entry = frappe.get_doc("Payment Entry", new_entry.name)
+        matched_entry.submit()
     return new_entry.name
 
 # creates the reference record in a payment entry

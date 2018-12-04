@@ -359,15 +359,18 @@ def read_camt_transactions(transaction_entries, account):
                     if match_customers:
                         party_match = match_customers[0]['name']
                     # sales invoices
-                    #possible_sinvs = frappe.get_all("Sales Invoice", filters=[['grand_total', '=', amount], ['outstanding_amount', '>', 0]], fields=['name', 'customer'])
-                    possible_sinvs = frappe.get_all("Sales Invoice", filters=[['outstanding_amount', '>', 0]], fields=['name', 'customer'])
+                    possible_sinvs = frappe.get_all("Sales Invoice", filters=[['outstanding_amount', '>', 0]], fields=['name', 'customer', 'outstanding_amount'])
+                    sinv_amount = 0.0
                     if possible_sinvs:
                         invoice_matches = []
                         for sinv in possible_sinvs:
                             if sinv['name'] in transaction_reference:
                                 invoice_matches.append(sinv['name'])
-                                if not party_match:
-                                    party_match = sinv['customer']
+                                # override party match in case there is one from the sales invoice
+                                party_match = sinv['customer']
+                                # add total matched amount
+                                sinv_amount += float(sinv['outstanding_amount'])
+                                
                 # reset invoice matches in case there are no matches
                 try:
                     if len(invoice_matches) == 0:
@@ -386,17 +389,21 @@ def read_camt_transactions(transaction_entries, account):
                     'unique_reference': unique_reference,
                     'transaction_reference': transaction_reference,
                     'party_match': party_match,
-                    'invoice_matches': invoice_matches
+                    'invoice_matches': invoice_matches,
+                    'matched_amount': sinv_amount
                 }
                 txns.append(new_txn)    
 
     return txns
 
 @frappe.whitelist()
-def make_payment_entry(amount, date, reference_no, paid_from=None, paid_to=None, type="Receive", party=None, party_type=None, references=None, remarks=None):
+def make_payment_entry(amount, date, reference_no, paid_from=None, paid_to=None, type="Receive", 
+    party=None, party_type=None, references=None, remarks=None, auto_submit=False):
     # assert list
     if references:
         references = ast.literal_eval(references)
+    if str(auto_submit) == "1":
+        auto_submit = True
     if type == "Receive":
         # receive
         payment_entry = frappe.get_doc({
@@ -449,6 +456,9 @@ def make_payment_entry(amount, date, reference_no, paid_from=None, paid_to=None,
     if references:
         for reference in references:
             create_reference(new_entry.name, reference)
+    # automatically submit if enabled
+    if auto_submit:
+        new_entry.submit()
     return new_entry.name
 
 # creates the reference record in a payment entry
@@ -473,3 +483,4 @@ def create_reference(payment_entry, sales_invoice):
     payment_record.unallocated_amount -= reference_entry.allocated_amount
     payment_record.save()
     return
+

@@ -338,20 +338,23 @@ def read_camt_transactions(transaction_entries, account):
                 # try to find matching parties & invoices
                 party_match = None
                 invoice_matches = None
+                matched_amount = 0.0
                 if credit_debit == "DBIT":
                     # suppliers 
                     match_suppliers = frappe.get_all("Supplier", filters={'supplier_name': party_name}, fields=['name'])
                     if match_suppliers:
                         party_match = match_suppliers[0]['name']
                     # purchase invoices
-                    possible_pinvs = frappe.get_all("Purchase Invoice", filters=[['grand_total', '=', amount], ['outstanding_amount', '>', 0]], fields=['name', 'supplier'])
+                    possible_pinvs = frappe.get_all("Purchase Invoice", filters=[['grand_total', '=', amount], ['outstanding_amount', '>', 0]], fields=['name', 'supplier', 'outstanding_amount'])
                     if possible_pinvs:
                         invoice_matches = []
                         for pinv in possible_pinvs:
                             if pinv['name'] in transaction_reference:
                                 invoice_matches.append(pinv['name'])
-                                if not party_match:
-                                    party_match = pinv['supplier']
+                                # override party match in case there is one from the sales invoice
+                                party_match = pinv['supplier']
+                                # add total matched amount
+                                matched_amount += float(pinv['outstanding_amount'])
                                 
                 else:
                     # customers & sales invoices
@@ -360,7 +363,6 @@ def read_camt_transactions(transaction_entries, account):
                         party_match = match_customers[0]['name']
                     # sales invoices
                     possible_sinvs = frappe.get_all("Sales Invoice", filters=[['outstanding_amount', '>', 0]], fields=['name', 'customer', 'outstanding_amount'])
-                    sinv_amount = 0.0
                     if possible_sinvs:
                         invoice_matches = []
                         for sinv in possible_sinvs:
@@ -369,7 +371,7 @@ def read_camt_transactions(transaction_entries, account):
                                 # override party match in case there is one from the sales invoice
                                 party_match = sinv['customer']
                                 # add total matched amount
-                                sinv_amount += float(sinv['outstanding_amount'])
+                                matched_amount += float(sinv['outstanding_amount'])
                                 
                 # reset invoice matches in case there are no matches
                 try:
@@ -390,7 +392,7 @@ def read_camt_transactions(transaction_entries, account):
                     'transaction_reference': transaction_reference,
                     'party_match': party_match,
                     'invoice_matches': invoice_matches,
-                    'matched_amount': sinv_amount
+                    'matched_amount': matched_amount
                 }
                 txns.append(new_txn)    
 

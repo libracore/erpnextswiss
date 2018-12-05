@@ -22,55 +22,85 @@ frappe.bank_wizard = {
         $(frappe.render_template('bank_wizard', data)).appendTo(me.body);
         
         // attach button handlers
-        this.page.main.find(".btn-parse-file").on('click', function() {
-            var me = frappe.bankimport;
-            
+        this.page.main.find(".btn-parse-file").on('click', function() {            
             // get selected account
             var account = document.getElementById("bank_account").value;
             
             // read the file 
             var file = document.getElementById("input_file").files[0];
-            var content = "";
-            if (file) {
-                // create a new reader instance
-                var reader = new FileReader();
-                // assign load event to process the file
-                reader.onload = function (event) {
-                    // enable waiting gif
-                    frappe.bank_wizard.start_wait();
-                    
-                    // read file content
-                    content = event.target.result;
-                    
-
-                    // call bankimport method with file content
-                    frappe.call({
-                        method: 'erpnextswiss.erpnextswiss.page.bank_wizard.bank_wizard.read_camt053',
-                        args: {
-                            content: content,
-                            account: account
-                        },
-                        callback: function(r) {
-                            if (r.message) {
-				frappe.show_alert( r.message.transactions.length +  __(" transactions found") );
-                                frappe.bank_wizard.render_response(page, r.message);
-                            } 
-                        }
-                    });
-                }
-                // assign an error handler event
-                reader.onerror = function (event) {
-                    frappe.msgprint(__("Error reading file"), __("Error"));
-                }
+            if (file.name.toLowerCase().endsWith(".xml")) {
+                // this is an xml file
                 
-                reader.readAsText(file, "ANSI");
+                var content = "";
+                if (file) {
+                    // create a new reader instance
+                    var reader = new FileReader();
+                    // assign load event to process the file
+                    reader.onload = function (event) {
+                        // enable waiting gif
+                        frappe.bank_wizard.start_wait();
+                        
+                        // read file content
+                        content = event.target.result;
+                        
+                        // parse the xml content
+                        frappe.bank_wizard.parse(content, account);
+                    }
+                    // assign an error handler event
+                    reader.onerror = function (event) {
+                        frappe.msgprint(__("Error reading file"), __("Error"));
+                    }
+                    
+                    reader.readAsText(file, "ANSI");
+                }
+                else
+                {
+                    frappe.msgprint(__("Please select a file."), __("Information"));
+                }
+            } else if (file.name.toLowerCase().endsWith(".zip")) {
+                // this is a zip file
+                console.log("unzipping " + file.name + "...");
+                JSZip.loadAsync(file).then(function(zip) {
+                    // async: compile a promise to extract all contained files
+                    var promises = [];
+                    zip.forEach(function (relativePath, zipEntry) {
+                        promises.push(zipEntry.async("string").then(
+                            function (data) {
+                                console.log(data);
+                                return data; 
+                            })
+                        );
+                    });
+                    // on completed promise, combine content and process
+                    Promise.all(promises).then(function (list) {
+                        console.log("Promise complete!");
+                        var content = list.join("");
+                        console.log(content);
+                        // parse the xml content
+                        frappe.bank_wizard.parse(content, account);
+                    });
+                }, function (e) {
+                    frappe.msgprint( __("Unzip error: ") + e.message, __("Error") );
+                });
+            } else {
+                frappe.msgprint( __("Unsupported file format. Please use an xml or zip camt file"), __("Error") );
             }
-            else
-            {
-                frappe.msgprint(__("Please select a file."), __("Information"));
+        });
+    },
+    parse: function(content, account) {
+        // call bankimport method with file content
+        frappe.call({
+            method: 'erpnextswiss.erpnextswiss.page.bank_wizard.bank_wizard.read_camt053',
+            args: {
+                content: content,
+                account: account
+            },
+            callback: function(r) {
+                if (r.message) {
+                    frappe.show_alert( r.message.transactions.length +  __(" transactions found") );
+                    frappe.bank_wizard.render_response(page, r.message);
+                } 
             }
-            
-
         });
     },
     run: function() {

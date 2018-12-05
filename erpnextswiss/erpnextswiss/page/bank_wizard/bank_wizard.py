@@ -362,7 +362,7 @@ def read_camt_transactions(transaction_entries, account):
                             if sinv['name'] in transaction_reference:
                                 invoice_matches.append(sinv['name'])
                                 if not party_match:
-                                    party_match = sinv['supplier']
+                                    party_match = sinv['customer']
                 # reset invoice matches in case there are no matches
                 try:
                     if len(invoice_matches) == 0:

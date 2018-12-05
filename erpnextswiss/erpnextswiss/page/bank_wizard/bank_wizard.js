@@ -172,10 +172,12 @@ frappe.bank_wizard = {
         }); 
     },
     start_wait: function() {
-        //document.getElementById("waitingScreen").style.display = "block";
+	document.getElementById("waitingScreen").classList.remove("hidden");
+	document.getElementById("btn-parse-file").classList.add("disabled");
     },
     end_wait: function() {
-        document.getElementById("waitingScreen").style.display = "none";
+	document.getElementById("waitingScreen").classList.add("hidden");
+	document.getElementById("btn-parse-file").classList.remove("disabled");
     },
     render_response: function(page, message) {
         // disable waiting gif
@@ -196,6 +198,26 @@ frappe.bank_wizard = {
         message.transactions.forEach(function (transaction) {
 	    // add generic payables/receivables handler
 	    if (transaction.credit_debit == "DBIT") {
+		// quick match (purchase invoice)
+		var button = document.getElementById("btn-quick-pinv-" + transaction.txid);
+		if (button) {
+		    button.addEventListener("click", function() {
+			var payment = {
+			    'amount': transaction.amount,
+			    'date': transaction.date,
+			    'paid_from': bank_account,
+			    'paid_to': payable_account,
+			    'reference_no': transaction.unique_reference,
+			    'type': "Pay",
+			    'party_type': "Supplier",
+			    'party': transaction.party_match,
+			    'references': transaction.invoice_matches,
+			    'remarks': (transaction.transaction_reference + ", " + transaction.party_name + ", " + transaction.party_address),
+			    'auto_submit': 1
+			}
+			frappe.bank_wizard.quick_payment_entry(payment, transaction.txid);
+		    });
+		}
 		// purchase invoice match
 		var button = document.getElementById("btn-close-pinv-" + transaction.txid);
 		if (button) {
@@ -209,7 +231,8 @@ frappe.bank_wizard = {
 			    'type': "Pay",
 			    'party_type': "Supplier",
 			    'party': transaction.party_match,
-			    'references': transaction.invoice_matches
+			    'references': transaction.invoice_matches,
+			    'remarks': (transaction.transaction_reference + ", " + transaction.party_name + ", " + transaction.party_address)
 			}
 			frappe.bank_wizard.create_payment_entry(payment, transaction.txid);
 		    });
@@ -226,7 +249,8 @@ frappe.bank_wizard = {
 			    'reference_no': transaction.unique_reference,
 			    'type': "Pay",
 			    'party_type': "Supplier",
-			    'party': transaction.party_match
+			    'party': transaction.party_match,
+			    'remarks': (transaction.transaction_reference + ", " + transaction.party_name + ", " + transaction.party_address)
 			}
 			frappe.bank_wizard.create_payment_entry(payment, transaction.txid);
 		    });
@@ -243,12 +267,33 @@ frappe.bank_wizard = {
 			    'reference_no': transaction.unique_reference,
 			    'type': "Pay",
 			    'party_type': "Supplier",
-			    'party': default_supplier
+			    'party': default_supplier,
+			    'remarks': (transaction.transaction_reference + ", " + transaction.party_name + ", " + transaction.party_address)
 			}
 			frappe.bank_wizard.create_payment_entry(payment, transaction.txid);
 		    });
 		}
 	    } else {
+		// quick match (sales invoice)
+		var button = document.getElementById("btn-quick-sinv-" + transaction.txid);
+		if (button) {
+		    button.addEventListener("click", function() {
+			var payment = {
+			    'amount': transaction.amount,
+			    'date': transaction.date,
+			    'paid_from': receivable_account,
+			    'paid_to': bank_account,
+			    'reference_no': transaction.unique_reference,
+			    'type': "Receive",
+			    'party_type': "Customer",
+			    'party': transaction.party_match,
+			    'references': transaction.invoice_matches,
+			    'remarks': (transaction.transaction_reference + ", " + transaction.party_name + ", " + transaction.party_address),
+			    'auto_submit': 1
+			}
+			frappe.bank_wizard.quick_payment_entry(payment, transaction.txid);
+		    });
+		}
 		// sales invoice match
 		var button = document.getElementById("btn-close-sinv-" + transaction.txid);
 		if (button) {
@@ -262,7 +307,8 @@ frappe.bank_wizard = {
 			    'type': "Receive",
 			    'party_type': "Customer",
 			    'party': transaction.party_match,
-			    'references': transaction.invoice_matches
+			    'references': transaction.invoice_matches,
+			    'remarks': (transaction.transaction_reference + ", " + transaction.party_name + ", " + transaction.party_address)
 			}
 			frappe.bank_wizard.create_payment_entry(payment, transaction.txid);
 		    });
@@ -279,7 +325,8 @@ frappe.bank_wizard = {
 			    'reference_no': transaction.unique_reference,
 			    'type': "Receive",
 			    'party_type': "Customer",
-			    'party': transaction.party_match
+			    'party': transaction.party_match,
+			    'remarks': (transaction.transaction_reference + ", " + transaction.party_name + ", " + transaction.party_address)
 			}
 			frappe.bank_wizard.create_payment_entry(payment, transaction.txid);
 		    });
@@ -296,7 +343,8 @@ frappe.bank_wizard = {
 			    'reference_no': transaction.unique_reference,
 			    'type': "Receive",
 			    'party_type': "Customer",
-			    'party': default_customer
+			    'party': default_customer,
+			    'remarks': (transaction.transaction_reference + ", " + transaction.party_name + ", " + transaction.party_address)
 			}
 			frappe.bank_wizard.create_payment_entry(payment, transaction.txid);
 		    });
@@ -319,7 +367,8 @@ frappe.bank_wizard = {
 			'paid_from': paid_from,
 			'paid_to': paid_to,
 			'reference_no': transaction.unique_reference,
-			'type': "Internal Transfer"
+			'type': "Internal Transfer",
+			'remarks': (transaction.transaction_reference + ", " + transaction.party_name + ", " + transaction.party_address)
 		    }
 		    frappe.bank_wizard.create_payment_entry(payment, transaction.txid);
 		});
@@ -327,7 +376,6 @@ frappe.bank_wizard = {
         }); 
     },
     create_payment_entry: function(payment, txid) {
-	//console.log(payment.toSource());
         frappe.call({
             method: "erpnextswiss.erpnextswiss.page.bank_wizard.bank_wizard.make_payment_entry",
             args: payment,
@@ -335,9 +383,25 @@ frappe.bank_wizard = {
             {
                 // open new record in a separate tab
 		window.open('/desk#Form/Payment Entry/' + r.message, '_blank');
-		// close the entry in the list
-		var table_row = document.getElementById("row-transaction-" + txid);
-		table_row.classList.add("hidden");
+		frappe.bank_wizard.close_entry(txid);
+            }
+        });    
+    },
+    close_entry: function(txid) {
+	// close the entry in the list
+	var table_row = document.getElementById("row-transaction-" + txid);
+	table_row.classList.add("hidden");	
+    },
+    quick_payment_entry: function(payment, txid) {
+        frappe.call({
+            method: "erpnextswiss.erpnextswiss.page.bank_wizard.bank_wizard.make_payment_entry",
+            args: payment,
+            callback: function(r)
+            {
+                // show alert
+		frappe.show_alert( __("Transaction matched") );
+		frappe.bank_wizard.close_entry(txid);
+
             }
         });    
     }

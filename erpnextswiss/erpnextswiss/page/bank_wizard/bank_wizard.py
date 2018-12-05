@@ -287,7 +287,12 @@ def read_camt_transactions(transaction_entries, account):
                             address_line2 = ""                            
                 except:
                     # party is not defined (e.g. DBIT from Bank)
-                    party_name = "not found"
+                    try:
+                        # this is a fallback for ZKB which does not provide nm tag, but address line
+                        address_lines = party_soup.find_all("adrline")
+                        party_name = address_lines[0].get_text()
+                    except:
+                        party_name = "not found"
                     address_line1 = ""
                     address_line2 = ""
                 try:

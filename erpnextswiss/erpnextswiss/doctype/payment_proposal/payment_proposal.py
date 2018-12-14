@@ -392,17 +392,17 @@ class PaymentProposal(Document):
         # creditor information
         payment_content += make_line("        <Cdtr>") 
         # name of the creditor/supplier
-        payment_content += make_line("          <Nm>" + payment.receiver  + "</Nm>")
+        payment_content += make_line("          <Nm>" + cgi.escape(payment.receiver)  + "</Nm>")
         # address of creditor/supplier (should contain at least country and first address line
         payment_content += make_line("          <PstlAdr>")
         # street name
-        payment_content += make_line("            <StrtNm>{0}</StrtNm>".format(get_street_name(payment.receiver_address_line1)))
+        payment_content += make_line("            <StrtNm>{0}</StrtNm>".format(cgi.escape(get_street_name(payment.receiver_address_line1))))
         # building number
-        payment_content += make_line("            <BldgNb>{0}</BldgNb>".format(get_building_number(payment.receiver_address_line1)))
+        payment_content += make_line("            <BldgNb>{0}</BldgNb>".format(cgi.escape(get_building_number(payment.receiver_address_line1))))
         # postal code
-        payment_content += make_line("            <PstCd>{0}</PstCd>".format(get_pincode(payment.receiver_address_line2)))
+        payment_content += make_line("            <PstCd>{0}</PstCd>".format(cgi.escape(get_pincode(payment.receiver_address_line2))))
         # town name
-        payment_content += make_line("            <TwnNm>{0}</TwnNm>".format(get_city(payment.receiver_address_line2)))
+        payment_content += make_line("            <TwnNm>{0}</TwnNm>".format(cgi.escape(get_city(payment.receiver_address_line2))))
         country = frappe.get_doc("Country", payment.receiver_country)
         payment_content += make_line("            <Ctry>" + country.code.upper() + "</Ctry>")
         payment_content += make_line("          </PstlAdr>")

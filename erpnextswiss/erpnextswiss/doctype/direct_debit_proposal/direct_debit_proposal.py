@@ -7,7 +7,7 @@ import frappe
 from frappe.model.document import Document
 from datetime import datetime
 import time
-import cgi
+import cgi          # used to escape xml content
 
 class DirectDebitProposal(Document):
     def on_submit(self):

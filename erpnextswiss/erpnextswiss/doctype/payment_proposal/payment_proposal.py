@@ -9,6 +9,7 @@ from frappe import _
 from datetime import datetime, timedelta
 import time
 from erpnextswiss.erpnextswiss.common_functions import get_building_number, get_street_name, get_pincode, get_city
+import cgi          # used to escape xml content
 
 class PaymentProposal(Document):
     def on_submit(self):
@@ -207,7 +208,7 @@ class PaymentProposal(Document):
             # initiating party requires at least name or identification
             content += make_line("      <InitgPty>")
             # initiating party name ( e.g. MUSTER AG )
-            content += make_line("        <Nm>" + self.company + "</Nm>")
+            content += make_line("        <Nm>" + cgi.escape(self.company) + "</Nm>")
             content += make_line("      </InitgPty>")
             content += make_line("    </GrpHdr>")
             
@@ -231,7 +232,7 @@ class PaymentProposal(Document):
                 # debitor (technically ignored, but recommended)   
                 payment_content += make_line("      <Dbtr>")
                 # debitor name
-                payment_content += make_line("        <Nm>{0}</Nm>".format(self.company))
+                payment_content += make_line("        <Nm>{0}</Nm>".format(cgi.escape(self.company)))
                 # postal address (recommendadtion: do not use)
                 #content += make_line("        <PstlAdr>")
                 #content += make_line("          <Ctry>CH</Ctry>")

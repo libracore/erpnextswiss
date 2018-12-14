@@ -7,6 +7,7 @@ import frappe
 from frappe import throw, _
 import time
 from erpnextswiss.erpnextswiss.common_functions import get_building_number, get_street_name, get_pincode, get_city
+import cgi              # used to escape xml content
 
 @frappe.whitelist()
 def get_payments():
@@ -81,7 +82,7 @@ def generate_payment_file(payments):
             payment_content += make_line("      <Dbtr>")
             # debitor name
             payment_content += make_line("        <Nm>" +
-                payment_record.company + "</Nm>")
+                cgi.escape(payment_record.company) + "</Nm>")
             # postal address (recommendadtion: do not use)
             #content += make_line("        <PstlAdr>")
             #content += make_line("          <Ctry>CH</Ctry>")

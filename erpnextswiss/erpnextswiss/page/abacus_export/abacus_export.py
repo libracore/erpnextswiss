@@ -124,7 +124,7 @@ def generate_transfer_file(start_date, end_date, limit=10000, aggregated=0):
                         AND `posting_date` <= '{end_date}'
                         AND `docstatus` = 1
                         AND `exported_to_abacus` = 0
-                    GROUP BY `key`;
+                    GROUP BY `key`
                 LIMIT {limit}""".format(start_date=start_date, end_date=end_date, limit=limit)
         else:
             sql_query = """SELECT 

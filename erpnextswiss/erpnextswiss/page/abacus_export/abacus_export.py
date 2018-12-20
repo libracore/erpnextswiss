@@ -53,7 +53,7 @@ def generate_transfer_file(start_date, end_date, limit=10000, aggregated=0):
                     AND `tabSales Invoice`.`posting_date` <= '{end_date}'
                     AND `tabSales Invoice`.`docstatus` = 1
                     AND `tabSales Invoice`.`exported_to_abacus` = 0
-                GROUP BY `key` LIMIT {limit}""".format(start_date=start_date, end_date=end_date, limit=limit)
+                GROUP BY `key`""".format(start_date=start_date, end_date=end_date)
         else:
             sql_query = """SELECT `tabSales Invoice`.`name`, `tabSales Invoice`.`posting_date`, `tabSales Invoice`.`currency`, 
                   `tabSales Invoice`.`base_grand_total` AS `debit`, `tabSales Invoice`.`debit_to`,
@@ -70,22 +70,27 @@ def generate_transfer_file(start_date, end_date, limit=10000, aggregated=0):
                     AND `tabSales Invoice`.`docstatus` = 1
                     AND `tabSales Invoice`.`exported_to_abacus` = 0 
                 LIMIT {limit}""".format(start_date=start_date, end_date=end_date, limit=limit)
+        
         items = frappe.db.sql(sql_query, as_dict=True)
-        sinv_range = []
-        for sinv in items:
-            sinv_range.append(sinv.name)
-        #throw(str(sinv_range))
+        
+        if aggregated == 1:
+            flag_sinvs_as_exportet = frappe.db.sql("""UPDATE `tabSales Invoice` SET `exported_to_abacus` = 1 WHERE `posting_date` >= '{start_date}' AND `posting_date` <= '{end_date}' AND `docstatus` = 1 AND `exported_to_abacus` = 0""".format(start_date=start_date, end_date=end_date), as_list=True)
+        else:
+            sinv_range = []
+            for sinv in items:
+                sinv_range.append(sinv.name)
+        
         # mark all entries as exported
-        export_matches = frappe.get_all("Sales Invoice", filters=[
-            ["posting_date",">=", start_date],
-            ["posting_date","<=", end_date],
-            ["docstatus","=", 1],
-            ["name","in", sinv_range],
-            ["exported_to_abacus","=",0]], fields=['name'])
-        for export_match in export_matches:
-            record = frappe.get_doc("Sales Invoice", export_match['name'])
-            record.exported_to_abacus = 1
-            record.save(ignore_permissions=True)
+            export_matches = frappe.get_all("Sales Invoice", filters=[
+                ["posting_date",">=", start_date],
+                ["posting_date","<=", end_date],
+                ["docstatus","=", 1],
+                ["name","in", sinv_range],
+                ["exported_to_abacus","=",0]], fields=['name'])
+            for export_match in export_matches:
+                record = frappe.get_doc("Sales Invoice", export_match['name'])
+                record.exported_to_abacus = 1
+                record.save(ignore_permissions=True)
         # create item entries
         transaction_count = 0
         for item in items:
@@ -125,7 +130,7 @@ def generate_transfer_file(start_date, end_date, limit=10000, aggregated=0):
                         AND `docstatus` = 1
                         AND `exported_to_abacus` = 0
                     GROUP BY `key`
-                LIMIT {limit}""".format(start_date=start_date, end_date=end_date, limit=limit)
+                """.format(start_date=start_date, end_date=end_date)
         else:
             sql_query = """SELECT 
                       `tabPayment Entry`.`posting_date`, `tabPayment Entry`.`paid_from_account_currency` AS `currency`,
@@ -143,20 +148,24 @@ def generate_transfer_file(start_date, end_date, limit=10000, aggregated=0):
                 LIMIT {limit}""".format(start_date=start_date, end_date=end_date, limit=limit)
 
         items = frappe.db.sql(sql_query, as_dict=True)
-        payment_range = []
-        for payment in items:
-            payment_range.append(payment.name)
-        # mark all entries as exported
-        export_matches = frappe.get_all("Payment Entry", filters=[
-            ["posting_date",">=", start_date],
-            ["posting_date","<=", end_date],
-            ["docstatus","=", 1],
-            ["name","in", payment_range],
-		    ["exported_to_abacus","=",0]], fields=['name'])
-        for export_match in export_matches:
-            record = frappe.get_doc("Payment Entry", export_match['name'])
-            record.exported_to_abacus = 1
-            record.save(ignore_permissions=True)
+        if aggregated == 1:
+            flag_sinvs_as_exportet = frappe.db.sql("""UPDATE `tabPayment Entry` SET `exported_to_abacus` = 1 WHERE `posting_date` >= '{start_date}' AND `posting_date` <= '{end_date}' AND `docstatus` = 1 AND `exported_to_abacus` = 0""".format(start_date=start_date, end_date=end_date), as_list=True)
+        else:
+            payment_range = []
+            for payment in items:
+                payment_range.append(payment.name)
+            # mark all entries as exported
+            export_matches = frappe.get_all("Payment Entry", filters=[
+                ["posting_date",">=", start_date],
+                ["posting_date","<=", end_date],
+                ["docstatus","=", 1],
+                ["name","in", payment_range],
+		        ["exported_to_abacus","=",0]], fields=['name'])
+            for export_match in export_matches:
+                record = frappe.get_doc("Payment Entry", export_match['name'])
+                record.exported_to_abacus = 1
+                record.save(ignore_permissions=True)
+		
         # create item entries
         for item in items:
             if aggregated == 1:

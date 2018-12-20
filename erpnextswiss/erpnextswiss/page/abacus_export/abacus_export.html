@@ -8,6 +8,16 @@
       <label for="start">&nbsp;{{ __("to") }}&nbsp;</label>
       <input type="date" id="end_date" name="end_date" />&nbsp;
       <input type="checkbox" id="chk-aggregated" name="aggregated"><label for="chk-aggregated">&nbsp;{{ __("Aggregated") }}&nbsp;</label>
+		<div class="form-group" style="width: 118px;">
+			<label for="limit">{{ __("Record limit") }}</label>
+			<select class="form-control" id="limit">
+				<option>10000</option>
+				<option>5000</option>
+				<option>2000</option>
+				<option>1000</option>
+				<option>500</option>
+			</select>
+		</div>
     </div>
 
     <div class="form-column col-sm-6">

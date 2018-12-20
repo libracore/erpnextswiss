@@ -104,13 +104,15 @@ frappe.abacus_export = {
         if (document.getElementById("chk-aggregated").checked) {
             aggregated = 1;
         }
+		var limit = parseInt(document.getElementById("limit").value);
         // generate payment file
         frappe.call({
             method: 'erpnextswiss.erpnextswiss.page.abacus_export.abacus_export.generate_transfer_file',
             args: { 
                 'start_date': start_date,
                 'end_date': end_date,
-                'aggregated': aggregated
+                'aggregated': aggregated,
+				'limit': limit
             },
             callback: function(r) {
                 if (r.message) {

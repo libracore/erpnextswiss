@@ -8,12 +8,13 @@ from frappe import throw, _
 import hashlib
     
 @frappe.whitelist()
-def generate_transfer_file(start_date, end_date, aggregated=0):
+def generate_transfer_file(start_date, end_date, limit=10000, aggregated=0):
     # creates a transfer file for abacus
 
     #try:
         # normalise parameters
         aggregated = int(aggregated)
+        limit = int(limit)
         # create xml header
         content = make_line("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
         # define xml root node
@@ -34,7 +35,7 @@ def generate_transfer_file(start_date, end_date, aggregated=0):
 
         # add sales invoice transactions
         if aggregated == 1:
-            sql_query = """SELECT `tabSales Invoice`.`posting_date`, `tabSales Invoice`.`currency`, 
+            sql_query = """SELECT `tabSales Invoice`.`name`, `tabSales Invoice`.`posting_date`, `tabSales Invoice`.`currency`, 
                   SUM(`tabSales Invoice`.`base_grand_total`) AS `debit`, `tabSales Invoice`.`debit_to`,
                   SUM(`tabSales Invoice`.`base_net_total`) AS `income`, `tabSales Invoice Item`.`income_account`,  
                   SUM(`tabSales Invoice`.`total_taxes_and_charges`) AS `tax`, `tabSales Taxes and Charges`.`account_head`,
@@ -52,9 +53,9 @@ def generate_transfer_file(start_date, end_date, aggregated=0):
                     AND `tabSales Invoice`.`posting_date` <= '{end_date}'
                     AND `tabSales Invoice`.`docstatus` = 1
                     AND `tabSales Invoice`.`exported_to_abacus` = 0
-                GROUP BY `key`""".format(start_date=start_date, end_date=end_date)
+                GROUP BY `key` LIMIT {limit}""".format(start_date=start_date, end_date=end_date, limit=limit)
         else:
-            sql_query = """SELECT `tabSales Invoice`.`posting_date`, `tabSales Invoice`.`currency`, 
+            sql_query = """SELECT `tabSales Invoice`.`name`, `tabSales Invoice`.`posting_date`, `tabSales Invoice`.`currency`, 
                   `tabSales Invoice`.`base_grand_total` AS `debit`, `tabSales Invoice`.`debit_to`,
                   `tabSales Invoice`.`base_net_total` AS `income`, `tabSales Invoice Item`.`income_account`,  
                   `tabSales Invoice`.`total_taxes_and_charges` AS `tax`, `tabSales Taxes and Charges`.`account_head`,
@@ -67,15 +68,20 @@ def generate_transfer_file(start_date, end_date, aggregated=0):
                     `tabSales Invoice`.`posting_date` >= '{start_date}'
                     AND `tabSales Invoice`.`posting_date` <= '{end_date}'
                     AND `tabSales Invoice`.`docstatus` = 1
-                    AND `tabSales Invoice`.`exported_to_abacus` = 0
-                """.format(start_date=start_date, end_date=end_date)
+                    AND `tabSales Invoice`.`exported_to_abacus` = 0 
+                LIMIT {limit}""".format(start_date=start_date, end_date=end_date, limit=limit)
         items = frappe.db.sql(sql_query, as_dict=True)
+        sinv_range = []
+        for sinv in items:
+            sinv_range.append(sinv.name)
+        #throw(str(sinv_range))
         # mark all entries as exported
         export_matches = frappe.get_all("Sales Invoice", filters=[
             ["posting_date",">=", start_date],
             ["posting_date","<=", end_date],
             ["docstatus","=", 1],
-		    ["exported_to_abacus","=",0]], fields=['name'])
+            ["name","in", sinv_range],
+            ["exported_to_abacus","=",0]], fields=['name'])
         for export_match in export_matches:
             record = frappe.get_doc("Sales Invoice", export_match['name'])
             record.exported_to_abacus = 1
@@ -119,7 +125,7 @@ def generate_transfer_file(start_date, end_date, aggregated=0):
                         AND `docstatus` = 1
                         AND `exported_to_abacus` = 0
                     GROUP BY `key`;
-                """.format(start_date=start_date, end_date=end_date)
+                LIMIT {limit}""".format(start_date=start_date, end_date=end_date, limit=limit)
         else:
             sql_query = """SELECT 
                       `tabPayment Entry`.`posting_date`, `tabPayment Entry`.`paid_from_account_currency` AS `currency`,
@@ -134,14 +140,18 @@ def generate_transfer_file(start_date, end_date, aggregated=0):
                         AND `posting_date` <= '{end_date}'
                         AND `docstatus` = 1
                         AND `exported_to_abacus` = 0
-                """.format(start_date=start_date, end_date=end_date)
+                LIMIT {limit}""".format(start_date=start_date, end_date=end_date, limit=limit)
 
         items = frappe.db.sql(sql_query, as_dict=True)
+        payment_range = []
+        for payment in items:
+            payment_range.append(payment.name)
         # mark all entries as exported
         export_matches = frappe.get_all("Payment Entry", filters=[
             ["posting_date",">=", start_date],
             ["posting_date","<=", end_date],
             ["docstatus","=", 1],
+            ["name","in", payment_range],
 		    ["exported_to_abacus","=",0]], fields=['name'])
         for export_match in export_matches:
             record = frappe.get_doc("Payment Entry", export_match['name'])

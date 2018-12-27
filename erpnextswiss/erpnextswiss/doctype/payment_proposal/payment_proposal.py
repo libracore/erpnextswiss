@@ -9,6 +9,7 @@ from frappe import _
 from datetime import datetime, timedelta
 import time
 from erpnextswiss.erpnextswiss.common_functions import get_building_number, get_street_name, get_pincode, get_city
+import cgi          # used to escape xml content
 
 class PaymentProposal(Document):
     def on_submit(self):
@@ -207,7 +208,7 @@ class PaymentProposal(Document):
             # initiating party requires at least name or identification
             content += make_line("      <InitgPty>")
             # initiating party name ( e.g. MUSTER AG )
-            content += make_line("        <Nm>" + self.company + "</Nm>")
+            content += make_line("        <Nm>" + cgi.escape(self.company) + "</Nm>")
             content += make_line("      </InitgPty>")
             content += make_line("    </GrpHdr>")
             
@@ -231,7 +232,7 @@ class PaymentProposal(Document):
                 # debitor (technically ignored, but recommended)   
                 payment_content += make_line("      <Dbtr>")
                 # debitor name
-                payment_content += make_line("        <Nm>{0}</Nm>".format(self.company))
+                payment_content += make_line("        <Nm>{0}</Nm>".format(cgi.escape(self.company)))
                 # postal address (recommendadtion: do not use)
                 #content += make_line("        <PstlAdr>")
                 #content += make_line("          <Ctry>CH</Ctry>")
@@ -391,17 +392,17 @@ class PaymentProposal(Document):
         # creditor information
         payment_content += make_line("        <Cdtr>") 
         # name of the creditor/supplier
-        payment_content += make_line("          <Nm>" + payment.receiver  + "</Nm>")
+        payment_content += make_line("          <Nm>" + cgi.escape(payment.receiver)  + "</Nm>")
         # address of creditor/supplier (should contain at least country and first address line
         payment_content += make_line("          <PstlAdr>")
         # street name
-        payment_content += make_line("            <StrtNm>{0}</StrtNm>".format(get_street_name(payment.receiver_address_line1)))
+        payment_content += make_line("            <StrtNm>{0}</StrtNm>".format(cgi.escape(get_street_name(payment.receiver_address_line1))))
         # building number
-        payment_content += make_line("            <BldgNb>{0}</BldgNb>".format(get_building_number(payment.receiver_address_line1)))
+        payment_content += make_line("            <BldgNb>{0}</BldgNb>".format(cgi.escape(get_building_number(payment.receiver_address_line1))))
         # postal code
-        payment_content += make_line("            <PstCd>{0}</PstCd>".format(get_pincode(payment.receiver_address_line2)))
+        payment_content += make_line("            <PstCd>{0}</PstCd>".format(cgi.escape(get_pincode(payment.receiver_address_line2))))
         # town name
-        payment_content += make_line("            <TwnNm>{0}</TwnNm>".format(get_city(payment.receiver_address_line2)))
+        payment_content += make_line("            <TwnNm>{0}</TwnNm>".format(cgi.escape(get_city(payment.receiver_address_line2))))
         country = frappe.get_doc("Country", payment.receiver_country)
         payment_content += make_line("            <Ctry>" + country.code.upper() + "</Ctry>")
         payment_content += make_line("          </PstlAdr>")

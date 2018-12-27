@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Edited by Hendrik Muus, STUZZA, AT -->
+<xd:schema xmlns:xd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+	<xd:annotation>
+		<xd:documentation xml:lang="de">Definitionen zur Inkludierung in pain.002</xd:documentation>
+		<xd:documentation xml:lang="en">Definitions for inclusion in pain.002</xd:documentation>
+		<xd:documentation>
+***********************
+This schema cannot be valid by itself, as it restricts data types not defined at this location. It is designed to be included in other schemas and will restrict data types defined there.
+THIS WILL DELIVER REAL SUBSETS
+Any message using this data types will be 100% ISO 20022 compatible.
+
+VERSIONING
+If necessary this schema is amended with additional data types to serve additional message types and/or additions or changes of documentation nodes.
+Any amendment will increase version date.
+Version number is only increased, when changes other than documentation occur. Version number in schema name and schema correlate.
+
+INCLUSION
+Inclusion in varios message types is done by following node:
+			<!--  ********************** start replace include node with copy of type definitions of schema to get standalone schema  -->
+			<xd:include schemaLocation="pain.002_codelists_AT.xsd"/>
+			<!--  ********************** stop replace include node with copy of type definitions of schema to get standalone schema  -->
+If your processing environment does not allow inclusions and/or perform better with standalone schema, a 100% equivalent can be retrieved by replacing the include node by a copy of data types defined below. Replace the include node with a copy of type definitions between the snip marks.
+
+***********************
+		</xd:documentation>
+	</xd:annotation>
+	<xd:attribute name="pain.002_codelists_AT.xsd_version" fixed="3Q2015">
+		<xd:annotation>
+			<xd:documentation xml:lang="de">Versions Nummer dieses Schemas</xd:documentation>
+			<xd:documentation xml:lang="en">Schema version number</xd:documentation>
+		</xd:annotation>
+	</xd:attribute>
+	<xd:attribute name="AT_codelists_source" fixed="TACS">
+		<xd:annotation>
+			<xd:documentation xml:lang="de">Quelle der externen Restriktionen</xd:documentation>
+			<xd:documentation xml:lang="en">Source of external restrictions</xd:documentation>
+		</xd:annotation>
+	</xd:attribute>
+	<!-- restricted data types -->
+	<!--  ********************** start snip here for copy/paste into other schema to get standalone schema  -->
+	<!-- start restrictions for pain.002.001.03 according AGZV meeting 2015-05-26 -->
+	<xd:simpleType name="AT_ExternalStatusReasonProprietary">
+		<xd:restriction base="Max35Text_REF"/>
+	</xd:simpleType>
+	<xd:simpleType name="TransactionGroupStatus3Code_Grp">
+		<xd:restriction base="ISO_TransactionGroupStatus3Code">
+			<xd:enumeration value="ACCP"/>
+			<xd:enumeration value="ACSP"/>
+			<xd:enumeration value="ACTC"/>
+			<xd:enumeration value="PART"/>
+			<xd:enumeration value="RJCT"/>
+		</xd:restriction>
+	</xd:simpleType>
+	<xd:simpleType name="TransactionGroupStatus3Code_PmtInf">
+		<xd:restriction base="ISO_TransactionGroupStatus3Code">
+			<xd:enumeration value="ACCP"/>
+			<xd:enumeration value="ACSP"/>
+			<xd:enumeration value="ACTC"/>
+			<xd:enumeration value="ACWC"/>
+			<xd:enumeration value="PART"/>
+			<xd:enumeration value="RJCT"/>
+		</xd:restriction>
+	</xd:simpleType>
+	<xd:simpleType name="TransactionIndividualStatus3Code_Tx">
+		<xd:restriction base="ISO_TransactionIndividualStatus3Code">
+			<xd:enumeration value="ACWC"/>
+			<xd:enumeration value="RJCT"/>
+		</xd:restriction>
+	</xd:simpleType>
+	<!-- end restrictions for pain.001.001.03 according AGZV meeting 2015-05-26 -->
+	<!-- start restrictions for pain.002.001.03 taken from MessageDefinitionReport March 2009 -->
+	<xd:simpleType name="ISO_TransactionGroupStatus3Code">
+		<xd:restriction base="TransactionGroupStatus3Code">
+			<xd:enumeration value="ACCP">
+				<xd:annotation>
+					<xd:documentation xml:lang="en">
+						<Info title="Name">AcceptedCustomerProfile</Info>
+						<Info title="Definition">Preceding check of technical validation was successful. Customer profile check was also successful.</Info>
+						<Info title="Origin/Requester">Schema 2009</Info>
+						<Info title="Status">Integrated</Info>
+						<Info title="Status Date">March 2009</Info>
+						<Info title="Introduced Date">March 2009</Info>
+					</xd:documentation>
+				</xd:annotation>
+			</xd:enumeration>
+			<xd:enumeration value="ACSC">
+				<xd:annotation>
+					<xd:documentation xml:lang="en">
+						<Info title="Name">AcceptedSettlementCompleted</Info>
+						<Info title="Definition">Settlement on the debtor's account has been completed. Usage: this can be used by the first agent to report to the debtor that the transaction has been completed. Warning: this status is provided for transaction status reasons, not for financial information. It can only be used after bilateral agreement</Info>
+						<Info title="Origin/Requester">Schema 2009</Info>
+						<Info title="Status">Integrated</Info>
+						<Info title="Status Date">March 2009</Info>
+						<Info title="Introduced Date">March 2009</Info>
+					</xd:documentation>
+				</xd:annotation>
+			</xd:enumeration>
+			<xd:enumeration value="ACSP">
+				<xd:annotation>
+					<xd:documentation xml:lang="en">
+						<Info title="Name">AcceptedSettlementInProcess</Info>
+						<Info title="Definition">All preceding checks such as technical validation and customer profile were successful and therefore the payment initiation has been accepted for execution.</Info>
+						<Info title="Origin/Requester">Schema 2009</Info>
+						<Info title="Status">Integrated</Info>
+						<Info title="Status Date">March 2009</Info>
+						<Info title="Introduced Date">March 2009</Info>
+					</xd:documentation>
+				</xd:annotation>
+			</xd:enumeration>
+			<xd:enumeration value="ACTC">
+				<xd:annotation>
+					<xd:documentation xml:lang="en">
+						<Info title="Name">AcceptedTechnicalValidation</Info>
+						<Info title="Definition">Authentication and syntactical and semantical validation are successful.</Info>
+						<Info title="Origin/Requester">Schema 2009</Info>
+						<Info title="Status">Integrated</Info>
+						<Info title="Status Date">March 2009</Info>
+						<Info title="Introduced Date">March 2009</Info>
+					</xd:documentation>
+				</xd:annotation>
+			</xd:enumeration>
+			<xd:enumeration value="ACWC">
+				<xd:annotation>
+					<xd:documentation xml:lang="en">
+						<Info title="Name">AcceptedWithChange</Info>
+						<Info title="Definition">Instruction is accepted but a change will be made, such as date or remittance not sent.</Info>
+						<Info title="Origin/Requester">Schema 2009</Info>
+						<Info title="Status">Integrated</Info>
+						<Info title="Status Date">March 2009</Info>
+						<Info title="Introduced Date">March 2009</Info>
+					</xd:documentation>
+				</xd:annotation>
+			</xd:enumeration>
+			<xd:enumeration value="PART">
+				<xd:annotation>
+					<xd:documentation xml:lang="en">
+						<Info title="Name">PartiallyAccepted</Info>
+						<Info title="Definition">A number of transactions have been accepted, whereas another number of transactions have not yet achieved 'accepted' status.</Info>
+						<Info title="Origin/Requester">Schema 2009</Info>
+						<Info title="Status">Integrated</Info>
+						<Info title="Status Date">March 2009</Info>
+						<Info title="Introduced Date">March 2009</Info>
+					</xd:documentation>
+				</xd:annotation>
+			</xd:enumeration>
+			<xd:enumeration value="PDNG">
+				<xd:annotation>
+					<xd:documentation xml:lang="en">
+						<Info title="Name">Pending</Info>
+						<Info title="Definition">Payment initiation or individual transaction included in the payment initiation is pending. Further checks and status update will be performed.</Info>
+						<Info title="Origin/Requester">Schema 2009</Info>
+						<Info title="Status">Integrated</Info>
+						<Info title="Status Date">March 2009</Info>
+						<Info title="Introduced Date">March 2009</Info>
+					</xd:documentation>
+				</xd:annotation>
+			</xd:enumeration>
+			<xd:enumeration value="RCVD">
+				<xd:annotation>
+					<xd:documentation xml:lang="en">
+						<Info title="Name">Received</Info>
+						<Info title="Definition">Payment initiation has been received by the receiving agent.</Info>
+						<Info title="Origin/Requester">Schema 2009</Info>
+						<Info title="Status">Integrated</Info>
+						<Info title="Status Date">March 2009</Info>
+						<Info title="Introduced Date">March 2009</Info>
+					</xd:documentation>
+				</xd:annotation>
+			</xd:enumeration>
+			<xd:enumeration value="RJCT">
+				<xd:annotation>
+					<xd:documentation xml:lang="en">
+						<Info title="Name">Rejected</Info>
+						<Info title="Definition">Payment initiation or individual transaction included in the payment initiation has been rejected.</Info>
+						<Info title="Origin/Requester">Schema 2009</Info>
+						<Info title="Status">Integrated</Info>
+						<Info title="Status Date">March 2009</Info>
+						<Info title="Introduced Date">March 2009</Info>
+					</xd:documentation>
+				</xd:annotation>
+			</xd:enumeration>
+		</xd:restriction>
+	</xd:simpleType>
+	<xd:simpleType name="ISO_TransactionIndividualStatus3Code">
+		<xd:restriction base="TransactionIndividualStatus3Code">
+			<xd:enumeration value="ACCP">
+				<xd:annotation>
+					<xd:documentation xml:lang="en">
+						<Info title="Name">AcceptedCustomerProfile</Info>
+						<Info title="Definition">Preceding check of technical validation was successful. Customer profile check was also successful.</Info>
+						<Info title="Origin/Requester">Schema 2009</Info>
+						<Info title="Status">Integrated</Info>
+						<Info title="Status Date">March 2009</Info>
+						<Info title="Introduced Date">March 2009</Info>
+					</xd:documentation>
+				</xd:annotation>
+			</xd:enumeration>
+			<xd:enumeration value="ACSC">
+				<xd:annotation>
+					<xd:documentation xml:lang="en">
+						<Info title="Name">AcceptedSettlementCompleted</Info>
+						<Info title="Definition">Settlement on the debtor's account has been completed. Usage: this can be used by the first agent to report to the debtor that the transaction has been completed. Warning: this status is provided for transaction status reasons, not for financial information. It can only be used after bilateral agreement</Info>
+						<Info title="Origin/Requester">Schema 2009</Info>
+						<Info title="Status">Integrated</Info>
+						<Info title="Status Date">March 2009</Info>
+						<Info title="Introduced Date">March 2009</Info>
+					</xd:documentation>
+				</xd:annotation>
+			</xd:enumeration>
+			<xd:enumeration value="ACSP">
+				<xd:annotation>
+					<xd:documentation xml:lang="en">
+						<Info title="Name">AcceptedSettlementInProcess</Info>
+						<Info title="Definition">All preceding checks such as technical validation and customer profile were successful and therefore the payment initiation has been accepted for execution.</Info>
+						<Info title="Origin/Requester">Schema 2009</Info>
+						<Info title="Status">Integrated</Info>
+						<Info title="Status Date">March 2009</Info>
+						<Info title="Introduced Date">March 2009</Info>
+					</xd:documentation>
+				</xd:annotation>
+			</xd:enumeration>
+			<xd:enumeration value="ACTC">
+				<xd:annotation>
+					<xd:documentation xml:lang="en">
+						<Info title="Name">AcceptedTechnicalValidation</Info>
+						<Info title="Definition">Authentication and syntactical and semantical validation are successful.</Info>
+						<Info title="Origin/Requester">Schema 2009</Info>
+						<Info title="Status">Integrated</Info>
+						<Info title="Status Date">March 2009</Info>
+						<Info title="Introduced Date">March 2009</Info>
+					</xd:documentation>
+				</xd:annotation>
+			</xd:enumeration>
+			<xd:enumeration value="ACWC">
+				<xd:annotation>
+					<xd:documentation xml:lang="en">
+						<Info title="Name">AcceptedWithChange</Info>
+						<Info title="Definition">Instruction is accepted but a change will be made, such as date or remittance not sent.</Info>
+						<Info title="Origin/Requester">Schema 2009</Info>
+						<Info title="Status">Integrated</Info>
+						<Info title="Status Date">March 2009</Info>
+						<Info title="Introduced Date">March 2009</Info>
+					</xd:documentation>
+				</xd:annotation>
+			</xd:enumeration>
+			<xd:enumeration value="PDNG">
+				<xd:annotation>
+					<xd:documentation xml:lang="en">
+						<Info title="Name">Pending</Info>
+						<Info title="Definition">Payment initiation or individual transaction included in the payment initiation is pending. Further checks and status update will be performed.</Info>
+						<Info title="Origin/Requester">Schema 2009</Info>
+						<Info title="Status">Integrated</Info>
+						<Info title="Status Date">March 2009</Info>
+						<Info title="Introduced Date">March 2009</Info>
+					</xd:documentation>
+				</xd:annotation>
+			</xd:enumeration>
+			<xd:enumeration value="RJCT">
+				<xd:annotation>
+					<xd:documentation xml:lang="en">
+						<Info title="Name">Rejected</Info>
+						<Info title="Definition">Payment initiation or individual transaction included in the payment initiation has been rejected.</Info>
+						<Info title="Origin/Requester">Schema 2009</Info>
+						<Info title="Status">Integrated</Info>
+						<Info title="Status Date">March 2009</Info>
+						<Info title="Introduced Date">March 2009</Info>
+					</xd:documentation>
+				</xd:annotation>
+			</xd:enumeration>
+		</xd:restriction>
+	</xd:simpleType>
+	<!-- end restrictions for pain.002.001.03 taken from MessageDefinitionReport March 2009 -->
+	<!--  ********************** stop snip here for copy/paste into other schema to get standalone schema  -->
+	<!--***** Begin of change log -->
+	<!-- 2016-06-09 -->
+	<!-- - initial setup -->
+	<!-- 2016-10-20 -->
+	<!-- - restriction source clarification -->
+	<!--***** End of change log -->
+</xd:schema>

@@ -1,0 +1,83 @@
+// Copyright (c) 2018, libracore (https://www.libracore.com) and contributors
+// For license information, please see license.txt
+
+frappe.ui.form.on('Payment Proposal', {
+     refresh: function(frm) {
+        if (frm.doc.docstatus == 1) {
+             // add download pain.001 button on submitted record
+             frm.add_custom_button(__("Download bank file"), function() {
+                  generate_bank_file(frm);
+             });
+        } else if (frm.doc.docstatus == 0) {
+             // add set payment date
+             frm.add_custom_button(__("Set Payment Date"), function() {
+                  set_payment_date(frm);
+             });
+        }
+        // filter for bank account
+        cur_frm.fields_dict['pay_from_account'].get_query = function(doc) {
+            return {
+                filters: {
+                    "account_type": "Bank"
+                }
+            }
+        }
+     },
+     validate: function(frm) {
+          if (frm.doc.pay_from_account == null) {
+               frappe.msgprint( __("Please select an account to pay from.") );
+               frappe.validated = false;
+          }
+          if ((frm.doc.use_intermediate == 1) && (frm.doc.intermediate_account == null)) {
+               frappe.msgprint( __("Please select an intermediate account.") );
+               frappe.validated = false;
+		  }
+     }
+});
+
+function generate_bank_file(frm) {
+     console.log("creating file...");
+     frappe.call({
+          method: 'create_bank_file',
+          doc: frm.doc,
+          callback: function(r) {
+               if (r.message) {
+                    // prepare the xml file for download
+                    download("payments.xml", r.message.content);
+               } 
+          }
+     });     
+}
+
+function download(filename, content) {
+    var element = document.createElement('a');
+    element.setAttribute('href', 'data:application/octet-stream;charset=utf-8,' + encodeURIComponent(content));
+    element.setAttribute('download', filename);
+
+    element.style.display = 'none';
+    document.body.appendChild(element);
+
+    element.click();
+
+    document.body.removeChild(element);
+}
+
+function set_payment_date(frm) {
+    var d = new Date();
+    d = new Date(d.setDate(d.getDate() + 1));
+    frappe.prompt([
+            {'fieldname': 'date', 'fieldtype': 'Date', 'label': 'Execute Payments On', 'reqd': 1, 'default': d}  
+        ],
+        function(values){
+            // loop through purchase invoices and set skonto date (this will be the execution date)
+            var items = cur_frm.doc.purchase_invoices;
+            items.forEach(function(entry) {
+                frappe.model.set_value(entry.doctype, entry.name, 'skonto_date', values.date);
+            });
+            // set execution date
+            cur_frm.set_value('date', values.date);
+        },
+        'Execution Date',
+        'Set'
+    );
+}

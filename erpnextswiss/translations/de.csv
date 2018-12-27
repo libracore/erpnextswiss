@@ -169,6 +169,8 @@ DocType: Pincode,Canton Code,Kantonsabkürzung
 DocType: Pincode,Country Code,Länderabkürzung
 DocType: Pincode,Set,Setzen
 DocType: Pincode,Import Pincodes,Postleitzahlen einlesen
+DocType: Pincode,Import started...,Import gestartet...
+DocType: Pincode,Successfully imported,Erfolgreich importiert
 Page: abacus_export,Abacus Export,Abacus Transferdatei
 Page: abacus_export,Export General Ledger to an Abacus transfer file,Exportiert Transaktionen in eine Abacus Transferdatei
 Page: abacus_export,to,bis
@@ -183,3 +185,40 @@ DocType: ERPNextSwiss Settings,Default Customer,Standardkunde
 DocType: ERPNextSwiss Settings,Use this to define a default customer,Setzt einen Standardkunden
 DocType: Contract,Contract,Vertrag
 DocType: Contract,Contracts,Verträge
+DocType: ERPNextSwiss Settings,Automated Payments,Automatische Zahlungsabwicklung
+DocType: ERPNextSwiss Settings,Planning Period (Days),Planungszeitraum (Tage)
+DocType: Payment Reminder,Payment Reminder,Mahnung
+DocType: Payment Reminder,Payment Reminder Level,Mahnungsstufe
+DocType: Payment Reminder,Exclude From Payment Reminder Until,Von Mahnungsläufen ausschliessen bis
+DocType: Payment Reminder,Level,Stufe
+DocType: Payment Reminder,Create Payment Reminders,Mahnlauf durchführen
+DocType: Payment Reminder,Payment Reminders created,Mahnlauf durchgeführt
+DocType: Payment Reminder,Reminder Level,Mahnstufe
+DocType: Payment Reminder,Reminder Charge,Mahngebühr
+DocType: Payment Reminder,Auto Submit,Automatisch buchen
+DocType: Payment Reminder,Reminder Charges,Mahngebühren
+DocType: Payment Reminder,Highest Level,Höchste Stufe
+DocType: Payment Reminder,Total before Charge,Zwischensumme
+DocType: Payment Reminder,Total with Charge,Gesamtsumme
+Module: ERPNextSwiss,Is proposed,Abgeholt
+Module: ERPNextSwiss,Skonto Percent,Skonto-Prozent
+Module: ERPNextSwiss,Skonto Days,Skonto-Tage
+Module: ERPNextSwiss,Enable LSV,LSV aktivieren
+DocType: Direct Debit Proposal,Direct Debit Proposal,Lastschrifteinzugsvorschlag
+DocType: Direct Debit Proposal,Create Direct Debit Proposal,Lastschrifteinzug vorbereiten
+DocType: Direct Debit Proposal,No available sales invoices found.,Keine verfügbaren Zahlungen gefunden.
+DocType: Direct Debit Proposal,Download bank file,Bankdatei herunterladen
+DocType: Direct Debit Proposal,Receive to Account,Empfangendes Bankkonto
+DocType: Direct Debit Proposal,Banking,Bankverbindung
+DocType: Direct Debit Proposal,LSV Code,LSV-Code
+DocType: Direct Debit Proposal,LSV Date,LSV-Datum
+DocType: Direct Debit Proposal,Please select an account to receive to.,Bitte wählen Sie ein Zielkonto aus.
+DocType: Payment Proposal,Create Payment Proposal,Zahlungsvorschlag erstellen
+DocType: Payment Proposal,Payment Proposal,Zahlungsvorschlag
+DocType: Payment Proposal,No suitable invoices found.,Keine passenden Rechnungen gefunden.
+DocType: Payment Proposal,Intermediate Account,Zwischenkonto
+DocType: Payment Proposal,Close Invoive on Intermediate Account,Rechnung auf Zwischenkonto schliessen
+DocType: Payment Proposal,Please select an intermediate account.,Bitte ein Zwischenkonto wählen.
+Page: Bank Wizard,Bank Wizard,Bankassistent
+Page: Bank Wizard,Transaction matched,Zahlung zugewiesen
+Page: Bank Wizard, transactions found, Zahlungen gefunden

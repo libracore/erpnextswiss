@@ -1,0 +1,2615 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Edited by Hendrik Muus, STUZZA, AT -->
+<!-- ***** Change log at end of document -->
+<!-- Definition for validation according SEPA RB 7.x, 8.x and related IGL 7.0, 8.0 plus additional options for use in Austria -->
+<xs:schema xmlns="ISO:pain.001.001.03:APC:STUZZA:payments:004:N" xmlns:_="urn:iso:std:iso:20022:tech:xsd:pain.001.001.03" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xml="http://www.w3.org/XML/1998/namespace" targetNamespace="urn:iso:std:iso:20022:tech:xsd:pain.001.001.03" elementFormDefault="qualified" version="Corrigendum.1">
+	<xs:annotation>
+		<xs:documentation>
+***********************
+This schema has the AT namspace ***ISO:pain.001.001.03:APC:STUZZA:payments:004:N*** and the version ***Corrigendum.1***
+
+Nevertheless it uses the original ***pain.001.001.03.xsd*** for namespace ***urn:iso:std:iso:20022:tech:xsd:pain.001.001.03***
+to redefine the original by deriving types by restriction and add documentation to elements and structure
+
+This ensures that a instanciation of a XML file will need to carry the original namespace while concurrently ensure restriction conformance.
+
+***********************
+		</xs:documentation>
+	</xs:annotation>
+	<!-- Include code list file -->
+	<!--  ********************** start replace include node with copy of type definitions of schema to get standalone schema  -->
+	<xs:include schemaLocation="pain.001.N_codelists.xsd"/>
+	<!--  ********************** end replace include node with copy of type definitions of schema to get standalone schema  -->
+	<!-- Redefinition through deriving types by restriction and added documentation -->
+	<xs:redefine schemaLocation="pain.001.001.03.xsd">
+		<!-- simple types -->
+		<xs:simpleType name="DecimalNumber">
+			<xs:restriction base="_:DecimalNumber">
+				<xs:annotation>
+					<xs:documentation xml:lang="de">Der Maximalwert der Kontrolsumme. Mehr kann eine Datei nicht beauftragen</xs:documentation>
+					<xs:documentation xml:lang="en">The maximum value of the control sum. One file cannot instruct lager values</xs:documentation>
+				</xs:annotation>
+				<xs:minInclusive value="0.001"/>
+				<xs:maxInclusive value="999999999999.999"/>
+				<xs:fractionDigits value="3"/>
+			</xs:restriction>
+		</xs:simpleType>
+		<xs:simpleType name="Instruction3Code">
+			<xs:restriction base="_:Instruction3Code">
+				<xs:enumeration value="HOLD">
+					<xs:annotation>
+						<xs:documentation>Hold Cash For Creditor</xs:documentation>
+					</xs:annotation>
+				</xs:enumeration>
+				<xs:enumeration value="PHOB">
+					<xs:annotation>
+						<xs:documentation>Phone Beneficiary</xs:documentation>
+					</xs:annotation>
+				</xs:enumeration>
+				<xs:enumeration value="TELB">
+					<xs:annotation>
+						<xs:documentation>Telecom</xs:documentation>
+					</xs:annotation>
+				</xs:enumeration>
+			</xs:restriction>
+		</xs:simpleType>
+		<xs:simpleType name="Max140Text">
+			<xs:restriction base="_:Max140Text">
+				<xs:annotation>
+					<xs:documentation xml:lang="de">Begrenzung des Zeichensatzes für Namen und Verwendungszweck
+
+Ein Text oder Wert muß mindestens ein druckbares Zeichen enthalten</xs:documentation>
+					<xs:documentation xml:lang="en">Limitation of character set for names and remittance information
+
+A text or value must contain at least one printable character</xs:documentation>
+				</xs:annotation>
+				<xs:pattern value="( *[\-A-Za-z0-9+/?:().,'äöüßÄÖÜ&amp;&gt;&lt;&quot;|€$§%!=#~;*{}\[\]@\\_°\^])+ *">
+					<xs:annotation>
+						<xs:documentation>Remember that the pattern notation is governed by XML and XSD rules.
+The regex is anchored to the whole string, which needs a ^ and a $ in other environments.
+Entities like &#x09;, &amp;, &gt;, &lt; and &quot; need to be exchanged to their entity's meaning or other encoding in other environments.
+The / might need to be escaped to \/ in other environments.</xs:documentation>
+					</xs:annotation>
+				</xs:pattern>
+			</xs:restriction>
+		</xs:simpleType>
+		<xs:simpleType name="Max15NumericText">
+			<xs:restriction base="_:Max15NumericText">
+				<xs:annotation>
+					<xs:documentation xml:lang="de">Begrenzung der Länge des Transaktionszählers</xs:documentation>
+					<xs:documentation xml:lang="en">Limitation of length of transaction counter</xs:documentation>
+				</xs:annotation>
+				<xs:pattern value="[1-9][0-9]{0,5}">
+					<xs:annotation>
+						<xs:documentation>Remember that the pattern notation is governed by XML and XSD rules.
+The regex is anchored to the whole string, which needs a ^ and a $ in other environments.
+Entities like &#x09;, &amp;, &gt;, &lt; and &quot; need to be exchanged to their entity's meaning or other encoding in other environments.
+The / might need to be escaped to \/ in other environments.</xs:documentation>
+					</xs:annotation>
+				</xs:pattern>
+			</xs:restriction>
+		</xs:simpleType>
+		<xs:simpleType name="Max16Text">
+			<xs:restriction base="_:Max16Text">
+				<xs:annotation>
+					<xs:documentation xml:lang="de">Begrenzung des Zeichensatzes für Kodes, Referenzen und Identifikatoren
+
+Erlaubte Struktur für Kodes, Referenzen und Identifikatoren nach EPC217-08 Best Practices SEPA Requirements for Character Set SSG.pdf
+Ein Text oder Wert muß mindestens ein druckbares Zeichen enthalten, jedoch
+startet nicht mit /
+endet nicht mit /
+enthält kein //</xs:documentation>
+					<xs:documentation xml:lang="en">Limitation of character set for codes, references and identifications
+
+Allowed structure for codes, references and identifications according EPC217-08 Best Practices SEPA Requirements for Character Set SSG.pdf
+A text or value must contain at least one printable character, but
+don't start with /
+don't end with /
+don't contain //</xs:documentation>
+				</xs:annotation>
+				<xs:pattern value="((([\-A-Za-z0-9+?:().,' ]+/)+[\-A-Za-z0-9+?:().,' ]+)|(( *[\-A-Za-z0-9+?:().,'])+ *))">
+					<xs:annotation>
+						<xs:documentation>Remember that the pattern notation is governed by XML and XSD rules.
+The regex is anchored to the whole string, which needs a ^ and a $ in other environments.
+Entities like &#x09;, &amp;, &gt;, &lt; and &quot; need to be exchanged to their entity's meaning or other encoding in other environments.
+The / might need to be escaped to \/ in other environments.</xs:documentation>
+					</xs:annotation>
+				</xs:pattern>
+			</xs:restriction>
+		</xs:simpleType>
+		<xs:simpleType name="Max2048Text">
+			<xs:restriction base="_:Max2048Text">
+				<xs:annotation>
+					<xs:documentation xml:lang="de">Begrenzung des Inhalts auf email-Adressen gemäß RFC 5322 (ohne veraltete Notationen, Kommentare und Mehrzeilendarstellung) und der Länge auf 254 Zeichen</xs:documentation>
+					<xs:documentation xml:lang="en">Limitation of content following RFC 5322 (without obsolete notations, comments and folding whitespaces) and length to 254 characters</xs:documentation>
+				</xs:annotation>
+				<xs:maxLength value="254"/>
+				<xs:pattern value="(([\-!#-'*+/-9=?A-Z\^-{}~]+|&quot;([\-!#-Z\[\]\^-~]+|\\[!-~ &#x09;])+&quot;)?&lt;(([\-!#-'*+/-9=?A-Z\^-{}~]+(\.[\-!#-'*+/-9=?A-Z\^-{}~]+)*|&quot;([\-!#-Z\[\]\^-~]+|\\[!-~ &#x09;])+&quot;)@([\-!#-'*+/-9=?A-Z\^-{}~]+(\.[\-!#-'*+/-9=?A-Z\^-{}~]+)*|\[[\-!-Z\^-~]+\]))&gt;)|(([\-!#-'*+/-9=?A-Z\^-{}~]+(\.[\-!#-'*+/-9=?A-Z\^-{}~]+)*|&quot;([\-!#-Z\[\]\^-~]+|\\[!-~ &#x09;])+&quot;)@([\-!#-'*+/-9=?A-Z\^-{}~]+(\.[\-!#-'*+/-9=?A-Z\^-{}~]+)+|\[[\-!-Z\^-~]+\]))">
+					<xs:annotation>
+						<xs:documentation>Remember that the pattern notation is governed by XML and XSD rules.
+The regex is anchored to the whole string, which needs a ^ and a $ in other environments.
+Entities like &#x09;, &amp;, &gt;, &lt; and &quot; need to be exchanged to their entity's meaning or other encoding in other environments.
+The / might need to be escaped to \/ in other environments.</xs:documentation>
+					</xs:annotation>
+				</xs:pattern>
+			</xs:restriction>
+		</xs:simpleType>
+		<xs:simpleType name="Max35Text">
+			<xs:restriction base="_:Max35Text">
+				<xs:annotation>
+					<xs:documentation xml:lang="de">Begrenzung des Zeichensatzes für Namen
+
+Ein Text oder Wert muß mindestens ein druckbares Zeichen enthalten</xs:documentation>
+					<xs:documentation xml:lang="en">Limitation of character set for names
+
+A text or value must contain at least one printable character</xs:documentation>
+				</xs:annotation>
+				<xs:pattern value="( *[\-A-Za-z0-9+/?:().,'äöüßÄÖÜ&amp;&gt;&lt;&quot;|€$§%!=#~;*{}\[\]@\\_°\^])+ *">
+					<xs:annotation>
+						<xs:documentation>Remember that the pattern notation is governed by XML and XSD rules.
+The regex is anchored to the whole string, which needs a ^ and a $ in other environments.
+Entities like &#x09;, &amp;, &gt;, &lt; and &quot; need to be exchanged to their entity's meaning or other encoding in other environments.
+The / might need to be escaped to \/ in other environments.</xs:documentation>
+					</xs:annotation>
+				</xs:pattern>
+			</xs:restriction>
+		</xs:simpleType>
+		<xs:simpleType name="Max34Text">
+			<xs:restriction base="_:Max34Text">
+				<xs:annotation>
+					<xs:documentation xml:lang="de">Begrenzung des Zeichensatzes für Kodes, Referenzen und Identifikatoren
+
+Erlaubte Struktur für Kodes, Referenzen und Identifikatoren nach EPC217-08 Best Practices SEPA Requirements for Character Set SSG.pdf
+Ein Text oder Wert muß mindestens ein druckbares Zeichen enthalten, jedoch
+startet nicht mit /
+endet nicht mit /
+enthält kein //</xs:documentation>
+					<xs:documentation xml:lang="en">Limitation of character set for codes, references and identifications
+
+Allowed structure for codes, references and identifications according EPC217-08 Best Practices SEPA Requirements for Character Set SSG.pdf
+A text or value must contain at least one printable character, but
+don't start with /
+don't end with /
+don't contain //</xs:documentation>
+				</xs:annotation>
+				<xs:pattern value="((([\-A-Za-z0-9+?:().,' ]+/)+[\-A-Za-z0-9+?:().,' ]+)|(( *[\-A-Za-z0-9+?:().,'])+ *))">
+					<xs:annotation>
+						<xs:documentation>Remember that the pattern notation is governed by XML and XSD rules.
+The regex is anchored to the whole string, which needs a ^ and a $ in other environments.
+Entities like &#x09;, &amp;, &gt;, &lt; and &quot; need to be exchanged to their entity's meaning or other encoding in other environments.
+The / might need to be escaped to \/ in other environments.</xs:documentation>
+					</xs:annotation>
+				</xs:pattern>
+			</xs:restriction>
+		</xs:simpleType>
+		<xs:simpleType name="Max4Text">
+			<xs:restriction base="_:Max4Text">
+				<xs:annotation>
+					<xs:documentation xml:lang="de">Begrenzung des Zeichensatzes für Kodes, Referenzen und Identifikatoren
+
+Erlaubte Struktur für Kodes, Referenzen und Identifikatoren nach EPC217-08 Best Practices SEPA Requirements for Character Set SSG.pdf
+Ein Text oder Wert muß mindestens ein druckbares Zeichen enthalten, jedoch
+startet nicht mit /
+endet nicht mit /
+enthält kein //</xs:documentation>
+					<xs:documentation xml:lang="en">Limitation of character set for codes, references and identifications
+
+Allowed structure for codes, references and identifications according EPC217-08 Best Practices SEPA Requirements for Character Set SSG.pdf
+A text or value must contain at least one printable character, but
+don't start with /
+don't end with /
+don't contain //</xs:documentation>
+				</xs:annotation>
+				<xs:pattern value="((([\-A-Za-z0-9+?:().,' ]+/)+[\-A-Za-z0-9+?:().,' ]+)|(( *[\-A-Za-z0-9+?:().,'])+ *))">
+					<xs:annotation>
+						<xs:documentation>Remember that the pattern notation is governed by XML and XSD rules.
+The regex is anchored to the whole string, which needs a ^ and a $ in other environments.
+Entities like &#x09;, &amp;, &gt;, &lt; and &quot; need to be exchanged to their entity's meaning or other encoding in other environments.
+The / might need to be escaped to \/ in other environments.</xs:documentation>
+					</xs:annotation>
+				</xs:pattern>
+			</xs:restriction>
+		</xs:simpleType>
+		<xs:simpleType name="Max70Text">
+			<xs:restriction base="_:Max70Text">
+				<xs:annotation>
+					<xs:documentation xml:lang="de">Begrenzung des Zeichensatzes für Adressen
+
+Ein Text oder Wert muß mindestens ein druckbares Zeichen enthalten</xs:documentation>
+					<xs:documentation xml:lang="en">Limitation of character set for addresses
+
+A text or value must contain at least one printable character</xs:documentation>
+				</xs:annotation>
+				<xs:pattern value="( *[\-A-Za-z0-9+/?:().,'äöüßÄÖÜ&amp;&gt;&lt;&quot;|€$§%!=#~;*{}\[\]@\\_°\^])+ *">
+					<xs:annotation>
+						<xs:documentation>Remember that the pattern notation is governed by XML and XSD rules.
+The regex is anchored to the whole string, which needs a ^ and a $ in other environments.
+Entities like &#x09;, &amp;, &gt;, &lt; and &quot; need to be exchanged to their entity's meaning or other encoding in other environments.
+The / might need to be escaped to \/ in other environments.</xs:documentation>
+					</xs:annotation>
+				</xs:pattern>
+			</xs:restriction>
+		</xs:simpleType>
+		<!-- complex types with simple content -->
+		<xs:complexType name="ActiveOrHistoricCurrencyAndAmount">
+			<xs:simpleContent>
+				<xs:restriction base="_:ActiveOrHistoricCurrencyAndAmount">
+					<xs:annotation>
+						<xs:documentation xml:lang="de">Begrenzung der Länge und Darstellung des Einzelbetrags</xs:documentation>
+						<xs:documentation xml:lang="en">Limitation of length and representation of transaction amount</xs:documentation>
+					</xs:annotation>
+					<xs:minInclusive value="0.001"/>
+					<xs:maxInclusive value="99999999999.999"/>
+					<xs:fractionDigits value="3"/>
+					<xs:totalDigits value="14"/>
+					<xs:attribute name="Ccy" type="_:ActiveOrHistoricCurrencyCode" use="required"/>
+				</xs:restriction>
+			</xs:simpleContent>
+		</xs:complexType>
+		<!-- complex types with complex content -->
+		<xs:complexType name="AccountSchemeName1Choice">
+			<xs:complexContent>
+				<xs:restriction base="_:AccountSchemeName1Choice">
+					<xs:sequence>
+						<xs:choice>
+							<xs:element name="Cd" type="_:AT_ExternalAccountIdentification1Code">
+								<xs:annotation>
+									<xs:documentation>BBAN	BBANIdentifier
+CUID	CHIPSUniversalIdentifier
+UPIC	UPICIdentifier</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+						</xs:choice>
+					</xs:sequence>
+				</xs:restriction>
+			</xs:complexContent>
+		</xs:complexType>
+		<xs:complexType name="AmountType3Choice">
+			<xs:complexContent>
+				<xs:restriction base="_:AmountType3Choice">
+					<xs:sequence>
+						<xs:choice>
+							<xs:element name="InstdAmt" type="_:ActiveOrHistoricCurrencyAndAmount">
+								<xs:annotation>
+									<xs:documentation xml:lang="de">Einzelbetrag.
+
+Begrenzt auf maximal 99999999999.999 und minimal 0.001.
+Punkt als Dezimalzeichen.
+Keine negativen Werte.
+Beachtung der maximalen Nachkommastellen abhängig von der Währung</xs:documentation>
+									<xs:documentation xml:lang="en">Single amount.
+
+Restricted to a maximum 99999999999.999 and a minimum of 0.001.
+Decimal sign is the dot.
+No negative values.
+Observe maximum decimals according currency</xs:documentation>
+									<xs:documentation>Beispiele / Examples
+-- ungültig / invalid --
+.87
+645.
+942.80352132
+00023
+000343.00
+-- gültig und empfohlen / valid and recommended --
+0.34
+74.5
+456
+3.04
+-- möglich / possible --
+10.0
+10.40
+10.00</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+							<xs:element name="EqvtAmt" type="_:EquivalentAmount2">
+								<xs:annotation>
+									<xs:documentation xml:lang="de">Gegenwertsauftrag</xs:documentation>
+									<xs:documentation xml:lang="en">Equivalent amout order</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+						</xs:choice>
+					</xs:sequence>
+				</xs:restriction>
+			</xs:complexContent>
+		</xs:complexType>
+		<xs:complexType name="CategoryPurpose1Choice">
+			<xs:complexContent>
+				<xs:restriction base="_:CategoryPurpose1Choice">
+					<xs:sequence>
+						<xs:choice>
+							<xs:element name="Cd" type="_:AT_ExternalCategoryPurpose1Code">
+								<xs:annotation>
+									<xs:documentation xml:lang="de">Verarbeitung.
+
+Spezifischer Kode zur Verarbeitungssteuerung beim empfangenden Institut.
+Siehe externe Kodeliste</xs:documentation>
+									<xs:documentation xml:lang="en">Processing.
+
+Specific code for processing indentification at receiving institution.
+See external code list</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+							<xs:element name="Prtry" type="_:Max35Text_REF">
+								<xs:annotation>
+									<xs:documentation xml:lang="de">Verarbeitung.
+
+Spezifischer Kode zur Verarbeitungssteuerung beim empfangenden Institut.
+Code entsprechend bilateraler Vereinbarung</xs:documentation>
+									<xs:documentation xml:lang="en">Processing.
+
+Specific code for processing indentification at receiving institution.
+Code according bilateral agreement</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+						</xs:choice>
+					</xs:sequence>
+				</xs:restriction>
+			</xs:complexContent>
+		</xs:complexType>
+		<xs:complexType name="ContactDetails2">
+			<xs:complexContent>
+				<xs:restriction base="_:ContactDetails2">
+					<xs:sequence>
+						<xs:element name="NmPrfx" type="_:NamePrefix1Code" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Titel</xs:documentation>
+								<xs:documentation xml:lang="en">Title</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Nm" type="_:Max140Text_Nm" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Name</xs:documentation>
+								<xs:documentation xml:lang="en">Name</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="PhneNb" type="_:PhoneNumber" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Telefonnummer</xs:documentation>
+								<xs:documentation xml:lang="en">Telephone number</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="MobNb" type="_:PhoneNumber" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Handynummer</xs:documentation>
+								<xs:documentation xml:lang="en">Mobile phone number</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="FaxNb" type="_:PhoneNumber" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Faxnummer</xs:documentation>
+								<xs:documentation xml:lang="en">Fax mashine number</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="EmailAdr" type="_:Max2048Text" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Email Adresse</xs:documentation>
+								<xs:documentation xml:lang="en">E-mail address</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Othr" type="_:Max35Text_REF" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Anderweitige Kontaktmöglichkeit</xs:documentation>
+								<xs:documentation xml:lang="en">Other contact possibilities</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:restriction>
+			</xs:complexContent>
+		</xs:complexType>
+		<xs:complexType name="CreditorReferenceInformation2">
+			<xs:complexContent>
+				<xs:restriction base="_:CreditorReferenceInformation2">
+					<xs:sequence>
+						<xs:element name="Tp" type="_:CreditorReferenceType2">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Typ und Herkunft der Referenz</xs:documentation>
+								<xs:documentation xml:lang="en">Type and issuer of reference</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Ref" type="_:Max35Text_REF">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Zahlungsreferenz, Empfängerreferenz</xs:documentation>
+								<xs:documentation xml:lang="en">Creditor's reference, Recipient's reference</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:restriction>
+			</xs:complexContent>
+		</xs:complexType>
+		<xs:complexType name="CreditorReferenceType1Choice">
+			<xs:complexContent>
+				<xs:restriction base="_:CreditorReferenceType1Choice">
+					<xs:sequence>
+						<xs:choice>
+							<xs:element name="Cd" type="_:DocumentType3Code">
+								<xs:annotation>
+									<xs:documentation xml:lang="de">Kodierter Referenztyp</xs:documentation>
+									<xs:documentation xml:lang="en">Coded reference type</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+							<xs:element name="Prtry" type="_:Max35Text_REF">
+								<xs:annotation>
+									<xs:documentation xml:lang="de">Proprietärer Code</xs:documentation>
+									<xs:documentation xml:lang="en">Proprietary code</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+						</xs:choice>
+					</xs:sequence>
+				</xs:restriction>
+			</xs:complexContent>
+		</xs:complexType>
+		<xs:complexType name="CreditorReferenceType2">
+			<xs:complexContent>
+				<xs:restriction base="_:CreditorReferenceType2">
+					<xs:sequence>
+						<xs:element name="CdOrPrtry" type="_:CreditorReferenceType1Choice">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Typ der Referenz</xs:documentation>
+								<xs:documentation xml:lang="en">Type of reference</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Issr" type="_:Max35Text" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Referenz vergebende Organisation</xs:documentation>
+								<xs:documentation xml:lang="en">Reference assigning organisation</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:restriction>
+			</xs:complexContent>
+		</xs:complexType>
+		<xs:complexType name="CreditTransferTransactionInformation10">
+			<xs:complexContent>
+				<xs:restriction base="_:CreditTransferTransactionInformation10">
+					<xs:sequence>
+						<xs:element name="PmtId" type="_:PaymentIdentification1" xml:ToC="2;Auftraggeberreferenz">
+							<xs:annotation>
+								<!--  ***** xml:ToC used by style sheet that generats documentation ***** -->
+								<xs:documentation xml:lang="de">Referenzen des Auftragggebers</xs:documentation>
+								<xs:documentation xml:lang="en">Initiator's references</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Amt" type="_:AmountType3Choice" xml:ToC="2;Betrag">
+							<xs:annotation>
+								<!--  ***** xml:ToC used by style sheet that generats documentation ***** -->
+								<xs:documentation xml:lang="de">Überweisungs- oder Scheckbetrag</xs:documentation>
+								<xs:documentation xml:lang="en">Transfer or cheque amount</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="XchgRateInf" type="_:ExchangeRateInformation1" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Mögliche Angabe eines vertraglich vereinbarten Wechselkurses</xs:documentation>
+								<xs:documentation xml:lang="en">Possible specification of an exchange rate according to an agreement</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="ChrgBr" type="_:ChargeBearerType1Code" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Spesenoption.
+
+SLEV für die Standardoption, üblicherweise wie SHAR
+
+SHAR für Spesenteilung
+
+DEBT für die Übernahme aller Spesen durch den Auftraggeber
+
+CRED für die Übernahme aller Spesen durch den Empfänger
+
+Bei fehlender Angabe wird gemäß dem vereinbarten Standard abgewickelt
+
+CRED ist nur noch in begrenzten Fällen möglich und nur dann anwendbar, wenn die Zahlung
+- entweder den EU+EFTA-Raum verläßt
+- oder im EU+EFTA-Raum verbleibt, aber ungleich EUR oder IN-Währung beauftragt wird</xs:documentation>
+								<xs:documentation xml:lang="en">Charge option.
+
+SLEV for standard option, usually like SHAR
+
+SHAR for chared charges
+
+DEBT for bearing of all charges by debtor
+
+CRED for bearing of all charges by creditor
+
+On missing instance processing is made following agreed standard
+
+CRED is only applicable in limited situations, i.e. when the payment is
+- either destines outside the EU+EFTA area
+- or stays in EU+EFTA area, but is ordered differnt from EUR or IN currencies</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="IntrmyAgt1" type="_:BranchAndFinancialInstitutionIdentification4_Intrmy" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Mögliche Angabe eines zwischengeschalteten Institutes</xs:documentation>
+								<xs:documentation xml:lang="en">Possible intermediary finacial institution</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="IntrmyAgt1Acct" type="_:CashAccount16_Cdtr" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Mögliche Angabe eines Kontos beim zwischengeschalteten Institut</xs:documentation>
+								<xs:documentation xml:lang="en">Possible account at intermediary finacial institution</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="CdtrAgt" type="_:BranchAndFinancialInstitutionIdentification4_Cdtr" minOccurs="0" xml:ToC="2;Empfängerbank">
+							<xs:annotation>
+								<!--  ***** xml:ToC used by style sheet that generats documentation ***** -->
+								<xs:documentation xml:lang="de">Kontoführendes Institut des Kontoinhabers / Empfängers.
+
+Bei Scheck- und Inlands-zahlungen ist diese Struktur erlaubt, ansonsten verpflichtend. Bei Scheckzahlungen das den Scheck ausgebende Institut, sofern abweichend von der Auftraggeberbank</xs:documentation>
+								<xs:documentation xml:lang="en">Financial institution servicing the account owner / recipient
+
+When cheque or domestic payments are made, this structure is allowed, otherwise mandatory. On cheque payments the institution issuing the check when different from debtors institution</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Cdtr" type="_:PartyIdentification32_Cdtr" xml:ToC="2;Kontoinhaber">
+							<xs:annotation>
+								<!--  ***** xml:ToC used by style sheet that generats documentation ***** -->
+								<xs:documentation xml:lang="de">Kontoinhaber / Empfänger
+
+Bei Scheckzahlungen siehe PmtInf/PmtMtd</xs:documentation>
+								<xs:documentation xml:lang="en">Account owner / recipient
+With cheque payments see PmtInf/PmtMtd</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="CdtrAcct" type="_:CashAccount16_Cdtr" minOccurs="0" xml:ToC="2;Empfängerkonto">
+							<xs:annotation>
+								<!--  ***** xml:ToC used by style sheet that generats documentation ***** -->
+								<xs:documentation xml:lang="de">Kontonummer des Kontoinhabers / Empfängers..
+
+Bei Scheckzahlungen ist diese Struktur NICHT erlaubt, ansonsten verpflichtend. Siehe PmtInf/PmtMtd</xs:documentation>
+								<xs:documentation xml:lang="en">Account number of account owner / recipient.
+
+When cheque payments are made this structure is NOT permitted, otherwise mandatory. See PmtInf/PmtMtd</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="UltmtCdtr" type="_:PartyIdentification32_UltmtCrdt" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Referenzpartei des Kontoinhabers / Empfängers, d.h. üblicherweise der eigentliche Gläubiger.
+
+Nur zu verwenden, wenn der Kontoinhaber NICHT der Gläubiger ist
+
+Bei Scheckzahlungen ist diese Struktur NICHT erlaubt. Siehe PmtInf/PmtMtd
+
+Regelmäßig werden Nicht-SEPA-Aufträge mit anderen Formaten zwischen den beteiligten Banken weitergegeben, die die hier angegebenen Daten nicht transportieren können</xs:documentation>
+								<xs:documentation xml:lang="en">Reference party of account owner / recipient, i.e. habitually the actual creditor.
+
+Only to be populated if the account owner is NOT the actual creditor
+
+When cheque payments are made this structure is NOT permitted. See PmtInf/PmtMtd
+
+On regular basis none SEPA payments are forwarded between the involved banks with other formats, that cannot convey these informations</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="InstrForCdtrAgt" type="_:InstructionForCreditorAgent1" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Weisung an Empfängerinstitut.
+
+Mögliche Angabe einer Abwicklungsweisung an das Institut des Empfängers
+
+Bei Scheckzahlungen ist diese Struktur NICHT erlaubt. Siehe PmtInf/PmtMtd</xs:documentation>
+								<xs:documentation xml:lang="en">Instruction to creditors bank.
+
+Possible specification of a coded payment purpose to the receipient
+
+When cheque payments are made this structure is NOT permitted. See PmtInf/PmtMtd</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Purp" type="_:Purpose2Choice" minOccurs="0" xml:ToC="2;Geschäftsvorfallkode">
+							<xs:annotation>
+								<!--  ***** xml:ToC used by style sheet that generats documentation ***** -->
+								<xs:documentation xml:lang="de">Kodierter Zahlungsgrund.
+
+Dieser Kode identifiziert einen Zahlungsgrund für den Zahlungsempfänger, kann aber auch speziellen Services bei den Banken dienen.
+
+Bei Scheckzahlungen ist diese Struktur NICHT erlaubt. Siehe PmtInf/PmtMtd</xs:documentation>
+								<xs:documentation xml:lang="en">Coded payment reason.
+
+This code identifies a payment purpose or reason for the creditor, but may triggers special services of banks too.
+
+When cheque payments are made this structure is NOT permitted. See PmtInf/PmtMtd</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="RmtInf" type="_:RemittanceInformation5" minOccurs="0" xml:ToC="2;Empfängerreferenz oder Verwendungszweck">
+							<xs:annotation>
+								<!--  ***** xml:ToC used by style sheet that generats documentation ***** -->
+								<xs:documentation xml:lang="de">Verwendungszweck / Empfängerreferenz
+
+Bei Scheckzahlungen ist diese Struktur nur mit Ustrd erlaubt und liefert den Text für eine Allonge. Abstimmung mit Kreditinstitut erforderlich. Siehe PmtInf/PmtMtd</xs:documentation>
+								<xs:documentation xml:lang="en">Remittance information / receipients reference
+
+When cheque payments are made this structure is permitted with Ustrd only and quotes the text for an alloge. Agreement with financial institution neccessary. See PmtInf/PmtMtd</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:restriction>
+			</xs:complexContent>
+		</xs:complexType>
+		<xs:complexType name="CustomerCreditTransferInitiationV03">
+			<xs:complexContent>
+				<xs:restriction base="_:CustomerCreditTransferInitiationV03">
+					<xs:sequence>
+						<xs:element name="GrpHdr" type="_:GroupHeader32" xml:ToC="1;Nachrichtenkopf">
+							<xs:annotation>
+								<!--  ***** xml:ToC used by style sheet that generats documentation ***** -->
+								<xs:documentation xml:lang="de">Nachrichtenkopf.
+
+Grundlegende Informationen zur übermittelten Datei</xs:documentation>
+								<xs:documentation xml:lang="en">Message header.
+
+Basic information on transmitted file</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="PmtInf" type="_:PaymentInstructionInformation3" maxOccurs="unbounded" xml:ToC="1;Bestände">
+							<xs:annotation>
+								<!--  ***** xml:ToC used by style sheet that generats documentation ***** -->
+								<!--  ***** maxOccurs="unbounded" unchanged due to performance issues ***** -->
+								<xs:documentation xml:lang="de">Bestände.
+
+Maximal 9.999 Bestände.
+Größere Anzahl kann nicht verarbeitet werden und die gesamte Datei wird zurückgewiesen</xs:documentation>
+								<xs:documentation xml:lang="en">Batches.
+
+Restricted to 9.999 batches.
+Larger count can not be processed and complete file will be rejected</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:restriction>
+			</xs:complexContent>
+		</xs:complexType>
+		<xs:complexType name="DateAndPlaceOfBirth">
+			<xs:complexContent>
+				<xs:restriction base="_:DateAndPlaceOfBirth">
+					<xs:sequence>
+						<xs:element name="BirthDt" type="_:ISODate">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Tag der Geburt</xs:documentation>
+								<xs:documentation xml:lang="en">Date of birth</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="PrvcOfBirth" type="_:Max35Text" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Bundesland der Geburt</xs:documentation>
+								<xs:documentation xml:lang="en">Province of birth</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="CityOfBirth" type="_:Max35Text">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Stadt der Geburt</xs:documentation>
+								<xs:documentation xml:lang="en">City of birth</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="CtryOfBirth" type="_:CountryCode">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Land der Geburt</xs:documentation>
+								<xs:documentation xml:lang="en">Country of birth</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:restriction>
+			</xs:complexContent>
+		</xs:complexType>
+		<xs:complexType name="Document">
+			<xs:complexContent>
+				<xs:restriction base="_:Document">
+					<xs:sequence>
+						<xs:element name="CstmrCdtTrfInitn" type="_:CustomerCreditTransferInitiationV03" xml:ToC="1;Nachricht">
+							<xs:annotation>
+								<!--  ***** xml:ToC used by style sheet that generats documentation ***** -->
+								<xs:documentation xml:lang="de">Überweisungsnachricht.
+
+Diese Version definiert die Beschränkungen der ISO-Struktur basierend auf den ImplementationRecommendations des EPC für die Verwendung in Österreich.
+
+Die Struktur enthält Überweisungsaufträge, die außerhalb der Anforderungen für SEPA-Zahlungen liegen, z.B. Fremdwährungen, Schecks, Wertpapiere etc.</xs:documentation>
+								<xs:documentation xml:lang="en">Credit tranfer message.
+
+This version defines the restrictions of the ISO structure based on ImplementationRecommendations of EPC for use in Austria.
+
+This structure containes credit orders, which are not covered by SEPA regulations, e.g. foreign currencies, cheques, trades etc.</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:restriction>
+			</xs:complexContent>
+		</xs:complexType>
+		<xs:complexType name="DocumentAdjustment1">
+			<xs:complexContent>
+				<xs:restriction base="_:DocumentAdjustment1">
+					<xs:sequence>
+						<xs:element name="Amt" type="_:ActiveOrHistoricCurrencyAndAmount">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Betrag und Währung</xs:documentation>
+								<xs:documentation xml:lang="en">Amount and currency</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="CdtDbtInd" type="_:CreditDebitCode" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Soll oder Haben</xs:documentation>
+								<xs:documentation xml:lang="en">Debit or credit</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Rsn" type="_:Max4Text" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Grund</xs:documentation>
+								<xs:documentation xml:lang="en">Reason</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="AddtlInf" type="_:Max140Text" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Zusätzliche Erläuterung</xs:documentation>
+								<xs:documentation xml:lang="en">Additional information</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:restriction>
+			</xs:complexContent>
+		</xs:complexType>
+		<xs:complexType name="EquivalentAmount2">
+			<xs:complexContent>
+				<xs:restriction base="_:EquivalentAmount2">
+					<xs:sequence>
+						<xs:element name="Amt" type="_:ActiveOrHistoricCurrencyAndAmount">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Betrag und Währung des Auftrags.
+
+Begrenzt auf maximal 99999999999.999 und minimal 0.001.
+Punkt als Dezimalzeichen.
+Keine negativen Werte.
+Beachtung der maximalen Nachkommastellen abhängig von der Währung</xs:documentation>
+								<xs:documentation xml:lang="en">Amount and currency of order.
+
+Restricted to a maximum 99999999999.999 and a minimum of 0.001.
+Decimal sign is the dot.
+No negative values.
+Observe maximum decimals according currency</xs:documentation>
+								<xs:documentation>Beispiele / Examples
+-- ungültig / invalid --
+.87
+645.
+942.80352132
+00023
+000343.00
+-- gültig und empfohlen / valid and recommended --
+0.34
+74.5
+456
+3.04
+-- möglich / possible --
+10.0
+10.40
+10.00</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="CcyOfTrf" type="_:ActiveOrHistoricCurrencyCode">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Währung der Überweisung</xs:documentation>
+								<xs:documentation xml:lang="en">Currency of transfer</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:restriction>
+			</xs:complexContent>
+		</xs:complexType>
+		<xs:complexType name="ExchangeRateInformation1">
+			<xs:complexContent>
+				<xs:restriction base="_:ExchangeRateInformation1">
+					<xs:sequence>
+						<xs:element name="XchgRate" type="_:BaseOneRate" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Wechselkurs in marktüblicher oder vereinbarter Darstellung</xs:documentation>
+								<xs:documentation xml:lang="en">Exchange rate in current market or agreed representation</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="RateTp" type="_:ExchangeRateType1Code" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">AGRD für Vereinbarung
+SPOT für Kassakurs
+SALE für Termingeschäft</xs:documentation>
+								<xs:documentation xml:lang="en">AGRD for agreed rate
+SPOT for spot rate
+SALE for sale rate</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="CtrctId" type="_:Max35Text_REF">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Identifikation des Vertrages, der Rate oder des Geschäfts</xs:documentation>
+								<xs:documentation xml:lang="en">Identification of agreement or deal</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:restriction>
+			</xs:complexContent>
+		</xs:complexType>
+		<xs:complexType name="GenericAccountIdentification1">
+			<xs:complexContent>
+				<xs:restriction base="_:GenericAccountIdentification1">
+					<xs:sequence>
+						<xs:element name="Id" type="_:Max34Text">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Identifikation</xs:documentation>
+								<xs:documentation xml:lang="en">Identification</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="SchmeNm" type="_:AccountSchemeName1Choice" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Typ der Identifikation</xs:documentation>
+								<xs:documentation xml:lang="en">Type of identification</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Issr" type="_:Max35Text" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Herausgeber der Identifikation
+
+Nur wenn bei BBAN Unterscheidung notwendig
+z.B.
+NACHA
+FW -> Pay by Fedwire
+CH -> CHIPS Universal Identifier
+CP -> CHIPS Participant Identifier</xs:documentation>
+								<xs:documentation xml:lang="en">Issuer of identification
+
+Only if destiction is neccessary for BBAN
+e.g.
+NACHA
+FW -> Pay by Fedwire
+CH -> CHIPS Universal Identifier
+CP -> CHIPS Participant Identifier</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:restriction>
+			</xs:complexContent>
+		</xs:complexType>
+		<xs:complexType name="GroupHeader32">
+			<xs:complexContent>
+				<xs:restriction base="_:GroupHeader32">
+					<xs:sequence>
+						<xs:element name="MsgId" type="_:Max35Text_REF" xml:ToC="2;Nachrichtenreferenz">
+							<xs:annotation>
+								<!--  ***** xml:ToC used by style sheet that generats documentation ***** -->
+								<xs:documentation xml:lang="de">Technische Referenz der Übermittlungsdatei.
+
+Eindeutigkeit über mindestens 30 Tage ist herzustellen.
+Beschränken Sie sich für einen sicheren Ablauf auf Buchstaben, Ziffern und Bindestrich.
+Eindeutigkeit erreicht man zB einfach über die Kombination des Datums mit einem Tageszähler</xs:documentation>
+								<xs:documentation xml:lang="en">Technical reference of transmitted file.
+
+Ensure uniqueness for at least 30 days.
+For save processing limit yourselves to digits, letters and minus sign.
+Uniqueness is simple achievable eg with combining the date with a daily counter</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="CreDtTm" type="_:ISODateTime" xml:ToC="2;Nachrichtenerstellung">
+							<xs:annotation>
+								<!--  ***** xml:ToC used by style sheet that generats documentation ***** -->
+								<xs:documentation xml:lang="de">Dateierzeugungsdatum und -zeit.
+
+Es ist nur das Format YYYY-MM-DDThh:mm:ss verfügbar.
+Zeitpunkt in CET(CEST)-Zeit
+
+Entsprechungen:
+MT940 -> Header 2 (siehe Stmt.CreDtTm)
+EDIFACT -> UNB Date+Time</xs:documentation>
+								<xs:documentation xml:lang="en">File creation date and time.
+
+Only format available is YYYY-MM-DDThh:mm:ss.
+It is the CET(CEST) timestamp
+
+Equivalents:
+MT940 -> Header 2 (see Stmt.CreDtTm)
+EDIFACT -> UNB Date+Time</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="NbOfTxs" type="_:Max15NumericText" xml:ToC="2;Nachrichtenumsätze">
+							<xs:annotation>
+								<!--  ***** xml:ToC used by style sheet that generats documentation ***** -->
+								<xs:documentation xml:lang="de">Anzahl der Einzeltransaktionen der Datei.
+
+Maximal 999.999 Transactionen.
+Mehr als 100.000 Umsätzen bedürfen der vorherigen Abstimmung</xs:documentation>
+								<xs:documentation xml:lang="en">Count of single transactions of file.
+
+Maximum 999.999 transactions.
+More than 100.000 transactions need preliminary agreement</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="CtrlSum" type="_:DecimalNumber" minOccurs="0" xml:ToC="2;Nachrichtensumme">
+							<xs:annotation>
+								<!--  ***** xml:ToC used by style sheet that generats documentation ***** -->
+								<xs:documentation xml:lang="de">Summe der Einzeltransaktionen der Datei.
+
+Ein Wert zwischen 0.001 und 999999999999.999.
+Punkt als Dezimalzeichen.
+Keine negativen Werte.
+Beachtung der maximalen Nachkommastellen abhängig von der Währung.
+
+Die Verwendung dieses Elements ist dringend angeraten.
+Es wird fallweise zur Prüfung von Doppelanlieferungen verwendet</xs:documentation>
+								<xs:documentation xml:lang="en">Sum of single transactions of file.
+
+A value between 0.001 and 999999999999.999.
+Decimal sign is the dot.
+No negative values.
+Observe maximum decimals according currency.
+
+Element is strongly recommended.
+It is occasionally used for proof of duplicate submission</xs:documentation>
+								<xs:documentation>Beispiele / Examples
+-- ungültig / invalid --
+.87
+645.
+942.80352132
+00023
+000343.00
+-- gültig und empfohlen / valid and recommended --
+0.34
+74.5
+456
+3.04
+-- möglich / possible --
+10.0
+10.40
+10.00</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="InitgPty" type="_:PartyIdentification32_InitgPty" xml:ToC="2;Nachrichtensender">
+							<xs:annotation>
+								<!--  ***** xml:ToC used by style sheet that generats documentation ***** -->
+								<xs:documentation xml:lang="de">Identifizierung des Kommunikationsberechtigten.
+
+Stimmen Sie Ihre Id mit dem empfangenden Finanzinstitut ab.
+Üblicherweise die Hauptkontonummer</xs:documentation>
+								<xs:documentation xml:lang="en">Identification of communication entitled party.
+
+Agree your Id with receiving financial institution.
+Habitualy the main account number</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:restriction>
+			</xs:complexContent>
+		</xs:complexType>
+		<xs:complexType name="InstructionForCreditorAgent1">
+			<xs:complexContent>
+				<xs:restriction base="_:InstructionForCreditorAgent1">
+					<xs:sequence>
+						<xs:annotation>
+							<xs:documentation xml:lang="de">NUR EIN FOLGE-ELEMENT
+
+Obwohl die originale Struktur die gleichzeitige Anlieferung beider Folgeelemente erlaubt, folgt hier nur ein Element.
+Auswahl, ob die Weisung per Kode oder Text erfolgt</xs:documentation>
+							<xs:documentation xml:lang="en">ONLY ONE SUBSEQUENT ELEMENT
+
+Although the original structure allowes the concurrent occurance of both subsequent elements, only one element.
+Choose whether instruction is made by code or text</xs:documentation>
+						</xs:annotation>
+						<xs:element name="Cd" type="_:Instruction3Code" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>HOLD HoldCashForCreditor
+PHOB PhoneBeneficiary
+TELB Telecom</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="InstrInf" type="_:Max140Text" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Textuelle Informationen</xs:documentation>
+								<xs:documentation xml:lang="en">Textual information</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:restriction>
+			</xs:complexContent>
+		</xs:complexType>
+		<xs:complexType name="LocalInstrument2Choice">
+			<xs:complexContent>
+				<xs:restriction base="_:LocalInstrument2Choice">
+					<xs:sequence>
+						<xs:choice>
+							<xs:element name="Cd" type="_:AT_ExternalLocalInstrument1Code">
+								<xs:annotation>
+									<xs:documentation xml:lang="de">Zahlungsinstrument.
+
+Keine Verwendung definiert</xs:documentation>
+									<xs:documentation xml:lang="en">Payment instrument.
+
+No application defined</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+							<xs:element name="Prtry" type="_:Max35Text_REF">
+								<xs:annotation>
+									<xs:documentation xml:lang="de">Zahlungsinstrument.
+
+Keine Verwendung definiert</xs:documentation>
+									<xs:documentation xml:lang="en">Payment instrument.
+
+No application defined</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+						</xs:choice>
+					</xs:sequence>
+				</xs:restriction>
+			</xs:complexContent>
+		</xs:complexType>
+		<xs:complexType name="PaymentIdentification1">
+			<xs:complexContent>
+				<xs:restriction base="_:PaymentIdentification1">
+					<xs:sequence>
+						<xs:element name="EndToEndId" type="_:Max35Text_REF">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Auftraggeberreferenz.
+
+Kann im Kontoauszug zur eigenen Referenzierung zurückgegeben, daher ist Eindeutigkeit wichtig.
+Falls dennoch keine Referenz angegeben werden soll, mit dem Wert NOTPROVIDED zu füllen</xs:documentation>
+								<xs:documentation xml:lang="en">Initiator's reference.
+
+May be returned in account statement for reconciliation, uniqueness therefore matters.
+If still no specific reference shall be provided, to be populated with the value NOTPROVIDED</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:restriction>
+			</xs:complexContent>
+		</xs:complexType>
+		<xs:complexType name="PaymentInstructionInformation3">
+			<xs:complexContent>
+				<xs:restriction base="_:PaymentInstructionInformation3">
+					<xs:sequence>
+						<xs:element name="PmtInfId" type="_:Max35Text_REF" xml:ToC="2;Bestandsreferenz">
+							<xs:annotation>
+								<!--  ***** xml:ToC used by style sheet that generats documentation ***** -->
+								<xs:documentation xml:lang="de">Bestandskontrollnummer.
+
+Eindeutigkeit über mindestens 1 Jahr ist herzustellen.
+Kann im Kontoauszug zur Referenzierung zurückgegeben werden.
+Beachten Sie die ggf. vorhandenen Beschränkungen im Format des Kontoauszugs (z.B. MT-Nachrichten können nur 16 Zeichen transportieren), dann ist Eindeutigkeit innerhalb der Beschränkung zu realisieren.
+
+Das Element wird fallweise zur Prüfung von Doppelanlieferungen verwendet.
+Eindeutigkeit erreicht man z.B. einfach über die Kombination des Datums mit einem Tageszähler</xs:documentation>
+								<xs:documentation xml:lang="en">Batch control number.
+
+Ensure uniqueness for at least 1 year.
+Can be returned in account statement.
+Observe the possible limits of account statement format (e.g. MT messages support only 16 character), with this uniqueness needs to be archived within these limits.
+
+Element is occasionally used for proof of duplicate submission.
+Uniqueness is simple achievable e.g. with combining the date with a daily counter</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="PmtMtd" type="_:PaymentMethod3Code">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Zahlungsmethode.
+
+TRF für Überweisungen (Standardwert)
+
+TRA wird wie TRF behandelt, nur mit entsprechender Vereinbarung erfolgt separate Durchführungsbenachrichtigung
+
+CHK Scheckzahlungen</xs:documentation>
+								<xs:documentation xml:lang="en">Payment method.
+
+TRF for credit transfers (standard value)
+
+TRA treated like TRF, unless according agreement enables separte execution notification
+
+CHK for payments with cheques</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="BtchBookg" type="_:BatchBookingIndicator" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Sammel- oder Einzelbuchung.
+
+Berücksichtigung in Absprache mit dem beauftragten Kreditinstitut.
+Überschreibt dann die am Konto hinterlegte Standard-Buchungsmethode.
+"true" heißt Bestandsbuchung gewünscht.
+"false" heißt Einzelbuchung gewünscht</xs:documentation>
+								<xs:documentation xml:lang="en">Batch or single booking.
+
+Consideration according to agreement with the instructed financial institution.
+Then overwrites standard booking method saved at account.
+"true" means batch booking requested.
+"false" means single booking requested</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="NbOfTxs" type="_:Max15NumericText" minOccurs="0" xml:ToC="2;Bestandsumsätze">
+							<xs:annotation>
+								<!--  ***** xml:ToC used by style sheet that generats documentation ***** -->
+								<xs:documentation xml:lang="de">Anzahl der Einzeltransaktionen des Bestands.
+
+Maximal 999.999 Transactionen.
+Mehr als 100.000 Umsätzen bedürfen der vorherigen Abstimmung
+Die Verwendung dieses Elements ist dringend angeraten.
+Es wird fallweise zur Prüfung von Doppelanlieferungen verwendet</xs:documentation>
+								<xs:documentation xml:lang="en">Count of single transactions of batch.
+
+Maximum 999.999 transactions.
+More than 100.000 transactions need preliminary agreement.
+Element is strongly recommended.
+It is occasionally used for proof of duplicate submission</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="CtrlSum" type="_:DecimalNumber" minOccurs="0" xml:ToC="2;Bestandssumme">
+							<xs:annotation>
+								<!--  ***** xml:ToC used by style sheet that generats documentation ***** -->
+								<xs:documentation xml:lang="de">Summe der Einzeltransaktionen des Bestands.
+
+Ein Wert zwischen 0.01 und 999999999999.99. Punkt als Dezimalzeichen.
+Keine negativen Werte.
+Beachtung der maximalen Nachkommastellen abhängig von der Währung.
+
+Die Verwendung dieses Elements ist dringend angeraten.
+Es wird fallweise zur Prüfung von Doppelanlieferungen verwendet</xs:documentation>
+								<xs:documentation xml:lang="en">Sum of single transactions of batch.
+
+A value between 0.01 and 999999999999.99. Decimal sign is the dot.
+No negative values.
+Observe maximum decimals according currency.
+
+Element is strongly recommended.
+It is occasionally used for proof of duplicate submission</xs:documentation>
+								<xs:documentation>Beispiele / Examples
+-- ungültig / invalid --
+.87
+645.
+942.80352132
+00023
+000343.00
+-- gültig und empfohlen / valid and recommended --
+0.34
+74.5
+456
+3.04
+-- möglich / possible --
+10.0
+10.40
+10.00</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="PmtTpInf" type="_:PaymentTypeInformation19" minOccurs="0" xml:ToC="2;Bestandsverarbeitung">
+							<xs:annotation>
+								<!--  ***** xml:ToC used by style sheet that generats documentation ***** -->
+								<xs:documentation xml:lang="de">Zahlungstyp.
+
+Siehe auch PmtMtd</xs:documentation>
+								<xs:documentation xml:lang="en">Type of payment.
+
+See also PmtMtd</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="ReqdExctnDt" type="_:ISODate" xml:ToC="2;Bestandsdurchführung">
+							<xs:annotation>
+								<!--  ***** xml:ToC used by style sheet that generats documentation ***** -->
+								<xs:documentation xml:lang="de">Gewünschter Durchführungstag.
+
+Es ist nur das Format YYYY-MM-DD verfügbar.
+Kann dieser z.B. durch Spätlieferung nicht eingehalten werden, kann ggf. eine Weiterrollung gemäß voheriger Vereinbarung erfolgen</xs:documentation>
+								<xs:documentation xml:lang="en">Requested execution date.
+
+Only format available is YYYY-MM-DD
+If this cannot be respected, e.g. on late delivery, payment may be executed later according preliminary agreement</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Dbtr" type="_:PartyIdentification32_Dbtr" xml:ToC="2;Kontoinhaber">
+							<xs:annotation>
+								<!--  ***** xml:ToC used by style sheet that generats documentation ***** -->
+								<xs:documentation xml:lang="de">Kontoinhaber / Auftraggeber</xs:documentation>
+								<xs:documentation xml:lang="en">Account owner / principal</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="DbtrAcct" type="_:CashAccount16_Dbtr" xml:ToC="2;Auftraggeberkonto">
+							<xs:annotation>
+								<!--  ***** xml:ToC used by style sheet that generats documentation ***** -->
+								<xs:documentation xml:lang="de">Kontonummer des Kontoinhabers / Auftraggebers</xs:documentation>
+								<xs:documentation xml:lang="en">Account number of account owner / principal</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="DbtrAgt" type="_:BranchAndFinancialInstitutionIdentification4_Dbtr" xml:ToC="2;Auftraggeberbank">
+							<xs:annotation>
+								<!--  ***** xml:ToC used by style sheet that generats documentation ***** -->
+								<xs:documentation xml:lang="de">Kontoführendes Institut des Kontoinhabers / Auftraggebers</xs:documentation>
+								<xs:documentation xml:lang="en">Financial institution servicing the account owner / principal</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="UltmtDbtr" type="_:PartyIdentification32_UltmtDbtr" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Referenzpartei des Kontoinhabers / Auftraggeber, d.h. üblicherweise der eigentliche Schuldner.
+
+Regelmäßig werden Nicht-SEPA-Aufträge mit anderen Formaten zwischen den beteiligten Banken weitergegeben, die die hier angegebenen Daten nicht transportieren können. Die enthaltenen Kontaktdaten können in solchen Fällen allenfalls vom beauftragten Institut verwendet werden</xs:documentation>
+								<xs:documentation xml:lang="en">Reference party of account owner / principal, i.e. habitually the actual deptor.
+
+On regular basis None-SEPA payments are forwarded between the involved banks with other formats, that cannot convey these informations. In those cases the contained contact details can only be used by the instructed bank</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="ChrgBr" type="_:ChargeBearerType1Code" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Spesenoption.
+
+SLEV für die Standardoption, üblicherweise wie SHAR
+
+SHAR für Spesenteilung
+
+DEBT für die Übernahme aller Spesen durch den Auftraggeber
+
+CRED für die Übernahme aller Spesen durch den Empfänger
+
+Bei fehlender Angabe wird gemäß dem vereinbarten Standard abgewickelt
+
+CRED ist nur noch in begrenzten Fällen möglich und nur dann anwendbar, wenn die Zahlung
+- entweder den EU+EFTA-Raum verläßt
+- oder im EU+EFTA-Raum verbleibt, aber ungleich EUR oder IN-Währung beauftragt wird</xs:documentation>
+								<xs:documentation xml:lang="en">Charge option.
+
+SLEV for standard option, usually like SHAR
+
+SHAR for chared charges
+
+DEBT for bearing of all charges by debtor
+
+CRED for bearing of all charges by creditor
+
+On missing instance processing is made following agreed standard
+
+CRED is only applicable in limited situations, i.e. when the payment is
+- either destines outside the EU+EFTA area
+- or stays in EU+EFTA area, but is ordered differnt from EUR or IN currencies</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="ChrgsAcct" type="_:CashAccount16_Dbtr" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Angabe eines Spesenkontos</xs:documentation>
+								<xs:documentation xml:lang="en">Charges acount specification</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="CdtTrfTxInf" type="_:CreditTransferTransactionInformation10" maxOccurs="unbounded" xml:ToC="1;Einzelumsätze">
+							<xs:annotation>
+								<!--  ***** xml:ToC used by style sheet that generats documentation ***** -->
+								<!--  ***** maxOccurs="unbounded" unchanged due to performance issues ***** -->
+								<xs:documentation xml:lang="de">Einzelumsätze.
+
+Maximal 999.999 Umsätze je Bestand.
+Größere Anzahl kann nicht verarbeitet werden und die gesamte Datei wird zurückgewiesen.
+Mehr als 100.000 Umsätzen bedürfen der vorherigen Abstimmung</xs:documentation>
+								<xs:documentation xml:lang="en">Single transactions.
+
+Restricted to 999.999 transactions per batch.
+Larger count can not be processed and complete file will be rejected.
+More than 100.000 transactions need preliminary agreement</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:restriction>
+			</xs:complexContent>
+		</xs:complexType>
+		<xs:complexType name="PaymentTypeInformation19">
+			<xs:complexContent>
+				<xs:restriction base="_:PaymentTypeInformation19">
+					<xs:sequence>
+						<xs:element name="SvcLvl" type="_:ServiceLevel8Choice">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Service Spezifikation</xs:documentation>
+								<xs:documentation xml:lang="en">Service specification</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="LclInstrm" type="_:LocalInstrument2Choice" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Zahlungsinstrument.
+
+Keine Verwendung definiert</xs:documentation>
+								<xs:documentation xml:lang="en">Payment instrument.
+
+No application defined</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="CtgyPurp" type="_:CategoryPurpose1Choice" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Verarbeitung.
+
+Spezifischer Kode zur Verarbeitungssteuerung beim empfangenden Institut.
+Siehe auch Purp auf Einzelebene.
+Vor der Verwendung ist mit dem empfangenden Institut eine Vereinbarung zu treffen, anderenfalls wird dies ignoriert</xs:documentation>
+								<xs:documentation xml:lang="en">Processing.
+
+Specific code for processing indentification at receiving institution.
+See also Purp at single transaction level.
+Before application an agreement with receiving institution is necessary, othwise this is ignored</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:restriction>
+			</xs:complexContent>
+		</xs:complexType>
+		<xs:complexType name="PostalAddress6">
+			<xs:complexContent>
+				<xs:restriction base="_:PostalAddress6">
+					<xs:sequence>
+						<xs:element name="AdrTp" type="_:AddressType2Code" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Typ</xs:documentation>
+								<xs:documentation xml:lang="en">Type</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Dept" type="_:Max70Text" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Abteilung</xs:documentation>
+								<xs:documentation xml:lang="en">Department</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="SubDept" type="_:Max70Text" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Unterabteilung</xs:documentation>
+								<xs:documentation xml:lang="en">Sub department</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="StrtNm" type="_:Max70Text" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Straße</xs:documentation>
+								<xs:documentation xml:lang="en">Street name</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="BldgNb" type="_:Max16Text" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Hausnummer</xs:documentation>
+								<xs:documentation xml:lang="en">Building number</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="PstCd" type="_:Max16Text" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Postleitzahl</xs:documentation>
+								<xs:documentation xml:lang="en">Post code</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="TwnNm" type="_:Max35Text" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Stadt</xs:documentation>
+								<xs:documentation xml:lang="en">Town name</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="CtrySubDvsn" type="_:Max35Text" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Bundesland</xs:documentation>
+								<xs:documentation xml:lang="en">Country sub division</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Ctry" type="_:CountryCode" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Land</xs:documentation>
+								<xs:documentation xml:lang="en">Country</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="AdrLine" type="_:Max70Text" maxOccurs="2">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Adresse</xs:documentation>
+								<xs:documentation xml:lang="en">Address lines</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:restriction>
+			</xs:complexContent>
+		</xs:complexType>
+		<xs:complexType name="Purpose2Choice">
+			<xs:complexContent>
+				<xs:restriction base="_:Purpose2Choice">
+					<xs:sequence>
+						<xs:choice>
+							<xs:element name="Cd" type="_:AT_ExternalPurpose1Code">
+								<xs:annotation>
+									<xs:documentation xml:lang="de">Kode aus Kodeliste</xs:documentation>
+									<xs:documentation xml:lang="en">Code from code list</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+							<xs:element name="Prtry" type="_:Max35Text">
+								<xs:annotation>
+									<xs:documentation xml:lang="de">Proprietärer Kode</xs:documentation>
+									<xs:documentation xml:lang="en">Proprietary code</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+						</xs:choice>
+					</xs:sequence>
+				</xs:restriction>
+			</xs:complexContent>
+		</xs:complexType>
+		<xs:complexType name="ReferredDocumentInformation3">
+			<xs:complexContent>
+				<xs:restriction base="_:ReferredDocumentInformation3">
+					<xs:sequence>
+						<xs:element name="Tp" type="_:ReferredDocumentType2" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Typ des Dokumentes</xs:documentation>
+								<xs:documentation xml:lang="en">Type of document</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Nb" type="_:Max35Text_REF" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Dokumentnummer</xs:documentation>
+								<xs:documentation xml:lang="en">Document number</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="RltdDt" type="_:ISODate" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Dokumentdatum</xs:documentation>
+								<xs:documentation xml:lang="en">Dokument date</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:restriction>
+			</xs:complexContent>
+		</xs:complexType>
+		<xs:complexType name="ReferredDocumentType1Choice">
+			<xs:complexContent>
+				<xs:restriction base="_:ReferredDocumentType1Choice">
+					<xs:sequence>
+						<xs:choice>
+							<xs:element name="Cd" type="_:DocumentType5Code">
+								<xs:annotation>
+									<xs:documentation xml:lang="de">Kode aus Kodeliste</xs:documentation>
+									<xs:documentation xml:lang="en">Code from code list</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+							<xs:element name="Prtry" type="_:Max35Text_REF">
+								<xs:annotation>
+									<xs:documentation xml:lang="de">Proprietärer Kode</xs:documentation>
+									<xs:documentation xml:lang="en">Proprietary code</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+						</xs:choice>
+					</xs:sequence>
+				</xs:restriction>
+			</xs:complexContent>
+		</xs:complexType>
+		<xs:complexType name="ReferredDocumentType2">
+			<xs:complexContent>
+				<xs:restriction base="_:ReferredDocumentType2">
+					<xs:sequence>
+						<xs:element name="CdOrPrtry" type="_:ReferredDocumentType1Choice">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Codeliste oder Proprietär</xs:documentation>
+								<xs:documentation xml:lang="en">Code list or proprietary</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Issr" type="_:Max35Text" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Herausgeber der Typklassifizierung</xs:documentation>
+								<xs:documentation xml:lang="en">Issuer of type classification</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:restriction>
+			</xs:complexContent>
+		</xs:complexType>
+		<xs:complexType name="RemittanceAmount1">
+			<xs:complexContent>
+				<xs:restriction base="_:RemittanceAmount1">
+					<xs:sequence>
+						<xs:element name="DuePyblAmt" type="_:ActiveOrHistoricCurrencyAndAmount" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Zu zahlender Betrag</xs:documentation>
+								<xs:documentation xml:lang="en">Amount due and payable</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="DscntApldAmt" type="_:ActiveOrHistoricCurrencyAndAmount" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Abschlagsbetrag</xs:documentation>
+								<xs:documentation xml:lang="en">Discount amount</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="CdtNoteAmt" type="_:ActiveOrHistoricCurrencyAndAmount" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Gutschriftsbetrag</xs:documentation>
+								<xs:documentation xml:lang="en">Credit note amount</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="TaxAmt" type="_:ActiveOrHistoricCurrencyAndAmount" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Steuerbetrag</xs:documentation>
+								<xs:documentation xml:lang="en">Tax amount</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="AdjstmntAmtAndRsn" type="_:DocumentAdjustment1" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Betrag und Grund der Änderung</xs:documentation>
+								<xs:documentation xml:lang="en">Amount and reason of the document adjustment</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="RmtdAmt" type="_:ActiveOrHistoricCurrencyAndAmount" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Überweisungsbetrag</xs:documentation>
+								<xs:documentation xml:lang="en">Remitted amount</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:restriction>
+			</xs:complexContent>
+		</xs:complexType>
+		<xs:complexType name="RemittanceInformation5">
+			<xs:complexContent>
+				<xs:restriction base="_:RemittanceInformation5">
+					<xs:sequence>
+						<xs:annotation>
+							<xs:documentation xml:lang="de">NUR EIN FOLGE-ELEMENT
+
+Obwohl die originale Struktur die gleichzeitige Anlieferung beider Folgeelemente erlaubt, folgt hier nur ein Element.
+Auswahl, ob der Verwendungszweck mittels einer Textzeile oder einer Datenstruktur übermittelt wird</xs:documentation>
+							<xs:documentation xml:lang="en">ONLY ONE SUBSEQUENT ELEMENT
+
+Although the original structure allowes the concurrent occurance of both subsequent elements, only one element.
+Choose whether remittance information is made by a text line or by a data structure</xs:documentation>
+						</xs:annotation>
+						<xs:element name="Ustrd" type="_:Max140Text" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Freier Text für den Zahlungsempfänger.
+
+Eine Zeile mit maximal 140 Zeichen. Mehr Zeilen sind nur bei Scheckzahlungen zulässig und werden andernfalls verworfen.
+
+Bei Scheckzahlungen werden ALLE Zeilen für die Alloge verwendet. Abstimmung mit Kreditinstitut erforderlich. Siehe PmtInf/PmtMtd</xs:documentation>
+								<xs:documentation xml:lang="en">Free text for the beneficiary.
+
+One line with maximum 140 characters. More lines are permittet with cheque payments only and are otherwise dropped.
+
+With cheque payments ALL lines are taken for an alloge. Agreement with financial institution neccessary. See PmtInf/PmtMtd</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Strd" type="_:StructuredRemittanceInformation7" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Strukturierte Informationen für den Zahlungsempfänger.
+
+Alle Daten INKLUSIVE der Tags müssen in 140 Zeichen Platz finden</xs:documentation>
+								<xs:documentation xml:lang="en">Structured Information for the beneficiary.
+
+All data INCLUDING tags must fit into 140 character</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:restriction>
+			</xs:complexContent>
+		</xs:complexType>
+		<xs:complexType name="ServiceLevel8Choice">
+			<xs:complexContent>
+				<xs:restriction base="_:ServiceLevel8Choice">
+					<xs:sequence>
+						<xs:choice>
+							<xs:element name="Cd" type="_:AT_ExternalServiceLevel1Code">
+								<xs:annotation>
+									<xs:documentation xml:lang="de">Service Spezifikation.
+
+NURG Überweisung, Standard Code
+
+URGP Eilzahlungen laut Servicevertrag
+(SDVA Eilzahlungen laut Servicevertrag)
+
+Bei Eilzahlungen wird standardmäßig von einer Transaktion je Bestand ausgegangen</xs:documentation>
+									<xs:documentation xml:lang="en">Service specification.
+
+NURG credit transfer, standard code
+
+URGP Urgend payments according service agreement
+(SDVA Urgend payments according service agreement)
+
+On urgent payments  one transaction per batch is the standard data population</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+						</xs:choice>
+					</xs:sequence>
+				</xs:restriction>
+			</xs:complexContent>
+		</xs:complexType>
+		<xs:complexType name="StructuredRemittanceInformation7">
+			<xs:complexContent>
+				<xs:restriction base="_:StructuredRemittanceInformation7">
+					<xs:sequence>
+						<xs:element name="RfrdDocInf" type="_:ReferredDocumentInformation3" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Referenziertes Dokument</xs:documentation>
+								<xs:documentation xml:lang="en">Referred document</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="RfrdDocAmt" type="_:RemittanceAmount1" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Betrag des referenzierten Dokumentes</xs:documentation>
+								<xs:documentation xml:lang="en">Amount of referred document</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="CdtrRefInf" type="_:CreditorReferenceInformation2">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Zahlungsreferenz, Empfängerreferenz</xs:documentation>
+								<xs:documentation xml:lang="en">Creditor's reference, Recipient's reference</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Invcr" type="_:PartyIdentification32_Invoice" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Rechnungsleger</xs:documentation>
+								<xs:documentation xml:lang="en">Invoicer</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Invcee" type="_:PartyIdentification32_Invoice" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Rechnungsempfänger</xs:documentation>
+								<xs:documentation xml:lang="en">Invoicee</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="AddtlRmtInf" type="_:Max140Text" minOccurs="0" maxOccurs="3">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Zusätzlicher Verwendungszweck</xs:documentation>
+								<xs:documentation xml:lang="en">Additional remittance information</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:restriction>
+			</xs:complexContent>
+		</xs:complexType>
+	</xs:redefine>
+	<!-- Attributes  -->
+	<xs:attribute name="implementationguidelines" fixed="SCT's 7.0, 8.0">
+		<xs:annotation>
+			<xs:documentation xml:lang="de">Berücksichtigte Rulebook Versionen</xs:documentation>
+			<xs:documentation xml:lang="en">Respected rulebook versions</xs:documentation>
+		</xs:annotation>
+	</xs:attribute>
+	<xs:attribute name="lastEdit" fixed="2016-11-23">
+		<xs:annotation>
+			<xs:documentation xml:lang="de">Datum der letzten Veränderung</xs:documentation>
+			<xs:documentation xml:lang="en">Date of last change</xs:documentation>
+		</xs:annotation>
+	</xs:attribute>
+	<xs:attribute name="namespace" fixed="urn:iso:std:iso:20022:tech:xsd:pain.001.001.03">
+		<xs:annotation>
+			<xs:documentation xml:lang="de">Namespace-Name in der XML-Instanz der Datenübertragung</xs:documentation>
+			<xs:documentation xml:lang="en">Namespace name of instance on data transmission</xs:documentation>
+		</xs:annotation>
+	</xs:attribute>
+	<xs:attribute name="replaceLastEdit" fixed="2016-10-10">
+		<xs:annotation>
+			<xs:documentation xml:lang="de">Ersetztes Versionsdatum</xs:documentation>
+			<xs:documentation xml:lang="en">Replaced version date</xs:documentation>
+		</xs:annotation>
+	</xs:attribute>
+	<xs:attribute name="replaceVersion" fixed="004:N">
+		<xs:annotation>
+			<xs:documentation xml:lang="de">Ersetzte Version</xs:documentation>
+			<xs:documentation xml:lang="en">Replaced version</xs:documentation>
+		</xs:annotation>
+	</xs:attribute>
+	<xs:attribute name="rulebooks" fixed="SCT's 7.0, 7.1, 8.0, 8.1, 8.2">
+		<xs:annotation>
+			<xs:documentation xml:lang="de">Berücksichtigte Rulebook Versionen</xs:documentation>
+			<xs:documentation xml:lang="en">Respected rulebook versions</xs:documentation>
+		</xs:annotation>
+	</xs:attribute>
+	<xs:attribute name="validityEnd" fixed="with validity start of version 006:N">
+		<xs:annotation>
+			<xs:documentation xml:lang="de">Ende der Gültigkeit</xs:documentation>
+			<xs:documentation xml:lang="en">End of validity</xs:documentation>
+		</xs:annotation>
+	</xs:attribute>
+	<xs:attribute name="validityStart" fixed="2016-11-01">
+		<xs:annotation>
+			<xs:documentation xml:lang="de">Beginn der Gültigkeit</xs:documentation>
+			<xs:documentation xml:lang="en">Start of validity</xs:documentation>
+		</xs:annotation>
+	</xs:attribute>
+	<xs:attribute name="version" fixed="004:N">
+		<xs:annotation>
+			<xs:documentation xml:lang="de">Version dieses Schemas</xs:documentation>
+			<xs:documentation xml:lang="en">Schema version</xs:documentation>
+		</xs:annotation>
+	</xs:attribute>
+	<!-- derived types -->
+	<!-- simple types -->
+	<xs:simpleType name="Max140Text_Nm">
+		<xs:restriction base="_:Max140Text">
+			<xs:annotation>
+				<xs:documentation xml:lang="de">Begrenzung der Länge der Namenselemente</xs:documentation>
+				<xs:documentation xml:lang="en">Limitation of length of name elements</xs:documentation>
+			</xs:annotation>
+			<xs:maxLength value="70"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="Max35Text_IBANonly">
+		<xs:restriction base="_:Max35Text">
+			<xs:enumeration value="NOTPROVIDED">
+				<xs:annotation>
+					<xs:documentation xml:lang="de">Festgelegter Wert für IBAN-only Beauftragungen</xs:documentation>
+					<xs:documentation xml:lang="en">Fixed value for IBAN only initiations</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="Max35Text_REF">
+		<xs:restriction base="_:Max35Text">
+			<xs:annotation>
+				<xs:documentation xml:lang="de">Begrenzung des Zeichensatzes für Kodes, Referenzen und Identifikatoren
+
+Erlaubte Struktur für Kodes, Referenzen und Identifikatoren nach EPC217-08 Best Practices SEPA Requirements for Character Set SSG.pdf
+Ein Text oder Wert muß mindestens ein druckbares Zeichen enthalten, jedoch
+startet nicht mit /
+endet nicht mit /
+enthält kein //</xs:documentation>
+				<xs:documentation xml:lang="en">Limitation of character set for codes, references and identifications
+
+Allowed structure for codes, references and identifications according EPC217-08 Best Practices SEPA Requirements for Character Set SSG.pdf
+A text or value must contain at least one printable character, but
+don't start with /
+don't end with /
+don't contain //</xs:documentation>
+			</xs:annotation>
+			<xs:pattern value="((([\-A-Za-z0-9+?:().,' ]+/)+[\-A-Za-z0-9+?:().,' ]+)|(( *[\-A-Za-z0-9+?:().,'])+ *))">
+				<xs:annotation>
+					<xs:documentation>Remember that the pattern notation is governed by XML and XSD rules.
+The regex is anchored to the whole string, which needs a ^ and a $ in other environments.
+Entities like &#x09;, &amp;, &gt;, &lt; and &quot; need to be exchanged to their entity's meaning or other encoding in other environments.
+The / might need to be escaped to \/ in other environments.</xs:documentation>
+				</xs:annotation>
+			</xs:pattern>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- complex types with complex content -->
+	<xs:complexType name="AccountIdentification4Choice_Cdtr">
+		<xs:complexContent>
+			<xs:restriction base="_:AccountIdentification4Choice">
+				<xs:sequence>
+					<xs:choice>
+						<xs:element name="IBAN" type="_:IBAN2007Identifier">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">IBAN des Kontos</xs:documentation>
+								<xs:documentation xml:lang="en">IBAN of the account</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Othr" type="_:GenericAccountIdentification1">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Andere (z.B. nationale) Darstellung des Kontos</xs:documentation>
+								<xs:documentation xml:lang="en">Other (e.g. domestic) representation of the account</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:choice>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="AccountIdentification4Choice_Dbtr">
+		<xs:complexContent>
+			<xs:restriction base="_:AccountIdentification4Choice">
+				<xs:sequence>
+					<xs:choice>
+						<xs:element name="IBAN" type="_:IBAN2007Identifier">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">IBAN eines Kontos im SEPA-Raum.</xs:documentation>
+								<xs:documentation xml:lang="en">IBAN of an account in SEPA area.</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:choice>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="BranchAndFinancialInstitutionIdentification4_Cdtr">
+		<xs:complexContent>
+			<xs:restriction base="_:BranchAndFinancialInstitutionIdentification4">
+				<xs:sequence>
+					<xs:element name="FinInstnId" type="_:FinancialInstitutionIdentification7_Cdtr">
+						<xs:annotation>
+							<xs:documentation xml:lang="de">Identifizierung der Bank</xs:documentation>
+							<xs:documentation xml:lang="en">Identification of the bank</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="BranchAndFinancialInstitutionIdentification4_Dbtr">
+		<xs:complexContent>
+			<xs:restriction base="_:BranchAndFinancialInstitutionIdentification4">
+				<xs:sequence>
+					<xs:element name="FinInstnId" type="_:FinancialInstitutionIdentification7_Dbtr">
+						<xs:annotation>
+							<xs:documentation xml:lang="de">Identifikation einer Bank im SEPA-Raum</xs:documentation>
+							<xs:documentation xml:lang="en">Identification of a bank in SEPA area</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="BranchAndFinancialInstitutionIdentification4_Intrmy">
+		<xs:complexContent>
+			<xs:restriction base="_:BranchAndFinancialInstitutionIdentification4">
+				<xs:sequence>
+					<xs:element name="FinInstnId" type="_:FinancialInstitutionIdentification7_Intrmy">
+						<xs:annotation>
+							<xs:documentation xml:lang="de">Identifikation einer Bank</xs:documentation>
+							<xs:documentation xml:lang="en">Identification of a bank</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="CashAccount16_Cdtr">
+		<xs:complexContent>
+			<xs:restriction base="_:CashAccount16">
+				<xs:sequence>
+					<xs:element name="Id" type="_:AccountIdentification4Choice_Cdtr">
+						<xs:annotation>
+							<xs:documentation xml:lang="de">Identifizierung des Kontos</xs:documentation>
+							<xs:documentation xml:lang="en">Identification of the account</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="CashAccount16_Dbtr">
+		<xs:complexContent>
+			<xs:restriction base="_:CashAccount16">
+				<xs:sequence>
+					<xs:element name="Id" type="_:AccountIdentification4Choice_Dbtr">
+						<xs:annotation>
+							<xs:documentation xml:lang="de">IBAN eines Kontos im SEPA-Raum</xs:documentation>
+							<xs:documentation xml:lang="en">IBAN of an account in SEPA area</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Ccy" type="_:ActiveOrHistoricCurrencyCode" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation xml:lang="de">Kontowährung des belasteten Kontos.
+
+Nur notwending bei Mehrwährungskonto</xs:documentation>
+							<xs:documentation xml:lang="en">Account currency of debited account.
+
+Only necessary with multi currency account</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="FinancialIdentificationSchemeName1Choice_Intrmy">
+		<xs:complexContent>
+			<xs:restriction base="_:FinancialIdentificationSchemeName1Choice">
+				<xs:sequence>
+					<xs:choice>
+						<xs:element name="Prtry" type="_:Max35Text_REF">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">xx Landeskode
+z.B.
+TW Chinese Taipei Bank Code
+US Fedwire/CHIPS</xs:documentation>
+								<xs:documentation xml:lang="en">xx country code
+e.g.
+TW Chinese Taipei Bank Code
+US Fedwire/CHIPS</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:choice>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="FinancialInstitutionIdentification7_Cdtr">
+		<xs:complexContent>
+			<xs:restriction base="_:FinancialInstitutionIdentification7">
+				<xs:sequence>
+					<xs:annotation>
+						<xs:documentation xml:lang="de">EIN IDENTIFIKATIONS-ELEMENT EMPFOHLEN
+
+ENTWEDER der BIC ODER Othr soll folgen.
+Auswahl, ob die Bank mit BIC oder einer anderen Id identifiziert wird.
+
+Der Name ist optional</xs:documentation>
+						<xs:documentation xml:lang="en">ONE IDENTIFICATION ELEMENT ADVICED
+
+EITHER the BIC OR Othr shall follow.
+Choose, whether identification is made by BIC or another Id.
+
+Name is optional</xs:documentation>
+					</xs:annotation>
+					<xs:element name="BIC" type="_:BICIdentifier" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation xml:lang="de">Standard Identifikation</xs:documentation>
+							<xs:documentation xml:lang="en">Standard identification</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Nm" type="_:Max140Text" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation xml:lang="de">Name des Kreditinstitutes</xs:documentation>
+							<xs:documentation xml:lang="en">Name of finacial institution</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Othr" type="_:GenericFinancialIdentification1_Intrmy" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation xml:lang="de">Andere Identifikation
+
+Im Fall, das eine Bank nicht mittels BIC identifiziert werden kann</xs:documentation>
+							<xs:documentation xml:lang="en">Other identification
+
+In case of a financial institution cannot be identified by a BIC</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="FinancialInstitutionIdentification7_Dbtr">
+		<xs:complexContent>
+			<xs:restriction base="_:FinancialInstitutionIdentification7">
+				<xs:sequence>
+					<xs:annotation>
+						<xs:documentation xml:lang="de">NUR EIN FOLGE-ELEMENT
+
+Obwohl die originale Struktur die gleichzeitige Anlieferung beider Folgeelemente erlaubt, folgt hier nur ein Element.
+Auswahl, ob die Bank mit BIC oder einer anderen Id (IBAN only) identifiziert wird</xs:documentation>
+						<xs:documentation xml:lang="en">ONLY ONE SUBSEQUENT ELEMENT
+
+Although the original structure allowes the concurrent occurance of both subsequent elements, only one element.
+Choose whether identification is made by BIC or another Id (IBAN only)</xs:documentation>
+					</xs:annotation>
+					<xs:element name="BIC" type="_:BICIdentifier" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation xml:lang="de">BIC der beauftragten Bank</xs:documentation>
+							<xs:documentation xml:lang="en">BIC of the instructed bank</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Othr" type="_:GenericFinancialIdentification1_IBANOnly" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation xml:lang="de">Andere Identifikation (IBAN only)</xs:documentation>
+							<xs:documentation xml:lang="en">Other identification (IBAN only)</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="FinancialInstitutionIdentification7_Intrmy">
+		<xs:complexContent>
+			<xs:restriction base="_:FinancialInstitutionIdentification7">
+				<xs:sequence>
+					<xs:annotation>
+						<xs:documentation xml:lang="de">NUR EIN FOLGE-ELEMENT
+
+Obwohl die originale Struktur die gleichzeitige Anlieferung beider Folgeelemente erlaubt, folgt hier nur ein Element.
+Auswahl, ob die Bank mit BIC oder einer anderen Id identifiziert wird</xs:documentation>
+						<xs:documentation xml:lang="en">ONLY ONE SUBSEQUENT ELEMENT
+
+Although the original structure allowes the concurrent occurance of both subsequent elements, only one element.
+Choose whether identification is made by BIC or another Id</xs:documentation>
+					</xs:annotation>
+					<xs:element name="BIC" type="_:BICIdentifier" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation xml:lang="de">BIC der beauftragten Bank</xs:documentation>
+							<xs:documentation xml:lang="en">BIC of the instructed bank</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Othr" type="_:GenericFinancialIdentification1_Intrmy" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation xml:lang="de">Andere Identifikation</xs:documentation>
+							<xs:documentation xml:lang="en">Other identification</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="GenericFinancialIdentification1_IBANOnly">
+		<xs:complexContent>
+			<xs:restriction base="_:GenericFinancialIdentification1">
+				<xs:sequence>
+					<xs:element name="Id" type="_:Max35Text_IBANonly">
+						<xs:annotation>
+							<xs:documentation xml:lang="de">Identifikation (IBAN only).
+
+Fixer Wert "NOTPROVIDED"</xs:documentation>
+							<xs:documentation xml:lang="en">Identification (IBAN only).
+
+Fixed value "NOTPROVIDED"</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="GenericFinancialIdentification1_Intrmy">
+		<xs:complexContent>
+			<xs:restriction base="_:GenericFinancialIdentification1">
+				<xs:sequence>
+					<xs:element name="Id" type="_:Max35Text_REF">
+						<xs:annotation>
+							<xs:documentation xml:lang="de">Identifikation</xs:documentation>
+							<xs:documentation xml:lang="en">Identification</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="SchmeNm" type="_:FinancialIdentificationSchemeName1Choice_Intrmy" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation xml:lang="de">Typ der Identifikation</xs:documentation>
+							<xs:documentation xml:lang="en">Type of identification</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="GenericOrganisationIdentification1_Gen">
+		<xs:complexContent>
+			<xs:restriction base="_:GenericOrganisationIdentification1">
+				<xs:sequence>
+					<xs:element name="Id" type="_:Max35Text_REF">
+						<xs:annotation>
+							<xs:documentation xml:lang="de">Identifikation der Organisation</xs:documentation>
+							<xs:documentation xml:lang="en">Identification of organisation</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="SchmeNm" type="_:OrganisationIdentificationSchemeName1Choice_Gen" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation xml:lang="de">Typ der Identifikation</xs:documentation>
+							<xs:documentation xml:lang="en">Type of identification</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Issr" type="_:Max35Text" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation xml:lang="de">Identifikation vergebende Organisation</xs:documentation>
+							<xs:documentation xml:lang="en">Identification assigning organisation</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="GenericOrganisationIdentification1_InitgPty">
+		<xs:complexContent>
+			<xs:restriction base="_:GenericOrganisationIdentification1">
+				<xs:sequence>
+					<xs:element name="Id" type="_:Max35Text_REF">
+						<xs:annotation>
+							<xs:documentation xml:lang="de">Von der Bank vergebene Identifikation</xs:documentation>
+							<xs:documentation xml:lang="en">Identification assigned by bank</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="SchmeNm" type="_:OrganisationIdentificationSchemeName1Choice_InitgPty" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation xml:lang="de">Typ der Identifikation</xs:documentation>
+							<xs:documentation xml:lang="en">Type of identification</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="GenericPersonIdentification1_Gen">
+		<xs:complexContent>
+			<xs:restriction base="_:GenericPersonIdentification1">
+				<xs:sequence>
+					<xs:element name="Id" type="_:Max35Text_REF">
+						<xs:annotation>
+							<xs:documentation xml:lang="de">Identifikation der Person</xs:documentation>
+							<xs:documentation xml:lang="en">Identification of person</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="SchmeNm" type="_:PersonIdentificationSchemeName1Choice_Gen" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation xml:lang="de">Typ der Identifikation</xs:documentation>
+							<xs:documentation xml:lang="en">Type of identification</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Issr" type="_:Max35Text" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation xml:lang="de">Identifikation vergebende Organisation</xs:documentation>
+							<xs:documentation xml:lang="en">Identification assigning organisation</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="OrganisationIdentification4_Gen">
+		<xs:complexContent>
+			<xs:restriction base="_:OrganisationIdentification4">
+				<xs:sequence>
+					<xs:annotation>
+						<xs:documentation xml:lang="de">NUR EIN FOLGE-ELEMENT
+
+Obwohl die originale Struktur die gleichzeitige Anlieferung beider Folgeelemente erlaubt, folgt hier nur ein Element.
+Auswahl, ob die Organisation mit BICOrBEI oder einer anderen Id identifiziert wird</xs:documentation>
+						<xs:documentation xml:lang="en">ONLY ONE SUBSEQUENT ELEMENT
+
+Although the original structure allowes the concurrent occurance of both subsequent elements, only one element.
+Choose whether identification is made by BICOrBEI or another Id</xs:documentation>
+					</xs:annotation>
+					<xs:element name="BICOrBEI" type="_:AnyBICIdentifier" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation xml:lang="de">BIC oder BEI</xs:documentation>
+							<xs:documentation xml:lang="en">BIC or BEI</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Othr" type="_:GenericOrganisationIdentification1_Gen" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation xml:lang="de">Andere Identifikation</xs:documentation>
+							<xs:documentation xml:lang="en">Other identification</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="OrganisationIdentification4_InitgPty">
+		<xs:complexContent>
+			<xs:restriction base="_:OrganisationIdentification4">
+				<xs:sequence>
+					<xs:annotation>
+						<xs:documentation xml:lang="de">NUR EIN FOLGE-ELEMENT
+
+Obwohl die originale Struktur die gleichzeitige Anlieferung beider Folgeelemente erlaubt, folgt hier nur ein Element.
+Auswahl, ob sich der Übermittler mit BICOrBEI oder einer erhaltenen Bank-Id identifiziert</xs:documentation>
+						<xs:documentation xml:lang="en">ONLY ONE SUBSEQUENT ELEMENT
+
+Although the original structure allowes the concurrent occurance of both subsequent elements, only one element.
+Choose whether identification is made by BICOrBEI or assigned bank Id</xs:documentation>
+					</xs:annotation>
+					<xs:element name="BICOrBEI" type="_:AnyBICIdentifier" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation xml:lang="de">BIC oder BEI</xs:documentation>
+							<xs:documentation xml:lang="en">BIC or BEI</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Othr" type="_:GenericOrganisationIdentification1_InitgPty" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation xml:lang="de">Andere Identifikation</xs:documentation>
+							<xs:documentation xml:lang="en">Other identification</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="OrganisationIdentificationSchemeName1Choice_Gen">
+		<xs:complexContent>
+			<xs:restriction base="_:OrganisationIdentificationSchemeName1Choice">
+				<xs:sequence>
+					<xs:choice>
+						<xs:element name="Cd" type="_:AT_ExternalOrganisationIdentification1Code">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Kodierte Identifikation.
+
+Kode aus Kodeliste</xs:documentation>
+								<xs:documentation xml:lang="en">Coded identification.
+
+Code from code list</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Prtry" type="_:Max35Text_REF">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Kodierte Identifikation.
+
+Proprietärer Kode</xs:documentation>
+								<xs:documentation xml:lang="en">Coded identification.
+
+Proprietary code</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:choice>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="OrganisationIdentificationSchemeName1Choice_InitgPty">
+		<xs:complexContent>
+			<xs:restriction base="_:OrganisationIdentificationSchemeName1Choice">
+				<xs:sequence>
+					<xs:choice>
+						<xs:element name="Cd" type="_:AT_ExternalOrganisationIdentification1Code_InitgPty">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Kodierte Identifikation.
+
+Einzig verfügbarer Wert ist BANK</xs:documentation>
+								<xs:documentation xml:lang="en">Coded identification.
+
+Only available value is BANK</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:choice>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="Party6Choice_Dbtr">
+		<xs:complexContent>
+			<xs:restriction base="_:Party6Choice">
+				<xs:sequence>
+					<xs:choice>
+						<xs:element name="OrgId" type="_:OrganisationIdentification4_Gen">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Identifikation der Organisation</xs:documentation>
+								<xs:documentation xml:lang="en">Identification of organisation</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:choice>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="Party6Choice_Gen">
+		<xs:complexContent>
+			<xs:restriction base="_:Party6Choice">
+				<xs:sequence>
+					<xs:choice>
+						<xs:element name="OrgId" type="_:OrganisationIdentification4_Gen">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Identifikation der Organisation</xs:documentation>
+								<xs:documentation xml:lang="en">Identification of organisation</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="PrvtId" type="_:PersonIdentification5_Gen">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Identifikation der Person</xs:documentation>
+								<xs:documentation xml:lang="en">Identification of person</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:choice>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="Party6Choice_InitgPty">
+		<xs:complexContent>
+			<xs:restriction base="_:Party6Choice">
+				<xs:sequence>
+					<xs:choice>
+						<xs:element name="OrgId" type="_:OrganisationIdentification4_InitgPty">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Identifikation der Organisation</xs:documentation>
+								<xs:documentation xml:lang="en">Identification of organisation</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:choice>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="PartyIdentification32_Cdtr">
+		<xs:complexContent>
+			<xs:restriction base="_:PartyIdentification32">
+				<xs:sequence>
+					<xs:element name="Nm" type="_:Max140Text_Nm">
+						<xs:annotation>
+							<xs:documentation xml:lang="de">Name des Kontoinhabers / Empfängers</xs:documentation>
+							<xs:documentation xml:lang="en">Name of account owner / credited principal</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="PstlAdr" type="_:PostalAddress6" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation xml:lang="de">Adresse des Kontoinhabers
+
+Die folgende Struktur ist auf eine der zwei Arten zu verwenden:
+
+1) Alle -oder einige- Elemente außer AdrLine
+
+2) AdrLine und ggf. AdrTp und/oder Ctry
+
+Die Gesamtanzahl der verwendeten Zeichen darf dabei 140 nicht übersteigen</xs:documentation>
+							<xs:documentation xml:lang="en">Address of accout owner
+
+The subsequent structure is to be populated in one of the two ways:
+
+1) All -or some- elements other than AdrLine
+
+2) AdrLine and resp. AdrTp and/or Ctry
+
+The total count of populating characters needs to be less than 140</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Id" type="_:Party6Choice_Gen" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation xml:lang="de">Identifikation des Kontoinhabers / Empfängers</xs:documentation>
+							<xs:documentation xml:lang="en">Identification of account owner / credited principal</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="CtryOfRes" type="_:CountryCode" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation xml:lang="de">Land des Wohn- oder Firmensitzes</xs:documentation>
+							<xs:documentation xml:lang="en">Country of residence</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="CtctDtls" type="_:ContactDetails2" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation xml:lang="de">Kontaktdaten.
+
+Soll der Empfänger von der beauftragten Bank über die Zahlung informiert werden, ist die Kontaktmöglichkeit des Empfängers -in Absprache mit dem Institut des Auftraggebers- in die Folgeelemente einzutragen</xs:documentation>
+							<xs:documentation xml:lang="en">Contact details.
+
+If the creditor shall be informed about the transaction, subsequent elements need to be populated -in agreement with debtor financial institution- with the contact possibility of the creditor</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="PartyIdentification32_Dbtr">
+		<xs:complexContent>
+			<xs:restriction base="_:PartyIdentification32">
+				<xs:sequence>
+					<xs:element name="Nm" type="_:Max140Text_Nm">
+						<xs:annotation>
+							<xs:documentation xml:lang="de">Name des Kontoinhabers / Auftraggeber</xs:documentation>
+							<xs:documentation xml:lang="en">Name of account owner / debted principal</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="PstlAdr" type="_:PostalAddress6" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation xml:lang="de">Adresse des Kontoinhabers / Auftraggeber.
+
+Diese Adresse gilt als nicht geschrieben.
+
+Bei Weitergabe ex AT wird die Adresse fallweise aus den Stammdaten eingestellt
+
+Befüllungsregeln siehe CdtTrfTxInf/Cdtr</xs:documentation>
+							<xs:documentation xml:lang="en">Address of account owner / debted principal.
+
+This address is treated as not given.
+
+When forwarding ex AT the address is occasionally taken from instituts database
+
+Population rules see CdtTrfTxInf/Cdtr</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Id" type="_:Party6Choice_Dbtr" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation xml:lang="de">Identification des Kontoinhabers / Auftraggeber</xs:documentation>
+							<xs:documentation xml:lang="en">Identification of account owner / debted principal</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="CtctDtls" type="_:ContactDetails2" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation xml:lang="de">Kontaktdaten des Kontoinhabers.
+
+Siehe GrpHdr/InitgPty/CtctDtls bzw. UltmtDbtr/CtctDtls. Die bevorzugte Position für Kontaktdaten ist in diesem Element. Alle anderen Vorkommen dürfen nur im Falle abweichender Daten befüllt werden</xs:documentation>
+							<xs:documentation xml:lang="en">Contact details of submittig party.
+
+See GrpHdr/InitgPty/CtctDtls resp. UltmtDbtr/CtctDtls. The preferred position for contact details is in this element. All other appearances shall be populated only in case of differing data</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="PartyIdentification32_InitgPty">
+		<xs:complexContent>
+			<xs:restriction base="_:PartyIdentification32">
+				<xs:sequence>
+					<xs:annotation>
+						<xs:documentation xml:lang="de">MINDESTENS EIN IDENTIFIKATIONS-ELEMENT
+
+ENTWEDER der Name ODER die Identifikation muss folgen.
+Auswahl, ob sich der Übermittler mit Namen oder Id identifiziert.
+
+Die Kontaktdaten sind optional</xs:documentation>
+						<xs:documentation xml:lang="en">AT LEAST ONE IDENTIFICATION ELEMENT
+
+EITHER the name OR the identification must follow.
+Choose, whether the sender identifies himself by name or identification.
+
+Contact details are optional</xs:documentation>
+					</xs:annotation>
+					<xs:element name="Nm" type="_:Max140Text_Nm" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation xml:lang="de">Name des Senders</xs:documentation>
+							<xs:documentation xml:lang="en">Name of sender</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Id" type="_:Party6Choice_InitgPty" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation xml:lang="de">Identifikation des Senders</xs:documentation>
+							<xs:documentation xml:lang="en">Identification of sender</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="CtctDtls" type="_:ContactDetails2" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation xml:lang="de">Kontaktdaten des Senders
+
+Siehe PmtInf/Dbtr/CtctDtls bzw. PmtInf/UltmtDbtr/CtctDtls. Die bevorzugte Position für Kontaktdaten ist PmtInf/Dbtr/CtctDtls. Alle anderen Vorkommen dürfen nur im Falle abweichender Daten befüllt werden</xs:documentation>
+							<xs:documentation xml:lang="en">Contact details of sender
+
+See PmtInf/Dbtr/CtctDtls resp. PmtInf/UltmtDbtr/CtctDtls. The preferred position for contact details is PmtInf/Dbtr/CtctDtls. All other appearances shall be populated only in case of differing data</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="PartyIdentification32_UltmtCrdt">
+		<xs:complexContent>
+			<xs:restriction base="_:PartyIdentification32">
+				<xs:sequence>
+					<xs:element name="Nm" type="_:Max140Text_Nm" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation xml:lang="de">Name / Bezeichnung der Referenzpartei des Kontoinhabers / Empfängers, d.h. üblicherweise der eigentliche Gläubiger</xs:documentation>
+							<xs:documentation xml:lang="en">Name / Designation of reference party of account owner / principal, i.e. habitually the actual creditor</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="PstlAdr" type="_:PostalAddress6" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation xml:lang="de">Adresse der Refernzpartei
+
+Die folgende Struktur ist auf eine der zwei Arten zu verwenden:
+
+1) Alle -oder einige- Elemente außer AdrLine
+
+2) AdrLine und ggf. AdrTp und/oder Ctry
+
+Die Gesamtanzahl der verwendeten Zeichen darf dabei 140 nicht übersteigen</xs:documentation>
+							<xs:documentation xml:lang="en">Address of reference party
+
+The subsequent structure is to be populated in one of the two ways:
+
+1) All -or some- elements other than AdrLine
+
+2) AdrLine and resp. AdrTp and/or Ctry
+
+The total count of populating characters needs to be less than 140</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Id" type="_:Party6Choice_Gen" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation xml:lang="de">Identifikation der Referenzpartei des Kontoinhabers / Empfängers, d.h. üblicherweise der eigentliche Gläubiger.
+
+Bei Postbarzahlungen nicht zulässig</xs:documentation>
+							<xs:documentation xml:lang="en">Identification of reference party of account owner / principal, i.e. habitually the actual creditor.
+
+Not available with CashPerPostPayments</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="CtryOfRes" type="_:CountryCode" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation xml:lang="de">Land des Wohn- oder Firmensitzes</xs:documentation>
+							<xs:documentation xml:lang="en">Country of residence</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="PartyIdentification32_UltmtDbtr">
+		<xs:complexContent>
+			<xs:restriction base="_:PartyIdentification32">
+				<xs:sequence>
+					<xs:element name="Nm" type="_:Max140Text_Nm" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation xml:lang="de">Name / Bezeichnung der Referenzpartei des Kontoinhabers / Auftraggeber, d.h. üblicherweise der eigentliche Schuldner</xs:documentation>
+							<xs:documentation xml:lang="en">Name / Designation of reference party of account owner / principal, i.e. habitually the actual debtor</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Id" type="_:Party6Choice_Gen" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation xml:lang="de">Identifikation der Referenzpartei des Kontoinhabers / Auftraggeber, d.h. üblicherweise der eigentliche Schuldner</xs:documentation>
+							<xs:documentation xml:lang="en">Identification of reference party of account owner / principal, i.e. habitually the actual deptor</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="CtctDtls" type="_:ContactDetails2" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation xml:lang="de">Kontaktdaten des Schuldners.
+
+Siehe GrpHdr/InitgPty/CtctDtls bzw. PmtInf/Dbtr/CtctDtls. Die bevorzugte Position für Kontaktdaten ist PmtInf/Dbtr/CtctDtls. Alle anderen Vorkommen dürfen nur im Falle abweichender Daten befüllt werden</xs:documentation>
+							<xs:documentation xml:lang="en">Contact details of actual debtor.
+
+See GrpHdr/InitgPty/CtctDtls resp. PmtInf/Dbtr/CtctDtls. The preferred position for contact details is PmtInf/Dbtr/CtctDtls. All other appearances shall be populated only in case of differing data</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="PartyIdentification32_Invoice">
+		<xs:complexContent>
+			<xs:restriction base="_:PartyIdentification32">
+				<xs:sequence>
+					<xs:element name="Nm" type="_:Max140Text_Nm">
+						<xs:annotation>
+							<xs:documentation xml:lang="de">Name der Partei</xs:documentation>
+							<xs:documentation xml:lang="en">Name of party</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="PstlAdr" type="_:PostalAddress6" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation xml:lang="de">Adresse der Partei
+
+Die folgende Struktur ist auf eine der zwei Arten zu verwenden:
+
+1) Alle -oder einige- Elemente außer AdrLine
+
+2) AdrLine und ggf. AdrTp und/oder Ctry
+
+Die Gesamtanzahl der verwendeten Zeichen darf dabei 140 nicht übersteigen</xs:documentation>
+							<xs:documentation xml:lang="en">Address of party
+
+The subsequent structure is to be populated in one of the two ways:
+
+1) All -or some- elements other than AdrLine
+
+2) AdrLine and resp. AdrTp and/or Ctry
+
+The total count of populating characters needs to be less than 140</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Id" type="_:Party6Choice_Gen" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation xml:lang="de">Identifikation der Partei</xs:documentation>
+							<xs:documentation xml:lang="en">Identification of partie</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="CtryOfRes" type="_:CountryCode" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation xml:lang="de">Land des Wohn- oder Firmensitzes</xs:documentation>
+							<xs:documentation xml:lang="en">Country of residence</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="CtctDtls" type="_:ContactDetails2" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation xml:lang="de">Kontaktdaten</xs:documentation>
+							<xs:documentation xml:lang="en">Contact details</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="PersonIdentification5_Gen">
+		<xs:complexContent>
+			<xs:restriction base="_:PersonIdentification5">
+				<xs:sequence>
+					<xs:annotation>
+						<xs:documentation xml:lang="de">NUR EIN FOLGE-ELEMENT
+
+Obwohl die originale Struktur die gleichzeitige Anlieferung beider Folgeelemente erlaubt, folgt hier nur ein Element.
+Auswahl, ob die Person mittels Geburtsdaten oder einer Id identifiziert wird</xs:documentation>
+						<xs:documentation xml:lang="en">ONLY ONE SUBSEQUENT ELEMENT
+
+Although the original structure allowes the concurrent occurance of both subsequent elements, only one element.
+Choose whether identification is made by data of birth or Id</xs:documentation>
+					</xs:annotation>
+					<xs:element name="DtAndPlcOfBirth" type="_:DateAndPlaceOfBirth" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation xml:lang="de">Datum und Ort der Geburt</xs:documentation>
+							<xs:documentation xml:lang="en">Date and place of birth</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Othr" type="_:GenericPersonIdentification1_Gen" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation xml:lang="de">Andere Identifikation</xs:documentation>
+							<xs:documentation xml:lang="en">Other identification</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="PersonIdentificationSchemeName1Choice_Gen">
+		<xs:complexContent>
+			<xs:restriction base="_:PersonIdentificationSchemeName1Choice">
+				<xs:sequence>
+					<xs:choice>
+						<xs:element name="Cd" type="_:AT_ExternalPersonIdentification1Code">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Kodierte Identifikation.
+
+Kode aus Kodeliste</xs:documentation>
+								<xs:documentation xml:lang="en">Coded identification.
+
+Code from code list</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Prtry" type="_:Max35Text_REF">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Kodierte Identifikation.
+
+Proprietärer Kode</xs:documentation>
+								<xs:documentation xml:lang="en">Coded identification.
+
+Proprietary code</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:choice>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	<!--***** Begin of change log -->
+	<!-- 2016-02-12 -->
+	<!-- initial release with redefinition -->
+	<!-- 2016-10-10 -->
+	<!-- change data type of Nm in FinancialInstitutionIdentification7_Cdtr from Max140Text_Nm to Max140Text -->
+	<!-- 2016-11-10 -->
+	<!-- change cardinality of FinancialInstitutionIdentification7_Cdtr/BIC from 1..1 to 0..1 -->
+	<!-- 2016-11-23 -->
+	<!-- fix pattern notation -->
+	<!--***** End of change log -->
+</xs:schema>

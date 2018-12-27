@@ -143,7 +143,7 @@ frappe.bankimport = {
 		}); 
 	},
     start_wait: function() {
-        document.getElementById("waitingScreen").style.display = "block";
+        //document.getElementById("waitingScreen").style.display = "block";
     },
     end_wait: function() {
         document.getElementById("waitingScreen").style.display = "none";

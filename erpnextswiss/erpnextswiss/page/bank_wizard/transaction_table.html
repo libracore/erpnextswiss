@@ -1,0 +1,52 @@
+<table  class="table">
+    <tr>
+        <th>{{ __("Date") }}</th>
+        <th>{{ __("Amount") }}</th>
+        <th>{{ __("Party") }}</th>
+        <th>{{ __("Reference") }}</th>
+        <th>{{ __("Action") }}</th>
+    </tr>
+    {% for transaction in transactions %}
+    <tr id="row-transaction-{{ transaction.txid }}">
+        <td>{{ transaction.date }}</td>
+        <td>
+            {% if transaction.credit_debit == "DBIT" %}
+                <span class="octicon octicon-repo-pull"></span>
+            {% else %}
+                <span class="octicon octicon-repo-push"></span>
+            {% endif %}
+            {{ transaction.currency }} {{ transaction.amount }}
+        </td>
+        <td>{{ transaction.party_name }}{% if transaction.party_address %}<br> {{ transaction.party_address }}{% endif %}</td>
+        <td>{{ transaction.transaction_reference }}</td>
+        <td>
+          {% if transaction.credit_debit == "DBIT" %}
+            <!-- Supplier -->
+            {% if transaction.amount == transaction.matched_amount %}
+             <button type="submit" class="btn btn-xs btn-primary" id="btn-quick-pinv-{{ transaction.txid }}">&rArr;</button>
+            {% endif %}
+            {% if transaction.invoice_matches %}
+             <button type="submit" class="btn btn-xs btn-success" id="btn-close-pinv-{{ transaction.txid }}">{{ __("Purchase Invoice") }}</button>
+            {% endif %}
+            {% if transaction.party_match %}
+             <button type="submit" class="btn btn-xs btn-warning" id="btn-close-supplier-{{ transaction.txid }}">{{ __("Supplier") }}</button>
+            {% endif %}
+            <button type="submit" class="btn btn-xs btn-default" id="btn-close-payable-{{ transaction.txid }}">{{ __("Payables") }}</button>
+          {% else %}
+            <!-- Customer -->
+            {% if transaction.amount == transaction.matched_amount %}
+             <button type="submit" class="btn btn-xs btn-primary" id="btn-quick-sinv-{{ transaction.txid }}">&rArr;</button>
+            {% endif %}
+            {% if transaction.invoice_matches %}
+             <button type="submit" class="btn btn-xs btn-success" id="btn-close-sinv-{{ transaction.txid }}">{{ __("Sales Invoice") }}</button>
+            {% endif %}
+            {% if transaction.party_match %}
+             <button type="submit" class="btn btn-xs btn-warning" id="btn-close-customer-{{ transaction.txid }}">{{ __("Customer") }}</button>
+            {% endif %}
+            <button type="submit" class="btn btn-xs btn-default" id="btn-close-receivable-{{ transaction.txid }}">{{ __("Receivables") }}</button>
+          {% endif %}
+          <button type="submit" class="btn btn-xs btn-default" id="btn-close-intermediate-{{ transaction.txid }}">{{ __("Intermediate") }}</button>
+        </td>
+    </tr>
+    {% endfor %}
+</table>

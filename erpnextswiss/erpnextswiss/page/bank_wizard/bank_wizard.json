@@ -1,0 +1,25 @@
+{
+ "creation": "2018-09-01 20:10:31.614045", 
+ "docstatus": 0, 
+ "doctype": "Page", 
+ "idx": 0, 
+ "icon": "fa fa-sign-in",
+ "modified": "2018-09-01 20:10:31.614045", 
+ "modified_by": "Administrator", 
+ "module": "erpnextswiss", 
+ "name": "bank_wizard", 
+ "owner": "Administrator", 
+ "page_name": "bank_wizard", 
+ "roles": [
+  {
+   "role": "Accounts User"
+  }, 
+  {
+   "role": "System Manager"
+  }
+ ], 
+ "script": null, 
+ "standard": "Yes", 
+ "style": null, 
+ "title": "Bank Wizard"
+}

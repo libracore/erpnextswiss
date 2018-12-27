@@ -8,6 +8,7 @@ from frappe import throw, _
 import hashlib
 from bs4 import BeautifulSoup
 import json
+from bs4 import BeautifulSoup
 
 def parse_ubs(content, account, auto_submit=False):
     # parse a ubs bank extract csv
@@ -409,6 +410,10 @@ def create_reference(payment_entry, sales_invoice):
     else:
         reference_entry.allocated_amount = paid_amount
     reference_entry.insert();
+    # update unallocated amount
+    payment_record = frappe.get_doc("Payment Entry", payment_entry)
+    payment_record.unallocated_amount -= reference_entry.allocated_amount
+    payment_record.save()
     return
     
 def log(comment):
@@ -477,18 +482,22 @@ def get_bank_accounts():
 @frappe.whitelist()
 def read_camt053(content, bank, account, auto_submit=False):
     #read_camt_transactions_re(content)
-    doc = xmltodict.parse(content)
+    #doc = xmltodict.parse(content)
+    soup = BeautifulSoup(content, 'lxml')
     
     # general information
     try:
-        iban = doc['Document']['BkToCstmrStmt']['Stmt']['Acct']['Id']['IBAN']
+        #iban = doc['Document']['BkToCstmrStmt']['Stmt']['Acct']['Id']['IBAN']
+        iban = soup.document.bktocstmrstmt.stmt.acct.id.iban.get_text()
     except:
         # node not found, probably wrong format
         return { "message": _("Unable to read structure. Please make sure that you have selected the correct format."), "records": None }
             
     # transactions
-    new_payment_entries = read_camt_transactions(doc['Document']['BkToCstmrStmt']['Stmt']['Ntry'], bank, account, auto_submit)
-                
+    #new_payment_entries = read_camt_transactions(doc['Document']['BkToCstmrStmt']['Stmt']['Ntry'], bank, account, auto_submit)
+    entries = soup.find_all('ntry')
+    new_payment_entries = read_camt_transactions(entries, bank, account, auto_submit)
+    
     message = _("Successfully imported {0} payments.".format(len(new_payment_entries)))
     
     return { "message": message, "records": new_payment_entries } 
@@ -549,12 +558,10 @@ def read_camt_transactions(transaction_entries, bank, account, auto_submit=False
                     try:
                         country = party_soup.ctry.get_text()
                     except:
-                        country = ""
-                    customer_address = "{0}, {1} {2}, {3}".format(
-                        address_line,
-                        plz,
-                        town,
-                        country)
+                        party_iban = ""
+                else:
+                    # CRDT: use RltdPties:Dbtr
+                    party_soup = BeautifulSoup(str(transaction_soup.txdtls.rltdpties.dbtr)) 
                     try:
                         customer_iban = transaction_soup.dbtracct.id.iban.get_text()
                     except:

@@ -7,6 +7,7 @@ import frappe
 from frappe.model.document import Document
 from frappe import _
 import csv
+from frappe.utils.background_jobs import enqueue
 
 class Pincode(Document):
 	pass
@@ -16,6 +17,17 @@ def import_pincodes_from_file(filename):
     import_pincodes(f.read())
 
 @frappe.whitelist()
+def enqueue_import_pincodes(content):
+    kwargs={
+          'content': content
+        }
+    
+    enqueue("erpnextswiss.erpnextswiss.doctype.pincode.pincode.import_pincodes",
+        queue='long',
+        timeout=15000,
+        **kwargs)
+    return {'result': _('Import started...')}
+
 def import_pincodes(content):   
     isfirst = True
     field_index = {}
@@ -58,7 +70,7 @@ def import_pincodes(content):
             })
             pincode = pincode.insert()
             frappe.db.commit()
-        
+    
     return {'result': _('Successfully imported')}
 
 def unicode_csv_reader(unicode_csv_data, dialect=csv.excel, **kwargs):

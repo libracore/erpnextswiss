@@ -1,0 +1,786 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Edited by Hendrik Muus, STUZZA, AT -->
+<!-- ***** Change log at end of document -->
+<!-- Definition for validation according SEPA RB 7.x, 8.x, Core 7.0, 8.0, 9.0, B2B 5.0, 6.0, 7.0 and related IGL 5.0, 6.0, 7.0, 8.0, 9.0 plus additional options for use in Austria -->
+<xd:schema xmlns="_:ISO:pain.002.001.03:APC:STUZZA:payments:004" xmlns:_="urn:iso:std:iso:20022:tech:xsd:pain.002.001.03" xmlns:xd="http://www.w3.org/2001/XMLSchema" xmlns:xml="http://www.w3.org/XML/1998/namespace" targetNamespace="urn:iso:std:iso:20022:tech:xsd:pain.002.001.03" elementFormDefault="qualified" version="Corrigendum.1">
+	<xd:annotation>
+		<xd:documentation>
+***********************
+This schema has the AT namspace ***ISO:pain.002.001.03:APC:STUZZA:payments:004*** and the version ***Corrigendum.1***
+
+Nevertheless it uses the original ***pain.002.001.03.xsd*** for namespace ***urn:iso:std:iso:20022:tech:xsd:pain.002.001.03***
+to redefine the original by deriving types by restriction and add documentation to elements and structure
+
+This ensures that a instanciation of a XML file will need to carry the original namespace while concurrently ensure restriction conformance.
+
+***********************
+		</xd:documentation>
+	</xd:annotation>
+	<!-- Include code lists -->
+	<!--  ********************** start replace include nodes with copy of type definitions of schema to get standalone schema  -->
+	<xd:include schemaLocation="pain.002_codelists.xsd"/>
+	<xd:include schemaLocation="pain.002_codelists_AT.xsd"/>
+	<!--  ********************** end replace include nodes with copy of type definitions of schema to get standalone schema  -->
+	<!-- Redefinition through deriving types by restriction and add documentation -->
+	<xd:redefine schemaLocation="pain.002.001.03.xsd">
+		<!-- simple types -->
+		<!-- EPC driven -->
+		<xd:simpleType name="DecimalNumber">
+			<xd:restriction base="_:DecimalNumber">
+				<xd:annotation>
+					<xd:documentation xml:lang="de">Der Maximalwert der Kontrolsumme. Mehr kann eine Datei nicht beauftragen</xd:documentation>
+					<xd:documentation xml:lang="en">The maximum value of the control sum. One file cannot instruct lager values</xd:documentation>
+				</xd:annotation>
+				<xd:minInclusive value="0.01"/>
+				<xd:maxInclusive value="999999999999.99"/>
+				<xd:fractionDigits value="2"/>
+				<xd:totalDigits value="14"/>
+			</xd:restriction>
+		</xd:simpleType>
+		<!-- EPC driven with AT specific content -->
+		<xd:simpleType name="Max105Text">
+			<xd:restriction base="_:Max105Text">
+				<xd:annotation>
+					<xd:documentation xml:lang="de">Begrenzung des Zeichensatzes für Mitteilungen
+
+Ein Text oder Wert muß mindestens ein druckbares Zeichen enthalten</xd:documentation>
+					<xd:documentation xml:lang="en">Limitation of character set for information
+
+A text or value must contain at least one printable character</xd:documentation>
+				</xd:annotation>
+				<xd:pattern value="( *[\-A-Za-z0-9+/?:().,'äöüßÄÖÜ&amp;&gt;&lt;&quot;|€$§%!=#~;*{}\[\]@\\_°\^])+ *">
+					<xd:annotation>
+						<xd:documentation>Remember that the pattern notation is governed by XML and XSD rules.
+The regex is anchored to the whole string, which needs a ^ and a $ in other environments.
+Entities like &#x09;, &amp;, &gt;, &lt; and &quot; need to be exchanged to their entity's meaning or other encoding in other environments.
+The / might need to be escaped to \/ in other environments.</xd:documentation>
+					</xd:annotation>
+				</xd:pattern>
+			</xd:restriction>
+		</xd:simpleType>
+		<xd:simpleType name="Max35Text">
+			<xd:restriction base="_:Max35Text">
+				<xd:annotation>
+					<xd:documentation xml:lang="de">Begrenzung des Zeichensatzes für Namen
+
+Ein Text oder Wert muß mindestens ein druckbares Zeichen enthalten</xd:documentation>
+					<xd:documentation xml:lang="en">Limitation of character set for names
+
+A text or value must contain at least one printable character</xd:documentation>
+				</xd:annotation>
+				<xd:pattern value="( *[\-A-Za-z0-9+/?:().,'äöüßÄÖÜ&amp;&gt;&lt;&quot;|€$§%!=#~;*{}\[\]@\\_°\^])+ *">
+					<xd:annotation>
+						<xd:documentation>Remember that the pattern notation is governed by XML and XSD rules.
+The regex is anchored to the whole string, which needs a ^ and a $ in other environments.
+Entities like &#x09;, &amp;, &gt;, &lt; and &quot; need to be exchanged to their entity's meaning or other encoding in other environments.
+The / might need to be escaped to \/ in other environments.</xd:documentation>
+					</xd:annotation>
+				</xd:pattern>
+			</xd:restriction>
+		</xd:simpleType>
+		<!-- AT specific -->
+		<xd:simpleType name="Max15NumericText">
+			<xd:restriction base="_:Max15NumericText">
+				<xd:annotation>
+					<xd:documentation xml:lang="de">Begrenzung der Länge des Transaktionszählers</xd:documentation>
+					<xd:documentation xml:lang="en">Limitation of length of transaction counter</xd:documentation>
+				</xd:annotation>
+				<xd:pattern value="[1-9][0-9]{0,5}">
+					<xd:annotation>
+						<xd:documentation>Remember that the pattern notation is governed by XML and XSD rules.
+The regex is anchored to the whole string, which needs a ^ and a $ in other environments.
+Entities like &#x09;, &amp;, &gt;, &lt; and &quot; need to be exchanged to their entity's meaning or other encoding in other environments.
+The / might need to be escaped to \/ in other environments.</xd:documentation>
+					</xd:annotation>
+				</xd:pattern>
+			</xd:restriction>
+		</xd:simpleType>
+		<!-- complex types with complex content -->
+		<!-- EPC driven -->
+		<xd:complexType name="CustomerPaymentStatusReportV03">
+			<xd:complexContent>
+				<xd:restriction base="_:CustomerPaymentStatusReportV03">
+					<xd:sequence>
+						<xd:element name="GrpHdr" type="_:GroupHeader36">
+							<xd:annotation>
+								<xd:documentation xml:lang="de">Nachrichtenkopf.
+
+Grundlegende Informationen zur übermittelten Datei</xd:documentation>
+								<xd:documentation xml:lang="en">Message header.
+
+Basic information on transmitted file</xd:documentation>
+							</xd:annotation>
+						</xd:element>
+						<xd:element name="OrgnlGrpInfAndSts" type="_:OriginalGroupInformation20">
+							<xd:annotation>
+								<xd:documentation xml:lang="de">Referenzinformationen.
+
+Informationen zur Datei, auf den sich diese Datei bezieht</xd:documentation>
+								<xd:documentation xml:lang="en">Reference information.
+
+Information on file this file refers to</xd:documentation>
+							</xd:annotation>
+						</xd:element>
+						<xd:element name="OrgnlPmtInfAndSts" type="_:OriginalPaymentInformation1" minOccurs="0" maxOccurs="unbounded">
+							<xd:annotation>
+								<xd:documentation xml:lang="de">Informationen zu Beständen.
+
+Verpflichtend, wenn OrgnlGrpInfAdSts/GrpSts ungleich RJCT (Fall 2a-d,3a-e aus pain.002.20151202.docx).
+Verboten, wenn OrgnlGrpInfAdSts/GrpSts gleich RJCT (Fall 1 aus pain.002.20151202.docx), es sei denn es werden Daten aus einem pacs.002 weitergeleitet.</xd:documentation>
+								<xd:documentation xml:lang="en">Information on batches.
+
+Mandatory, when OrgnlGrpInfAdSts/GrpSts is not RJCT (Case 2a-d,3a-e from pain.002.20151202.docx).
+Forbidden, when OrgnlGrpInfAdSts/GrpSts is RJCT (Case 1 from pain.002.20151202.docx), unless data from a pacs.002 are forwarded.</xd:documentation>
+							</xd:annotation>
+						</xd:element>
+					</xd:sequence>
+				</xd:restriction>
+			</xd:complexContent>
+		</xd:complexType>
+		<xd:complexType name="Document">
+			<xd:complexContent>
+				<xd:restriction base="_:Document">
+					<xd:sequence>
+						<xd:element name="CstmrPmtStsRpt" type="_:CustomerPaymentStatusReportV03">
+							<xd:annotation>
+								<xd:documentation xml:lang="de">Statusnachricht.
+
+Diese Version definiert die Beschränkungen der ISO-Struktur basierend auf den ImplementationRecommendations des EPC für die Verwendung in Österreich</xd:documentation>
+								<xd:documentation xml:lang="en">Status message
+
+This version defines the restrictions based of the ISO structure on ImplementationRecommendations of EPC for use in Austria</xd:documentation>
+							</xd:annotation>
+						</xd:element>
+					</xd:sequence>
+				</xd:restriction>
+			</xd:complexContent>
+		</xd:complexType>
+		<xd:complexType name="GroupHeader36">
+			<xd:complexContent>
+				<xd:restriction base="_:GroupHeader36">
+					<xd:sequence>
+						<xd:element name="MsgId" type="_:Max35Text_REF">
+							<xd:annotation>
+								<xd:documentation xml:lang="de">Technische Referenz der Übermittlungsdatei.
+
+Eindeutigkeit über mindestens 30 Tage ist herzustellen.
+Beschränken Sie sich für einen sicheren Ablauf auf Buchstaben, Ziffern und Bindestrich.
+Eindeutigkeit erreicht man zB einfach über die Kombination des Datums mit einem Tageszähler</xd:documentation>
+								<xd:documentation xml:lang="en">Technical reference of transmitted file.
+
+Ensure uniqueness for at least 30 days.
+For save processing limit yourselves to digits, letters and minus sign.
+Uniqueness is simple achievable eg with combining the date with a daily counter</xd:documentation>
+							</xd:annotation>
+						</xd:element>
+						<xd:element name="CreDtTm" type="_:ISODateTime">
+							<xd:annotation>
+								<xd:documentation xml:lang="de">Dateierzeugungsdatum und -zeit.
+
+Es ist nur das Format YYYY-MM-DDThh:mm:ss verfügbar.
+Zeitpunkt in CET(CEST)-Zeit</xd:documentation>
+								<xd:documentation xml:lang="en">File creation date and time.
+
+Only format available is YYYY-MM-DDThh:mm:ss.
+It is the CET(CEST) timestamp</xd:documentation>
+							</xd:annotation>
+						</xd:element>
+						<xd:element name="DbtrAgt" type="_:BranchAndFinancialInstitutionIdentification4_Sender" minOccurs="0">
+							<xd:annotation>
+								<xd:documentation xml:lang="de">Identifikation des Debtor Instituts.
+
+Bei CreditTransfer verpflichtend, sonst verboten.
+
+Antwort auf einen pain.001 oder pain.007</xd:documentation>
+								<xd:documentation xml:lang="en">Identification of debtors bank.
+
+At credit transfers mandatory, otherwise forbidden.
+
+Response to a pain.001 or pain.007</xd:documentation>
+							</xd:annotation>
+						</xd:element>
+						<xd:element name="CdtrAgt" type="_:BranchAndFinancialInstitutionIdentification4_Sender" minOccurs="0">
+							<xd:annotation>
+								<xd:documentation xml:lang="de">Identifikation des Creditor Instituts.
+
+Bei DirectDebit verpflichtend, sonst verboten.
+
+Antwort auf einen pain.008 oder camt.055</xd:documentation>
+								<xd:documentation xml:lang="en">Identification of creditors bank.
+
+At DirectDebit mandatory, otherwise forbidden.
+
+Response to a pain.008 or camt.055</xd:documentation>
+							</xd:annotation>
+						</xd:element>
+					</xd:sequence>
+				</xd:restriction>
+			</xd:complexContent>
+		</xd:complexType>
+		<!-- EPC driven with AT specific content -->
+		<xd:complexType name="OriginalGroupInformation20">
+			<xd:complexContent>
+				<xd:restriction base="_:OriginalGroupInformation20">
+					<xd:sequence>
+						<xd:element name="OrgnlMsgId" type="_:Max35Text_REF">
+							<xd:annotation>
+								<xd:documentation xml:lang="de">Original MsgId der Datei, auf den diese Nachricht referenziert.</xd:documentation>
+								<xd:documentation xml:lang="en">Original MsgId of file this message refers to.</xd:documentation>
+							</xd:annotation>
+						</xd:element>
+						<xd:element name="OrgnlMsgNmId" type="_:Max35Text_REF">
+							<xd:annotation>
+								<xd:documentation xml:lang="de">Original Dateityp der referenzierten Datei.
+
+pain.001
+pain.008
+pain.007
+camt.055</xd:documentation>
+								<xd:documentation xml:lang="en">Original file type of refered file.
+
+pain.001
+pain.008
+pain.007
+camt.055</xd:documentation>
+							</xd:annotation>
+						</xd:element>
+						<xd:element name="OrgnlCreDtTm" type="_:ISODateTime">
+							<xd:annotation>
+								<xd:documentation xml:lang="de">Original CreDtTm der referenzierten Datei.</xd:documentation>
+								<xd:documentation xml:lang="en">Original CreDtTm of refered file.</xd:documentation>
+							</xd:annotation>
+						</xd:element>
+						<xd:element name="OrgnlNbOfTxs" type="_:Max15NumericText">
+							<xd:annotation>
+								<xd:documentation xml:lang="de">Original NbOfTxs der referenzierten Datei.</xd:documentation>
+								<xd:documentation xml:lang="en">Original NbOfTxs of refered file.</xd:documentation>
+							</xd:annotation>
+						</xd:element>
+						<xd:element name="OrgnlCtrlSum" type="_:DecimalNumber" minOccurs="0">
+							<xd:annotation>
+								<xd:documentation xml:lang="de">Original CtrlSum der referenzierten Datei.
+
+Verpflichtend, wenn in der Original Nachricht vorhanden.</xd:documentation>
+								<xd:documentation xml:lang="en">Original CtrlSum of refered file.
+
+Mandatory, if available in original message.</xd:documentation>
+							</xd:annotation>
+						</xd:element>
+						<xd:element name="GrpSts" type="_:TransactionGroupStatus3Code_Grp">
+							<xd:annotation>
+								<xd:documentation xml:lang="de">Bestandsstatus.
+
+Status mit Gültigkeit für alle in der Nachricht enthaltenen Umsätze.
+
+Gesamt-Rückweisung RJCT (Fall 1 aus pain.002.20151202.docx)
+Gesamt-Bestätigung AC(TC/CP/SP) (Fall 2a-d aus pain.002.20151202.docx)
+Teil-Auskünfte PART (Fall 3a-e aus pain.002.20151202.docx)</xd:documentation>
+								<xd:documentation xml:lang="en">Batch status.
+
+Status valid for all contained transactions of message.
+
+Complete reject RJCT (Case 1 from pain.002.20151202.docx)
+Complete accept AC(TC/CP/SP) (Case 2a-d from pain.002.20151202.docx)
+Partial information PART (Case 3a-e from pain.002.20151202.docx)</xd:documentation>
+							</xd:annotation>
+						</xd:element>
+						<xd:element name="StsRsnInf" type="_:StatusReasonInformation8_File" minOccurs="0">
+							<xd:annotation>
+								<xd:documentation xml:lang="de">Statuserläuterungen.
+
+Verpflichtend bei GrpSts gleich RJCT.
+Nicht benutzt bei anderen Kodes.</xd:documentation>
+								<xd:documentation xml:lang="en">Explanation on status.
+
+Mandatory when GrpSts is RJCT.
+Not used for other codes.</xd:documentation>
+							</xd:annotation>
+						</xd:element>
+					</xd:sequence>
+				</xd:restriction>
+			</xd:complexContent>
+		</xd:complexType>
+		<xd:complexType name="OriginalPaymentInformation1">
+			<xd:complexContent>
+				<xd:restriction base="_:OriginalPaymentInformation1">
+					<xd:sequence>
+						<xd:element name="OrgnlPmtInfId" type="_:Max35Text_REF">
+							<xd:annotation>
+								<xd:documentation xml:lang="de">Bestandskontrollnummer des Originalbestands.</xd:documentation>
+								<xd:documentation xml:lang="en">Batch control number of original batch.</xd:documentation>
+							</xd:annotation>
+						</xd:element>
+						<xd:element name="OrgnlNbOfTxs" type="_:Max15NumericText" minOccurs="0">
+							<xd:annotation>
+								<xd:documentation xml:lang="de">Original NbOfTxs des übermittelten Bestands.
+
+Verpflichtend, wenn in der Original Nachricht vorhanden.</xd:documentation>
+								<xd:documentation xml:lang="en">Original NbOfTxs of remitted batch.
+
+Mandatory, if available in original message.</xd:documentation>
+							</xd:annotation>
+						</xd:element>
+						<xd:element name="OrgnlCtrlSum" type="_:DecimalNumber" minOccurs="0">
+							<xd:annotation>
+								<xd:documentation xml:lang="de">Original CtrlSum des übermittelten Bestands.
+
+Verpflichtend, wenn in der Original Nachricht vorhanden.</xd:documentation>
+								<xd:documentation xml:lang="en">Original CtrlSum of remitted batch.
+
+Mandatory, if available in original message.</xd:documentation>
+							</xd:annotation>
+						</xd:element>
+						<xd:element name="PmtInfSts" type="_:TransactionGroupStatus3Code_PmtInf">
+							<xd:annotation>
+								<xd:documentation xml:lang="de">Status mit Gültigkeit für alle enthaltenen Umsätze im Bestand.
+
+Mit OrgnlGrpInfAdSts/GrpSts gleich AC(TC/CP/SP) (Fall 2a-d aus pain.002.20151202.docx):
+- Gesamt-Bestätigung AC(TC/CP/SP) (Fall 2a-b aus pain.002.20151202.docx), ! gleicher Code in GrpSts ! 
+- Gesamt-Änderung ACWC (Fall 2c-d aus pain.002.20151202.docx)
+
+Mit OrgnlGrpInfAdSts/GrpSts gleich PART (Fall 3a-e aus pain.002.20151202.docx):
+- Teil-Rückweisung RJCT (Fall 3a aus pain.002.20151202.docx)
+- Teil-Bestätigung AC(TC/CP/SP) (Fall 3c-d aus pain.002.20151202.docx)
+- Teil-Auskunft PART (Fall 3b aus pain.002.20151202.docx)
+- Teil-Änderung ACWC (Fall 3e aus pain.002.20151202.docx), ! erfordert parallel Teil-Bestätigung AC(TC/CP/SP) (Fall 3c-d aus pain.002.20151202.docx) mit gleicher OrgnlPmtInfId !</xd:documentation>
+								<xd:documentation xml:lang="en">Status valid for all contained transactions of batch.
+
+With OrgnlGrpInfAdSts/GrpSts is AC(TC/CP/SP) (Case 2a-d from pain.002.20151202.docx):
+- Complete accept AC(TC/CP/SP) (Case 2a-b from pain.002.20151202.docx), ! same code as in GrpSts ! 
+- Complete change ACWC (Case 2c-d from pain.002.20151202.docx)
+
+With OrgnlGrpInfAdSts/GrpSts is PART (Case 3a-e from pain.002.20151202.docx):
+- Partial reject RJCT (Case 3a from pain.002.20151202.docx)
+- Patial accept AC(TC/CP/SP) (Case 3c-d from pain.002.20151202.docx)
+- Partial information PART (Case 3b from pain.002.20151202.docx)
+- Partial change ACWC (Case 3e from pain.002.20151202.docx), ! requires parallel patial accept AC(TC/CP/SP) (Case 3c-d from pain.002.20151202.docx) with same OrgnlPmtInfId !</xd:documentation>
+							</xd:annotation>
+						</xd:element>
+						<xd:element name="StsRsnInf" type="_:StatusReasonInformation8_Pmt">
+							<xd:annotation>
+								<xd:documentation xml:lang="de">Statuserläuterungen.</xd:documentation>
+								<xd:documentation xml:lang="en">Explanation on status.</xd:documentation>
+							</xd:annotation>
+						</xd:element>
+						<xd:element name="TxInfAndSts" type="_:PaymentTransactionInformation25" minOccurs="0" maxOccurs="unbounded">
+							<xd:annotation>
+								<xd:documentation xml:lang="de">Informationen zur Transaktion, auf den sich dieser Abschnitt bezieht.
+
+Verpflichtend, wenn OrgnlPmtInfAdSts/PmtSts gleich PART (Fall 3b aus pain.002.20151202.docx).
+Verboten, wenn OrgnlPmtInfAdSts/PmtSts gleich RJCT (Fall 3a aus pain.002.20151202.docx), es sei denn es werden Daten aus einem pacs.002 weitergeleitet.
+Verboten, wenn OrgnlGrpInfAdSts/GrpSts gleich PART und OrgnlPmtInfAdSts/PmtSts gleich ACWC (Fall 3e aus pain.002.20151202.docx).
+Optional, wenn OrgnlPmtInfAdSts/PmtSts gleich AC(TC/CP/SP) (Fall 2b,3d aus pain.002.20151202.docx).
+Optional, wenn OrgnlGrpInfAdSts/GrpSts gleich AC(TC/CP/SP) und OrgnlPmtInfAdSts/PmtSts gleich ACWC (Fall 2d aus pain.002.20151202.docx).</xd:documentation>
+								<xd:documentation xml:lang="en">Information on transaction this section refers on.
+
+Mandatory, when OrgnlPmtInfAdSts/PmtSts is PART (Case 3b from pain.002.20151202.docx).
+Forbidden, when OrgnlPmtInfAdSts/PmtSts is RJCT (Case 3a from pain.002.20151202.docx), unless data from a pacs.002 are forwarded.
+Forbidden, when OrgnlGrpInfAdSts/GrpSts is PART and OrgnlPmtInfAdSts/PmtSts is ACWC (Case 3e from pain.002.20151202.docx).
+Optional, when OrgnlPmtInfAdSts/PmtSts is AC(TC/CP/SP) (Case 2b,3d from pain.002.20151202.docx).
+Optional, when OrgnlGrpInfAdSts/GrpSts is AC(TC/CP/SP) and OrgnlPmtInfAdSts/PmtSts is ACWC (Case 2d from pain.002.20151202.docx).</xd:documentation>
+							</xd:annotation>
+						</xd:element>
+					</xd:sequence>
+				</xd:restriction>
+			</xd:complexContent>
+		</xd:complexType>
+		<xd:complexType name="PaymentTransactionInformation25">
+			<xd:complexContent>
+				<xd:restriction base="_:PaymentTransactionInformation25">
+					<xd:sequence>
+						<xd:element name="StsId" type="_:Max35Text_REF">
+							<xd:annotation>
+								<xd:documentation xml:lang="de">Ersterfassungsreferenz der Transaktion.</xd:documentation>
+								<xd:documentation xml:lang="en">First financial institutions reference identifying the transaction.</xd:documentation>
+							</xd:annotation>
+						</xd:element>
+						<xd:element name="OrgnlEndToEndId" type="_:Max35Text_REF">
+							<xd:annotation>
+								<xd:documentation xml:lang="de">Original EndToEndId des Grundgeschäfts.</xd:documentation>
+								<xd:documentation xml:lang="en">Original EndToEndId of basic underlying transaction.</xd:documentation>
+							</xd:annotation>
+						</xd:element>
+						<xd:element name="TxSts" type="_:TransactionIndividualStatus3Code_Tx">
+							<xd:annotation>
+								<xd:documentation xml:lang="de">Status dieses Umsatzes.
+
+Mit OrgnlPmtInfAdSts/PmtSts gleich PART (Fall 3b aus pain.002.20151202.docx):
+- Einzel-Rückweisung RJCT (Fall 3b aus pain.002.20151202.docx)
+
+Mit OrgnlPmtInfAdSts/PmtSts ungleich PART oder RJCT (Fall 2a-d,3c-d aus pain.002.20151202.docx):
+- Einzel-Änderung ACWC (Fall 2b,2d,3d aus pain.002.20151202.docx)</xd:documentation>
+								<xd:documentation xml:lang="en">Status of this transaction.
+
+With OrgnlPmtInfAdSts/PmtSts is PART (Case 3b from pain.002.20151202.docx):
+-Single reject RJCT (Case 3b from pain.002.20151202.docx)
+
+With OrgnlPmtInfAdSts/PmtSts not PART or RJCT (Case 2a-d,3c-d from pain.002.20151202.docx):
+- Single change ACWC (Case 2b,2d,3d from pain.002.20151202.docx)</xd:documentation>
+							</xd:annotation>
+						</xd:element>
+						<xd:element name="StsRsnInf" type="_:StatusReasonInformation8_Tx">
+							<xd:annotation>
+								<xd:documentation xml:lang="de">Informationen zum Status.</xd:documentation>
+								<xd:documentation xml:lang="en">Information on status.</xd:documentation>
+							</xd:annotation>
+						</xd:element>
+						<xd:element name="ChrgsInf" type="_:ChargesInformation5" minOccurs="0" maxOccurs="unbounded">
+							<xd:annotation>
+								<xd:documentation xml:lang="de">Benutzt bei dei Weitergabe von Informationen aus einem pacs.002</xd:documentation>
+								<xd:documentation xml:lang="en">Used to forward information from a pacs.002</xd:documentation>
+							</xd:annotation>
+						</xd:element>
+						<xd:element name="AcctSvcrRef" type="_:Max35Text_REF" minOccurs="0">
+							<xd:annotation>
+								<xd:documentation xml:lang="de">Benutzt bei dei Weitergabe von Informationen aus einem pacs.002</xd:documentation>
+								<xd:documentation xml:lang="en">Used to forward information from a pacs.002</xd:documentation>
+							</xd:annotation>
+						</xd:element>
+						<xd:element name="OrgnlTxRef" type="_:OriginalTransactionReference13" minOccurs="0">
+							<xd:annotation>
+								<xd:documentation xml:lang="de">Original Elemente und Werte aus der referenzierten Nachricht. Benutzt bei dei Weitergabe von Informationen aus einem pacs.002</xd:documentation>
+								<xd:documentation xml:lang="en">Original elements and values from refered message. Used to forward information from a pacs.002</xd:documentation>
+							</xd:annotation>
+						</xd:element>
+					</xd:sequence>
+				</xd:restriction>
+			</xd:complexContent>
+		</xd:complexType>
+		<xd:complexType name="StatusReason6Choice">
+			<xd:complexContent>
+				<xd:restriction base="_:StatusReason6Choice">
+					<xd:sequence>
+						<xd:choice>
+							<xd:element name="Cd" type="_:AT_ExternalStatusReason1Code">
+								<xd:annotation>
+									<xd:documentation xml:lang="de">Kodierter Grund.
+
+Siehe externe Kodeliste.</xd:documentation>
+									<xd:documentation xml:lang="en">Coded reason.
+
+See external code list.</xd:documentation>
+								</xd:annotation>
+							</xd:element>
+							<xd:element name="Prtry" type="_:AT_ExternalStatusReasonProprietary">
+								<xd:annotation>
+									<xd:documentation xml:lang="de">Kodierter Grund.
+
+Siehe externe Codeliste.
+Nur Codes aus akkordierter Codeliste.</xd:documentation>
+									<xd:documentation xml:lang="en">Coded reason.
+
+See external code list.
+Codes from agreed code list only.</xd:documentation>
+								</xd:annotation>
+							</xd:element>
+						</xd:choice>
+					</xd:sequence>
+				</xd:restriction>
+			</xd:complexContent>
+		</xd:complexType>
+	</xd:redefine>
+	<!-- Attributes  -->
+	<xd:attribute name="implementationguidelines" fixed="SCT's 7.0, 8.0, SDD's Core 7.0, 8.0, 9.0, B2B 5.0, 6.0, 7.0">
+		<xd:annotation>
+			<xd:documentation xml:lang="de">Berücksichtigte Rulebook Versionen</xd:documentation>
+			<xd:documentation xml:lang="en">Respected rulebook versions</xd:documentation>
+		</xd:annotation>
+	</xd:attribute>
+	<xd:attribute name="lastEdit" fixed="2016-11-23">
+		<xd:annotation>
+			<xd:documentation xml:lang="de">Datum der letzten Veränderung</xd:documentation>
+			<xd:documentation xml:lang="en">Date of last change</xd:documentation>
+		</xd:annotation>
+	</xd:attribute>
+	<xd:attribute name="namespace" fixed="urn:iso:std:iso:20022:tech:xsd:pain.002.001.03">
+		<xd:annotation>
+			<xd:documentation xml:lang="de">Namespace-Name in der XML-Instanz der Datenübertragung</xd:documentation>
+			<xd:documentation xml:lang="en">Namespace name of instance on data transmission</xd:documentation>
+		</xd:annotation>
+	</xd:attribute>
+	<xd:attribute name="replaceLastEdit" fixed="2016-06-09">
+		<xd:annotation>
+			<xd:documentation xml:lang="de">Ersetztes Versionsdatum</xd:documentation>
+			<xd:documentation xml:lang="en">Replaced version date</xd:documentation>
+		</xd:annotation>
+	</xd:attribute>
+	<xd:attribute name="replaceVersion" fixed="004">
+		<xd:annotation>
+			<xd:documentation xml:lang="de">Ersetzte Version</xd:documentation>
+			<xd:documentation xml:lang="en">Replaced version</xd:documentation>
+		</xd:annotation>
+	</xd:attribute>
+	<xd:attribute name="rulebooks" fixed="SCT's 7.0, 7.1, 8.0, 8.1, 8.2, SDD's Core 7.0, 7.1, 7.2, 8.0, 8.1, 8.2, 9.0, 9.1, 9.2, B2B 5.0, 5.1, 5.2, 6.0, 6.1, 6.2, 7.0, 7.1, 7.2">
+		<xd:annotation>
+			<xd:documentation xml:lang="de">Berücksichtigte Rulebook Versionen</xd:documentation>
+			<xd:documentation xml:lang="en">Respected rulebook versions</xd:documentation>
+		</xd:annotation>
+	</xd:attribute>
+	<xd:attribute name="validityEnd" fixed="with validity start of version 006">
+		<xd:annotation>
+			<xd:documentation xml:lang="de">Ende der Gültigkeit</xd:documentation>
+			<xd:documentation xml:lang="en">End of validity</xd:documentation>
+		</xd:annotation>
+	</xd:attribute>
+	<xd:attribute name="validityStart" fixed="2016-11-01">
+		<xd:annotation>
+			<xd:documentation xml:lang="de">Beginn der Gültigkeit</xd:documentation>
+			<xd:documentation xml:lang="en">Start of validity</xd:documentation>
+		</xd:annotation>
+	</xd:attribute>
+	<xd:attribute name="version" fixed="004">
+		<xd:annotation>
+			<xd:documentation xml:lang="de">Version dieses Schemas</xd:documentation>
+			<xd:documentation xml:lang="en">Schema version</xd:documentation>
+		</xd:annotation>
+	</xd:attribute>
+	<!-- derived types -->
+	<!-- simple types -->
+	<!-- EPC driven with AT specific content -->
+	<xd:simpleType name="Max35Text_REF">
+		<xd:restriction base="_:Max35Text">
+			<xd:annotation>
+				<xd:documentation xml:lang="de">Begrenzung des Zeichensatzes für Kodes, Referenzen und Identifikatoren
+
+Erlaubte Struktur für Kodes, Referenzen und Identifikatoren nach EPC217-08 Best Practices SEPA Requirements for Character Set SSG.pdf
+Ein Text oder Wert muß mindestens ein druckbares Zeichen enthalten, jedoch
+startet nicht mit /
+endet nicht mit /
+enthält kein //</xd:documentation>
+				<xd:documentation xml:lang="en">Limitation of character set for codes, references and identifications
+
+Allowed structure for codes, references and identifications according EPC217-08 Best Practices SEPA Requirements for Character Set SSG.pdf
+A text or value must contain at least one printable character, but
+don't start with /
+don't end with /
+don't contain //</xd:documentation>
+			</xd:annotation>
+				<xd:pattern value="((([\-A-Za-z0-9+?:().,' ]+/)+[\-A-Za-z0-9+?:().,' ]+)|(( *[\-A-Za-z0-9+?:().,'])+ *))">
+					<xd:annotation>
+						<xd:documentation>Remember that the pattern notation is governed by XML and XSD rules.
+The regex is anchored to the whole string, which needs a ^ and a $ in other environments.
+Entities like &#x09;, &amp;, &gt;, &lt; and &quot; need to be exchanged to their entity's meaning or other encoding in other environments.
+The / might need to be escaped to \/ in other environments.</xd:documentation>
+					</xd:annotation>
+				</xd:pattern>
+		</xd:restriction>
+	</xd:simpleType>
+	<xd:simpleType name="Max105Text_INFO">
+		<xd:restriction base="_:Max105Text">
+			<xd:annotation>
+				<xd:documentation xml:lang="de">Struktur für Zusatzinformationen
+
+4 Stellen Kode für die Ermöglichung maschineller Verarbeitung, Doppelpunkt, Text zur menschlichen Interpretation</xd:documentation>
+				<xd:documentation xml:lang="en">Structure for additional information
+
+4 characters code enabling automated processing, colon, text for human interpretation</xd:documentation>
+			</xd:annotation>
+			<xd:pattern value="[A-Z0-9]{4}:.+">
+					<xd:annotation>
+						<xd:documentation>Remember that the pattern notation is governed by XML and XSD rules.
+The regex is anchored to the whole string, which needs a ^ and a $ in other environments.
+Entities like &#x09;, &amp;, &gt;, &lt; and &quot; need to be exchanged to their entity's meaning or other encoding in other environments.
+The / might need to be escaped to \/ in other environments.</xd:documentation>
+					</xd:annotation>
+				</xd:pattern>
+		</xd:restriction>
+	</xd:simpleType>
+	<!-- complex types with complex content -->
+	<!-- EPC driven -->
+	<xd:complexType name="BranchAndFinancialInstitutionIdentification4_Sender">
+		<xd:complexContent>
+			<xd:restriction base="_:BranchAndFinancialInstitutionIdentification4">
+				<xd:sequence>
+					<xd:element name="FinInstnId" type="_:FinancialInstitutionIdentification7_Sender">
+						<xd:annotation>
+							<xd:documentation xml:lang="de">Identifikation einer Bank im SEPA-Raum</xd:documentation>
+							<xd:documentation xml:lang="en">Identification of a bank in SEPA area</xd:documentation>
+						</xd:annotation>
+					</xd:element>
+				</xd:sequence>
+			</xd:restriction>
+		</xd:complexContent>
+	</xd:complexType>
+	<xd:complexType name="FinancialInstitutionIdentification7_Sender">
+		<xd:complexContent>
+			<xd:restriction base="_:FinancialInstitutionIdentification7">
+				<xd:sequence>
+					<xd:element name="BIC" type="_:BICIdentifier">
+						<xd:annotation>
+							<xd:documentation xml:lang="de">BIC des Kreditinstituts</xd:documentation>
+							<xd:documentation xml:lang="en">BIC of financial institution</xd:documentation>
+						</xd:annotation>
+					</xd:element>
+				</xd:sequence>
+			</xd:restriction>
+		</xd:complexContent>
+	</xd:complexType>
+	<!-- EPC driven with AT specific content -->
+	<xd:complexType name="StatusReasonInformation8_File">
+		<xd:complexContent>
+			<xd:restriction base="_:StatusReasonInformation8">
+				<xd:sequence>
+					<xd:element name="Orgtr" type="_:PartyIdentification32_Status" minOccurs="0">
+						<xd:annotation>
+							<xd:documentation xml:lang="de">Erzeuger der Rückweisung</xd:documentation>
+							<xd:documentation xml:lang="en">Originator of reject</xd:documentation>
+						</xd:annotation>
+					</xd:element>
+					<xd:element name="Rsn" type="_:StatusReason6Choice">
+						<xd:annotation>
+							<xd:documentation xml:lang="de">Grund der Rückweisung.</xd:documentation>
+							<xd:documentation xml:lang="en">Reason of reject.</xd:documentation>
+						</xd:annotation>
+					</xd:element>
+					<xd:element name="AddtlInf" type="_:Max105Text_INFO" maxOccurs="unbounded">
+						<xd:annotation>
+							<xd:documentation xml:lang="de">Erläuterungen zur Rückweisung.
+
+Verpflichtend mit "IACC:*iban*", ggf. mehrfach.
+Zusätzlich verpflichtend, wenn Rsn gleich NARR, mit "NARR:*text*".
+Zusätzlich optional, wenn Rsn ungleich NARR.
+
+ACHTUNG: Vereinbarter Aufbau notwendig!</xd:documentation>
+							<xd:documentation xml:lang="en">Explanations on reject.
+
+Mandatory with "IACC:*iban*", occ. multible.
+Additionally mandatory, if Rsn is NARR, with "NARR:*text*".
+Additionally optinal, if Rsn not NARR.
+
+ATTENTION: Agreed structure necessary!</xd:documentation>
+						</xd:annotation>
+					</xd:element>
+				</xd:sequence>
+			</xd:restriction>
+		</xd:complexContent>
+	</xd:complexType>
+	<xd:complexType name="StatusReasonInformation8_Pmt">
+		<xd:complexContent>
+			<xd:restriction base="_:StatusReasonInformation8">
+				<xd:sequence>
+					<xd:element name="Orgtr" type="_:PartyIdentification32_Status" minOccurs="0">
+						<xd:annotation>
+							<xd:documentation xml:lang="de">Erzeuger des Status.</xd:documentation>
+							<xd:documentation xml:lang="en">Originator of status.</xd:documentation>
+						</xd:annotation>
+					</xd:element>
+					<xd:element name="Rsn" type="_:StatusReason6Choice">
+						<xd:annotation>
+							<xd:documentation xml:lang="de">Grund des Status.</xd:documentation>
+							<xd:documentation xml:lang="en">Reason of status.</xd:documentation>
+						</xd:annotation>
+					</xd:element>
+					<xd:element name="AddtlInf" type="_:Max105Text_INFO" maxOccurs="unbounded">
+						<xd:annotation>
+							<xd:documentation xml:lang="de">Erläuterungen zur Rückweisung.
+
+Verpflichtend mit "IACC:*iban*"
+Zusätzlich verpflichtend, wenn Rsn gleich NARR, mit "NARR:*text*".
+Zusätzlich verpflichtend, wenn PmtInfSts gleich ACWC.
+Zusätzlich optional, wenn Rsn ungleich NARR oder PmtInfSts ungleich ACWC.
+
+ACHTUNG: Vereinbarter Aufbau notwendig!</xd:documentation>
+							<xd:documentation xml:lang="en">Explanations on reject.
+
+Mandatory with "IACC:*iban*", occ. multible.
+Additionally mandatory, if Rsn is NARR, with "NARR:*text*".
+Additionally mandatory, if PmtInfSts is ACWC.
+Additionally optinal, if Rsn not NARR or PmtInfSts not ACWC.
+
+ATTENTION: Agreed structure necessary!</xd:documentation>
+						</xd:annotation>
+					</xd:element>
+				</xd:sequence>
+			</xd:restriction>
+		</xd:complexContent>
+	</xd:complexType>
+	<xd:complexType name="StatusReasonInformation8_Tx">
+		<xd:complexContent>
+			<xd:restriction base="_:StatusReasonInformation8">
+				<xd:sequence>
+					<xd:element name="Orgtr" type="_:PartyIdentification32_Status" minOccurs="0">
+						<xd:annotation>
+							<xd:documentation xml:lang="de">Erzeuger des Status.</xd:documentation>
+							<xd:documentation xml:lang="en">Originator of status.</xd:documentation>
+						</xd:annotation>
+					</xd:element>
+					<xd:element name="Rsn" type="_:StatusReason6Choice">
+						<xd:annotation>
+							<xd:documentation xml:lang="de">Grund des Status.</xd:documentation>
+							<xd:documentation xml:lang="en">Reason of status.</xd:documentation>
+						</xd:annotation>
+					</xd:element>
+					<xd:element name="AddtlInf" type="_:Max105Text_INFO" minOccurs="0" maxOccurs="unbounded">
+						<xd:annotation>
+							<xd:documentation xml:lang="de">Erläuterungen zur Rückweisung.
+
+Verpflichtend, wenn Rsn gleich NARR, mit "NARR:*text*".
+Verpflichtend, wenn TxSts gleich ACWC.
+Optional, wenn TxSts gleich RJCT und Rsn ungleich NARR.
+
+ACHTUNG: Vereinbarter Aufbau notwendig!</xd:documentation>
+							<xd:documentation xml:lang="en">Explanations on reject.
+
+Mandatory, when Rsn is NARR, with "NARR:*text*".
+Mandatory, when TxSts is ACWC.
+Optional, when TxSts is RJCT and Rsn not NARR.
+
+ATTENTION: Agreed structure necessary!</xd:documentation>
+						</xd:annotation>
+					</xd:element>
+				</xd:sequence>
+			</xd:restriction>
+		</xd:complexContent>
+	</xd:complexType>
+	<!-- AT specific -->
+	<xd:complexType name="OrganisationIdentification4_Status">
+		<xd:complexContent>
+			<xd:restriction base="_:OrganisationIdentification4">
+				<xd:sequence>
+					<xd:element name="BICOrBEI" type="_:AnyBICIdentifier">
+						<xd:annotation>
+							<xd:documentation xml:lang="de">BIC des Kreditinstitutes.</xd:documentation>
+							<xd:documentation xml:lang="en">BIC of financial institution.</xd:documentation>
+						</xd:annotation>
+					</xd:element>
+				</xd:sequence>
+			</xd:restriction>
+		</xd:complexContent>
+	</xd:complexType>
+	<xd:complexType name="Party6Choice_Status">
+		<xd:complexContent>
+			<xd:restriction base="_:Party6Choice">
+				<xd:sequence>
+					<xd:choice>
+						<xd:element name="OrgId" type="_:OrganisationIdentification4_Status">
+							<xd:annotation>
+								<xd:documentation xml:lang="de">Identifikation der Organisation</xd:documentation>
+								<xd:documentation xml:lang="en">Identification of organisation</xd:documentation>
+							</xd:annotation>
+						</xd:element>
+					</xd:choice>
+				</xd:sequence>
+			</xd:restriction>
+		</xd:complexContent>
+	</xd:complexType>
+	<xd:complexType name="PartyIdentification32_Status">
+		<xd:complexContent>
+			<xd:restriction base="_:PartyIdentification32">
+				<xd:sequence>
+					<xd:element name="Id" type="_:Party6Choice_Status">
+						<xd:annotation>
+							<xd:documentation xml:lang="de">Identifikation des Erzeugers</xd:documentation>
+							<xd:documentation xml:lang="en">Identification of originator</xd:documentation>
+						</xd:annotation>
+					</xd:element>
+				</xd:sequence>
+			</xd:restriction>
+		</xd:complexContent>
+	</xd:complexType>
+	<!--***** Begin of change log -->
+	<!-- 2016-06-09 -->
+	<!-- initial release with redefinition -->
+	<!-- 2016-11-23 -->
+	<!-- fix pattern notation -->
+	<!--***** End of change log -->
+</xd:schema>

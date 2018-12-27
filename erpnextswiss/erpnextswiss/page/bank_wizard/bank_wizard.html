@@ -1,0 +1,47 @@
+<div style="margin: 5px; margin-top: 0px; border-top: 1px solid white; ">
+  <!-- load the zip extension -->
+  <script src="/assets/erpnextswiss/js/jszip.min.js"></script>
+  
+  <p class="text-muted">{%= __("Import payment entries from bank account file") %}</p>
+
+  <div class="section-body">
+    <div class="row"> 
+	  <div class="form-column col-sm-4">
+	    <p>{{ __("Bank Account") }}</p>
+	    <select id="bank_account">
+
+	    </select>
+            <input id="intermediate_account" class="hidden" />
+            <input id="receivable_account" class="hidden" />
+            <input id="payable_account" class="hidden" />
+            <input id="default_customer" class="hidden" />
+            <input id="default_supplier" class="hidden" />
+	  </div>
+
+	  <div class="form-column col-sm-4">
+	    <p>{{ __("File") }} <input type="file" id="input_file" /></p>
+	  </div>
+
+	  <div class="form-column col-sm-4">	  	
+	    <br><button type="submit" id="btn-parse-file" class="btn btn-sm btn-primary btn-parse-file">{{ __("Parse") }}</button>  
+        <i id="waitingScreen" class="fa fa-spinner fa-spin hidden"></i>
+	  </div>
+    </div>
+	  
+    <div class="row">
+        <div class="col-sm-12">
+	    <div id="table_placeholder"></div>	    
+	</div>
+    </div>
+  </div>
+  
+</div>
+
+<div id="waitingScreen" class="overlay">
+  <!-- Overlay content -->
+  <div class="overlay-content">
+    <p><i class="fa fa-spinner fa-spin" style="font-size:80px"></i></p>
+    <p>{{ __("Please wait, parsing data...") }}</p>
+    <div class="" id="zipcontent"></div>
+  </div>
+</div>

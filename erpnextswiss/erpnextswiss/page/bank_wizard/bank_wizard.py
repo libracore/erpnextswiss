@@ -354,7 +354,7 @@ def read_camt_transactions(transaction_entries, account):
                     if possible_pinvs:
                         invoice_matches = []
                         for pinv in possible_pinvs:
-                            if pinv['name'] in transaction_reference:
+                            if pinv['name'] in transaction_reference or pinv['bill_no'] in transaction_reference:
                                 invoice_matches.append(pinv['name'])
                                 # override party match in case there is one from the sales invoice
                                 party_match = pinv['supplier']

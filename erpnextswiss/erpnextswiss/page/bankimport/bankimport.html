@@ -1,65 +1,69 @@
 <div style="margin: 5px; margin-top: 0px; border-top: 1px solid white; ">
-  <p class="text-muted">{%= __("Import payment entries from bank account file") %}</p>
+	<p class="text-muted">{%= __("Import payment entries from bank account file") %}</p>
 
-  <div class="section-body">
-    <div class="row">
-	  <div class="form-column col-sm-4">
-	    <p>{{ __("Bank") }}</p>
-	    <select id="bank">
-	      <option value="ubs">UBS</option>
-		  <option value="zkb">ZKB</option>
-		  <option value="raiffeisen">Raiffeisen</option>
-          <option value="cs">Credit Suisse</option>
-          <option value="migrosbank">Migrosbank</option>
-          <option value="postfinance">Postfinance</option>
-        </select>
-	  </div>
-	  
-	  <div class="form-column col-sm-4">
-	    <p>{{ __("Payment account") }}</p>
-	    <select id="payment_account">
+	<div class="section-body">
+		<div class="row">
+			<div class="form-column col-sm-4">
+				<p>{{ __("Bank") }}</p>
+				<select id="bank">
+					<option value="ubs">UBS</option>
+					<option value="zkb">ZKB</option>
+					<option value="raiffeisen">Raiffeisen</option>
+					<option value="cs">Credit Suisse</option>
+					<option value="migrosbank">Migrosbank</option>
+					<option value="postfinance">Postfinance</option>
+					<option value="ksk">Kreissparkasse</option>
+					<option value="voba">Volksbank</option>
+				</select>
+			</div>
 
-	    </select>
-	  </div>
-	  
-	  <div class="form-column col-sm-4">
-	    <p>{{ __("Options") }}</p>
-	    <div class="checkbox">
-          <!-- disabled auto submit, because even when matched, the reference fails  
-	      <label><input type="checkbox" id="auto_submit">{{ __("Automatically submit") }}</label>
-          -->
-	    </div>
-        <select id="format">
-	      <option value="camt054">{{ __("CAMT.054 Transaction Notification") }}</option>
-	      <!-- <option value="camt053">{{ __("CAMT.053 Bank Statement") }}</option> -->
-          <option value="csv">{{ __("CSV") }}</option>
-        </select>
-	  </div>	  
-    </div>
-	    
-    <div class="row">
-	  <div class="form-column col-sm-4">
-	    <p>{{ __("File") }} <input type="file" id="input_file" /></p>
-	  </div>
-	  
-	  <div class="form-column col-sm-4">
-	    <p>{{ __("Parse") }}</p>
-        <button type="submit" class="btn btn-sm btn-primary btn-parse-file">{{ __("Parse") }}</button>
-        <div class="waiting-gif hide"><img src="/assets/frappe/images/ui/ajax-loader.gif" /></div>
-	  </div>
-	  
-	  <div class="form-column col-sm-4">
-	    <div class="insert-log-messages"></div>
-	  </div>
-    </div>
-  </div>
-  
+			<div class="form-column col-sm-4">
+				<p>{{ __("Payment account") }}</p>
+				<select id="payment_account">
+
+				</select>
+			</div>
+
+			<div class="form-column col-sm-4">
+				<p>{{ __("Options") }}</p>
+				<div class="checkbox">
+					<!-- disabled auto submit, because even when matched, the reference fails	
+				<label><input type="checkbox" id="auto_submit">{{ __("Automatically submit") }}</label>
+				-->
+				</div>
+				<select id="format">
+					<option value="camt054">{{ __("CAMT.054 Transaction Notification") }}</option>
+					<!-- <option value="camt053">{{ __("CAMT.053 Bank Statement") }}</option> -->
+					<option value="csv">{{ __("CSV") }}</option>
+				</select>
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="form-column col-sm-4">
+				<p>{{ __("File") }}
+					<input type="file" id="input_file" />
+				</p>
+			</div>
+
+			<div class="form-column col-sm-4">
+				<p>{{ __("Parse") }}</p>
+				<button type="submit" class="btn btn-sm btn-primary btn-parse-file">{{ __("Parse") }}</button>
+				<div class="waiting-gif hide"><img src="/assets/frappe/images/ui/ajax-loader.gif" /></div>
+			</div>
+
+			<div class="form-column col-sm-4">
+				<div class="insert-log-messages"></div>
+			</div>
+		</div>
+	</div>
+
 </div>
 
 <div id="waitingScreen" class="overlay">
 	<!-- Overlay content -->
-  <div class="overlay-content">
-    <p><i class="fa fa-spinner fa-spin" style="font-size:80px"></i></p>
-    <p>{{ __("Please wait, parsing data...") }}</p>
-  </div>
+	<div class="overlay-content">
+		<p><i class="fa fa-spinner fa-spin" style="font-size:80px"></i></p>
+		<p>{{ __("Please wait, parsing data...") }}</p>
+	</div>
 </div>

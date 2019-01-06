@@ -4,6 +4,7 @@
 
 from frappe.email.queue import send
 import frappe
+from frappe.utils.background_jobs import enqueue
 
 # send newsletter with dynamic content
 @frappe.whitelist()
@@ -37,7 +38,26 @@ def send_dynamic_newsletter(newsletter):
                 if contacts:
                     # prepare newsletter
                     subject = newsletter.subject
-                    message = newsletter.message.replace("{{ first_name }}", contacts[0]['first_name']).replace("{{ last_name }}", contacts[0]['last_name'])
+                    if contacts[0]['first_name']:
+                        message = newsletter.message.replace("{{ first_name }}", contacts[0]['first_name'])
+                    else:
+                        message = newsletter.message.replace("{{ first_name }}", "")
+                    if contacts[0]['first_name']:
+                        message = newsletter.message.replace("{{ last_name }}", contacts[0]['last_name'])
+                    else:
+                        message = newsletter.message.replace("{{ last_name }}", "")
+                    if contacts[0]['salutation']:
+                        message = newsletter.message.replace("{{ salutation }}", contacts[0]['salutation'])
+                    else:
+                        message = newsletter.message.replace("{{ salutation }}", "")
+                    if contacts[0]['department']:
+                        message = newsletter.message.replace("{{ department }}", contacts[0]['department'])
+                    else:
+                        message = newsletter.message.replace("{{ department }}", "")      
+                    if contacts[0]['designation']:
+                        message = newsletter.message.replace("{{ designation }}", contacts[0]['designation'])
+                    else:
+                        message = newsletter.message.replace("{{ designation }}", "")      
                     # send mail
                     send(
                         recipients=recipient.email,

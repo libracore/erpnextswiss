@@ -36,12 +36,16 @@ In case you update from the sources and observe an error, make sure to update de
 
 ## Features 
 * Banking
-    * Bank import: allows to import bank account statements to update local payment entries (receiving)
+    * Bank wizard: processes camt.053 and camt.054 files to payment entries (including linking to related documents)
+    * Payment proposal: create payment files based on open purchase invoices (pain.001)
+    * Direct debit proposal: create payment files from direct debit enabled sales invoices (pain.008)
+    * Payment reminder: create payment reminders for overdue sales invoices
+    * Bank import: allows to import bank account statements to update local payment entries (receiving; csv or camt)
     * Match payments: match unpaid sales invoices with the corresponding payments
     * Payment export: allows to create payment files for banks (pain.001) from payment entries (paying)
     * support for QR and ESR invoices
 * Tax
-    * Import monthly average exchange rates
+    * Import monthly average exchange rates, daily exchange rates (ESTV)
     * VAT declaration
 * Human resources
     * Salary certificate ("Lohnausweis")
@@ -49,6 +53,12 @@ In case you update from the sources and observe an error, make sure to update de
     * Postal code lookup
     * Script-based data import
     * Large data import tools
+    * Dynamic newsletter content
 
 ## Release notes
 Refer to [https://github.com/libracore/erpnextswiss/wiki/Release-Notes](https://github.com/libracore/erpnextswiss/wiki/Release-Notes)
+
+## Data protection
+Please note that the provided sample QR code invoice uses a libracore server to process QR codes according to ISO 20022. The server is located in Switzerland, the invoice details will be transmitted to the server for processing.
+
+Please use a personal QR-code generation server to prevent data being sent to libracore. The source code is available from [https://github.com/lasalesi/phpqrcode](PhpQrCode)

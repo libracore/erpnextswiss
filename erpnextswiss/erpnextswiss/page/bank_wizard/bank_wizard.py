@@ -350,7 +350,7 @@ def read_camt_transactions(transaction_entries, account):
                     if match_suppliers:
                         party_match = match_suppliers[0]['name']
                     # purchase invoices
-                    possible_pinvs = frappe.get_all("Purchase Invoice", filters=[['grand_total', '=', amount], ['outstanding_amount', '>', 0]], fields=['name', 'supplier', 'outstanding_amount'])
+                    possible_pinvs = frappe.get_all("Purchase Invoice", filters=[['grand_total', '=', amount], ['outstanding_amount', '>', 0]], fields=['name', 'supplier', 'outstanding_amount', 'bill_no'])
                     if possible_pinvs:
                         invoice_matches = []
                         for pinv in possible_pinvs:

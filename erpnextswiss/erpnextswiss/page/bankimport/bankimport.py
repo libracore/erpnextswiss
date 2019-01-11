@@ -581,11 +581,11 @@ def create_reference(payment_entry, sales_invoice):
     return
     
 def log(comment):
-	new_comment = frappe.get_doc({"doctype": "Log"})
-	new_comment.comment = comment
-	new_comment.insert()
-	return new_comment
-
+    new_comment = frappe.get_doc({"doctype": "Log"})
+    new_comment.comment = comment
+    new_comment.insert()
+    return new_comment
+    
 # converts a parameter to a bool
 def assert_bool(param):
     result = param
@@ -611,10 +611,27 @@ def get_default_customer():
     return default_customer
     
 @frappe.whitelist()
-def parse_file(content, bank, account, auto_submit=False):
-    # content is the plain text content, parse 
-    auto_submit = assert_bool(auto_submit);
+def get_bank_settings():
+    bank_settings = frappe.get_doc("ERPNextSwiss Settings", "ERPNextSwiss Settings").bankimport_table
+    #import_options = frappe.get_all("BankImport Format", fields=['format_name', 'format_ref'])
+    #frappe.msgprint("Logg Test")
+    #frappe.get_doc({
+    #    "doctype": "BankImport Format",
+    #    "format_name": "TestType2",
+    #    "format_ref": "TestRef2"
+    #}).insert()
+    if not bank_settings:
+        frappe.throw("No Bank settings found")
+    selectable_banks = []
+    for bank in bank_settings:
+        if bank.bank_enabled == True:
+            # bank.filetype = frappe.get_value("BankImport Format", bank.filetype, "format_ref")
+            selectable_banks.append(bank)
+    return { "banks": selectable_banks}
     
+@frappe.whitelist()
+def parse_file(content, bank, bankname, account, auto_submit=False):
+    # content is the plain text content, parse 
     new_records = []
     if bank == "ubs":
         new_records = parse_ubs(content, account, auto_submit)

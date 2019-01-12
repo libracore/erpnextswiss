@@ -123,4 +123,16 @@ def get_data():
                    }                   
             ]
         },
+        {
+            "label": _("POS"),
+            "icon": "fa fa-money-bill",
+            "items": [
+                   {
+                        "type": "doctype",
+                       "name": "Daily Closing Statement",
+                       "label": _("Daily Closing Statement"),
+                       "description": _("Daily Closing Statement")                      
+                   }                   
+            ]
+        }
 ]

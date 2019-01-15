@@ -28,6 +28,7 @@ def create_payment_reminders():
             WHERE `outstanding_amount` > 0 
               AND `docstatus` = 1
               AND (`due_date` < CURDATE())
+              AND `enable_lsv` = 0
               AND ((`exclude_from_payment_reminder_until` IS NULL) OR (`exclude_from_payment_reminder_until` < CURDATE()))
             GROUP BY `customer`;""")
     customers = frappe.db.sql(sql_query, as_dict=True)
@@ -44,6 +45,7 @@ def create_payment_reminders():
                     FROM `tabSales Invoice` 
                     WHERE `outstanding_amount` > 0 AND `customer` = '{0}'
                       AND `docstatus` = 1
+                      AND `enable_lsv` = 0
                       AND (`due_date` < CURDATE())
                       AND ((`exclude_from_payment_reminder_until` IS NULL) OR (`exclude_from_payment_reminder_until` < CURDATE()));""".format(customer.customer))
             open_invoices = frappe.db.sql(sql_query, as_dict=True)

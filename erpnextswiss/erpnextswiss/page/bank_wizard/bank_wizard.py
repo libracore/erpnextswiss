@@ -230,12 +230,18 @@ def read_camt_transactions(transaction_entries, account):
                         unique_reference = transaction_soup.ustrd.get_text()
             # --- find amount and currency
             try:
-                amount = float(transaction_soup.txdtls.amt.get_text())
-                currency = transaction_soup.txdtls.amt['ccy']
+                # try to find as <TxAmt>
+                amount = float(transaction_soup.txdtls.txamt.amt.get_text())
+                currency = transaction_soup.txdtls.txamt.amt['ccy']
             except:
-                # fallback to amount from entry level
-                amount = entry_amount
-                currency = entry_currency
+                try:
+                    # fallback to pure <AMT>
+                    amount = float(transaction_soup.txdtls.amt.get_text())
+                    currency = transaction_soup.txdtls.amt['ccy']
+                except:
+                    # fallback to amount from entry level
+                    amount = entry_amount
+                    currency = entry_currency
             try:
                 # --- find party IBAN
                 if credit_debit == "DBIT":

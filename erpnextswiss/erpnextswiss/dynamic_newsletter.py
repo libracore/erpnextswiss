@@ -45,7 +45,7 @@ def send_dynamic_newsletter(newsletter):
                             message = newsletter.message.replace("{{ first_name }}", contacts[0]['first_name'])
                         else:
                             message = newsletter.message.replace("{{ first_name }}", "")
-                        if contacts[0]['first_name']:
+                        if contacts[0]['last_name']:
                             message = message.replace("{{ last_name }}", contacts[0]['last_name'])
                         else:
                             message = message.replace("{{ last_name }}", "")
@@ -60,7 +60,21 @@ def send_dynamic_newsletter(newsletter):
                         if contacts[0]['designation']:
                             message = message.replace("{{ designation }}", contacts[0]['designation'])
                         else:
-                            message = message.replace("{{ designation }}", "")      
+                            message = message.replace("{{ designation }}", "")
+                        try:
+                            if contacts[0]['letter_salutation']:
+                                message = message.replace("{{ letter_salutation }}", contacts[0]['letter_salutation'])
+                            else:
+                                message = message.replace("{{ letter_salutation }}", "")      
+                        except:
+                            message = message
+                        try:
+                            if contacts[0]['briefanrede']:
+                                message = message.replace("{{ briefanrede }}", contacts[0]['briefanrede'])
+                            else:
+                                message = message.replace("{{ briefanrede }}", "")      
+                        except:
+                            message = message
                         # send mail
                         send(
                             recipients=recipient.email,

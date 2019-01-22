@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2018-2019, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
 
 from __future__ import unicode_literals
@@ -40,13 +40,13 @@ class PaymentProposal(Document):
                     if purchase_invoice.skonto_date:
                         skonto_date = datetime.strptime(purchase_invoice.skonto_date, "%Y-%m-%d")
                     due_date = datetime.strptime(purchase_invoice.due_date, "%Y-%m-%d")
-                    if (purchase_invoice.skonto_date) and (skonto_date > datetime.now()):  
+                    if (purchase_invoice.skonto_date) and (skonto_date.date() >= datetime.now().date()):  
                         this_amount = purchase_invoice.skonto_amount    
-                        if exec_date > skonto_date:
+                        if exec_date.date() > skonto_date.date():
                             exec_date = skonto_date
                     else:
                         this_amount = purchase_invoice.amount
-                        if exec_date > due_date:
+                        if exec_date.date() > due_date.date():
                             exec_date = due_date
                     payment_type = purchase_invoice.payment_type
                     if payment_type == "ESR":
@@ -69,8 +69,8 @@ class PaymentProposal(Document):
                             "Purchase Invoice", purchase_invoice.purchase_invoice, exec_date,
                             purchase_invoice.amount)
             # make sure execution date is valid
-            if exec_date <= datetime.now():
-                exec_date = datetime.now() + timedelta(days=1)
+            if exec_date < datetime.now():
+                exec_date = datetime.now()      # + timedelta(days=1)
             # add new payment record
             if amount > 0:
                 supl = frappe.get_doc("Supplier", supplier)

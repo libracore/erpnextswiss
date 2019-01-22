@@ -219,6 +219,9 @@ DocType: Payment Proposal,No suitable invoices found.,Keine passenden Rechnungen
 DocType: Payment Proposal,Intermediate Account,Zwischenkonto
 DocType: Payment Proposal,Close Invoive on Intermediate Account,Rechnung auf Zwischenkonto schliessen
 DocType: Payment Proposal,Please select an intermediate account.,Bitte ein Zwischenkonto wählen.
+DocType: Payment Proposal,Set Payment Date,Zahlungsdatum setzen
+DocType: Payment Proposal,Pay from Account,Zahlungen von diesem Konto ausführen
+DocType: Payment Proposal,Execute Payments On,Zahlungen an diesem Datum ausführen
 Page: Bank Wizard,Bank Wizard,Bankassistent
 Page: Bank Wizard,Transaction matched,Zahlung zugewiesen
 Page: Bank Wizard, transactions found, Zahlungen gefunden

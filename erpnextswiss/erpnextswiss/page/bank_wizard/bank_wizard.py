@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2017-2018, libracore and contributors
+# Copyright (c) 2017-2019, libracore and contributors
 # License: AGPL v3. See LICENCE
 
 from __future__ import unicode_literals
@@ -136,7 +136,7 @@ def get_bank_accounts():
     accounts = frappe.get_list('Account', filters={'account_type': 'Bank', 'is_group': 0}, fields=['name'])
     selectable_accounts = []
     for account in accounts:
-		selectable_accounts.append(account.name)    
+        selectable_accounts.append(account.name)    
     
     # frappe.throw(selectable_accounts)
     return {'accounts': selectable_accounts }
@@ -203,7 +203,14 @@ def read_camt_transactions(transaction_entries, account):
         # fetch entry amount as fallback
         entry_amount = float(entry_soup.amt.get_text())
         entry_currency = entry_soup.amt['ccy']
+        # fetch global account service reference
+        try:
+            global_account_service_reference = entry_soup.acctsvcrref.get_text()
+        except:
+            global_account_service_reference = ""
+        transaction_count = 0
         for transaction in transactions:
+            transaction_count += 1
             transaction_soup = BeautifulSoup(unicode(transaction), 'lxml')
             # --- find transaction type: paid or received: (DBIT: paid, CRDT: received)
             try:
@@ -226,16 +233,32 @@ def read_camt_transactions(transaction_entries, account):
                     try:
                         unique_reference = transaction_soup.pmtinfid.get_text()
                     except:
-                        # fallback to ustrd
-                        unique_reference = transaction_soup.ustrd.get_text()
+                        # fallback to group account service reference plus transaction_count
+                        if global_account_service_reference != "":
+                            unique_reference = "{0}-{1}".format(global_account_service_reference, transaction_count)
+                        else:
+                            # fallback to ustrd (do not use)
+                            # unique_reference = transaction_soup.ustrd.get_text()
+                            # fallback to hash
+                            amount = transaction_soup.txdtls.amt.get_text()
+                            party = transaction_soup.nm.get_text()
+                            code = "{0}:{1}:{2}".format(date, amount, party)
+                            frappe.log_error("Code: {0}".format(code))
+                            unique_reference = hashlib.md5(code.encode("utf-8")).hexdigest()
             # --- find amount and currency
             try:
-                amount = float(transaction_soup.txdtls.amt.get_text())
-                currency = transaction_soup.txdtls.amt['ccy']
+                # try to find as <TxAmt>
+                amount = float(transaction_soup.txdtls.txamt.amt.get_text())
+                currency = transaction_soup.txdtls.txamt.amt['ccy']
             except:
-                # fallback to amount from entry level
-                amount = entry_amount
-                currency = entry_currency
+                try:
+                    # fallback to pure <AMT>
+                    amount = float(transaction_soup.txdtls.amt.get_text())
+                    currency = transaction_soup.txdtls.amt['ccy']
+                except:
+                    # fallback to amount from entry level
+                    amount = entry_amount
+                    currency = entry_currency
             try:
                 # --- find party IBAN
                 if credit_debit == "DBIT":
@@ -350,7 +373,7 @@ def read_camt_transactions(transaction_entries, account):
                     if match_suppliers:
                         party_match = match_suppliers[0]['name']
                     # purchase invoices
-                    possible_pinvs = frappe.get_all("Purchase Invoice", filters=[['grand_total', '=', amount], ['outstanding_amount', '>', 0]], fields=['name', 'supplier', 'outstanding_amount'])
+                    possible_pinvs = frappe.get_all("Purchase Invoice", filters=[['grand_total', '=', amount], ['outstanding_amount', '>', 0]], fields=['name', 'supplier', 'outstanding_amount', 'bill_no'])
                     if possible_pinvs:
                         invoice_matches = []
                         for pinv in possible_pinvs:

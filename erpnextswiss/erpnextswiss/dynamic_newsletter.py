@@ -14,7 +14,7 @@ def enqueue_send_dynamic_newsletter(newsletter):
     kwargs={
         'newsletter': newsletter
     }
-        
+
     enqueue("erpnextswiss.erpnextswiss.dynamic_newsletter.send_dynamic_newsletter",
         queue='long',
         timeout=15000,
@@ -28,39 +28,54 @@ def send_dynamic_newsletter(newsletter):
     except:
         frappe.log_error( _("Sending failed: unable to load newsletter {0}").format(newsletter),
             _("Dynamic newsletter"))
-    
+
     # read recipient lists
-    for group_name in newsletter.email_group:
+    for email_group in newsletter.email_group:
         # get recipient information
-        recipients = frappe.get_all('Email Group Member', filters={'email_group': group_name, 'unsubscribed': 0}, fields=['email'])
-        
+        recipients = frappe.get_all('Email Group Member', filters=[['email_group', '=', email_group.email_group], ['unsubscribed', '=', 0]], fields=['email'])
+
         if recipients:
             for recipient in recipients:
-                contacts = frappe.get_all('Contact', filters={'email_id': recipient.email}, fields=['first_name', 'last_name', 'salutation', 'department', 'designation'])
+                contacts = frappe.get_all('Contact', filters=[['email_id', '=', recipient.email]], fields=['name'])
                 if contacts:
+                    contact = frappe.get_doc("Contact", contacts[0]['name'])
                     # prepare newsletter
                     try:
                         subject = newsletter.subject
-                        if contacts[0]['first_name']:
-                            message = newsletter.message.replace("{{ first_name }}", contacts[0]['first_name'])
+                        if contact.first_name:
+                            message = newsletter.message.replace(u"{{ first_name }}", contact.first_name)
                         else:
-                            message = newsletter.message.replace("{{ first_name }}", "")
-                        if contacts[0]['first_name']:
-                            message = message.replace("{{ last_name }}", contacts[0]['last_name'])
+                            message = newsletter.message.replace(u"{{ first_name }}", "")
+                        if contact.last_name:
+                            message = message.replace(u"{{ last_name }}", contact.last_name)
                         else:
-                            message = message.replace("{{ last_name }}", "")
-                        if contacts[0]['salutation']:
-                            message = message.replace("{{ salutation }}", contacts[0]['salutation'])
+                            message = message.replace(u"{{ last_name }}", "")
+                        if contact.salutation:
+                            message = message.replace(u"{{ salutation }}", contact.salutation)
                         else:
-                            message = message.replace("{{ salutation }}", "")
-                        if contacts[0]['department']:
-                            message = message.replace("{{ department }}", contacts[0]['department'])
+                            message = message.replace(u"{{ salutation }}", "")
+                        if contact.department:
+                            message = message.replace(u"{{ department }}", contact.department)
                         else:
-                            message = message.replace("{{ department }}", "")      
-                        if contacts[0]['designation']:
-                            message = message.replace("{{ designation }}", contacts[0]['designation'])
+                            message = message.replace(u"{{ department }}", "")
+                        if contact.designation:
+                            message = message.replace(u"{{ designation }}", contact.designation)
                         else:
-                            message = message.replace("{{ designation }}", "")      
+                            message = message.replace(u"{{ designation }}", "")
+                        try:
+                            if contact.letter_salutation:
+                                message = message.replace(u"{{ letter_salutation }}", contact.letter_salutation)
+                            else:
+                                message = message.replace(u"{{ letter_salutation }}", "")
+                        except:
+                            message = message
+                        try:
+                            if contact.briefanrede:
+                                message = message.replace(u"{{ briefanrede }}", contact.briefanrede)
+                            else:
+                                message = message.replace(u"{{ briefanrede }}", "")
+                        except:
+                            message = message
                         # send mail
                         send(
                             recipients=recipient.email,
@@ -71,11 +86,11 @@ def send_dynamic_newsletter(newsletter):
                             unsubscribe_method="/api/method/frappe.email.doctype.newsletter.newsletter.unsubscribe"
                         )
                     except Exception as err:
-                        frappe.log_error( _("Sending newsletter {0} to {1} failed: {2}.").format(newsletter.name, recipient.email, err.message),
+                        frappe.log_error( u"Sending newsletter {0} to {1} failed: {2}.".format(newsletter.name, recipient.email, unicode(err)),
                             _("Dynamic newsletter"))
-    
+
     # mark newsletter as sent
     newsletter.email_sent = 1
     newsletter.save()
-    
+
     return

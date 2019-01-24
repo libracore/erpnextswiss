@@ -1,0 +1,2 @@
+execute:import unidecode # new requirement
+erpnextswiss.patches.v1_1_1.add_bankimport_bank_child_settings

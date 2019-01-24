@@ -57,7 +57,7 @@ app_include_js = [
 # ------------
 
 # before_install = "erpnextswiss.install.before_install"
-# after_install = "erpnextswiss.install.after_install"
+after_install = "erpnextswiss.setup.install.after_install"
 
 # Desk Notifications
 # ------------------

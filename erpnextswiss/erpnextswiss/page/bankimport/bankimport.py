@@ -447,6 +447,20 @@ def get_default_customer():
     return default_customer
 
 @frappe.whitelist()
+def get_bank_settings():
+    # load ERPNextSwiss Bank Import Settings
+    bank_settings = frappe.get_doc("ERPNextSwiss Settings", "ERPNextSwiss Settings").bankimport_table
+    # check result
+    if not bank_settings:
+        frappe.throw("No Bank settings found")
+    # return bank settings objects
+    selectable_banks = []
+    for bank in bank_settings:
+        if bank.bank_enabled == True:
+            selectable_banks.append(bank)
+    return { "banks": selectable_banks}
+
+@frappe.whitelist()
 def parse_file(content, bank, account, auto_submit=False):
     # content is the plain text content, parse 
     auto_submit = assert_bool(auto_submit);

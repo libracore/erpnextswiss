@@ -225,3 +225,13 @@ DocType: Payment Proposal,Execute Payments On,Zahlungen an diesem Datum ausführ
 Page: Bank Wizard,Bank Wizard,Bankassistent
 Page: Bank Wizard,Transaction matched,Zahlung zugewiesen
 Page: Bank Wizard, transactions found, Zahlungen gefunden
+DocType: Daily Closing Statement,Daily Closing Statement,Tagesabschluss
+DocType: Daily Closing Statement,Statistics,Statistik
+DocType: Daily Closing Statement,Total Sales,Total Umsatz
+DocType: Daily Closing Statement,Average Sales,Durchschnittlicher Umsatz
+DocType: Daily Closing Statement,Number of Customers,Anzahl Kunden
+DocType: Daily Closing Statement,Highest Sale,Höchster Umsatz
+DocType: Daily Closing Statement,Discounts,Rabatte
+DocType: Daily Closing Statement,Count,Anzahl
+DocType: Daily Closing Statement,Currencies,Währungen
+DocType: Daily Closing Statement,Payment Modes,Zahlungsweisen

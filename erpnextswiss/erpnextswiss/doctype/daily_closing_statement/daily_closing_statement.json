@@ -565,7 +565,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2019-01-12 10:08:00.164318", 
+ "modified": "2019-01-26 20:37:43.436485", 
  "modified_by": "Administrator", 
  "module": "ERPNextSwiss", 
  "name": "Daily Closing Statement", 
@@ -599,6 +599,7 @@
  "show_name_in_global_search": 0, 
  "sort_field": "modified", 
  "sort_order": "DESC", 
+ "title_field": "start_date", 
  "track_changes": 1, 
  "track_seen": 0
 }

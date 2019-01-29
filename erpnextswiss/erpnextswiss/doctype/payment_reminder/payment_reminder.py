@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
 from datetime import datetime
+import json
 
 class PaymentReminder(Document):
     # this will apply all payment reminder levels in the sales invoices
@@ -95,4 +96,13 @@ def create_payment_reminders():
                     reminder_record.update_reminder_levels()
                     reminder_record.submit()
                 frappe.db.commit()
+    return
+
+# this allows to submit multiple payment reminders at once
+@frappe.whitelist()
+def bulk_submit(names):
+    docnames = json.loads(names)
+    for name in docnames:
+        payment_reminder = frappe.get_doc("Payment Reminder", name)
+        payment_reminder.submit()
     return

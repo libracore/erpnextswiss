@@ -3,6 +3,11 @@ frappe.listview_settings['Payment Reminder'] = {
         listview.page.add_menu_item( __("Create Payment Reminders"), function() {
             create_payment_reminders();
         });
+        listview.page.add_menu_item( __("Submit Selected"), function() {
+            var method = "erpnextswiss.erpnextswiss.doctype.payment_reminder.payment_reminder.bulk_submit";
+            
+            listview.call_for_selected_items(method, {'status': 'Submitted'});
+        });  
     }
 }
 

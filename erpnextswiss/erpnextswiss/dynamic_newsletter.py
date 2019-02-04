@@ -83,6 +83,8 @@ def send_dynamic_newsletter(newsletter):
                             subject=subject,
                             message=message,
                             reply_to=newsletter.send_from,
+                            reference_doctype="Newsletter",
+                            reference_name=newsletter.name,
                             unsubscribe_method="/api/method/frappe.email.doctype.newsletter.newsletter.unsubscribe"
                         )
                     except Exception as err:

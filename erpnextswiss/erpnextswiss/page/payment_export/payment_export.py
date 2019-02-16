@@ -430,7 +430,7 @@ def generate_payment_file_from_payroll(payroll_entry):
     
 def generate_pain001(pain001_data):
     # creates a pain.001 payment file from a payroll
-    try:       
+    #try:       
         # array for skipped payments
         skipped = []
         
@@ -492,7 +492,7 @@ def generate_pain001(pain001_data):
             # debitor account (sender) - IBAN
             payment_content += make_line("      <DbtrAcct>")
             payment_content += make_line("        <Id>")
-            if payment_account.iban:
+            if pain001_data['paid_from_iban']:
                 payment_content += make_line("          <IBAN>{0}</IBAN>".format(
                     pain001_data['paid_from_iban'].replace(" ", "") ))
             else:
@@ -516,9 +516,9 @@ def generate_pain001(pain001_data):
             # payment identification
             payment_content += make_line("        <PmtId>")
             # instruction identification 
-            payment_content += make_line("          <InstrId>{0}</InstrId>".format(pain001_data['instruction_id']))
+            payment_content += make_line("          <InstrId>{0}</InstrId>".format(payment['instruction_id']))
             # end-to-end identification (should be used and unique within B-level; payment entry name)
-            payment_content += make_line("          <EndToEndId>{0}</EndToEndId>".format(pain001_data['endtoend_id']))
+            payment_content += make_line("          <EndToEndId>{0}</EndToEndId>".format(payment['endtoend_id']))
             payment_content += make_line("        </PmtId>")
             # payment type information
             payment_content += make_line("        <PmtTpInf>")
@@ -627,7 +627,6 @@ def generate_pain001(pain001_data):
             transaction_count += 1
             control_sum += payment['amount']
             content += payment_content
-            payment_record.submit()
         # add footer
         content += make_line("  </CstmrCdtTrfInitn>")
         content += make_line("</Document>")
@@ -636,9 +635,9 @@ def generate_pain001(pain001_data):
         content = content.replace(control_sum_identifier, "{:.2f}".format(control_sum))
         
         return { 'content': content, 'skipped': skipped }
-    except IndexError:
-        frappe.msgprint( _("Please select at least one payment."), _("Information") )
-        return
-    except:
-        frappe.throw( _("Error while generating xml. Make sure that you made required customisations to the DocTypes.") )
-        return
+    #except IndexError:
+    #    frappe.msgprint( _("Please select at least one payment."), _("Information") )
+    #    return
+    #except:
+    #    frappe.throw( _("Error while generating xml. Make sure that you made required customisations to the DocTypes.") )
+    #    return

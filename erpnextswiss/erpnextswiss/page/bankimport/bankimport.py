@@ -471,6 +471,7 @@ def get_bank_settings():
 
 @frappe.whitelist()
 def parse_file(content, bank, account, auto_submit=False, debug=False):
+    debug = assert_bool(debug)
     # content is the plain text content, parse
     auto_submit = assert_bool(auto_submit);
     new_records = []

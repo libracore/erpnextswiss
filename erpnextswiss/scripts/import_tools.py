@@ -309,7 +309,7 @@ def apply_basismat():
     for item in items:
         print('.'),
         # if there is a basismat, check child table
-	if item.basismat:
+    if item.basismat:
             print('-'),
             details = frappe.get_all('Item Detail', filters={'parent': item.name, 'element': 'Basismat'}, fields=['name'])
             # prevent crashes due to missing entries

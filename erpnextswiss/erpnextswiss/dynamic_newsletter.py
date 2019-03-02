@@ -83,14 +83,21 @@ def send_dynamic_newsletter(newsletter):
                             subject=subject,
                             message=message,
                             reply_to=newsletter.send_from,
+                            reference_doctype="Newsletter",
+                            reference_name=newsletter.name,
                             unsubscribe_method="/api/method/frappe.email.doctype.newsletter.newsletter.unsubscribe"
                         )
                     except Exception as err:
                         frappe.log_error( u"Sending newsletter {0} to {1} failed: {2}.".format(newsletter.name, recipient.email, unicode(err)),
                             _("Dynamic newsletter"))
 
-    # mark newsletter as sent
-    newsletter.email_sent = 1
-    newsletter.save()
+    # mark newsletter as sent (reload because document might have been saved in the meantime)
+    newsletter_update = frappe.get_doc('Newsletter', newsletter.name)
+    try:
+        newsletter_update.email_sent = 1
+        newsletter_update.save()
+    except Exception as err:
+        frappe.log_error( _("Updating newsletter failed: error {0}").format(err),
+            _("Dynamic newsletter"))
 
     return

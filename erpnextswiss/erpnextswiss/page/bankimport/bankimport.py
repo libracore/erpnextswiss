@@ -654,6 +654,9 @@ def parse_by_template(content, bank, account, auto_submit=False, debug=False):
                 amount = getProcessedValue("AMOUNT",field_definitions["AMOUNT"], fields)
                 if valid and amount != "":
                     try:
+                        # Assign empty string to amount seperators (can be None if template is imported)
+                        if template.k_separator is None: template.k_separator = ""
+                        if template.decimal_separator is None: template.decimal_separator = ""
                         received_amount = float(amount.replace(template.k_separator,"").replace(template.decimal_separator,"."))
                     except Exception, e:
                         frappe.throw(_("Could not parse amount with value {0} check thousand and decimal separator. Error: {1}").format(amount, str(e)))

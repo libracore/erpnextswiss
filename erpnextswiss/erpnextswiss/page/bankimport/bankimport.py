@@ -610,7 +610,7 @@ def parse_by_template(content, bank, account, auto_submit=False, debug=False):
     
     try:
         if debug: frappe.msgprint(_("Header line:<br>" + lines[template.header_skip - 1]))
-        if debug: frappe.msgprint(_("Last line:<br>" + lines[len(lines) - template.footer_skip]))
+        if debug: frappe.msgprint(_("Last line:<br>" + lines[len(lines) - template.footer_skip - 1]))
         for i in range(template.header_skip, (len(lines) - template.footer_skip)):
             # Process advanced line regex substitution
             if template.advanced_settings:

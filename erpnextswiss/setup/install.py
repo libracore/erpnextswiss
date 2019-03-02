@@ -10,12 +10,14 @@ def after_install():
 
 def install_basic_docs():
     install_bankimport_banks = [
-        {'doctype': 'BankImport Bank','bank_name': 'UBS','legacy_ref': 'ubs','file_format': 'CAMT.054 Transaction Notification(camt054)','bank_enabled': 1},
-        {'doctype': 'BankImport Bank','bank_name': 'ZKB','legacy_ref': 'zkb','file_format': 'CAMT.054 Transaction Notification(camt054)','bank_enabled': 1},
-        {'doctype': 'BankImport Bank','bank_name': 'Raiffeisen','legacy_ref': 'raiffeisen','file_format': 'CAMT.054 Transaction Notification(camt054)','bank_enabled': 1},
-        {'doctype': 'BankImport Bank','bank_name': 'CreditSwiss','legacy_ref': 'cs','file_format': 'CAMT.054 Transaction Notification(camt054)','bank_enabled': 1},
-        {'doctype': 'BankImport Bank','bank_name': 'Migrosbank','legacy_ref': 'migrosbank','file_format': 'CAMT.054 Transaction Notification(camt054)','bank_enabled': 1},
-        {'doctype': 'BankImport Bank','bank_name': 'Postfinance','legacy_ref': 'postfinance','file_format': 'CAMT.054 Transaction Notification(camt054)','bank_enabled': 1}
+        {'doctype': 'BankImport Bank','bank_name': 'UBS','legacy_ref': 'ubs','file_format': 'CSV(csv)','bank_enabled': 1},
+        {'doctype': 'BankImport Bank','bank_name': 'ZKB','legacy_ref': 'zkb','file_format': 'CSV(csv)','bank_enabled': 1},
+        {'doctype': 'BankImport Bank','bank_name': 'Raiffeisen','legacy_ref': 'raiffeisen','file_format': 'CSV(csv)','bank_enabled': 1},
+        {'doctype': 'BankImport Bank','bank_name': 'CreditSwiss','legacy_ref': 'cs','file_format': 'CSV(csv)','bank_enabled': 1},
+        {'doctype': 'BankImport Bank','bank_name': 'Migrosbank','legacy_ref': 'migrosbank','file_format': 'CSV(csv)','bank_enabled': 1},
+        {'doctype': 'BankImport Bank','bank_name': 'Postfinance','legacy_ref': 'postfinance','file_format': 'CAMT.054 Transaction Notification(camt054)','bank_enabled': 1},
+        {'doctype': 'BankImport Bank','bank_name': 'Kreissparkasse','legacy_ref': 'ksk','file_format': 'CSV(csv)','bank_enabled': 1},
+        {'doctype': 'BankImport Bank','bank_name': 'Volksbank','legacy_ref': 'voba','file_format': 'CSV(csv)','bank_enabled': 1}
     ]
     
     doc = frappe.get_doc("ERPNextSwiss Settings", "ERPNextSwiss Settings")

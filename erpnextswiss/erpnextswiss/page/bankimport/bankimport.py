@@ -9,6 +9,10 @@ import hashlib
 from bs4 import BeautifulSoup
 import json
 from bs4 import BeautifulSoup
+import re
+from datetime import datetime
+import operator
+
 
 def parse_ubs(content, account, auto_submit=False):
     # parse a ubs bank extract csv
@@ -417,10 +421,10 @@ def create_reference(payment_entry, sales_invoice):
     return
     
 def log(comment):
-	new_comment = frappe.get_doc({"doctype": "Log"})
-	new_comment.comment = comment
-	new_comment.insert()
-	return new_comment
+    new_comment = frappe.get_doc({"doctype": "Log"})
+    new_comment.comment = comment
+    new_comment.insert()
+    return new_comment
 
 # converts a parameter to a bool
 def assert_bool(param):
@@ -428,7 +432,7 @@ def assert_bool(param):
     if result == 'false':
         result = False
     elif result == 'true':
-        result = True	 
+        result = True     
     return result  
 
 # convert a European/Swiss date format DD.MM.YYYY into UNC YYYY-MM-DD         
@@ -456,33 +460,300 @@ def get_bank_settings():
     # return bank settings objects
     selectable_banks = []
     for bank in bank_settings:
+        # Return enabled banks for selection
         if bank.bank_enabled == True:
-            selectable_banks.append(bank)
+            selectable_banks.append({
+                "bank_name":bank.bank_name,
+                "legacy_ref":bank.legacy_ref,
+                "file_format":bank.file_format}
+            )
     return { "banks": selectable_banks}
 
 @frappe.whitelist()
-def parse_file(content, bank, account, auto_submit=False):
-    # content is the plain text content, parse 
+def parse_file(content, bank, account, auto_submit=False, debug=False):
+    # content is the plain text content, parse
     auto_submit = assert_bool(auto_submit);
-   
     new_records = []
-    if bank == "ubs":
-        new_records = parse_ubs(content, account, auto_submit)
-    elif bank == "zkb":
-        new_records = parse_zkb(content, account, auto_submit)
-    elif bank == "raiffeisen":
-        new_records = parse_raiffeisen(content, account, auto_submit)
-    elif bank == "cs":
-        new_records = parse_cs(content, account, auto_submit)
-    elif bank == "migrosbank":
-        new_records = parse_migrosbank(content, account, auto_submit)
-                       
+    # Check if bank csv template is available
+    try:
+        if debug: frappe.msgprint("Bank: "+ bank)
+        bank_doc = frappe.get_doc("BankImport Bank",bank)
+    except:
+        bank_doc = None
+    if getattr(bank_doc,"csv_template",None):
+        if debug: frappe.msgprint(_("Parse file by template"))
+        new_records = parse_by_template(content,bank_doc.csv_template, account, auto_submit, debug)
+    else:
+        # Decode content with default ascii encoding
+        content = (b""+ content).decode("ascii")
+        if bank == "ubs":
+            new_records = parse_ubs(content, account, auto_submit)
+        elif bank == "zkb":
+            new_records = parse_zkb(content, account, auto_submit)
+        elif bank == "raiffeisen":
+            new_records = parse_raiffeisen(content, account, auto_submit)
+        elif bank == "cs":
+            new_records = parse_cs(content, account, auto_submit)
+        elif bank == "migrosbank":
+            new_records = parse_migrosbank(content, account, auto_submit)
+            
     message = "Completed"
     if len(new_records) == 0:
-        message = "No new transactions found"
+        if not debug: message = "No new transactions found"
         
-    return { "message": message, "records": new_records }
+    if not debug:
+        return { "message": message, "records": new_records }
+    else:
+        return { "message": "Debug Completed", "records": new_records }
 
+# this function tries to process the content by csv template information
+# 
+# returns the payment entries as list or None
+@frappe.whitelist()
+def parse_by_template(content, bank, account, auto_submit=False, debug=False):
+    # load csv template information
+    template = frappe.get_doc("BankImport Template",bank)
+    
+    # collect all lines of the file
+    #content = (b""+ content).decode(template.file_encoding,errors="ignore")
+    content = (b""+ content).decode(template.file_encoding)
+    
+    # collect created payment entries
+    new_payment_entries = []
+    # get default customer
+    default_customer = get_default_customer()
+    
+    # this function tries to get docitem value by name
+    # 
+    # returns the value as string, int or None
+    # string escape chars are removed
+    def getFieldDefinition(docItemName, template=template):
+        # get value from csv template
+        value = getattr(template,docItemName,None)
+        if value is not None:
+            if isinstance(value, basestring):
+                # remove escape chars and return value
+                return value.decode("unicode_escape")
+            elif isinstance(value, int):
+                if int(value) >= 0:
+                    return int(value)
+                else:
+                    return None
+            else:
+                frappe.throw(_("Unknown parameter. Error: {0}").format(str(e)))
+        else:
+            return value
+    # this function checks the available field properties and process them
+    # accordingly
+    # 
+    # returns the value as string. Rise an error if field is required
+    def getProcessedValue(fieldname, field_definition, fields):
+        # Check if field index is defined
+        if isinstance(field_definition["field_index"], int):
+            field_value = fields[field_definition["field_index"]]
+            if field_value:
+                if field_definition["field_reg"]:
+                    # Process regex matching
+                    m = re.search(field_definition["field_reg"],field_value)
+                    try:
+                        field_value = m.group(field_definition["match_group"])
+                        return field_value
+                    except Exception, e:
+                        # Return empty string if regex did not match
+                        if(not field_definition["regired"]):
+                            return ""
+                        frappe.throw(_("Regex of '{0}' did not match with error: {1}").format(fieldname, str(e)))
+                else:
+                    return field_value
+            elif not field_value and field_definition["regired"]:
+                frappe.throw(_("Value not found for '{0}' and index: {1}").format(fieldname, field_definition["field_index"]))
+            else:
+                return ""
+        elif not field_definition["regired"]:
+            return ""
+        else:
+            frappe.throw(_("Undefined condition for '{0}'").format(fieldname))
+    
+    # collect field mapping information from 'BankImport Template'
+    field_definitions = {
+        'BOOKED_AT' :
+            { 'field_index': getFieldDefinition('booked_at_field'),'field_reg': getFieldDefinition('booked_at_reg'),'match_group': 'booked','regired': True},
+        'AMOUNT' :
+            { 'field_index': getFieldDefinition('amount_field'),'field_reg': getFieldDefinition('amount_reg'),'match_group': 'amount','regired': True},
+        'CUSTOMER' :
+            { 'field_index': getFieldDefinition('customer_field'),'field_reg': getFieldDefinition('customer_reg'),'match_group': 'customer','regired': False},
+        'TRANSACTION' :
+            { 'field_index': getFieldDefinition('transaction_field'),'field_reg': getFieldDefinition('transaction_reg'),'match_group': 'transaction','regired': True},
+        'REMARK' :
+            { 'field_index': getFieldDefinition('remark_field'),'field_reg': getFieldDefinition('remark_reg'),'match_group': 'remark','regired': False},
+        'IBAN' :
+            { 'field_index': getFieldDefinition('iban_field'),'field_reg': getFieldDefinition('iban_reg'),'match_group': 'iban','regired': False},
+        'BIC' :
+            { 'field_index': getFieldDefinition('bic_field'),'field_reg': getFieldDefinition('bic_reg'),'match_group': 'bic','regired': False},
+        'VALUTA' :
+            { 'field_index': getFieldDefinition('valuta_field'),'field_reg': getFieldDefinition('valuta_reg'),'match_group': 'valuta','regired': False}
+    }
+
+    # Process advanced content regex substitution
+    if template.advanced_settings:
+        if getattr(template,"content_regex",None):
+            #Process each content replacement item
+            for item in template.content_regex:
+                content = tpl_regex_replace(item.reg_match, item.reg_sub, content, item.titel)
+    
+    # Split content lines
+    try:
+        lines = content.split(template.line_seperator.decode("unicode_escape"))
+    except Exception, e:
+        frappe.throw(_("Could not split lines by \"{0}\" with error: {1}").format(template.line_seperator.decode("unicode_escape"), str(e)))
+    
+    try:
+        if debug: frappe.msgprint(_("Header line:<br>" + lines[template.header_skip - 1]))
+        if debug: frappe.msgprint(_("Last line:<br>" + lines[len(lines) - template.footer_skip]))
+        for i in range(template.header_skip, (len(lines) - template.footer_skip)):
+            # Process advanced line regex substitution
+            if template.advanced_settings:
+                if getattr(template,"line_regex",None):
+                    #Process each line replacement item
+                    for item in template.line_regex:
+                        lines[i] = tpl_regex_replace(item.reg_match, item.reg_sub, lines[i], item.titel)
+                        
+            # Split fields by delimiter
+            fields = lines[i].split(template.delimiter.decode("unicode_escape"))
+            # Print line with field index
+            if debug:
+                string = ""
+                for f in range(len(fields)):
+                    string = string + str(f) + ": " + fields[f] + " "
+                frappe.msgprint(string)
+            # Validate line by the minimum field count
+            if debug: frappe.msgprint(_("Line {0} has a field count of {1}. Min is ({2})").format(
+                str(i),
+                str(len(fields)),
+                str(template.min_field_count))
+            )
+            if len(fields) >= int(template.min_field_count):
+                #frappe.msgprint(fields)
+                valid = True
+                # Process validation if specified
+                if template.advanced_settings:
+                    validationField = getattr(template,"valid_field",None)
+                    if validationField:
+                        if not getattr(operator, template.valid_operator)(fields[validationField], template.valid_value):
+                            if debug: 
+                                frappe.msgprint(_("Line not valid. Field value '{0}' and '{1}' with operator '{2}' evaluates false").format(
+                                    fields[validationField],
+                                    template.valid_value,
+                                    template.valid_operator
+                                ))
+                            valid = False
+                        if valid and debug:
+                            frappe.msgprint(_("Line valid"))
+                # Assign payment entry values
+                amount = getProcessedValue("AMOUNT",field_definitions["AMOUNT"], fields)
+                if valid and amount != "":
+                    try:
+                        received_amount = float(amount.replace(template.k_separator,"").replace(template.decimal_separator,"."))
+                    except Exception, e:
+                        frappe.throw(_("Could not parse amount with value {0} check thousand and decimal separator. Error: {1}").format(amount, str(e)))
+                    if received_amount > 0:
+                        booked_at = datetime.strptime(getProcessedValue("BOOKED_AT",field_definitions["BOOKED_AT"], fields),template.date_format)
+                        try:
+                            # Try to assing valuta value
+                            valuta = datetime.strptime(getProcessedValue("VALUTA",field_definitions["VALUTA"], fields),template.date_format)
+                        except Exception, e:
+                            # Use 'booked_at' because valuta did not evaluate
+                            valuta = booked_at
+                        customerMapping = getProcessedValue("CUSTOMER",field_definitions["CUSTOMER"], fields)
+                        
+                        # If specified use hash as reference instead of ref field
+                        if template.transaction_hash == 1:
+                            transaction_id = hashlib.md5("{0}:{1}:{2}".format(booked_at, received_amount, customerMapping)).hexdigest()
+                        else:
+                            transaction_id = getProcessedValue("TRANSACTION",field_definitions["TRANSACTION"], fields)
+                        
+                        # Check if payment already exist
+                        if not frappe.db.exists('Payment Entry', {'reference_no': transaction_id}) or debug:
+                            new_payment_entry = frappe.get_doc({'doctype': 'Payment Entry'})
+                            new_payment_entry.payment_type = "Receive"
+                            new_payment_entry.party_type = "Customer";
+                            
+                            # Try to match customer field with existing customer
+                            customer = frappe.get_value('Customer', customerMapping, 'name')
+                            if customer:
+                                new_payment_entry.party = customerMapping
+                            else:
+                                new_payment_entry.party = default_customer
+                            new_payment_entry.posting_date = booked_at
+                            new_payment_entry.paid_to = account
+                            new_payment_entry.received_amount = received_amount
+                            new_payment_entry.paid_amount = received_amount
+                            new_payment_entry.reference_no = transaction_id
+                            new_payment_entry.reference_date = valuta
+                            new_payment_entry.iban = getProcessedValue("IBAN",field_definitions["IBAN"], fields)
+                            new_payment_entry.bic = getProcessedValue("BIC",field_definitions["BIC"], fields)
+                            
+                            # If remark field is not defined or cannot be found use whole line
+                            remark = getProcessedValue("REMARK",field_definitions["REMARK"], fields)
+                            if remark:
+                                new_payment_entry.remarks = remark
+                            else:
+                                new_payment_entry.remarks = lines[i]
+                            if debug: frappe.msgprint(frappe.as_json(new_payment_entry).replace("\n","<br>"))
+                            if not debug:
+                                inserted_payment_entry = new_payment_entry.insert()
+                                if auto_submit:
+                                    new_payment_entry.submit()
+                                new_payment_entries.append(inserted_payment_entry.name)
+        return new_payment_entries
+    except Exception, e:
+        frappe.throw(_("Failed to parse lines with error: {0}").format(str(e)))
+
+def tpl_regex_replace(reg_find, reg_replace, content, stage, reg_group=""):
+    # Validate arguments
+    try:
+        if not isinstance(reg_find, basestring) and not reg_find:
+            frappe.throw("Template parameter invalid, please check regex find setting")
+        else:
+            reg_find = reg_find.decode("unicode_escape")
+        if not isinstance(reg_replace, basestring):
+            reg_replace = ""
+        elif not reg_replace:
+            reg_replace = ""
+        else:
+            reg_replace = reg_replace.decode("unicode_escape")
+    except Exception as e:
+        frappe.throw(_("Validation failed with error: {0}").format(str(e)))
+    # Substitute content with regex
+    try:
+        return re_sub(reg_find, reg_replace, content)
+    except Exception, e:
+        frappe.throw(_("Could not manipulate argument at stage \"{0}\" with error: {1}").format(stage, str(e)))
+
+#https://gist.github.com/gromgull/3922244
+def re_sub(pattern, replacement, string):
+    def _r(m):
+        # Now this is ugly.
+        # Python has a "feature" where unmatched groups return None
+        # then re.sub chokes on this.
+        # see http://bugs.python.org/issue1519638
+        
+        # this works around and hooks into the internal of the re module...
+
+        # the match object is replaced with a wrapper that
+        # returns "" instead of None for unmatched groups
+
+        class _m():
+            def __init__(self, m):
+                self.m=m
+                self.string=m.string
+            def group(self, n):
+                return m.group(n) or ""
+
+        return re._expand(pattern, _m(m), replacement)
+    
+    return re.sub(pattern, _r, string)
+    
 @frappe.whitelist()
 def get_bank_accounts():
     accounts = frappe.get_list('Account', filters={'account_type': 'Bank', 'is_group': 0}, fields=['name'])

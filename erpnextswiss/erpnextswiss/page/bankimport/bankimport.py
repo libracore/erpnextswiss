@@ -754,7 +754,7 @@ def parse_by_template(content, bank, account, auto_submit=False, debug=False):
         'BOOKED_AT' :
             { 'field_index': getFieldDefinition('booked_at_field'),'field_reg': getFieldDefinition('booked_at_reg'),'match_group': 'booked','regired': True},
         'AMOUNT' :
-            { 'field_index': getFieldDefinition('amount_field'),'field_reg': getFieldDefinition('amount_reg'),'match_group': 'amount','regired': True},
+            { 'field_index': getFieldDefinition('amount_field'),'field_reg': getFieldDefinition('amount_reg'),'match_group': 'amount','regired': False},
         'CUSTOMER' :
             { 'field_index': getFieldDefinition('customer_field'),'field_reg': getFieldDefinition('customer_reg'),'match_group': 'customer','regired': False},
         'TRANSACTION' :
@@ -814,6 +814,7 @@ def parse_by_template(content, bank, account, auto_submit=False, debug=False):
                 if template.advanced_settings:
                     validationField = getattr(template,"valid_field",None)
                     if validationField:
+                        # Get function from operator module and run validation
                         if not getattr(operator, template.valid_operator)(fields[validationField], template.valid_value):
                             if debug: 
                                 frappe.msgprint(_("Line not valid. Field value '{0}' and '{1}' with operator '{2}' evaluates false").format(

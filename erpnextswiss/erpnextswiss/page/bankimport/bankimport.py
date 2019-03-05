@@ -78,20 +78,24 @@ def parse_zkb(content, account, auto_submit=False):
     # get default customer
     default_customer = get_default_customer()
     try:
+    #if True:
         for i in range(1, len(lines)):
             #log("Reading {0} of {1} lines...".format(i, len(lines)))
             # skip line 0, it contains the column headers
             # collect each fields (separated by semicolon)
             fields = lines[i].split(';')
+            #frappe.log_error("Reading {0} of {1} lines... ({2} fields)".format(i, len(lines), len(fields)))
            
             # get received amount, only continue if this has a value
             if len(fields) > 10:
                 received_amount = fields[7]
                 #log("Received amount {0} ({1}, {2})".format(received_amount, fields[18], fields[20]))
+                #frappe.log_error("Received amount {0} ({1})".format(received_amount, fields[4]))
                 if received_amount != "":
                     # get unique transaction ID
                     transaction_id = fields[4]
                     #log("Checking transaction {0}".format(transaction_id))
+                    #frappe.log_error("Checking transaction {0}".format(transaction_id))
                     # cross-check if this transaction was already recorded
                     if not frappe.db.exists('Payment Entry', {'reference_no': transaction_id}):
                         #log("Adding transaction {0}".format(transaction_id))
@@ -102,7 +106,10 @@ def parse_zkb(content, account, auto_submit=False):
                         # get the customer name
                         description = fields[1].split(":")
                         #frappe.throw("Description" + fields[1] + " Amount " + fields[7])
-                        long_customer_text = description[1].split(",")
+                        try:
+                            long_customer_text = description[1].split(",")
+                        except:
+                            long_customer_text = "not defined"
                         customer_name = long_customer_text[0].strip()
                         customer = frappe.get_value('Customer', customer_name, 'name')
                         if customer:

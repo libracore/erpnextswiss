@@ -26,9 +26,14 @@ frappe.bankimport = {
 			// navigate to bank import tool
 			window.location.href="/desk#match_payments";
 		});
-		
+		this.page.add_menu_item(__("Debug Template"), function() {
+			// navigate to bank import tool
+			$('.btn-parse-file').trigger('click', [true]);
+		});
+
 		// attach button handlers
-		this.page.main.find(".btn-parse-file").on('click', function() {
+		this.page.main.find(".btn-parse-file").on('click', function(event, debug=false) {
+			
 			var me = frappe.bankimport;
 			
 			// get selected bank
@@ -53,7 +58,8 @@ frappe.bankimport = {
 					frappe.bankimport.start_wait();
 					
 					// read file content
-					content = event.target.result;
+					content = String.fromCharCode.apply(null, Array.prototype.slice.apply(new Uint8Array(event.target.result)));
+					//content = event.target.result;
 					
 					if (format == "csv") {
 						// call bankimport method with file content
@@ -63,7 +69,8 @@ frappe.bankimport = {
 								content: content,
 								bank: bank,
 								account: account,
-								auto_submit: auto_submit
+								auto_submit: auto_submit,
+								debug : debug
 							},
 							callback: function(r) {
 								if (r.message) {
@@ -113,15 +120,14 @@ frappe.bankimport = {
 				reader.onerror = function (event) {
 					frappe.msgprint(__("Error reading file"), __("Error"));
 				}
-				
-				reader.readAsText(file, "ANSI");
+				reader.readAsArrayBuffer(file);
+				//reader.readAsText(file, "ANSI");
 			}
 			else
 			{
 				frappe.msgprint(__("Please select a file."), __("Information"));
 			}
 			
-
 		});
 	},
 	run: function() {
@@ -146,7 +152,6 @@ frappe.bankimport = {
 			args: { },
 			callback: function(r) {
 				if (r.message.banks) {
-					console.log(r);
 					var select = document.getElementById("bank");
 					// Change format selection based on bank setting information
 					select.onchange = function() {
@@ -155,7 +160,11 @@ frappe.bankimport = {
 					// Build enabled banks for import
 					for (var i = 0; i < r.message.banks.length; i++) {
 						var opt = document.createElement("option");
-						opt.value = r.message.banks[i].legacy_ref;
+						if(r.message.banks[i].legacy_ref){
+							opt.value = r.message.banks[i].legacy_ref;
+						}else{
+							opt.value = r.message.banks[i].bank_name;
+						}
 						//opt.setAttribute("importType",r.message.banks[i].filetype);
 						opt.innerHTML = r.message.banks[i].bank_name;
 						select.appendChild(opt);

@@ -108,7 +108,13 @@ def get_data():
                        "name": "ERPNextSwiss Settings",
                        "label": _("ERPNextSwiss Settings"),
                        "description": _("ERPNextSwiss Settings")                   
-                   }                        
+                   },
+                   {
+                       "type": "doctype",
+                       "name": "BankImport Template",
+                       "label": _("BankImport Templates"),
+                       "description": _("BankImport Templates")
+                   }
             ]
         },
         {

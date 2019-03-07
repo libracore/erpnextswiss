@@ -650,12 +650,12 @@ def parse_file(content, bank, account, auto_submit=False, debug=False):
     # Check if bank csv template is available
     try:
         if debug: frappe.msgprint("Bank: "+ bank)
-        bank_doc = frappe.get_doc("BankImport Bank",bank)
+        bank_doc = frappe.get_all("BankImport Bank", filters={'legacy_ref': bank}, fields=['csv_template'])
     except:
         bank_doc = None
-    if getattr(bank_doc,"csv_template",None):
+    if bank_doc and bank_doc[0]['csv_template']:
         if debug: frappe.msgprint(_("Parse file by template"))
-        new_records = parse_by_template(content,bank_doc.csv_template, account, auto_submit, debug)
+        new_records = parse_by_template(content, bank_doc[0]['csv_template'], account, auto_submit, debug)
     else:
         # Decode content with default ascii encoding in Python 2.x
         if six.PY2:
@@ -674,7 +674,9 @@ def parse_file(content, bank, account, auto_submit=False, debug=False):
         elif bank == "voba":
             new_records = parse_voba(content, account, auto_submit)
         elif bank == "ksk":
-            new_records = parse_ksk(content, account, auto_submit)            
+            new_records = parse_ksk(content, account, auto_submit)
+        else:
+            frappe.msgprint( _("No suitable parser found") )
 
     message = "Completed"
     if len(new_records) == 0:
@@ -694,8 +696,8 @@ def parse_by_template(content, bank, account, auto_submit=False, debug=False):
     template = frappe.get_doc("BankImport Template",bank)
     
     # collect all lines of the file
-    #content = (b""+ content).decode(template.file_encoding,errors="ignore")
-    content = (b""+ content).decode(template.file_encoding)
+    if six.PY2:
+        content = (b""+ content).decode(template.file_encoding)
     
     # collect created payment entries
     new_payment_entries = []
@@ -710,6 +712,8 @@ def parse_by_template(content, bank, account, auto_submit=False, debug=False):
         # get value from csv template
         value = getattr(template,docItemName,None)
         if value is not None:
+            if six.PY3:
+              basestring = str
             if isinstance(value, basestring):
                 # remove escape chars and return value
                 return value.decode("unicode_escape")
@@ -782,7 +786,10 @@ def parse_by_template(content, bank, account, auto_submit=False, debug=False):
     
     # Split content lines
     try:
-        lines = content.split(template.line_seperator.decode("unicode_escape"))
+        if six.PY2:
+            lines = content.split(template.line_seperator.decode("unicode_escape"))
+        else:
+            lines = content.split(template.line_seperator)
     except Exception as e:
         frappe.throw(_("Could not split lines by \"{0}\" with error: {1}").format(template.line_seperator.decode("unicode_escape"), str(e)))
     
@@ -812,7 +819,7 @@ def parse_by_template(content, bank, account, auto_submit=False, debug=False):
                 str(template.min_field_count))
             )
             if len(fields) >= int(template.min_field_count):
-                #frappe.msgprint(fields)
+                frappe.msgprint(fields)
                 valid = True
                 # Process validation if specified
                 if template.advanced_settings:

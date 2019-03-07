@@ -11,6 +11,7 @@ import json
 from datetime import datetime
 import operator
 import re
+import six
 
 def parse_ubs(content, account, auto_submit=False):
     # parse a ubs bank extract csv
@@ -130,8 +131,8 @@ def parse_zkb(content, account, auto_submit=False):
                         new_payment_entry.reference_date = date
                         if (i + 1) < len(lines):
                             fields_next_row = lines[i + 1].split(';')
-                            new_payment_entry.remarks = fields_next_row[1] + ", " + fields_next_row[10]
-                        frappe.log_error("New payment: {0}".format(new_payment_entry))
+                            new_payment_entry.remarks = fields_next_row[1] + u", " + fields_next_row[10]
+                        #frappe.log_error("New payment: {0}, {1}".format(transaction_id, date))
                         inserted_payment_entry = new_payment_entry.insert()
                         if auto_submit:
                             new_payment_entry.submit()
@@ -656,8 +657,10 @@ def parse_file(content, bank, account, auto_submit=False, debug=False):
         if debug: frappe.msgprint(_("Parse file by template"))
         new_records = parse_by_template(content,bank_doc.csv_template, account, auto_submit, debug)
     else:
-        # Decode content with default ascii encoding
-        #content = (b""+ content).decode("ascii")
+        # Decode content with default ascii encoding in Python 2.x
+        if six.PY2:
+            content = (b""+ content).decode("ascii")
+
         if bank == "ubs":
             new_records = parse_ubs(content, account, auto_submit)
         elif bank == "zkb":

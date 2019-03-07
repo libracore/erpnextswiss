@@ -131,6 +131,7 @@ def parse_zkb(content, account, auto_submit=False):
                         if (i + 1) < len(lines):
                             fields_next_row = lines[i + 1].split(';')
                             new_payment_entry.remarks = fields_next_row[1] + ", " + fields_next_row[10]
+                        frappe.log_error("New payment: {0}".format(new_payment_entry))
                         inserted_payment_entry = new_payment_entry.insert()
                         if auto_submit:
                             new_payment_entry.submit()
@@ -656,7 +657,7 @@ def parse_file(content, bank, account, auto_submit=False, debug=False):
         new_records = parse_by_template(content,bank_doc.csv_template, account, auto_submit, debug)
     else:
         # Decode content with default ascii encoding
-        content = (b""+ content).decode("ascii")
+        #content = (b""+ content).decode("ascii")
         if bank == "ubs":
             new_records = parse_ubs(content, account, auto_submit)
         elif bank == "zkb":
@@ -733,7 +734,7 @@ def parse_by_template(content, bank, account, auto_submit=False, debug=False):
                     try:
                         field_value = m.group(field_definition["match_group"])
                         return field_value
-                    except Exception, e:
+                    except Exception as e:
                         # Return empty string if regex did not match
                         if(not field_definition["regired"]):
                             return ""
@@ -779,7 +780,7 @@ def parse_by_template(content, bank, account, auto_submit=False, debug=False):
     # Split content lines
     try:
         lines = content.split(template.line_seperator.decode("unicode_escape"))
-    except Exception, e:
+    except Exception as e:
         frappe.throw(_("Could not split lines by \"{0}\" with error: {1}").format(template.line_seperator.decode("unicode_escape"), str(e)))
     
     try:
@@ -833,14 +834,14 @@ def parse_by_template(content, bank, account, auto_submit=False, debug=False):
                         if template.k_separator is None: template.k_separator = ""
                         if template.decimal_separator is None: template.decimal_separator = ""
                         received_amount = float(amount.replace(template.k_separator,"").replace(template.decimal_separator,"."))
-                    except Exception, e:
+                    except Exception as e:
                         frappe.throw(_("Could not parse amount with value {0} check thousand and decimal separator. Error: {1}").format(amount, str(e)))
                     if received_amount > 0:
                         booked_at = datetime.strptime(getProcessedValue("BOOKED_AT",field_definitions["BOOKED_AT"], fields),template.date_format)
                         try:
                             # Try to assing valuta value
                             valuta = datetime.strptime(getProcessedValue("VALUTA",field_definitions["VALUTA"], fields),template.date_format)
-                        except Exception, e:
+                        except Exception as e:
                             # Use 'booked_at' because valuta did not evaluate
                             valuta = booked_at
                         customerMapping = getProcessedValue("CUSTOMER",field_definitions["CUSTOMER"], fields)
@@ -885,7 +886,7 @@ def parse_by_template(content, bank, account, auto_submit=False, debug=False):
                                     new_payment_entry.submit()
                                 new_payment_entries.append(inserted_payment_entry.name)
         return new_payment_entries
-    except Exception, e:
+    except Exception as e:
         frappe.throw(_("Failed to parse lines with error: {0}").format(str(e)))
 
 def tpl_regex_replace(reg_find, reg_replace, content, stage, reg_group=""):
@@ -906,7 +907,7 @@ def tpl_regex_replace(reg_find, reg_replace, content, stage, reg_group=""):
     # Substitute content with regex
     try:
         return re_sub(reg_find, reg_replace, content)
-    except Exception, e:
+    except Exception as e:
         frappe.throw(_("Could not manipulate argument at stage \"{0}\" with error: {1}").format(stage, str(e)))
 
 #https://gist.github.com/gromgull/3922244

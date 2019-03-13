@@ -185,7 +185,7 @@ def read_camt053(content, account):
         iban = soup.document.bktocstmrstmt.stmt.acct.id.iban.get_text()
     except:
         # node not found, probably wrong format
-	iban = "n/a"
+        iban = "n/a"
         frappe.log_error("Unable to read structure. Please make sure that you have selected the correct format.", "BankWizard read_camt053")
             
     # transactions

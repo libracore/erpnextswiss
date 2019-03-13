@@ -185,7 +185,8 @@ def read_camt053(content, account):
         iban = soup.document.bktocstmrstmt.stmt.acct.id.iban.get_text()
     except:
         # node not found, probably wrong format
-        return { "message": _("Unable to read structure. Please make sure that you have selected the correct format."), "records": None }
+	iban = "n/a"
+        frappe.log_error("Unable to read structure. Please make sure that you have selected the correct format.", "BankWizard read_camt053") }
             
     # transactions
     #new_payment_entries = read_camt_transactions(doc['Document']['BkToCstmrStmt']['Stmt']['Ntry'], bank, account, auto_submit)

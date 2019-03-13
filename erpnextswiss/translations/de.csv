@@ -200,6 +200,7 @@ DocType: Payment Reminder,Reminder Charges,Mahngebühren
 DocType: Payment Reminder,Highest Level,Höchste Stufe
 DocType: Payment Reminder,Total before Charge,Zwischensumme
 DocType: Payment Reminder,Total with Charge,Gesamtsumme
+DocType: Payment Reminder,Are you sure you want to create payment reminders?,"Sind Sie sicher, dass Sie Mahnungen erstellen möchten?"
 Module: ERPNextSwiss,Is proposed,Abgeholt
 Module: ERPNextSwiss,Skonto Percent,Skonto-Prozent
 Module: ERPNextSwiss,Skonto Days,Skonto-Tage

@@ -95,8 +95,13 @@ frappe.bank_wizard = {
             },
             callback: function(r) {
                 if (r.message) {
-                    frappe.show_alert( r.message.transactions.length +  __(" transactions found") );
-                    frappe.bank_wizard.render_response(r.message);
+		    try {
+                        frappe.show_alert( r.message.transactions.length +  __(" transactions found") );
+                        frappe.bank_wizard.render_response(r.message);
+		    } catch {
+	                frappe.msgprint( "An error occurred while parsing. Please check the log files." );
+			frappe.bank_wizard.end_wait();
+		    }
                 } 
             }
         });

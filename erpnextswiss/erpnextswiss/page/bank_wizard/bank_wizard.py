@@ -11,6 +11,8 @@ from bs4 import BeautifulSoup
 import ast
 import cgi                              # (used to escape utf-8 to html)
 #from erpnextswiss.erpnextswiss.page.bankimport.bankimport import create_reference
+# unicode compatiility for both Python 2 (unicode) and Python 3 (str)
+import six
 
 # this function tries to match the amount to an open sales invoice
 #
@@ -198,7 +200,10 @@ def read_camt053(content, account):
 def read_camt_transactions(transaction_entries, account):
     txns = []
     for entry in transaction_entries:
-        entry_soup = BeautifulSoup(unicode(entry), 'lxml')
+        if six.PY2:
+            entry_soup = BeautifulSoup(unicode(entry), 'lxml')
+        else:
+            entry_soup = BeautifulSoup(str(entry), 'lxml')
         date = entry_soup.bookgdt.dt.get_text()
         transactions = entry_soup.find_all('txdtls')
         # fetch entry amount as fallback
@@ -212,7 +217,10 @@ def read_camt_transactions(transaction_entries, account):
         transaction_count = 0
         for transaction in transactions:
             transaction_count += 1
-            transaction_soup = BeautifulSoup(unicode(transaction), 'lxml')
+            if six.PY2:
+                transaction_soup = BeautifulSoup(unicode(transaction), 'lxml')
+            else:
+                transaction_soup = BeautifulSoup(str(transaction), 'lxml')
             # --- find transaction type: paid or received: (DBIT: paid, CRDT: received)
             try:
                 credit_debit = transaction_soup.cdtdbtind.get_text()
@@ -264,14 +272,20 @@ def read_camt_transactions(transaction_entries, account):
                 # --- find party IBAN
                 if credit_debit == "DBIT":
                     # use RltdPties:Cdtr
-                    party_soup = BeautifulSoup(unicode(transaction_soup.txdtls.rltdpties.cdtr)) 
+                    if six.PY2:
+                        party_soup = BeautifulSoup(unicode(transaction_soup.txdtls.rltdpties.cdtr)) 
+                    else:
+                        party_soup = BeautifulSoup(str(transaction_soup.txdtls.rltdpties.cdtr)) 
                     try:
                         party_iban = transaction_soup.cdtracct.id.iban.get_text()
                     except:
                         party_iban = ""
                 else:
                     # CRDT: use RltdPties:Dbtr
-                    party_soup = BeautifulSoup(unicode(transaction_soup.txdtls.rltdpties.dbtr)) 
+                    if six.PY2:
+                        party_soup = BeautifulSoup(unicode(transaction_soup.txdtls.rltdpties.dbtr))
+                    else:
+                        party_soup = BeautifulSoup(str(transaction_soup.txdtls.rltdpties.dbtr))
                     try:
                         party_iban = transaction_soup.dbtracct.id.iban.get_text()
                     except:

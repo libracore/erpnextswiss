@@ -716,7 +716,10 @@ def parse_by_template(content, bank, account, auto_submit=False, debug=False):
               basestring = str
             if isinstance(value, basestring):
                 # remove escape chars and return value
-                return value.decode("unicode_escape")
+                if six.PY2:
+                    return value.decode("unicode_escape")
+                else:
+                    return bytearray(value, "utf-8").decode("unicode_escape")
             elif isinstance(value, int):
                 if int(value) >= 0:
                     return int(value)
@@ -789,10 +792,11 @@ def parse_by_template(content, bank, account, auto_submit=False, debug=False):
         if six.PY2:
             lines = content.split(template.line_seperator.decode("unicode_escape"))
         else:
-            lines = content.split(template.line_seperator)
+            lines = content.split(bytearray(template.line_seperator, "utf-8").decode("unicode_escape"))
     except Exception as e:
-        frappe.throw(_("Could not split lines by \"{0}\" with error: {1}").format(template.line_seperator.decode("unicode_escape"), str(e)))
-    
+        frappe.throw(_("Could not split lines by \"{0}\" with error: {1}").format(bytearray(template.line_seperator, "utf-8").decode("unicode_escape"), str(e)))
+    if debug:
+        frappe.msgprint("Content: {1}, Lines: {0}, separator: {2}".format(len(lines), content, template.line_seperator))
     try:
         if debug: frappe.msgprint(_("Header line:<br>" + lines[template.header_skip - 1]))
         if debug: frappe.msgprint(_("Last line:<br>" + lines[len(lines) - template.footer_skip - 1]))
@@ -805,7 +809,10 @@ def parse_by_template(content, bank, account, auto_submit=False, debug=False):
                         lines[i] = tpl_regex_replace(item.reg_match, item.reg_sub, lines[i], item.titel)
                         
             # Split fields by delimiter
-            fields = lines[i].split(template.delimiter.decode("unicode_escape"))
+            if six.PY2:
+                fields = lines[i].split(template.delimiter.decode("unicode_escape"))
+            else:
+                fields = lines[i].split(bytearray(template.delimiter, "utf-8").decode("unicode_escape"))
             # Print line with field index
             if debug:
                 string = ""
@@ -819,7 +826,8 @@ def parse_by_template(content, bank, account, auto_submit=False, debug=False):
                 str(template.min_field_count))
             )
             if len(fields) >= int(template.min_field_count):
-                frappe.msgprint(fields)
+                if debug:
+                    frappe.msgprint(fields)
                 valid = True
                 # Process validation if specified
                 if template.advanced_settings:
@@ -841,9 +849,15 @@ def parse_by_template(content, bank, account, auto_submit=False, debug=False):
                 if valid and amount != "":
                     try:
                         # Assign empty string to amount seperators (can be None if template is imported)
-                        if template.k_separator is None: template.k_separator = ""
-                        if template.decimal_separator is None: template.decimal_separator = ""
-                        received_amount = float(amount.replace(template.k_separator,"").replace(template.decimal_separator,"."))
+                        if template.k_separator:
+                            k_separator = template.k_separator
+                        else: 
+                            k_separator = "'"
+                        if template.decimal_separator:
+                            decimal_separator = template.decimal_separator
+                        else: 
+                            decimal_separator = "."
+                        received_amount = float(amount.replace(k_separator,"").replace(decimal_separator,"."))
                     except Exception as e:
                         frappe.throw(_("Could not parse amount with value {0} check thousand and decimal separator. Error: {1}").format(amount, str(e)))
                     if received_amount > 0:
@@ -858,7 +872,8 @@ def parse_by_template(content, bank, account, auto_submit=False, debug=False):
                         
                         # If specified use hash as reference instead of ref field
                         if template.transaction_hash == 1:
-                            transaction_id = hashlib.md5("{0}:{1}:{2}".format(booked_at, received_amount, customerMapping)).hexdigest()
+                            source = "{0}:{1}:{2}".format(booked_at, received_amount, customerMapping).encode('utf-8')
+                            transaction_id = hashlib.md5(source).hexdigest()
                         else:
                             transaction_id = getProcessedValue("TRANSACTION",field_definitions["TRANSACTION"], fields)
                         
@@ -878,6 +893,7 @@ def parse_by_template(content, bank, account, auto_submit=False, debug=False):
                             new_payment_entry.paid_to = account
                             new_payment_entry.received_amount = received_amount
                             new_payment_entry.paid_amount = received_amount
+                            new_payment_entry.camt_amount = received_amount
                             new_payment_entry.reference_no = transaction_id
                             new_payment_entry.reference_date = valuta
                             new_payment_entry.iban = getProcessedValue("IBAN",field_definitions["IBAN"], fields)
@@ -902,16 +918,24 @@ def parse_by_template(content, bank, account, auto_submit=False, debug=False):
 def tpl_regex_replace(reg_find, reg_replace, content, stage, reg_group=""):
     # Validate arguments
     try:
+        if six.PY3:
+            basestring = str
         if not isinstance(reg_find, basestring) and not reg_find:
             frappe.throw("Template parameter invalid, please check regex find setting")
         else:
-            reg_find = reg_find.decode("unicode_escape")
+            if six.PY2:
+                reg_find = reg_find.decode("unicode_escape")
+            else:
+                reg_find = bytearray(reg_find, "utf-8").decode("unicode_escape")
         if not isinstance(reg_replace, basestring):
             reg_replace = ""
         elif not reg_replace:
             reg_replace = ""
         else:
-            reg_replace = reg_replace.decode("unicode_escape")
+            if six.PY2:
+                reg_replace = reg_replace.decode("unicode_escape")
+            else:
+                reg_replace = bytearray(reg_replace, "utf-8").decode("unicode_escape")
     except Exception as e:
         frappe.throw(_("Validation failed with error: {0}").format(str(e)))
     # Substitute content with regex

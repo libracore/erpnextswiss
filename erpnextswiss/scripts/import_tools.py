@@ -141,7 +141,7 @@ def import_items(filename):
                                 "element": "Edelstein",
                                 "material": get_field(cells[ART_BEZ1]),
                                 "quality": "{0}-{1}".format(get_field(cells[ART_QUA1]), get_field(cells[ART_QU11])),
-                                "weight": get_field(cells[ART_GEW]),
+                                "weight": get_field(cells[ART_GEW1]),
                                 "count": get_field(cells[ART_ANZST1]),
                                 "unit": "ct"
                             },
@@ -149,7 +149,7 @@ def import_items(filename):
                                 "element": "Edelstein",
                                 "material": get_field(cells[ART_BEZ2]),
                                 "quality": "{0}-{1}".format(get_field(cells[ART_QUA2]), get_field(cells[ART_QU12])),
-                                "weight": get_field(cells[ART_GEW]),
+                                "weight": get_field(cells[ART_GEW2]),
                                 "count": get_field(cells[ART_ANZST2]),
                                 "unit": "ct"
                             },
@@ -157,7 +157,7 @@ def import_items(filename):
                                 "element": "Edelstein",
                                 "material": get_field(cells[ART_BEZ3]),
                                 "quality": "{0}-{1}".format(get_field(cells[ART_QUA3]), get_field(cells[ART_QU13])),
-                                "weight": get_field(cells[ART_GEW]),
+                                "weight": get_field(cells[ART_GEW3]),
                                 "count": get_field(cells[ART_ANZST3]),
                                 "unit": "ct"
                             },
@@ -165,7 +165,7 @@ def import_items(filename):
                                 "element": "Edelstein",
                                 "material": get_field(cells[ART_BEZ4]),
                                 "quality": "{0}-{1}".format(get_field(cells[ART_QUA4]), get_field(cells[ART_QU14])),
-                                "weight": get_field(cells[ART_GEW]),
+                                "weight": get_field(cells[ART_GEW4]),
                                 "count": get_field(cells[ART_ANZST4]),
                                 "unit": "ct"
                             }

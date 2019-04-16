@@ -712,9 +712,7 @@ def parse_by_template(content, bank, account, auto_submit=False, debug=False):
         # get value from csv template
         value = getattr(template,docItemName,None)
         if value is not None:
-            if six.PY3:
-              basestring = str
-            if isinstance(value, basestring):
+            if isinstance(value, six.string_types):
                 # remove escape chars and return value
                 if six.PY2:
                     return value.decode("unicode_escape")
@@ -918,16 +916,14 @@ def parse_by_template(content, bank, account, auto_submit=False, debug=False):
 def tpl_regex_replace(reg_find, reg_replace, content, stage, reg_group=""):
     # Validate arguments
     try:
-        if six.PY3:
-            basestring = str
-        if not isinstance(reg_find, basestring) and not reg_find:
+        if not isinstance(reg_find, six.string_types) and not reg_find:
             frappe.throw("Template parameter invalid, please check regex find setting")
         else:
             if six.PY2:
                 reg_find = reg_find.decode("unicode_escape")
             else:
                 reg_find = bytearray(reg_find, "utf-8").decode("unicode_escape")
-        if not isinstance(reg_replace, basestring):
+        if not isinstance(reg_replace, six.string_types):
             reg_replace = ""
         elif not reg_replace:
             reg_replace = ""

@@ -249,7 +249,7 @@ def add_transaction_block(account, amount, against_account, against_amount,
         content += make_line("       <Currency>{0}</Currency>".format(currency))
         content += make_line("       <Amount>0</Amount>")
         content += make_line("      </AmountData>")
-        content += make_line("      <KeyAmount>-{0}</KeyAmount>".format(tax_amount))
+        content += make_line("      <KeyAmount>{0}</KeyAmount>".format(tax_amount * (-1)))
         content += make_line("      <TaxRate>{0}</TaxRate>").format(tax_rate)
         content += make_line("      <TaxCoefficient>100</TaxCoefficient>")
         content += make_line("      <Country>CH</Country>")

@@ -104,5 +104,6 @@ def bulk_submit(names):
     docnames = json.loads(names)
     for name in docnames:
         payment_reminder = frappe.get_doc("Payment Reminder", name)
+        payment_reminder.update_reminder_levels()
         payment_reminder.submit()
     return

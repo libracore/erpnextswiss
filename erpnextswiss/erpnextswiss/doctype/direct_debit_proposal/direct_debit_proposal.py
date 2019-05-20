@@ -215,8 +215,10 @@ def create_direct_debit_proposal(company=None):
         companies = frappe.get_all("Company", filters={}, fields=['name'])
         company = companies[0]['name']
     # get all customers with open sales invoices
-    sql_query = ("""SELECT `customer`, `name`,  `outstanding_amount`, `due_date`, `currency`
+    sql_query = ("""SELECT `customer`, `name`,  `outstanding_amount`, `due_date`, `currency`,
+              (((100 - IFNULL(`tabPayment Terms Template`.`skonto_percent`, 0))/100) * `tabPurchase Invoice`.`outstanding_amount`) AS `skonto_amount`,
             FROM `tabSales Invoice` 
+            LEFT JOIN `tabPayment Terms Template` ON `tabSales Invoice`.`payment_terms_template` = `tabPayment Terms Template`.`name`
             WHERE `docstatus` = 1 
               AND `outstanding_amount` > 0
               AND `enable_lsv` = 1
@@ -232,7 +234,7 @@ def create_direct_debit_proposal(company=None):
             new_invoice = { 
                 'customer': invoice.customer,
                 'sales_invoice': invoice.name,
-                'amount': invoice.outstanding_amount,
+                'amount': invoice.skonto_amount, # formerly invoice.outstanding_amount, include skonto if applicable
                 'due_date': invoice.due_date,
                 'currency': invoice.currency
             }

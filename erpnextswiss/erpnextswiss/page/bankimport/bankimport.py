@@ -1054,12 +1054,17 @@ def read_camt_transactions(transaction_entries, bank, account, auto_submit=False
                         country = party_soup.ctry.get_text()
                     except:
                         party_iban = ""
+                    customer_address = "{0}, {1}, {2}".format(address_line, plz, town)
+                    try:
+                        customer_iban = "{0}".format(transaction_soup.dbtracct.id.iban.get_text())
+                    except:
+                        customer_iban = ""
                 except:
                     # CRDT: use RltdPties:Dbtr
-                    party_soup = BeautifulSoup(str(transaction_soup.txdtls.rltdpties.dbtr)) 
+                    #party_soup = BeautifulSoup(str(transaction_soup.txdtls.rltdpties.dbtr)) 
                     try:
                         customer_iban = transaction_soup.dbtracct.id.iban.get_text()
-                    except:
+                    except Exception as e:
                         customer_iban = ""
                         frappe.log_error("Error parsing customer info: {0} ({1})".format(e, unicode(transaction_soup.dbtr)))
                         # key related parties not found / no customer info

@@ -215,15 +215,19 @@ def create_direct_debit_proposal(company=None):
         companies = frappe.get_all("Company", filters={}, fields=['name'])
         company = companies[0]['name']
     # get all customers with open sales invoices
-    sql_query = ("""SELECT `customer`, `name`,  `outstanding_amount`, `due_date`, `currency`,
+    sql_query = ("""SELECT `tabSales Invoice`.`customer` AS `customer`, 
+              `tabSales Invoice`.`name` AS `name`,  
+              `tabSales Invoice`.`outstanding_amount` AS `outstanding_amount`, 
+              `tabSales Invoice`.`due_date` AS `due_date`, 
+              `tabSales Invoice``currency` AS `currency`,
               (((100 - IFNULL(`tabPayment Terms Template`.`skonto_percent`, 0))/100) * `tabPurchase Invoice`.`outstanding_amount`) AS `skonto_amount`
             FROM `tabSales Invoice` 
             LEFT JOIN `tabPayment Terms Template` ON `tabSales Invoice`.`payment_terms_template` = `tabPayment Terms Template`.`name`
-            WHERE `docstatus` = 1 
-              AND `outstanding_amount` > 0
-              AND `enable_lsv` = 1
-              AND `is_proposed` = 0
-              AND `company` = '{0}';""".format(company))
+            WHERE `tabSales Invoice`.`docstatus` = 1 
+              AND `tabSales Invoice`.`outstanding_amount` > 0
+              AND `tabSales Invoice`.`enable_lsv` = 1
+              AND `tabSales Invoice`.`is_proposed` = 0
+              AND `tabSales Invoice`.`company` = '{0}';""".format(company))
     sales_invoices = frappe.db.sql(sql_query, as_dict=True)
     new_record = None
     # get all sales invoices that are overdue

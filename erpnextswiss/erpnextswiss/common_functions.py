@@ -8,7 +8,7 @@ def get_building_number(address_line):
     if len(parts) > 1:
         return parts[-1]
     else:
-        return None
+        return ""
         
 # get street name from address line
 def get_street_name(address_line):
@@ -24,7 +24,7 @@ def get_pincode(address_line):
     if len(parts) > 1:
         return parts[0]
     else:
-        return None
+        return ""
 
 # get city from address line
 def get_city(address_line):

@@ -233,11 +233,22 @@ class PaymentProposal(Document):
                 payment_content += make_line("      <Dbtr>")
                 # debitor name
                 payment_content += make_line("        <Nm>{0}</Nm>".format(cgi.escape(self.company)))
-                # postal address (recommendadtion: do not use)
-                #content += make_line("        <PstlAdr>")
-                #content += make_line("          <Ctry>CH</Ctry>")
-                #content += make_line("          <AdrLine>SELDWYLA</AdrLine>")
-                #content += make_line("        </PstlAdr>")
+                # postal address 
+                # try to find company address
+                try:
+                    company_address_links = frappe.get_all('Dynamic Link', filters={'link_doctype': 'Company', 'link_name': self.company, 'parenttype': 'Address'}, fields='parent', order_by='is_primary_address')
+                    # primary address will be last (is_primary_address = 1, sorted)
+                    address = frappe.get_doc("Address", company_address_links.last['parent'])
+                    payment_content += make_line("        <PstlAdr>")
+                    country = frappe.get_doc("Country", address.country)
+                    payment_content += make_line("          <Ctry>{0}</Ctry>".format(country.code.upper()))
+                    payment_content += make_line("          <AdrLine>{0}</AdrLine>".format(cgi.escape(address.address_line1)))
+                    payment_content += make_line("          <PstCd>{0}</PstCd>".format(cgi.escape(address.pincode)))
+                    payment_content += make_line("          <TwnNm>{0}</TwnNm>".format(cgi.escape(address.town)))
+                    payment_content += make_line("        </PstlAdr>")
+                except Exception as e:
+                    # no company information available
+                    payment_content += make_line("        <!-- no company address found ({0}) -->".format(e))
                 payment_content += make_line("      </Dbtr>")
                 # debitor account (sender) - IBAN
                 payment_account = frappe.get_doc('Account', self.pay_from_account)

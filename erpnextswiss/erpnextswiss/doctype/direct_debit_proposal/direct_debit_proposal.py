@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2018-2019, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
 
 from __future__ import unicode_literals
@@ -216,7 +216,7 @@ def create_direct_debit_proposal(company=None):
         company = companies[0]['name']
     # get all customers with open sales invoices
     sql_query = ("""SELECT `customer`, `name`,  `outstanding_amount`, `due_date`, `currency`,
-              (((100 - IFNULL(`tabPayment Terms Template`.`skonto_percent`, 0))/100) * `tabPurchase Invoice`.`outstanding_amount`) AS `skonto_amount`,
+              (((100 - IFNULL(`tabPayment Terms Template`.`skonto_percent`, 0))/100) * `tabPurchase Invoice`.`outstanding_amount`) AS `skonto_amount`
             FROM `tabSales Invoice` 
             LEFT JOIN `tabPayment Terms Template` ON `tabSales Invoice`.`payment_terms_template` = `tabPayment Terms Template`.`name`
             WHERE `docstatus` = 1 

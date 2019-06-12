@@ -219,8 +219,8 @@ def create_direct_debit_proposal(company=None):
               `tabSales Invoice`.`name` AS `name`,  
               `tabSales Invoice`.`outstanding_amount` AS `outstanding_amount`, 
               `tabSales Invoice`.`due_date` AS `due_date`, 
-              `tabSales Invoice``currency` AS `currency`,
-              (((100 - IFNULL(`tabPayment Terms Template`.`skonto_percent`, 0))/100) * `tabPurchase Invoice`.`outstanding_amount`) AS `skonto_amount`
+              `tabSales Invoice`.`currency` AS `currency`,
+              (((100 - IFNULL(`tabPayment Terms Template`.`skonto_percent`, 0))/100) * `tabSales Invoice`.`outstanding_amount`) AS `skonto_amount`
             FROM `tabSales Invoice` 
             LEFT JOIN `tabPayment Terms Template` ON `tabSales Invoice`.`payment_terms_template` = `tabPayment Terms Template`.`name`
             WHERE `tabSales Invoice`.`docstatus` = 1 

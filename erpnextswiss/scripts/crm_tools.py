@@ -24,6 +24,21 @@ def get_customer_address(customer):
         return address
     else:
         return None
+    
+# fetch the first available contact from a customer
+@frappe.whitelist()
+def get_customer_contact(customer):
+    sql_query = u"""SELECT `parent` FROM `tabDynamic Link` WHERE
+        `link_doctype` = "Customer"
+        AND `link_name` = "{customer}"
+        AND `parenttype` = "Contact"
+        """.format(customer=customer)
+    contact_name = frappe.db.sql(sql_query, as_dict=True)
+    if contact_name:
+        contact = frappe.get_doc("Contact", contact_name[0]['parent'])
+        return contact
+    else:
+        return None
 
 # fetch the first available address from a customer
 @frappe.whitelist()

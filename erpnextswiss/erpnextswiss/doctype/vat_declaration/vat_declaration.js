@@ -100,13 +100,13 @@ frappe.ui.form.on("VAT Declaration", "additional_tax", function(frm) { update_ta
 
 function update_tax_amounts(frm) {
     // effective tax: tax rate on net amount
-    normal_tax = frm.doc.normal_amount * (frm.doc.normal_rate / 100);
-    reduced_tax = frm.doc.reduced_amount * (frm.doc.reduced_rate / 100);
-    lodging_tax = frm.doc.lodging_amount * (frm.doc.lodging_rate / 100);
+    var normal_tax = frm.doc.normal_amount * (frm.doc.normal_rate / 100);
+    var reduced_tax = frm.doc.reduced_amount * (frm.doc.reduced_rate / 100);
+    var lodging_tax = frm.doc.lodging_amount * (frm.doc.lodging_rate / 100);
     // saldo tax: rate on gross amount
-    tax_1 = frm.doc.amount_1  * (frm.doc.rate_1 / 100);
-    tax_2 = frm.doc.amount_2 * (frm.doc.rate_2 / 100);
-    total_tax = normal_tax + reduced_tax + lodging_tax + tax_1 + tax_2 + frm.doc.additional_tax;
+    var tax_1 = frm.doc.amount_1  * (frm.doc.rate_1 / 100);
+    var tax_2 = frm.doc.amount_2 * (frm.doc.rate_2 / 100);
+    var total_tax = normal_tax + reduced_tax + lodging_tax + tax_1 + tax_2 + frm.doc.additional_tax;
     frm.set_value('normal_tax', normal_tax);
     frm.set_value('reduced_tax', reduced_tax);
     frm.set_value('lodging_tax', lodging_tax);

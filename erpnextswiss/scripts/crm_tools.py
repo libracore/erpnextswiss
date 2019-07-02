@@ -54,3 +54,10 @@ def get_supplier_address(supplier):
         return address
     else:
         return None
+
+@frappe.whitelist()
+def update_contact_first_and_last_name(contact, firstname, lastname):
+    contact = frappe.get_doc("Contact", contact)
+    contact.first_name = firstname
+    contact.last_name = lastname
+    contact.save()

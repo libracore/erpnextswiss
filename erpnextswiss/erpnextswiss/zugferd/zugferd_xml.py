@@ -7,8 +7,10 @@
 #
 #
 import frappe
-from erpnextswiss.erpnextswiss.common_functions import make_line
+from erpnextswiss.erpnextswiss.common_functions import make_line, get_primary_address
 from frappe import _
+from bs4 import BeautifulSoup
+from datetime import datetime
 
 """
 Creates an XML file from a sales invoice
@@ -33,7 +35,7 @@ def create_zugferd_xml(sales_invoice):
         xml += make_line("    <ram:ID>{id}</ram:ID>".format(id=sinv.name))
         # codes: refer to UN/CEFACT code list
         xml += make_line("    <ram:TypeCode>380</ram:TypeCode>")
-        # posting date as "20180305"
+        # posting date as "20180305" (Code according to UNCL 2379)
         xml += make_line("    <ram:IssueDateTime>")
         xml += make_line("      <udt:DateTimeString format=\"102\">{year}{month}{day}</udt:DateTimeString>".format(year=sinv.posting_date.year, month=sinv.posting_date.month, day=sinv.posting_date.day))
         xml += make_line("    </ram:IssueDateTime>")
@@ -44,11 +46,7 @@ def create_zugferd_xml(sales_invoice):
         # details of the invoice issuing company
         xml += make_line("    <ram:IncludedNote>")
         company = frappe.get_doc("Company", sinv.company)
-        company_address_links = frappe.get_all('Dynamic Link', filters={'link_doctype': 'Company', 'link_name': sinv.company, 'parenttype': 'Address', 'is_primary_address': 1}, fields='parent')
-        if not company_address_links:
-            # try secondary address
-                company_address_links = frappe.get_all('Dynamic Link', filters={'link_doctype': 'Company', 'link_name': sinv.company, 'parenttype': 'Address'}, fields='parent')
-        address = frappe.get_doc("Address", company_address_links[0]['parent'])
+        address = get_primary_address(sinv.company)
         country = frappe.get_doc("Country", address.country)
         xml += make_line("      <ram:Content>{company}\r\n{address}\r\nGeschäftsführer: {ceo}\r\nHandelsregisternummer: {tax_id}</ram:Content>".format(
             company=sinv.company, address="{adr}, {plz}, {city}".format(adr=address.address_line1, plz=address.pincode, city=address.city), ceo="-", tax_id=company.tax_id))
@@ -156,6 +154,10 @@ def create_zugferd_xml(sales_invoice):
         xml += make_line("      <ram:SpecifiedTradePaymentTerms>")
         xml += make_line("        <ram:Description>{payment_terms}, {due} {due_date}</ram:Description>".format(
             payment_terms=sinv.payment_terms_template, due=_("Payment Due Date"), due_date=sinv.due_date))
+        # comfort: due date, code according to UNCL 2379
+        xml += make_line("        <ram:DueDateDateTime>")
+        xml += make_line("          <udt:DateTimeString format=\"102\">{year}{month}{day}</udt:DateTimeString>".format(year=sinv.due_date.year, month=sinv.due_date.month, day=sinv.due_date.day))
+        xml += make_line("        </ram:DueDateDateTime>")
         xml += make_line("      </ram:SpecifiedTradePaymentTerms>")
         # totals
         xml += make_line("      <ram:SpecifiedTradeSettlementHeaderMonetarySummation>")
@@ -191,5 +193,19 @@ Extracts the relevant content for a purchase invoice from a ZUGFeRD XML
 :params:zugferd_xml:    xml content (string)
 :return:                simplified dict with content
 """
-def get_content_from_zugferd(zugferd_xml):
-    
+def get_content_from_zugferd(zugferd_xml, debug=False):
+    # create soup object
+    soup = BeautifulSoup(zugferd_xml, 'lxml')
+    # dict for invoice
+    invoice = {}
+    # get supplier information (seller)
+    invoice['supplier_name'] = soup.sellertradeparty.name.get_text()
+    # dates (codes: UNCL 2379: 102=JJJJMMTT, 610=JJJJMM, 616=JJJJWW)
+    try:
+        invoice['posting_date'] = datetime.strptime(
+            soup.issuedatetime.datetimestring.get_text(), "%Y%m%d")
+    except Exception as err:
+        if debug:
+            print("Read posting date failed: {err}".format(err=err))
+        pass
+    return invoice

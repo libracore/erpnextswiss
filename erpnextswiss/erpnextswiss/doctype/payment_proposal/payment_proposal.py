@@ -8,7 +8,7 @@ from frappe.model.document import Document
 from frappe import _
 from datetime import datetime, timedelta
 import time
-from erpnextswiss.erpnextswiss.common_functions import get_building_number, get_street_name, get_pincode, get_city
+from erpnextswiss.erpnextswiss.common_functions import get_building_number, get_street_name, get_pincode, get_city, make_line, get_primary_address
 import cgi          # used to escape xml content
 
 class PaymentProposal(Document):
@@ -236,9 +236,7 @@ class PaymentProposal(Document):
                 # postal address 
                 # try to find company address
                 try:
-                    company_address_links = frappe.get_all('Dynamic Link', filters={'link_doctype': 'Company', 'link_name': self.company, 'parenttype': 'Address'}, fields='parent', order_by='is_primary_address')
-                    # primary address will be last (is_primary_address = 1, sorted)
-                    address = frappe.get_doc("Address", company_address_links.last['parent'])
+                    address = get_primary_address(self.company)
                     payment_content += make_line("        <PstlAdr>")
                     country = frappe.get_doc("Country", address.country)
                     payment_content += make_line("          <Ctry>{0}</Ctry>".format(country.code.upper()))
@@ -511,7 +509,3 @@ def create_payment_proposal(date=None, company=None):
     new_record = proposal_record.name
     frappe.db.commit()
     return new_record
-
-# adds Windows-compatible line endings (to make the xml look nice)    
-def make_line(line):
-    return line + "\r\n"

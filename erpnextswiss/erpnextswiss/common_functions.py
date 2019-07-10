@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # Copyright (c) 2018-2019, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
+import frappe
 
 # try to get building number from address line
 def get_building_number(address_line):

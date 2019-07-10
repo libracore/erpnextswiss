@@ -47,6 +47,8 @@ def create_zugferd_xml(sales_invoice):
         xml += make_line("    <ram:IncludedNote>")
         company = frappe.get_doc("Company", sinv.company)
         address = get_primary_address(sinv.company)
+        if not address:
+            frappe.throw( _("Company address not find. Please add a company address for {company}.").format(company=sinv.company))
         country = frappe.get_doc("Country", address.country)
         xml += make_line("      <ram:Content>{company}\r\n{address}\r\nGeschäftsführer: {ceo}\r\nHandelsregisternummer: {tax_id}</ram:Content>".format(
             company=sinv.company, address="{adr}, {plz}, {city}".format(adr=address.address_line1, plz=address.pincode, city=address.city), ceo="-", tax_id=company.tax_id))
@@ -59,17 +61,17 @@ def create_zugferd_xml(sales_invoice):
         for item in sinv.items:
             xml += make_line("    <ram:IncludedSupplyChainTradeLineItem>")
             xml += make_line("      <ram:AssociatedDocumentLineDocument>")
-            xml += make_line("        <ram:LineID>{idx}</ram:LineID>".format(idx=loop.index))
+            xml += make_line("        <ram:LineID>{idx}</ram:LineID>".format(idx=item.idx))
             xml += make_line("      </ram:AssociatedDocumentLineDocument>")
             xml += make_line("      <ram:SpecifiedTradeProduct>")
             #xml += make_line("        <ram:GlobalID schemeID=\"0160\">4012345001235</ram:GlobalID>")
             xml += make_line("        <ram:SellerAssignedID>{item_code}</ram:SellerAssignedID>".format(item_code=item.item_code))
-            xml += make_line("        <ram:Name>{item_name}</ram:Name>".format(item.item_name))
+            xml += make_line("        <ram:Name>{item_name}</ram:Name>".format(item_name=item.item_name))
             xml += make_line("      </ram:SpecifiedTradeProduct>")
             xml += make_line("      <ram:SpecifiedLineTradeAgreement>")
             # gross price: price list
             xml += make_line("        <ram:GrossPriceProductTradePrice>")
-            xml += make_line("          <ram:ChargeAmount>{rate:.2f}</ram:ChargeAmount>".format(rate=item.pricelist_rate))
+            xml += make_line("          <ram:ChargeAmount>{rate:.2f}</ram:ChargeAmount>".format(rate=item.price_list_rate))
             xml += make_line("        </ram:GrossPriceProductTradePrice>")
             # net price: rate
             xml += make_line("        <ram:NetPriceProductTradePrice>")
@@ -83,7 +85,7 @@ def create_zugferd_xml(sales_invoice):
             xml += make_line("      <ram:SpecifiedLineTradeSettlement>")
             # tax per item
             gross_item_amount = item.amount
-            for tax in item.taxes:
+            for tax in sinv.taxes:
                 gross_item_amount = gross_item_amount * ((100 + tax.rate) / 100)
             overall_tax_rate_percent = 100 * (gross_item_amount / item.amount)
             xml += make_line("        <ram:ApplicableTradeTax>")
@@ -118,10 +120,13 @@ def create_zugferd_xml(sales_invoice):
         xml += make_line("      </ram:SellerTradeParty>")
         # customer/buyer details
         xml += make_line("      <ram:BuyerTradeParty>")
-        xml += make_line("        <ram:ID>{customer}</ram:ID>".format(sinv.customer))
+        xml += make_line("        <ram:ID>{customer}</ram:ID>".format(customer=sinv.customer))
         #xml += make_line("        <ram:GlobalID schemeID=\"0088\">4000001987658</ram:GlobalID>")
-        xml += make_line("        <ram:Name>{customer_name</ram:Name>".format(customer_name=sinv.customer_name))
-        customer_address = frappe.get_doc("Address", sinv.customer_address)
+        xml += make_line("        <ram:Name>{customer_name}</ram:Name>".format(customer_name=sinv.customer_name))
+        try:
+            customer_address = frappe.get_doc("Address", sinv.customer_address)
+        except:
+            frappe.throw( _("Customer address not found. Please make sure the customer has an address.") )
         customer_country = frappe.get_doc("Country", customer_address.country)
         xml += make_line("        <ram:PostalTradeAddress>")
         xml += make_line("          <ram:PostcodeCode>{plz}</ram:PostcodeCode>".format(plz=customer_address.pincode))
@@ -175,7 +180,7 @@ def create_zugferd_xml(sales_invoice):
         # grand total
         xml += make_line("        <ram:GrandTotalAmount>{grand_total}</ram:GrandTotalAmount>".format(grand_total=sinv.rounded_total))
         # already paid
-        xml += make_line("        <ram:TotalPrepaidAmount>{prepaid_amount</ram:TotalPrepaidAmount>".format(prepaid_amount=(sinv.rounded_total - sinv.outstanding_amount)))
+        xml += make_line("        <ram:TotalPrepaidAmount>{prepaid_amount}</ram:TotalPrepaidAmount>".format(prepaid_amount=(sinv.rounded_total - sinv.outstanding_amount)))
         # open amount
         xml += make_line("        <ram:DuePayableAmount>{outstanding_amount}</ram:DuePayableAmount>".format(outstanding_amount=sinv.outstanding_amount))
         xml += make_line("      </ram:SpecifiedTradeSettlementHeaderMonetarySummation>")

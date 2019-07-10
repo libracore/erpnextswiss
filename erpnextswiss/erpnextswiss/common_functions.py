@@ -33,3 +33,7 @@ def get_city(address_line):
         return " ".join(parts[1:])
     else:
         return address_line
+
+# adds Windows-compatible line endings (to make the xml look nice)    
+def make_line(line):
+    return line + "\r\n"

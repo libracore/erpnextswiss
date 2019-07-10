@@ -87,15 +87,15 @@ def create_zugferd_xml(sales_invoice):
             gross_item_amount = item.amount
             for tax in item.taxes:
                 gross_item_amount = gross_item_amount * ((100 + tax.rate) / 100)
-            overall_tax_rate_percent = 100 * (gross_item_amount / item_amount)
+            overall_tax_rate_percent = 100 * (gross_item_amount / item.amount)
             xml += make_line("        <ram:ApplicableTradeTax>")
             xml += make_line("          <ram:TypeCode>VAT</ram:TypeCode>")
             xml += make_line("          <ram:CategoryCode>S</ram:CategoryCode>")
             xml += make_line("          <ram:RateApplicablePercent>{percent:.2f}</ram:RateApplicablePercent>".format(percent=overall_tax_rate_percent))
             xml += make_line("        </ram:ApplicableTradeTax>")
-            # line total in gross (including tax)
+            # line total net amount
             xml += make_line("        <ram:SpecifiedTradeSettlementLineMonetarySummation>")
-            xml += make_line("          <ram:LineTotalAmount>{gross_amount:.2f}</ram:LineTotalAmount>".format(gross_amount=gross_item_amount))
+            xml += make_line("          <ram:LineTotalAmount>{amount:.2f}</ram:LineTotalAmount>".format(amount=item.amount))
             xml += make_line("        </ram:SpecifiedTradeSettlementLineMonetarySummation>")
             xml += make_line("      </ram:SpecifiedLineTradeSettlement>")
             xml += make_line("    </ram:IncludedSupplyChainTradeLineItem>")
@@ -143,33 +143,39 @@ def create_zugferd_xml(sales_invoice):
         #xml += make_line("    </ram:ApplicableHeaderTradeDelivery>")
         # payment details
         xml += make_line("    <ram:ApplicableHeaderTradeSettlement>")
-        xml += make_line("      <ram:InvoiceCurrencyCode>EUR</ram:InvoiceCurrencyCode>")
-        xml += make_line("      <ram:ApplicableTradeTax>")
-        xml += make_line("        <ram:CalculatedAmount>19.25</ram:CalculatedAmount>")
-        xml += make_line("        <ram:TypeCode>VAT</ram:TypeCode>")
-        xml += make_line("        <ram:BasisAmount>275.00</ram:BasisAmount>")
-        xml += make_line("        <ram:CategoryCode>S</ram:CategoryCode>")
-        xml += make_line("        <ram:RateApplicablePercent>7.00</ram:RateApplicablePercent>")
-        xml += make_line("      </ram:ApplicableTradeTax>")
-        xml += make_line("      <ram:ApplicableTradeTax>")
-        xml += make_line("        <ram:CalculatedAmount>37.62</ram:CalculatedAmount>")
-        xml += make_line("        <ram:TypeCode>VAT</ram:TypeCode>")
-        xml += make_line("        <ram:BasisAmount>198.00</ram:BasisAmount>")
-        xml += make_line("        <ram:CategoryCode>S</ram:CategoryCode>")
-        xml += make_line("        <ram:RateApplicablePercent>19.00</ram:RateApplicablePercent>")
-        xml += make_line("      </ram:ApplicableTradeTax>")
+        xml += make_line("      <ram:InvoiceCurrencyCode>{currency}</ram:InvoiceCurrencyCode>".format(currency=sinv.currency))
+        for tax in sinv.taxes:
+            xml += make_line("      <ram:ApplicableTradeTax>")
+            xml += make_line("        <ram:CalculatedAmount>{tax_amount:.2f}</ram:CalculatedAmount>".format(tax_amount=tax.tax_amount))
+            xml += make_line("        <ram:TypeCode>VAT</ram:TypeCode>")
+            xml += make_line("        <ram:BasisAmount>{net_amount:.2f}</ram:BasisAmount>".format(net_amount=(tax.total - tax.tax_amount)))
+            xml += make_line("        <ram:CategoryCode>S</ram:CategoryCode>")
+            xml += make_line("        <ram:RateApplicablePercent>{rate:.2f}</ram:RateApplicablePercent>".format(rate=tax.rate))
+            xml += make_line("      </ram:ApplicableTradeTax>")
+        # payment terms (e.g. Zahlbar innerhalb 30 Tagen netto bis 04.04.2018, 3% Skonto innerhalb 10 Tagen bis 15.03.2018)
         xml += make_line("      <ram:SpecifiedTradePaymentTerms>")
-        xml += make_line("        <ram:Description>Zahlbar innerhalb 30 Tagen netto bis 04.04.2018, 3% Skonto innerhalb 10 Tagen bis 15.03.2018</ram:Description>")
+        xml += make_line("        <ram:Description>{payment_terms}, {due} {due_date}</ram:Description>".format(
+            payment_terms=sinv.payment_terms_template, due=_("Payment Due Date"), due_date=sinv.due_date))
         xml += make_line("      </ram:SpecifiedTradePaymentTerms>")
+        # totals
         xml += make_line("      <ram:SpecifiedTradeSettlementHeaderMonetarySummation>")
-        xml += make_line("        <ram:LineTotalAmount>473.00</ram:LineTotalAmount>")
-        xml += make_line("        <ram:ChargeTotalAmount>0.00</ram:ChargeTotalAmount>")
+        # net total (from positions)
+        xml += make_line("        <ram:LineTotalAmount>{total}</ram:LineTotalAmount>".format(total=sinv.total))
+        # discount
+        xml += make_line("        <ram:ChargeTotalAmount>{discount}</ram:ChargeTotalAmount>".format(discount=(sinv.total - sinv.net_total)))
+        # additional charges (not used)
         xml += make_line("        <ram:AllowanceTotalAmount>0.00</ram:AllowanceTotalAmount>")
-        xml += make_line("        <ram:TaxBasisTotalAmount>473.00</ram:TaxBasisTotalAmount>")
-        xml += make_line("		<ram:TaxTotalAmount currencyID=\"EUR\">56.87</ram:TaxTotalAmount>")
-        xml += make_line("        <ram:GrandTotalAmount>529.87</ram:GrandTotalAmount>")
-        xml += make_line("        <ram:TotalPrepaidAmount>0.00</ram:TotalPrepaidAmount>")
-        xml += make_line("        <ram:DuePayableAmount>529.87</ram:DuePayableAmount>")
+        # net total before taxes
+        xml += make_line("        <ram:TaxBasisTotalAmount>{net_total}/ram:TaxBasisTotalAmount>".format(net_total=sinv.net_total))
+        # tax amount
+        xml += make_line("		  <ram:TaxTotalAmount currencyID=\"{currency}\">{total_tax}</ram:TaxTotalAmount>".format(
+            currency=sinv.currency, total_tax=sinv.total_taxes_and_charges))
+        # grand total
+        xml += make_line("        <ram:GrandTotalAmount>{grand_total}</ram:GrandTotalAmount>".format(grand_total=sinv.rounded_total))
+        # already paid
+        xml += make_line("        <ram:TotalPrepaidAmount>{prepaid_amount</ram:TotalPrepaidAmount>".format(prepaid_amount=(sinv.rounded_total - sinv.outstanding_amount)))
+        # open amount
+        xml += make_line("        <ram:DuePayableAmount>{outstanding_amount}</ram:DuePayableAmount>".format(outstanding_amount=sinv.outstanding_amount))
         xml += make_line("      </ram:SpecifiedTradeSettlementHeaderMonetarySummation>")
         xml += make_line("    </ram:ApplicableHeaderTradeSettlement>")
         xml += make_line("  </rsm:SupplyChainTradeTransaction>")

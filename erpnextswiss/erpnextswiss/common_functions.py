@@ -4,7 +4,7 @@
 
 # try to get building number from address line
 def get_building_number(address_line):
-    parts = address_line.split(" ")
+    parts = address_line.strip().split(" ")
     if len(parts) > 1:
         return parts[-1]
     else:
@@ -12,7 +12,7 @@ def get_building_number(address_line):
         
 # get street name from address line
 def get_street_name(address_line):
-    parts = address_line.split(" ")
+    parts = address_line.strip().split(" ")
     if len(parts) > 1:
         return " ".join(parts[:-1])
     else:
@@ -20,7 +20,7 @@ def get_street_name(address_line):
         
 # get pincode from address line
 def get_pincode(address_line):
-    parts = address_line.split(" ")
+    parts = address_line.strip().split(" ")
     if len(parts) > 1:
         return parts[0]
     else:
@@ -28,7 +28,7 @@ def get_pincode(address_line):
 
 # get city from address line
 def get_city(address_line):
-    parts = address_line.split(" ")
+    parts = address_line.strip().split(" ")
     if len(parts) > 1:
         return " ".join(parts[1:])
     else:

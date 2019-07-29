@@ -38,7 +38,7 @@ def create_zugferd_xml(sales_invoice, verify=True):
         xml += ("    <ram:TypeCode>380</ram:TypeCode>")
         # posting date as "20180305" (Code according to UNCL 2379)
         xml += ("    <ram:IssueDateTime>")
-        xml += ("      <udt:DateTimeString format=\"102\">{year}{month}{day}</udt:DateTimeString>".format(year=sinv.posting_date.year, month=sinv.posting_date.month, day=sinv.posting_date.day))
+        xml += ("      <udt:DateTimeString format=\"102\">{year:04d}{month:02d}{day:02d}</udt:DateTimeString>".format(year=sinv.posting_date.year, month=sinv.posting_date.month, day=sinv.posting_date.day))
         xml += ("    </ram:IssueDateTime>")
         # note to the invoice (e.g. "Rechnung gemäß Bestellung vom 01.03.2018.")
         xml += ("    <ram:IncludedNote>")
@@ -171,7 +171,7 @@ def create_zugferd_xml(sales_invoice, verify=True):
             payment_terms=sinv.payment_terms_template, due=_("Payment Due Date"), due_date=sinv.due_date))
         # comfort: due date, code according to UNCL 2379
         xml += ("        <ram:DueDateDateTime>")
-        xml += ("          <udt:DateTimeString format=\"102\">{year}{month}{day}</udt:DateTimeString>".format(year=sinv.due_date.year, month=sinv.due_date.month, day=sinv.due_date.day))
+        xml += ("          <udt:DateTimeString format=\"102\">{year:04d}{month:02d}{day:02d}</udt:DateTimeString>".format(year=sinv.due_date.year, month=sinv.due_date.month, day=sinv.due_date.day))
         xml += ("        </ram:DueDateDateTime>")
         xml += ("      </ram:SpecifiedTradePaymentTerms>")
         # totals

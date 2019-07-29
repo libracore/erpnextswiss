@@ -138,23 +138,32 @@ def create_zugferd_xml(sales_invoice, verify=True):
         xml += ("      </ram:BuyerTradeParty>")
         xml += ("    </ram:ApplicableHeaderTradeAgreement>")
         # related delivery
-        #xml += ("    <ram:ApplicableHeaderTradeDelivery>")
+        xml += ("    <ram:ApplicableHeaderTradeDelivery>")
         #xml += ("      <ram:ActualDeliverySupplyChainEvent>")
         #xml += ("        <ram:OccurrenceDateTime>")
         #xml += ("          <udt:DateTimeString format=\"102\">20180305</udt:DateTimeString>")
         #xml += ("        </ram:OccurrenceDateTime>")
         #xml += ("      </ram:ActualDeliverySupplyChainEvent>")
-        #xml += ("    </ram:ApplicableHeaderTradeDelivery>")
+        xml += ("    </ram:ApplicableHeaderTradeDelivery>")
         # payment details
         xml += ("    <ram:ApplicableHeaderTradeSettlement>")
         xml += ("      <ram:InvoiceCurrencyCode>{currency}</ram:InvoiceCurrencyCode>".format(currency=sinv.currency))
-        for tax in sinv.taxes:
-            xml += ("      <ram:ApplicableTradeTax>")
-            xml += ("        <ram:CalculatedAmount>{tax_amount:.2f}</ram:CalculatedAmount>".format(tax_amount=tax.tax_amount))
+        if sinv.taxes:
+            for tax in sinv.taxes:
+                xml += ("      <ram:ApplicableTradeTax>")
+                xml += ("        <ram:CalculatedAmount>{tax_amount:.2f}</ram:CalculatedAmount>".format(tax_amount=tax.tax_amount))
+                xml += ("        <ram:TypeCode>VAT</ram:TypeCode>")
+                xml += ("        <ram:BasisAmount>{net_amount:.2f}</ram:BasisAmount>".format(net_amount=(tax.total - tax.tax_amount)))
+                xml += ("        <ram:CategoryCode>S</ram:CategoryCode>")
+                xml += ("        <ram:RateApplicablePercent>{rate:.2f}</ram:RateApplicablePercent>".format(rate=tax.rate))
+                xml += ("      </ram:ApplicableTradeTax>")
+        else:
+            xml += ("      <ram:ApplicableTradeTax>") 
+            xml += ("        <ram:CalculatedAmount>0</ram:CalculatedAmount>")
             xml += ("        <ram:TypeCode>VAT</ram:TypeCode>")
-            xml += ("        <ram:BasisAmount>{net_amount:.2f}</ram:BasisAmount>".format(net_amount=(tax.total - tax.tax_amount)))
+            xml += ("        <ram:BasisAmount>0</ram:BasisAmount>")
             xml += ("        <ram:CategoryCode>S</ram:CategoryCode>")
-            xml += ("        <ram:RateApplicablePercent>{rate:.2f}</ram:RateApplicablePercent>".format(rate=tax.rate))
+            xml += ("        <ram:RateApplicablePercent>0</ram:RateApplicablePercent>")                        
             xml += ("      </ram:ApplicableTradeTax>")
         # payment terms (e.g. Zahlbar innerhalb 30 Tagen netto bis 04.04.2018, 3% Skonto innerhalb 10 Tagen bis 15.03.2018)
         xml += ("      <ram:SpecifiedTradePaymentTerms>")
@@ -176,7 +185,7 @@ def create_zugferd_xml(sales_invoice, verify=True):
         # net total before taxes
         xml += ("        <ram:TaxBasisTotalAmount>{net_total}</ram:TaxBasisTotalAmount>".format(net_total=sinv.net_total))
         # tax amount
-        xml += ("		  <ram:TaxTotalAmount currencyID=\"{currency}\">{total_tax}</ram:TaxTotalAmount>".format(
+        xml += ("        <ram:TaxTotalAmount currencyID=\"{currency}\">{total_tax}</ram:TaxTotalAmount>".format(
             currency=sinv.currency, total_tax=sinv.total_taxes_and_charges))
         # grand total
         xml += ("        <ram:GrandTotalAmount>{grand_total}</ram:GrandTotalAmount>".format(grand_total=sinv.rounded_total))

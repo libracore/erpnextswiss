@@ -189,7 +189,7 @@ def read_camt053(content, account):
         # fallback (Credit Suisse will provide bank account number instead of IBAN)
         iban = "n/a"
         try:
-            acct_no = soup.document.bktocstmrstmt.stmt.acct.id.other.id.get_text()
+            acct_no = soup.document.bktocstmrstmt.stmt.acct.id.othr.id.get_text()
         except:
             # node not found, probably wrong format
             iban = "n/a"

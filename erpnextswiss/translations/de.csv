@@ -214,3 +214,5 @@ DocType: Payment Proposal,Intermediate Account,Zwischenkonto
 DocType: Payment Proposal,Close Invoive on Intermediate Account,Rechnung auf Zwischenkonto schliessen
 DocType: Payment Proposal,Please select an intermediate account.,Bitte ein Zwischenkonto wählen.
 Page: Bank Wizard,Bank Wizard,Bankassistent
+Page: Bank Wizard,Transaction matched,Zahlung zugewiesen
+Page: Bank Wizard, transactions found, Zahlungen gefunden

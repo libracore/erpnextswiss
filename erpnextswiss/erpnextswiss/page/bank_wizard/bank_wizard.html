@@ -1,4 +1,7 @@
 <div style="margin: 5px; margin-top: 0px; border-top: 1px solid white; ">
+  <!-- load the zip extension -->
+  <script src="/assets/erpnextswiss/js/jszip.min.js"></script>
+  
   <p class="text-muted">{%= __("Import payment entries from bank account file") %}</p>
 
   <div class="section-body">
@@ -32,4 +35,13 @@
     </div>
   </div>
   
+</div>
+
+<div id="waitingScreen" class="overlay">
+  <!-- Overlay content -->
+  <div class="overlay-content">
+    <p><i class="fa fa-spinner fa-spin" style="font-size:80px"></i></p>
+    <p>{{ __("Please wait, parsing data...") }}</p>
+    <div class="" id="zipcontent"></div>
+  </div>
 </div>

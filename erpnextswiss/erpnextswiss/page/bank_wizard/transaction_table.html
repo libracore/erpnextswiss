@@ -22,6 +22,9 @@
         <td>
           {% if transaction.credit_debit == "DBIT" %}
             <!-- Supplier -->
+            {% if transaction.amount == transaction.matched_amount %}
+             <button type="submit" class="btn btn-xs btn-primary" id="btn-quick-pinv-{{ transaction.txid }}">&rArr;</button>
+            {% endif %}
             {% if transaction.invoice_matches %}
              <button type="submit" class="btn btn-xs btn-success" id="btn-close-pinv-{{ transaction.txid }}">{{ __("Purchase Invoice") }}</button>
             {% endif %}
@@ -31,6 +34,9 @@
             <button type="submit" class="btn btn-xs btn-default" id="btn-close-payable-{{ transaction.txid }}">{{ __("Payables") }}</button>
           {% else %}
             <!-- Customer -->
+            {% if transaction.amount == transaction.matched_amount %}
+             <button type="submit" class="btn btn-xs btn-primary" id="btn-quick-sinv-{{ transaction.txid }}">&rArr;</button>
+            {% endif %}
             {% if transaction.invoice_matches %}
              <button type="submit" class="btn btn-xs btn-success" id="btn-close-sinv-{{ transaction.txid }}">{{ __("Sales Invoice") }}</button>
             {% endif %}

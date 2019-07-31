@@ -33,6 +33,12 @@ def create_payment_reminders():
     customers = frappe.db.sql(sql_query, as_dict=True)
     # get all sales invoices that are overdue
     if customers:
+        # find maximum reminder level
+        sql_query = ("""SELECT MAX(`reminder_level`) AS `max` FROM 1bd3e0294da19198.`tabERPNextSwiss Settings Payment Reminder Charge`;""")
+        try:
+            max_level = frappe.db.sql(sql_query, as_dict=True)[0]['max']
+        except:
+            max_level = 3
         for customer in customers:
             sql_query = ("""SELECT `name`, `due_date`, `posting_date`, `payment_reminder_level`, `grand_total`, `outstanding_amount` 
                     FROM `tabSales Invoice` 
@@ -48,6 +54,8 @@ def create_payment_reminders():
                 total_before_charges = 0
                 for invoice in open_invoices:
                     level = invoice.payment_reminder_level + 1
+                    if level > max_level:
+                        level = max_level
                     new_invoice = { 
                         'sales_invoice': invoice.name,
                         'amount': invoice.grand_total,

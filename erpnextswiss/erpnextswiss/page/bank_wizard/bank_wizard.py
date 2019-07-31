@@ -186,9 +186,14 @@ def read_camt053(content, account):
         #iban = doc['Document']['BkToCstmrStmt']['Stmt']['Acct']['Id']['IBAN']
         iban = soup.document.bktocstmrstmt.stmt.acct.id.iban.get_text()
     except:
-        # node not found, probably wrong format
+        # fallback (Credit Suisse will provide bank account number instead of IBAN)
         iban = "n/a"
-        frappe.log_error("Unable to read structure. Please make sure that you have selected the correct format.", "BankWizard read_camt053")
+        try:
+            acct_no = soup.document.bktocstmrstmt.stmt.acct.id.other.id.get_text()
+        except:
+            # node not found, probably wrong format
+            iban = "n/a"
+            frappe.log_error("Unable to read structure. Please make sure that you have selected the correct format.", "BankWizard read_camt053")
             
     # transactions
     #new_payment_entries = read_camt_transactions(doc['Document']['BkToCstmrStmt']['Stmt']['Ntry'], bank, account, auto_submit)

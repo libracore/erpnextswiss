@@ -62,25 +62,24 @@ def get_content_from_zugferd(zugferd_xml, debug=False):
     
     if suppliers_global_id:
         global_id_xml = soup.SpecifiedTradeProduct.GlobalID.get_text()
-        suppliers_global_id = frappe.get_all('Supplier', filters={'supplier': global_id_xml}, fields = supplier_name[0])
-        
-        invoice['supplier_name'] = supplier_name_xml
-    else if suppliers_tax:
+        suppliers_global_id = frappe.get_all('Supplier', filters={'supplier': global_id_xml}, fields = supplier_name[0])        
+        invoice['supplier_name'] = soup.sellertradeparty.name.get_text()
+        frappe.printmsg("Name of supplier is" + global_id_xml)
+    elif suppliers_tax:
         tax_id_xml = soup.find_all(schemeID='VA')
         suppliers_tax = frappe.get_all('Supplier', filters={'supplier': tax_id_xml[0]}, fields = supplier_name[0])
-        supplier = frappe.get_doc('Supplier', 'suppliers tax')
-       
-        invoice['supplier_name'] = supplier_name_xml
-        supplier.global_id = global_id_xml
-        
+        supplier = frappe.get_doc('Supplier', 'suppliers tax')       
+        invoice['supplier_name'] = soup.sellertradeparty.name.get_text()
+        supplier.global_id = soup.SpecifiedTradeProduct.GlobalID.get_text()
         supplier.save()
     else:
+        tax_id_list = soup.find_all(schemeID='VA')
         # insert a new Suppler:
         frappe.db.insert({
         doctype: 'Supplier',
-        supplier_name: supplier_name_xml, 
-        tax_id: tax_id_xml,
-        global_id: global_id_xml
+        supplier_name: soup.sellertradeparty.name.get_text(),
+        tax_id: tax_id_list[0],
+        global_id: soup.SpecifiedTradeProduct.GlobalID.get_text()
     })
     
 

@@ -7,7 +7,7 @@
 #
 import frappe
 from frappe.utils.pdf import get_pdf
-from zugferd_xml import create_zugferd_xml
+from erpnextswiss.erpnextswiss.zugferd.zugferd_xml import create_zugferd_xml
 from facturx import generate_facturx_from_binary
 
 

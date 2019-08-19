@@ -26,7 +26,10 @@ class DailyClosingStatement(Document):
             FROM `tabSales Invoice Item`
             LEFT JOIN `tabSales Taxes and Charges` ON `tabSales Invoice Item`. `parent` = `tabSales Taxes and Charges`.`parent`
             LEFT JOIN `tabSales Invoice` ON `tabSales Invoice Item`.`parent` = `tabSales Invoice`.`name`
-            WHERE `tabSales Invoice`.`posting_date` >= "{start_date}" AND `tabSales Invoice`.`posting_date` <= "{end_date}";
+            WHERE 
+              `tabSales Invoice`.`docstatus` = 1
+              AND `tabSales Invoice`.`posting_date` >= "{start_date}" 
+              AND `tabSales Invoice`.`posting_date` <= "{end_date}";
         """.format(start_date=self.start_date, end_date=self.end_date)
         results = frappe.db.sql(sql_query, as_dict=True)
         
@@ -43,14 +46,20 @@ class DailyClosingStatement(Document):
         # total sales
         sql_query = """SELECT SUM(`tabSales Invoice`.`base_grand_total`) AS `base_grand_total`
             FROM `tabSales Invoice`
-            WHERE `tabSales Invoice`.`posting_date` >= "{start_date}" AND `tabSales Invoice`.`posting_date` <= "{end_date}";
+            WHERE 
+              `tabSales Invoice`.`docstatus` = 1
+              AND `tabSales Invoice`.`posting_date` >= "{start_date}" 
+              AND `tabSales Invoice`.`posting_date` <= "{end_date}";
         """.format(start_date=self.start_date, end_date=self.end_date)
         results = frappe.db.sql(sql_query, as_dict=True)
         self.total_sales = results[0]['base_grand_total']
         # number of customers 
         sql_query = """SELECT COUNT(`tabSales Invoice`.`customer`) AS `customer_count`
             FROM `tabSales Invoice`
-            WHERE `tabSales Invoice`.`posting_date` >= "{start_date}" AND `tabSales Invoice`.`posting_date` <= "{end_date}
+            WHERE 
+              `tabSales Invoice`.`docstatus` = 1
+              AND`tabSales Invoice`.`posting_date` >= "{start_date}" 
+              AND `tabSales Invoice`.`posting_date` <= "{end_date}
             GROUP BY `tabSales Invoice`.`customer`";
         """.format(start_date=self.start_date, end_date=self.end_date)
         results = frappe.db.sql(sql_query, as_dict=True)
@@ -59,7 +68,10 @@ class DailyClosingStatement(Document):
         sql_query = """SELECT AVG(`tabSales Invoice`.`base_grand_total`) AS `avg`,
               MAX(`tabSales Invoice`.`base_grand_total`) AS `max`
             FROM `tabSales Invoice`
-            WHERE `tabSales Invoice`.`posting_date` >= "{start_date}" AND `tabSales Invoice`.`posting_date` <= "{end_date}";
+            WHERE 
+              `tabSales Invoice`.`docstatus` = 1
+              AND`tabSales Invoice`.`posting_date` >= "{start_date}" 
+              AND `tabSales Invoice`.`posting_date` <= "{end_date}";
         """.format(start_date=self.start_date, end_date=self.end_date)
         results = frappe.db.sql(sql_query, as_dict=True)
         self.average_sales = results[0]['avg']
@@ -67,7 +79,10 @@ class DailyClosingStatement(Document):
         # discounts
         sql_query = """SELECT SUM(`tabSales Invoice`.`base_discount_amount`) AS `discounts`
             FROM `tabSales Invoice`
-            WHERE `tabSales Invoice`.`posting_date` >= "{start_date}" AND `tabSales Invoice`.`posting_date` <= "{end_date}
+            WHERE 
+              `tabSales Invoice`.`docstatus` = 1
+              AND`tabSales Invoice`.`posting_date` >= "{start_date}" 
+              AND `tabSales Invoice`.`posting_date` <= "{end_date}
             GROUP BY `tabSales Invoice`.`customer`";
         """.format(start_date=self.start_date, end_date=self.end_date)
         results = frappe.db.sql(sql_query, as_dict=True)
@@ -83,7 +98,10 @@ class DailyClosingStatement(Document):
             FROM `tabSales Invoice Item`
             LEFT JOIN `tabSales Taxes and Charges` ON `tabSales Invoice Item`. `parent` = `tabSales Taxes and Charges`.`parent`
             LEFT JOIN `tabSales Invoice` ON `tabSales Invoice Item`.`parent` = `tabSales Invoice`.`name`
-            WHERE `tabSales Invoice`.`posting_date` >= "{start_date}" AND `tabSales Invoice`.`posting_date` <= "{end_date}"
+            WHERE 
+              `tabSales Invoice`.`docstatus` = 1
+              AND`tabSales Invoice`.`posting_date` >= "{start_date}" 
+              AND `tabSales Invoice`.`posting_date` <= "{end_date}"
             GROUP BY `tabSales Invoice Item`.`item_group`;
         """.format(start_date=self.start_date, end_date=self.end_date)
         results = frappe.db.sql(sql_query, as_dict=True)
@@ -102,7 +120,10 @@ class DailyClosingStatement(Document):
               `tabSales Invoice`.`currency` AS `currency`,
               SUM(`tabSales Invoice`.`base_grand_total`) AS `amount`
             FROM `tabSales Invoice`
-            WHERE `tabSales Invoice`.`posting_date` >= "{start_date}" AND `tabSales Invoice`.`posting_date` <= "{end_date}"
+            WHERE 
+              `tabSales Invoice`.`docstatus` = 1
+              AND`tabSales Invoice`.`posting_date` >= "{start_date}" 
+              AND `tabSales Invoice`.`posting_date` <= "{end_date}"
             GROUP BY `tabSales Invoice`.`currency`;
         """.format(start_date=self.start_date, end_date=self.end_date)
         results = frappe.db.sql(sql_query, as_dict=True)
@@ -122,7 +143,10 @@ class DailyClosingStatement(Document):
               SUM(`tabSales Invoice Payment`.`base_amount`) AS `amount`
             FROM `tabSales Invoice Payment`
             LEFT JOIN `tabSales Invoice` ON `tabSales Invoice Payment`.`parent` = `tabSales Invoice`.`name`
-            WHERE `tabSales Invoice`.`posting_date` >= "{start_date}" AND `tabSales Invoice`.`posting_date` <= "{end_date}"
+            WHERE 
+              `tabSales Invoice`.`docstatus` = 1
+              AND`tabSales Invoice`.`posting_date` >= "{start_date}" 
+              AND `tabSales Invoice`.`posting_date` <= "{end_date}"
             GROUP BY `tabSales Invoice Payment`.`mode_of_payment`;
         """.format(start_date=self.start_date, end_date=self.end_date)
         results = frappe.db.sql(sql_query, as_dict=True)

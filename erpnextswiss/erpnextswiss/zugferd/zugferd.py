@@ -8,8 +8,7 @@
 import frappe
 from frappe.utils.pdf import get_pdf
 from erpnextswiss.erpnextswiss.zugferd.zugferd_xml import create_zugferd_xml
-from facturx import generate_facturx_from_binary
-from facturx import get_facturx_xml_from_pdf
+from facturx import generate_facturx_from_binary, get_facturx_xml_from_pdf
 from bs4 import BeautifulSoup
 
 """

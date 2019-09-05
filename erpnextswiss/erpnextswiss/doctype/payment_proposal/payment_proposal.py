@@ -236,15 +236,15 @@ class PaymentProposal(Document):
                 # postal address 
                 # try to find company address
                 try:
-                    company_address_links = frappe.get_all('Dynamic Link', filters={'link_doctype': 'Company', 'link_name': self.company, 'parenttype': 'Address'}, fields='parent', order_by='is_primary_address')
-                    # primary address will be last (is_primary_address = 1, sorted)
-                    address = frappe.get_doc("Address", company_address_links.last['parent'])
+                    company_address_links = frappe.get_all('Dynamic Link', filters={'link_doctype': 'Company', 'link_name': self.company, 'parenttype': 'Address', 'is_primary_address': 1}, fields='parent')
+                    if not company_address_links:
+                        company_address_links = frappe.get_all('Dynamic Link', filters={'link_doctype': 'Company', 'link_name': self.company, 'parenttype': 'Address'}, fields='parent')
+                    address = frappe.get_doc("Address", company_address_links.first['parent'])
                     payment_content += make_line("        <PstlAdr>")
                     country = frappe.get_doc("Country", address.country)
                     payment_content += make_line("          <Ctry>{0}</Ctry>".format(country.code.upper()))
                     payment_content += make_line("          <AdrLine>{0}</AdrLine>".format(cgi.escape(address.address_line1)))
-                    payment_content += make_line("          <PstCd>{0}</PstCd>".format(cgi.escape(address.pincode)))
-                    payment_content += make_line("          <TwnNm>{0}</TwnNm>".format(cgi.escape(address.town)))
+                    payment_content += make_line("          <AdrLine>{0} {1}</AdrLine>".format(cgi.escape(address.pincode), cgi.escape(address.town)))
                     payment_content += make_line("        </PstlAdr>")
                 except Exception as e:
                     # no company information available

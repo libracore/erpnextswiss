@@ -129,4 +129,46 @@ def get_data():
                    }                   
             ]
         },
+        {
+            "label": _("Quality"),
+            "icon": "octicon octicon-verified",
+            "items": [
+                   {
+                       "type": "doctype",
+                       "name": "Inspection Equipment",
+                       "label": _("Inspection Equipment"),
+                       "description": _("Inspection Equipment")                   
+                   },
+				   {
+                       "type": "doctype",
+                       "name": "Inspection Equipment Transaction",
+                       "label": _("Inspection Equipment Transaction"),
+                       "description": _("Inspection Equipment Transaction")                   
+                   },
+				   {
+                       "type": "doctype",
+                       "name": "Inspection Equipment Type",
+                       "label": _("Inspection Equipment Type"),
+                       "description": _("Inspection Equipment Type")                   
+                   },
+				   {
+                       "type": "doctype",
+                       "name": "Calibration Test",
+                       "label": _("Calibration / Test"),
+                       "description": _("Calibration Test")                   
+                   },
+				   {
+                       "type": "doctype",
+                       "name": "Calibration Test Set",
+                       "label": _("Calibration / Test-Set"),
+                       "description": _("Calibration Test Set")                   
+                   },
+				   {
+                       "type": "doctype",
+                       "name": "Calibration Test Step",
+                       "label": _("Calibration / Test-Step"),
+                       "description": _("Calibration Test Step")                   
+                   }                   
+            ]
+        }
 ]

@@ -109,6 +109,11 @@ after_install = "erpnextswiss.setup.install.after_install"
 # 		"erpnextswiss.tasks.monthly"
 # 	]
 # }
+scheduler_events = {
+	"daily": [
+		"erpnextswiss.erpnextswiss.doctype.inspection_equipment.inspection_equipment.check_calibration_status"
+	]
+}
 
 # Testing
 # -------

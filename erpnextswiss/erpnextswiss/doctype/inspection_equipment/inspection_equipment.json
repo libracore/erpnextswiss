@@ -5,7 +5,17 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
-  "title"
+  "title",
+  "type",
+  "inventory_number",
+  "measurement_range",
+  "cb_1",
+  "manufacturer",
+  "location",
+  "status",
+  "calibration_interval",
+  "last_calibration",
+  "next_calibration"
  ],
  "fields": [
   {
@@ -13,9 +23,63 @@
    "fieldtype": "Data",
    "label": "Name",
    "unique": 1
+  },
+  {
+   "fieldname": "type",
+   "fieldtype": "Link",
+   "label": "Type",
+   "options": "Inspection Equipment Type"
+  },
+  {
+   "fieldname": "inventory_number",
+   "fieldtype": "Data",
+   "label": "Inventory Number"
+  },
+  {
+   "fieldname": "measurement_range",
+   "fieldtype": "Data",
+   "label": "Measurement Range"
+  },
+  {
+   "fieldname": "cb_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "manufacturer",
+   "fieldtype": "Data",
+   "label": "Manufacturer"
+  },
+  {
+   "fieldname": "location",
+   "fieldtype": "Data",
+   "label": "Location"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Calibrated\nTo Calibrate\nWithout Calibration\nDisabled\nScrap"
+  },
+  {
+   "description": "in months",
+   "fieldname": "calibration_interval",
+   "fieldtype": "Int",
+   "label": "Calibration Interval"
+  },
+  {
+   "fieldname": "last_calibration",
+   "fieldtype": "Date",
+   "label": "Last Calibration"
+  },
+  {
+   "default": "1900-01-01",
+   "fieldname": "next_calibration",
+   "fieldtype": "Date",
+   "label": "Next Calibration",
+   "read_only": 1
   }
  ],
- "modified": "2019-09-09 13:48:54.920597",
+ "modified": "2019-09-09 14:55:55.899581",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "Inspection Equipment",

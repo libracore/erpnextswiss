@@ -6,6 +6,7 @@
  "engine": "InnoDB",
  "field_order": [
   "title",
+  "equipment_image",
   "section_general",
   "type",
   "inventory_number",
@@ -104,9 +105,16 @@
    "label": "Transaction Status",
    "options": "Taken\nOn Stock",
    "read_only": 1
+  },
+  {
+   "fieldname": "equipment_image",
+   "fieldtype": "Attach Image",
+   "hidden": 1,
+   "label": "Equipment Image"
   }
  ],
- "modified": "2019-09-10 10:03:23.871923",
+ "image_field": "equipment_image",
+ "modified": "2019-09-10 10:33:02.657140",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "Inspection Equipment",

@@ -5,13 +5,24 @@
 from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
-from frappe.utils.data import nowdate
+from frappe.utils.data import nowdate, add_months
 from frappe import _
 
 class InspectionEquipment(Document):
-	pass
+	def validate(self):
+		if not self.last_calibration:
+			self.last_calibration = nowdate()
+		
+		self.next_calibration = add_months(self.last_calibration, self.calibration_interval)
+		
+		if self.status == 'Calibrated':
+			if self.next_calibration < nowdate():
+				self.status = 'To Calibrate'
+				
+		if self.status == 'To Calibrate':
+			if self.next_calibration >= nowdate():
+				self.status = 'Calibrated'
 
-	
 def check_calibration_status():
 	equipment_to_update_status = frappe.db.sql("""
 												SELECT `name`

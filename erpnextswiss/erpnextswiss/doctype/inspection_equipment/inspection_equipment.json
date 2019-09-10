@@ -11,10 +11,13 @@
   "type",
   "inventory_number",
   "measurement_range",
+  "purchase_price",
+  "transaction_status",
   "cb_1",
   "manufacturer",
   "location",
-  "transaction_status",
+  "usage",
+  "purchase_date",
   "section_calibration",
   "last_calibration",
   "calibration_interval",
@@ -51,8 +54,9 @@
   },
   {
    "fieldname": "manufacturer",
-   "fieldtype": "Data",
-   "label": "Manufacturer"
+   "fieldtype": "Link",
+   "label": "Manufacturer",
+   "options": "Supplier"
   },
   {
    "fieldname": "location",
@@ -111,10 +115,25 @@
    "fieldtype": "Attach Image",
    "hidden": 1,
    "label": "Equipment Image"
+  },
+  {
+   "fieldname": "purchase_price",
+   "fieldtype": "Currency",
+   "label": "Purchase Price"
+  },
+  {
+   "fieldname": "usage",
+   "fieldtype": "Data",
+   "label": "Usage"
+  },
+  {
+   "fieldname": "purchase_date",
+   "fieldtype": "Date",
+   "label": "Purchase Date"
   }
  ],
  "image_field": "equipment_image",
- "modified": "2019-09-10 10:33:02.657140",
+ "modified": "2019-09-10 11:03:05.745819",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "Inspection Equipment",

@@ -1,16 +1,30 @@
 frappe.listview_settings['Inspection Equipment'] = {
-	add_fields: ["status"],
+	add_fields: ["status", "transaction_status"],
 	get_indicator: function(doc) {
-		if(doc.status == 'Calibrated') {
-			return [__("Calibrated"), "green", "status,=,Calibrated"];
-		} else if(doc.status == 'To Calibrate') {
-			return [__("To Calibrate"), "orange", "status,=,To Calibrate"]
-		} else if(doc.status == 'Without Calibration') {
-			return [__("Without Calibration"), "green", "status,=,Without Calibration"]
-		} else if(doc.status == 'Disabled') {
-			return [__("Disabled"), "darkgrey", "status,=,Disabled"]
-		} else if(doc.status == 'Scrap') {
-			return [__("Scrap"), "darkgrey", "status,=,Scrap"]
-		}
+		var colors = {
+			"Calibrated/On Stock": "green",
+			"Calibrated/Taken": "orange",
+			"To Calibrate/On Stock": "red",
+			"To Calibrate/Taken": "red",
+			"Without Calibration/On Stock": "green",
+			"Without Calibration/Taken": "orange",
+			"Disabled/On Stock": "darkgrey",
+			"Scrap/On Stock": "darkgrey",
+			"Disabled/Taken": "darkgrey",
+			"Scrap/Taken": "darkgrey"
+		};
+		var to_display = {
+			"Calibrated/On Stock": "Calibrated and on stock",
+			"Calibrated/Taken": "Calibrated and taken",
+			"To Calibrate/On Stock": "To calibrate and on stock",
+			"To Calibrate/Taken": "To calibrate and taken",
+			"Without Calibration/On Stock": "Without calibration and on stock",
+			"Without Calibration/Taken": "Without calibration and taken",
+			"Disabled/On Stock": "Disabled",
+			"Scrap/On Stock": "Scrap",
+			"Disabled/Taken": "Disabled",
+			"Scrap/Taken": "Scrap"
+		};
+		return [__(to_display[doc.status+"/"+doc.transaction_status]), colors[doc.status+"/"+doc.transaction_status], "status,=," + doc.status+"|transaction_status,=,"+doc.transaction_status];
 	}
 };

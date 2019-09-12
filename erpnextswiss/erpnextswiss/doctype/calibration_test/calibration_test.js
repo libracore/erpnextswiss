@@ -10,7 +10,7 @@ frappe.ui.form.on('Calibration Test', {
 		div_for_test.appendChild(create_div_list(frm));
 		var items = cur_frm.doc.test_plan_items;
 		items.forEach(function(entry) {
-			div_for_test.appendChild(create_div_tests(entry));
+			div_for_test.appendChild(create_div_tests(frm, entry));
 		});
 	}
 });
@@ -45,7 +45,7 @@ function create_div_list(frm) {
 	return col_4_container
 }
 
-function create_div_tests(entry) {
+function create_div_tests(frm, entry) {
 	if (entry.test_based_on == "Verdict") {
 		// column container
 		var col_8_container = document.createElement("div");
@@ -70,6 +70,7 @@ function create_div_tests(entry) {
 		operating_instructions.classList.add("form-control");
 		operating_instructions.innerHTML = entry.operating_instructions;
 		operating_instructions.id = entry.name + "_" + "operating_instructions";
+		operating_instructions.disabled = true;
 		
 		//Remarks
 		var label_remarks = document.createElement("label");
@@ -78,7 +79,7 @@ function create_div_tests(entry) {
 		var remarks = document.createElement("textarea");
 		remarks.classList.add("form-control");
 		remarks.innerHTML = entry.remarks || '';
-		remarks.id = entry.name + "_" + "operating_instructions";
+		remarks.id = entry.name + "_" + "remarks";
 		
 		//Inspection Decision OK Button
 		var button = document.createElement("button");
@@ -87,7 +88,7 @@ function create_div_tests(entry) {
 		button.classList.add("btn-success");
 		button.innerHTML = "Inspection Decision OK";
 		button.style.marginTop = "5px";
-		button.onclick = function() { save_values(entry.name, entry.test_based_on); };
+		button.onclick = function() { save_values(frm, entry.name, entry.test_based_on, document.getElementById(entry.name + "_" + "remarks").value); };
 		
 		//combine everything
 		form_group.appendChild(label_operating_instructions);
@@ -125,6 +126,7 @@ function create_div_tests(entry) {
 		operating_instructions.classList.add("form-control");
 		operating_instructions.innerHTML = entry.operating_instructions;
 		operating_instructions.id = entry.name + "_" + "operating_instructions";
+		operating_instructions.disabled = true;
 		
 		//Remarks
 		var label_remarks = document.createElement("label");
@@ -133,7 +135,7 @@ function create_div_tests(entry) {
 		var remarks = document.createElement("textarea");
 		remarks.classList.add("form-control");
 		remarks.innerHTML = entry.remarks || '';
-		remarks.id = entry.name + "_" + "operating_instructions";
+		remarks.id = entry.name + "_" + "remarks";
 		
 		//table
 		var table = document.createElement("table");
@@ -184,7 +186,7 @@ function create_div_tests(entry) {
 		button.classList.add("btn-success");
 		button.innerHTML = "Inspection Decision OK";
 		button.style.marginTop = "5px";
-		button.onclick = function() { save_values(entry.name, entry.test_based_on); };
+		button.onclick = function() { save_values(frm, entry.name, entry.test_based_on, document.getElementById(entry.name + "_" + "remarks").value); };
 		
 		//combine everything
 		form_group.appendChild(label_operating_instructions);
@@ -210,6 +212,14 @@ function toggle_hidden(name) {
 	to_toggle.classList.toggle("hidden");
 }
 
-function save_values(name, type) {
-	frappe.msgprint("jetzt sollte es gespeichert werden...typ: " + type + ", name: " + name);
+function save_values(frm, name, type, remarks) {
+	//frappe.msgprint("jetzt sollte es gespeichert werden...typ: " + type + ", name: " + name);
+	var all_tests = cur_frm.doc.test_plan_items;
+	var i;
+	for (i=0; i < all_tests.length; i++) {
+		if (all_tests[i].name == name) {
+			frappe.model.set_value(cur_frm.doc.test_plan_items[i].doctype, cur_frm.doc.test_plan_items[i].name, "remarks", remarks);
+		}
+	}
+	cur_frm.save();
 }

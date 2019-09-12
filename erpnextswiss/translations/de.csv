@@ -258,3 +258,4 @@ DocType: Inspection Equipment,Test based on,Test basierend auf
 DocType: Inspection Equipment,Inspection Decision OK?,Prüfkriterium OK?
 DocType: Inspection Equipment,Inspection Decision OK,Prüfkriterium OK
 DocType: Inspection Equipment,Calibration / Test-Set,Kalibration / Test-Set
+DocType: Inspection Equipment,Caution; the actual value is not between OTG and UTG!,Achtung; der gemessene Wert liegt ausserhalb der Toleranzgrenzen!

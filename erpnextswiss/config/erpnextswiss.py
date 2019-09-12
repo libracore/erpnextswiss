@@ -162,13 +162,7 @@ def get_data():
                        "name": "Calibration Test Set",
                        "label": _("Calibration / Test-Set"),
                        "description": _("Calibration Test Set")                   
-                   },
-				   {
-                       "type": "doctype",
-                       "name": "Calibration Test Step",
-                       "label": _("Calibration / Test-Step"),
-                       "description": _("Calibration Test Step")                   
-                   }                   
+                   }                 
             ]
         }
 ]

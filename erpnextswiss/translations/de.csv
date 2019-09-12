@@ -226,3 +226,35 @@ DocType: Payment Proposal,Execute Payments On,Zahlungen an diesem Datum ausführ
 Page: Bank Wizard,Bank Wizard,Bankassistent
 Page: Bank Wizard,Transaction matched,Zahlung zugewiesen
 Page: Bank Wizard, transactions found, Zahlungen gefunden
+DocType: Inspection Equipment,Inspection Equipment,Prüfmittel
+DocType: Inspection Equipment,Transaction,Transaktion
+DocType: Inspection Equipment,Calibration / Test,Kalibration / Test
+DocType: Inspection Equipment,Inspection Equipment Transaction,Prüfmittel Transaktion
+DocType: Inspection Equipment,General,Allgemein
+DocType: Inspection Equipment,Type,Typ
+DocType: Inspection Equipment,Manufacturer,Hersteller
+DocType: Inspection Equipment,Inventory Number,Inventar Nummer
+DocType: Inspection Equipment,Location,Ort
+DocType: Inspection Equipment,Measurement Range,Messbereich
+DocType: Inspection Equipment,Usage,Verwendung
+DocType: Inspection Equipment,Purchase Price,Einkaufspreis
+DocType: Inspection Equipment,Purchase Date,Beschaffungsdatum
+DocType: Inspection Equipment,Transaction Status,Transaktionsstatus
+DocType: Inspection Equipment,On Stock,An Lager
+DocType: Inspection Equipment,Taken,Entnommen
+DocType: Inspection Equipment,Calibration,Kalibration
+DocType: Inspection Equipment,Last Calibration,Letzte Kalibration
+DocType: Inspection Equipment,Next Calibration,Nächste Kalibration
+DocType: Inspection Equipment,Calibration Test Set,Kalibration Test Set
+DocType: Inspection Equipment,Calibration Test,Kalibration Test
+DocType: Inspection Equipment,Calibration Interval,Kalibrations Interval
+DocType: Inspection Equipment,Current Inspection Equipment Status,Aktueller Prüfmittel Transaktionsstatus
+DocType: Inspection Equipment,New Inspection Equipment Status,Neuer Prüfmittel Transaktionsstatus
+DocType: Inspection Equipment,Inspection Equipment Type,Prüfmitteltyp
+DocType: Inspection Equipment,Perform Test, Test durchführen
+DocType: Inspection Equipment,Test Plan Items, Testschritte
+DocType: Inspection Equipment,Operating Instructions, Ausführungsanweisung
+DocType: Inspection Equipment,Test based on,Test basierend auf
+DocType: Inspection Equipment,Inspection Decision OK?,Prüfkriterium OK?
+DocType: Inspection Equipment,Inspection Decision OK,Prüfkriterium OK
+DocType: Inspection Equipment,Calibration / Test-Set,Kalibration / Test-Set

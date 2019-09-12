@@ -97,7 +97,7 @@ function create_div_tests(frm, entry) {
 		button.type = "button";
 		button.classList.add("btn");
 		button.classList.add("btn-success");
-		button.innerHTML = "Inspection Decision OK";
+		button.innerHTML = __("Inspection Decision OK");
 		button.style.marginTop = "5px";
 		button.onclick = function() { save_values(frm, entry.name, entry.test_based_on, document.getElementById(entry.name + "_" + "remarks").value); };
 		
@@ -195,7 +195,7 @@ function create_div_tests(frm, entry) {
 		button.type = "button";
 		button.classList.add("btn");
 		button.classList.add("btn-success");
-		button.innerHTML = "Inspection Decision OK";
+		button.innerHTML = __("Inspection Decision OK");
 		button.style.marginTop = "5px";
 		button.onclick = function() { save_values(frm, entry.name, entry.test_based_on, document.getElementById(entry.name + "_" + "remarks").value); };
 		

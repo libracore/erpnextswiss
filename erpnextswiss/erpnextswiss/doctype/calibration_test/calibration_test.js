@@ -9,9 +9,19 @@ frappe.ui.form.on('Calibration Test', {
 		var div_for_test = document.getElementById("perform_test_div");
 		div_for_test.appendChild(create_div_list(frm));
 		var items = cur_frm.doc.test_plan_items;
+		var to_open = '';
 		items.forEach(function(entry) {
 			div_for_test.appendChild(create_div_tests(frm, entry));
+			if (entry.inspection_decision_ok == '0') {
+				if (to_open == '') {
+					to_open = entry.name;
+				}
+			}
 		});
+		console.log(to_open);
+		if (to_open != '') {
+			document.getElementById(to_open + "_to_open").click();
+		}
 	}
 });
 
@@ -35,6 +45,7 @@ function create_div_list(frm) {
 		li.appendChild(fontawesome);
 		var a = document.createElement("a");
 		a.innerHTML = " " + entry.designation;
+		a.id = entry.name + "_to_open";
 		a.onclick = function() { toggle_hidden(entry.name); };
 		li.appendChild(a);
 		col_4_container_ol.appendChild(li);
@@ -219,7 +230,10 @@ function save_values(frm, name, type, remarks) {
 	for (i=0; i < all_tests.length; i++) {
 		if (all_tests[i].name == name) {
 			frappe.model.set_value(cur_frm.doc.test_plan_items[i].doctype, cur_frm.doc.test_plan_items[i].name, "remarks", remarks);
+			frappe.model.set_value(cur_frm.doc.test_plan_items[i].doctype, cur_frm.doc.test_plan_items[i].name, "inspection_decision_ok", 1);
 		}
 	}
 	cur_frm.save();
+	setTimeout(function(){ cur_frm.events.perform_test(); }, 1000);
+	
 }

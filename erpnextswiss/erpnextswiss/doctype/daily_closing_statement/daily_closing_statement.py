@@ -158,4 +158,4 @@ class DailyClosingStatement(Document):
                 'count': result['count'], 
                 'amount': result['amount']
             })
-	pass
+        return

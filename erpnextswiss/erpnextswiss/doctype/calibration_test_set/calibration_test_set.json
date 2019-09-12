@@ -5,7 +5,8 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
-  "title"
+  "title",
+  "test_plan"
  ],
  "fields": [
   {
@@ -13,9 +14,16 @@
    "fieldtype": "Data",
    "label": "Name",
    "unique": 1
+  },
+  {
+   "fieldname": "test_plan",
+   "fieldtype": "Table",
+   "label": "Test Plan",
+   "options": "Calibration Test Item",
+   "reqd": 1
   }
  ],
- "modified": "2019-09-09 14:02:10.423772",
+ "modified": "2019-09-12 09:43:46.834164",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "Calibration Test Set",

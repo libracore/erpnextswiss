@@ -63,7 +63,8 @@
    "fieldname": "new_status",
    "fieldtype": "Select",
    "label": "New Inspection Equipment Status",
-   "options": "Taken\nOn Stock"
+   "options": "Taken\nOn Stock",
+   "read_only": 1
   },
   {
    "fieldname": "amended_from",
@@ -76,7 +77,7 @@
   }
  ],
  "is_submittable": 1,
- "modified": "2019-09-09 15:57:56.365603",
+ "modified": "2019-09-12 08:50:43.854078",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "Inspection Equipment Transaction",

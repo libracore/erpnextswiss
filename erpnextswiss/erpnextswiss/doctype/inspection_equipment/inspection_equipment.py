@@ -36,18 +36,3 @@ def check_calibration_status():
 			equipment.status = 'To Calibrate'
 			equipment.save()
 			equipment.add_comment(comment_type='Comment', text=_("This Inspection Equipment has to be calibrated."))
-			
-@frappe.whitelist()
-def create_transaction(inspection_equipment, employee, status):
-	transaction = frappe.new_doc("Inspection Equipment Transaction")
-	transaction.inspection_equipment = inspection_equipment
-	transaction.date = nowdate()
-	transaction.employee = employee
-	if status == 'On Stock':
-		transaction.current_status = 'On Stock'
-		transaction.new_status = 'Taken'
-	else:
-		transaction.current_status = 'Taken'
-		transaction.new_status = 'On Stock'
-	transaction.save()
-	return transaction.name

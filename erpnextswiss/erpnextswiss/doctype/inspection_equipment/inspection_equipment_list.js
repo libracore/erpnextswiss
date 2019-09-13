@@ -3,11 +3,11 @@ frappe.listview_settings['Inspection Equipment'] = {
 	get_indicator: function(doc) {
 		var colors = {
 			"Calibrated/On Stock": "green",
-			"Calibrated/Taken": "orange",
+			"Calibrated/Taken": "blue",
 			"To Calibrate/On Stock": "red",
 			"To Calibrate/Taken": "red",
 			"Without Calibration/On Stock": "green",
-			"Without Calibration/Taken": "orange",
+			"Without Calibration/Taken": "blue",
 			"Disabled/On Stock": "darkgrey",
 			"Scrap/On Stock": "darkgrey",
 			"Disabled/Taken": "darkgrey",

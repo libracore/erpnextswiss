@@ -71,6 +71,7 @@
    "options": "Calibrated\nTo Calibrate\nWithout Calibration\nDisabled\nScrap"
   },
   {
+   "default": "0",
    "description": "in months",
    "fieldname": "calibration_interval",
    "fieldtype": "Int",
@@ -118,6 +119,7 @@
    "label": "Equipment Image"
   },
   {
+   "default": "0.00",
    "fieldname": "purchase_price",
    "fieldtype": "Currency",
    "label": "Purchase Price"
@@ -140,7 +142,7 @@
   }
  ],
  "image_field": "equipment_image",
- "modified": "2019-09-12 09:41:37.120477",
+ "modified": "2019-09-13 13:41:19.966959",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "Inspection Equipment",

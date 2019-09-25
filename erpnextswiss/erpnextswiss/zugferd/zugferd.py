@@ -10,6 +10,8 @@ from frappe.utils.pdf import get_pdf
 from erpnextswiss.erpnextswiss.zugferd.zugferd_xml import create_zugferd_xml
 from facturx import generate_facturx_from_binary, get_facturx_xml_from_pdf
 from bs4 import BeautifulSoup
+from frappe.utils.file_manager import save_file
+from pathlib import Path
 
 """
 Creates an XML file from a sales invoice
@@ -40,12 +42,18 @@ def download_zugferd_pdf(sales_invoice_name, format=None, doc=None, no_letterhea
     frappe.local.response.type = "download"
     return
     
-@frappe.whitelist()
-def make_pinv(input_file):
-    extracted_xml = get_facturx_xml_from_pdf(input_file, check_xsd=True)
-    frappe.msgprint(extracted_xml)
-    return extracted_xml
- 
+    
+    
+    #this is the method that does not work
+@frappe.whitelist()    
+def get_xml(file_name, is_private, doc_name):
+    physical_path = frappe.utils.get_bench_path()+ "/sites/" + frappe.utils.get_path('private' if is_private else 'public', 'files', file_name)
+    frappe.msgprint(physical_path);
+    frappe.msgprint(doc_name);
+    f = open(physical_path, "rb")
+    frappe.msgprint("hello");
+    xml_content = get_facturx_xml_from_pdf(f)
+    get_content_from_zugferd(xml_content, debug=False)
 
 """
 Extracts the relevant content for a purchase invoice from a ZUGFeRD XML
@@ -57,7 +65,6 @@ def get_content_from_zugferd(zugferd_xml, debug=False):
     soup = BeautifulSoup(zugferd_xml, 'lxml')
     # dict for invoice
     invoice = {}
-    
     
     if suppliers_global_id:
         global_id_xml = soup.SpecifiedTradeProduct.GlobalID.get_text()

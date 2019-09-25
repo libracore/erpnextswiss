@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2017-2018, libracore and contributors
+# Copyright (c) 2017-2019, libracore and contributors
 # License: AGPL v3. See LICENCE
 
 from __future__ import unicode_literals
@@ -55,7 +55,7 @@ def generate_transfer_file(start_date, end_date, limit=10000, aggregated=0):
                     AND `tabSales Invoice`.`exported_to_abacus` = 0
                 GROUP BY `key`""".format(start_date=start_date, end_date=end_date)
         else:
-            sql_query = """SELECT `tabSales Invoice`.`name`, `tabSales Invoice`.`posting_date`, `tabSales Invoice`.`currency`, 
+            sql_query = """SELECT DISTINCT `tabSales Invoice`.`name`, `tabSales Invoice`.`posting_date`, `tabSales Invoice`.`currency`, 
                   `tabSales Invoice`.`base_grand_total` AS `debit`, `tabSales Invoice`.`debit_to`,
                   `tabSales Invoice`.`base_net_total` AS `income`, `tabSales Invoice Item`.`income_account`,  
                   `tabSales Invoice`.`total_taxes_and_charges` AS `tax`, `tabSales Taxes and Charges`.`account_head`,
@@ -63,7 +63,7 @@ def generate_transfer_file(start_date, end_date, limit=10000, aggregated=0):
                   `tabSales Taxes and Charges`.`rate`
                 FROM `tabSales Invoice`
                 LEFT JOIN `tabSales Invoice Item` ON `tabSales Invoice`.`name` = `tabSales Invoice Item`.`parent`
-                LEFT JOIN `tabSales Taxes and Charges` ON `tabSales Invoice`.`name` = `tabSales Taxes and Charges`.`parent`
+                LEFT JOIN `tabSales Taxes and Charges` ON (`tabSales Invoice`.`name` = `tabSales Taxes and Charges`.`parent` AND  `tabSales Taxes and Charges`.`idx` = 1)
                 WHERE
                     `tabSales Invoice`.`posting_date` >= '{start_date}'
                     AND `tabSales Invoice`.`posting_date` <= '{end_date}'
@@ -104,22 +104,23 @@ def generate_transfer_file(start_date, end_date, limit=10000, aggregated=0):
                 content += add_transaction_block(account=item.debit_to, amount=item.debit, 
                     against_account=item.income_account, against_amount=item.income, 
                     debit_credit="D", date=date, currency=item.currency, transaction_count=transaction_count, 
-                    tax_account=item.account_head, tax_amount=item.tax, tax_rate=item.rate, tax_code=tax_record.tax_code or "312")
+                    tax_account=item.account_head, tax_amount=item.tax, tax_rate=item.rate, 
+                    tax_code=tax_record.tax_code or "312", doc_ref=item.name)
             else:
                 # create content block without taxes
                 content += add_transaction_block(account=item.debit_to, amount=item.debit, 
                     against_account=item.income_account, against_amount=item.income, 
                     debit_credit="D", date=date, currency=item.currency, transaction_count=transaction_count,
-                    tax_account=None, tax_amount=None, tax_rate=None, tax_code=None)
+                    tax_account=None, tax_amount=None, tax_rate=None, tax_code=None, doc_ref=item.name)
 
             transaction_count += 1        
         
         # add payment entry transactions
         if aggregated == 1:
-            sql_query = """SELECT 
+            sql_query = """SELECT `tabPayment Entry`.`name`,
                       `tabPayment Entry`.`posting_date`, `tabPayment Entry`.`paid_from_account_currency` AS `currency`,
                       SUM(`tabPayment Entry`.`paid_amount`) AS `amount`, `tabPayment Entry`.`paid_from`,
-                      `tabPayment Entry`.`paid_to`,  
+                      `tabPayment Entry`.`paid_to`,
                       CONCAT(IFNULL(`tabPayment Entry`.`paid_from`, ""),
                         IFNULL(`tabPayment Entry`.`paid_to`, "")
                       ) AS `key`
@@ -132,10 +133,10 @@ def generate_transfer_file(start_date, end_date, limit=10000, aggregated=0):
                     GROUP BY `key`
                 """.format(start_date=start_date, end_date=end_date)
         else:
-            sql_query = """SELECT 
+            sql_query = """SELECT `tabPayment Entry`.`name`,
                       `tabPayment Entry`.`posting_date`, `tabPayment Entry`.`paid_from_account_currency` AS `currency`,
                       `tabPayment Entry`.`paid_amount` AS `amount`, `tabPayment Entry`.`paid_from`,
-                      `tabPayment Entry`.`paid_to`,  
+                      `tabPayment Entry`.`paid_to`,
                       CONCAT(IFNULL(`tabPayment Entry`.`paid_from`, ""),
                         IFNULL(`tabPayment Entry`.`paid_to`, "")
                       ) AS `key`
@@ -160,7 +161,7 @@ def generate_transfer_file(start_date, end_date, limit=10000, aggregated=0):
                 ["posting_date","<=", end_date],
                 ["docstatus","=", 1],
                 ["name","in", payment_range],
-		        ["exported_to_abacus","=",0]], fields=['name'])
+                ["exported_to_abacus","=",0]], fields=['name'])
             for export_match in export_matches:
                 record = frappe.get_doc("Payment Entry", export_match['name'])
                 record.exported_to_abacus = 1
@@ -176,16 +177,19 @@ def generate_transfer_file(start_date, end_date, limit=10000, aggregated=0):
             content += add_transaction_block(account=item.paid_from, amount=item.amount, 
                 against_account=item.paid_to, against_amount=item.amount, 
                 debit_credit="C", date=date, currency=item.currency, transaction_count=transaction_count,
-                tax_account=None, tax_amount=None, tax_rate=None, tax_code=None)
+                tax_account=None, tax_amount=None, tax_rate=None, tax_code=None, doc_ref=item.name)
 
-            transaction_count += 1        
-            
+            transaction_count += 1
+
         # add footer
         content += make_line(" </Task>")
         content += make_line("</AbaConnectContainer>")
         # insert control numbers
         content = content.replace(transaction_count_identifier, "{0}".format(transaction_count))
-        
+
+        # create a log entry for debug
+        frappe.log_error(content, "Abacus export content")
+
         return { 'content': content }
     #except:
     #    frappe.throw( _("Error while generating xml. Make sure that you made required customisations to the DocTypes.") )
@@ -194,7 +198,8 @@ def generate_transfer_file(start_date, end_date, limit=10000, aggregated=0):
 # Params
 #  debit_credit: "D" or "C"
 def add_transaction_block(account, amount, against_account, against_amount, 
-        debit_credit, date, currency, transaction_count, tax_account=None, tax_amount=None, tax_rate=None, tax_code=None):
+        debit_credit, date, currency, transaction_count, tax_account=None, 
+        tax_amount=None, tax_rate=None, tax_code=None, doc_ref="Sammelbuchung"):
     date_str = unicode(date)
     transaction_reference = "{0} {1} {2} {3}".format(date_str, account, debit_credit, amount)
     short_reference = "{0}{1}{2}{3}".format(date_str[2:4], date_str[5:7], date_str[8:10], transaction_count)
@@ -218,7 +223,7 @@ def add_transaction_block(account, amount, against_account, against_amount,
     content += make_line("     <Account>{0}</Account>".format(get_account_number(account)))
     content += make_line("     <IntercompanyId>0</IntercompanyId>")
     content += make_line("     <IntercompanyCode></IntercompanyCode>")
-    content += make_line("     <Text1>Sammelbuchung</Text1>")
+    content += make_line("     <Text1>{0}</Text1>".format(doc_ref))
     content += make_line("     <DocumentNumber>{0}</DocumentNumber>".format(short_reference))
     content += make_line("     <SingleCount>0</SingleCount>")
     content += make_line("    </CollectiveInformation>")
@@ -237,7 +242,7 @@ def add_transaction_block(account, amount, against_account, against_amount,
         content += make_line("     <TaxAccount>{0}</TaxAccount>".format(get_account_number(tax_account)))
     content += make_line("     <IntercompanyId>0</IntercompanyId>")
     content += make_line("     <IntercompanyCode></IntercompanyCode>")
-    content += make_line("     <Text1>Sammelbuchung</Text1>")
+    content += make_line("     <Text1>{0}</Text1>".format(doc_ref))
     content += make_line("     <DocumentNumber>{0}</DocumentNumber>".format(short_reference))
     content += make_line("     <SelectionCode></SelectionCode>")
     if tax_account:

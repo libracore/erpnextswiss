@@ -6,7 +6,8 @@ from __future__ import unicode_literals
 import frappe
 from frappe import throw, _
 import hashlib
-    
+import six
+
 @frappe.whitelist()
 def generate_transfer_file(start_date, end_date, limit=10000, aggregated=0):
     # creates a transfer file for abacus
@@ -200,7 +201,7 @@ def generate_transfer_file(start_date, end_date, limit=10000, aggregated=0):
 def add_transaction_block(account, amount, against_account, against_amount, 
         debit_credit, date, currency, transaction_count, tax_account=None, 
         tax_amount=None, tax_rate=None, tax_code=None, doc_ref="Sammelbuchung"):
-    date_str = unicode(date)
+    date_str = six.text_type(date)
     transaction_reference = "{0} {1} {2} {3}".format(date_str, account, debit_credit, amount)
     short_reference = "{0}{1}{2}{3}".format(date_str[2:4], date_str[5:7], date_str[8:10], transaction_count)
     content = make_line("  <Transaction id=\"{0}\">").format(transaction_count)

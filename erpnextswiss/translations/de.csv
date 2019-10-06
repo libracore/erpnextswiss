@@ -15,7 +15,7 @@ Page: payment_export,No payment entries to be paid found with status draft,Es wu
 Page: payment_export,Exports the selected payment entries for execution by file transfer to a bank,Exportiert die gewählten Zahlungen zur Ausführung durch eine Bank
 Page: payment_export,Payment entries,Zahlungen
 Page: payment_export,Create payment file,Zahlungsdatei erstellen
-Page: bankimport,Import payment entries from bank account file,Importiert Zahlungen aus einem Bankkonto-CSV
+Page: bankimport,Import payment entries from bank account file,Importiert Zahlungen aus einer Bankkonto-Datei
 Page: bankimport,Payment account,Konto
 Page: bankimport,Automatically submit,Automatisch buchen
 Page: bankimport,Parse,Einlesen

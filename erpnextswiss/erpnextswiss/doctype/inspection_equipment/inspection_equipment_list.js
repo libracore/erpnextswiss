@@ -8,9 +8,9 @@ frappe.listview_settings['Inspection Equipment'] = {
 			"To Calibrate/Taken": "red",
 			"Without Calibration/On Stock": "green",
 			"Without Calibration/Taken": "blue",
-			"Disabled/On Stock": "darkgrey",
+			"Blocked/On Stock": "darkgrey",
 			"Scrap/On Stock": "darkgrey",
-			"Disabled/Taken": "darkgrey",
+			"Blocked/Taken": "darkgrey",
 			"Scrap/Taken": "darkgrey"
 		};
 		var to_display = {
@@ -20,9 +20,9 @@ frappe.listview_settings['Inspection Equipment'] = {
 			"To Calibrate/Taken": "To calibrate and taken",
 			"Without Calibration/On Stock": "Without calibration and on stock",
 			"Without Calibration/Taken": "Without calibration and taken",
-			"Disabled/On Stock": "Disabled",
+			"Blocked/On Stock": "Blocked",
 			"Scrap/On Stock": "Scrap",
-			"Disabled/Taken": "Disabled",
+			"Blocked/Taken": "Blocked",
 			"Scrap/Taken": "Scrap"
 		};
 		return [__(to_display[doc.status+"/"+doc.transaction_status]), colors[doc.status+"/"+doc.transaction_status], "status,=," + doc.status+"|transaction_status,=,"+doc.transaction_status];

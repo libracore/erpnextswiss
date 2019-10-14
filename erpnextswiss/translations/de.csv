@@ -263,4 +263,5 @@ DocType: Inspection Equipment,To Calibrate,Zu Kalibrieren
 DocType: Inspection Equipment,Calibrated,Kalibriert
 DocType: Inspection Equipment,Without Calibration,Ohne Kalibration
 DocType: Inspection Equipment,Scrap,Verschrottet
+DocType: Inspection Equipment,Blocked,Gesperrt
 DocType: Inspection Equipment,in months,in Monaten

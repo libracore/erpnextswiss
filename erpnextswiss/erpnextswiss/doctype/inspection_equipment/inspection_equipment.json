@@ -68,7 +68,7 @@
    "fieldname": "status",
    "fieldtype": "Select",
    "label": "Status",
-   "options": "Calibrated\nTo Calibrate\nWithout Calibration\nDisabled\nScrap"
+   "options": "Calibrated\nTo Calibrate\nWithout Calibration\nBlocked\nScrap"
   },
   {
    "default": "0",
@@ -142,7 +142,7 @@
   }
  ],
  "image_field": "equipment_image",
- "modified": "2019-09-13 13:41:19.966959",
+ "modified": "2019-10-14 15:39:33.340461",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "Inspection Equipment",

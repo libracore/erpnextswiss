@@ -129,4 +129,16 @@ def get_data():
                    }                   
             ]
         },
+        {
+            "label": _("Quality"),
+            "icon": "octicon octicon-verified",
+            "items": [
+                   {
+                       "type": "doctype",
+                       "name": "Non Conformity Report 8D",
+                       "label": _("Non Conformity Report 8D"),
+                       "description": _("Non Conformity Report 8D")                   
+                   }               
+            ]
+        }
 ]

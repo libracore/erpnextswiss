@@ -49,14 +49,26 @@ def download_zugferd_pdf(sales_invoice_name, format=None, doc=None, no_letterhea
 
 #this is the method that does not work
 @frappe.whitelist()    
-def get_xml(file_name, is_private, doc_name):
-    physical_path = frappe.utils.get_bench_path()+ "/sites/" + frappe.utils.get_path('private' if is_private else 'public', 'files', file_name)
+def get_xml(file_path, doc_name):
+    physical_path = "{bench_path}/sites/{site_name}{file_path}".format(
+        bench_path=frappe.utils.get_bench_path(), 
+        site_name=frappe.utils.get_site_path().replace("./", ""),
+        file_path=file_path)
     frappe.msgprint(physical_path);
     frappe.msgprint(doc_name);
-    f = open(physical_path, "rb")
-    frappe.msgprint("hello");
-    xml_content = get_facturx_xml_from_pdf(f)
-    get_content_from_zugferd(xml_content, debug=False)
+    try:
+        f = open(physical_path, "rb")
+        xml_name, xml_content = get_facturx_xml_from_pdf(f)
+        #print(xml_content.decode('utf-8'))
+        #frappe.msgprint("XML: {0}".format(xml_content))
+        try:
+            invoice = get_content_from_zugferd(xml_content.decode('utf-8'), debug=False)
+            return invoice
+        except Exception as err:
+            frappe.log_error("ZUGFeRD parsing error: {0}".format(err), "Zugferd get_content_from_zugferd")
+            return None
+    except Exception as err:
+        frappe.log_error("File not found. {0}".format(err), "Zugferd get_xml")
 
 """
 Extracts the relevant content for a purchase invoice from a ZUGFeRD XML

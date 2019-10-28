@@ -28,12 +28,16 @@ def create_zugferd_pdf(sales_invoice_name, verify=True, format=None, doc=None, n
         pdf = get_pdf(html)
         xml = create_zugferd_xml(sales_invoice_name)
     
-        facturx_pdf = generate_facturx_from_binary(pdf, xml)
+        # facturx_pdf = generate_facturx_from_binary(pdf, xml.encode('utf-8'))  ## The second argument of the method generate_facturx must be either a string, an etree.Element() object or a file (it is a <class 'bytes'>).
+        facturx_pdf = generate_facturx_from_binary(pdf, xml)  ## Unicode strings with encoding declaration are not supported. Please use bytes input or XML fragments without declaration.
+        
          
         return facturx_pdf
     except Exception as err:
-        return "Unable to create zugferdPDF: {0}".format(err)
-
+        frappe.log_error("Unable to create zugferdPDF: {0}\n{1}".format(err, xml), "ZUGFeRD")
+        # fallback to normal pdf
+        pdf = get_pdf(html)
+        return pdf
 
 @frappe.whitelist()
 def download_zugferd_pdf(sales_invoice_name, format=None, doc=None, no_letterhead=0, verify=True):
@@ -42,9 +46,8 @@ def download_zugferd_pdf(sales_invoice_name, format=None, doc=None, no_letterhea
     frappe.local.response.type = "download"
     return
     
-    
-    
-    #this is the method that does not work
+
+#this is the method that does not work
 @frappe.whitelist()    
 def get_xml(file_name, is_private, doc_name):
     physical_path = frappe.utils.get_bench_path()+ "/sites/" + frappe.utils.get_path('private' if is_private else 'public', 'files', file_name)

@@ -24,8 +24,8 @@ def create_zugferd_xml(sales_invoice, verify=True):
         # get original document
         sinv = frappe.get_doc("Sales Invoice", sales_invoice)
         # compile xml content, header
-        xml = ("""<?xml version='1.0' encoding='UTF-8' ?>""")
-        xml += ("""<rsm:CrossIndustryInvoice xmlns:a="urn:un:unece:uncefact:data:standard:QualifiedDataType:100" xmlns:rsm="urn:un:unece:uncefact:data:standard:CrossIndustryInvoice:100" xmlns:qdt="urn:un:unece:uncefact:data:standard:QualifiedDataType:10" xmlns:ram="urn:un:unece:uncefact:data:standard:ReusableAggregateBusinessInformationEntity:100" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:udt="urn:un:unece:uncefact:data:standard:UnqualifiedDataType:100">""")
+        xml = ("<?xml version='1.0' encoding='UTF-8' ?>")
+        xml += ("<rsm:CrossIndustryInvoice xmlns:a='urn:un:unece:uncefact:data:standard:QualifiedDataType:100' xmlns:rsm='urn:un:unece:uncefact:data:standard:CrossIndustryInvoice:100' xmlns:qdt='urn:un:unece:uncefact:data:standard:QualifiedDataType:10' xmlns:ram='urn:un:unece:uncefact:data:standard:ReusableAggregateBusinessInformationEntity:100' xmlns:xs='http://www.w3.org/2001/XMLSchema' xmlns:udt='urn:un:unece:uncefact:data:standard:UnqualifiedDataType:100'>")
         xml += ("  <rsm:ExchangedDocumentContext>")
         xml += ("    <ram:GuidelineSpecifiedDocumentContextParameter>")
         xml += ("      <ram:ID>urn:cen.eu:en16931:2017</ram:ID>")
@@ -38,7 +38,7 @@ def create_zugferd_xml(sales_invoice, verify=True):
         xml += ("    <ram:TypeCode>380</ram:TypeCode>")
         # posting date as "20180305" (Code according to UNCL 2379)
         xml += ("    <ram:IssueDateTime>")
-        xml += ("      <udt:DateTimeString format=\"102\">{year:04d}{month:02d}{day:02d}</udt:DateTimeString>".format(year=sinv.posting_date.year, month=sinv.posting_date.month, day=sinv.posting_date.day))
+        xml += ("      <udt:DateTimeString format='102'>{year:04d}{month:02d}{day:02d}</udt:DateTimeString>".format(year=sinv.posting_date.year, month=sinv.posting_date.month, day=sinv.posting_date.day))
         xml += ("    </ram:IssueDateTime>")
         # note to the invoice (e.g. "Rechnung gemäß Bestellung vom 01.03.2018.")
         xml += ("    <ram:IncludedNote>")
@@ -51,8 +51,8 @@ def create_zugferd_xml(sales_invoice, verify=True):
         if not address:
             frappe.throw( _("Company address not find. Please add a company address for {company}.").format(company=sinv.company))
         country = frappe.get_doc("Country", address.country)
-        xml += ("      <ram:Content>{company}\r\n{address}\r\nGeschäftsführer: {ceo}\r\nHandelsregisternummer: {tax_id}</ram:Content>".format(
-            company=sinv.company, address="{adr}, {plz}, {city}".format(adr=address.address_line1, plz=address.pincode, city=address.city), ceo="-", tax_id=company.tax_id))
+        xml += ("      <ram:Content>{company}, {address}, Geschäftsführer: {ceo}, Handelsregisternummer: {tax_id}</ram:Content>".format(
+            company=sinv.company, address="{adr}, {plz}, {city}".format(adr=address.address_line1, plz=address.pincode, city=address.city), ceo="-", tax_id=company.tax_id or "-"))
         # subject code: see UNCL 4451
         xml += ("      <ram:SubjectCode>REG</ram:SubjectCode>")
         xml += ("    </ram:IncludedNote>")
@@ -65,7 +65,7 @@ def create_zugferd_xml(sales_invoice, verify=True):
             xml += ("        <ram:LineID>{idx}</ram:LineID>".format(idx=item.idx))
             xml += ("      </ram:AssociatedDocumentLineDocument>")
             xml += ("      <ram:SpecifiedTradeProduct>")
-            #xml += ("        <ram:GlobalID schemeID=\"0160\">4012345001235</ram:GlobalID>")
+            #xml += ("        <ram:GlobalID schemeID='0160'>4012345001235</ram:GlobalID>")
             xml += ("        <ram:SellerAssignedID>{item_code}</ram:SellerAssignedID>".format(item_code=item.item_code))
             xml += ("        <ram:Name>{item_name}</ram:Name>".format(item_name=item.item_name))
             xml += ("      </ram:SpecifiedTradeProduct>")
@@ -81,7 +81,7 @@ def create_zugferd_xml(sales_invoice, verify=True):
             xml += ("      </ram:SpecifiedLineTradeAgreement>")
             # quantity: unit see UNCL 6411
             xml += ("      <ram:SpecifiedLineTradeDelivery>")
-            xml += ("        <ram:BilledQuantity unitCode=\"{unit}\">{qty}</ram:BilledQuantity>".format(unit="C62", qty=item.qty))
+            xml += ("        <ram:BilledQuantity unitCode='{unit}'>{qty}</ram:BilledQuantity>".format(unit="C62", qty=item.qty))
             xml += ("      </ram:SpecifiedLineTradeDelivery>")
             xml += ("      <ram:SpecifiedLineTradeSettlement>")
             # tax per item
@@ -103,7 +103,7 @@ def create_zugferd_xml(sales_invoice, verify=True):
         # seller details
         xml += ("    <ram:ApplicableHeaderTradeAgreement>")
         xml += ("      <ram:SellerTradeParty>")
-        #xml += ("        <ram:GlobalID schemeID=\"0088\">4000001123452</ram:GlobalID>")
+        #xml += ("        <ram:GlobalID schemeID='0088'>4000001123452</ram:GlobalID>")
         xml += ("        <ram:Name>{company}</ram:Name>".format(company=sinv.company))
         xml += ("        <ram:PostalTradeAddress>")
         xml += ("          <ram:PostcodeCode>{plz}</ram:PostcodeCode>".format(plz=address.pincode))
@@ -113,16 +113,16 @@ def create_zugferd_xml(sales_invoice, verify=True):
         xml += ("        </ram:PostalTradeAddress>")
         # tax registration
         #xml += ("        <ram:SpecifiedTaxRegistration>")
-        #xml += ("          <ram:ID schemeID=\"FC\">201/113/40209</ram:ID>")
+        #xml += ("          <ram:ID schemeID='FC'>201/113/40209</ram:ID>")
         #xml += ("        </ram:SpecifiedTaxRegistration>")
         xml += ("        <ram:SpecifiedTaxRegistration>")
-        xml += ("          <ram:ID schemeID=\"VA\">{tax_id}</ram:ID>".format(tax_id=company.tax_id))
+        xml += ("          <ram:ID schemeID='VA'>{tax_id}</ram:ID>".format(tax_id=company.tax_id))
         xml += ("        </ram:SpecifiedTaxRegistration>")
         xml += ("      </ram:SellerTradeParty>")
         # customer/buyer details
         xml += ("      <ram:BuyerTradeParty>")
         xml += ("        <ram:ID>{customer}</ram:ID>".format(customer=sinv.customer))
-        #xml += ("        <ram:GlobalID schemeID=\"0088\">4000001987658</ram:GlobalID>")
+        #xml += ("        <ram:GlobalID schemeID='0088'>4000001987658</ram:GlobalID>")
         xml += ("        <ram:Name>{customer_name}</ram:Name>".format(customer_name=sinv.customer_name))
         try:
             customer_address = frappe.get_doc("Address", sinv.customer_address)
@@ -141,7 +141,7 @@ def create_zugferd_xml(sales_invoice, verify=True):
         xml += ("    <ram:ApplicableHeaderTradeDelivery>")
         #xml += ("      <ram:ActualDeliverySupplyChainEvent>")
         #xml += ("        <ram:OccurrenceDateTime>")
-        #xml += ("          <udt:DateTimeString format=\"102\">20180305</udt:DateTimeString>")
+        #xml += ("          <udt:DateTimeString format='102'>20180305</udt:DateTimeString>")
         #xml += ("        </ram:OccurrenceDateTime>")
         #xml += ("      </ram:ActualDeliverySupplyChainEvent>")
         xml += ("    </ram:ApplicableHeaderTradeDelivery>")
@@ -171,7 +171,7 @@ def create_zugferd_xml(sales_invoice, verify=True):
             payment_terms=sinv.payment_terms_template, due=_("Payment Due Date"), due_date=sinv.due_date))
         # comfort: due date, code according to UNCL 2379
         xml += ("        <ram:DueDateDateTime>")
-        xml += ("          <udt:DateTimeString format=\"102\">{year:04d}{month:02d}{day:02d}</udt:DateTimeString>".format(year=sinv.due_date.year, month=sinv.due_date.month, day=sinv.due_date.day))
+        xml += ("          <udt:DateTimeString format='102'>{year:04d}{month:02d}{day:02d}</udt:DateTimeString>".format(year=sinv.due_date.year, month=sinv.due_date.month, day=sinv.due_date.day))
         xml += ("        </ram:DueDateDateTime>")
         xml += ("      </ram:SpecifiedTradePaymentTerms>")
         # totals
@@ -185,7 +185,7 @@ def create_zugferd_xml(sales_invoice, verify=True):
         # net total before taxes
         xml += ("        <ram:TaxBasisTotalAmount>{net_total}</ram:TaxBasisTotalAmount>".format(net_total=sinv.net_total))
         # tax amount
-        xml += ("        <ram:TaxTotalAmount currencyID=\"{currency}\">{total_tax}</ram:TaxTotalAmount>".format(
+        xml += ("        <ram:TaxTotalAmount currencyID='{currency}'>{total_tax}</ram:TaxTotalAmount>".format(
             currency=sinv.currency, total_tax=sinv.total_taxes_and_charges))
         # grand total
         xml += ("        <ram:GrandTotalAmount>{grand_total}</ram:GrandTotalAmount>".format(grand_total=sinv.rounded_total))
@@ -200,8 +200,11 @@ def create_zugferd_xml(sales_invoice, verify=True):
         
         # verify the generated xml
         if verify:
-            if not check_facturx_xsd(facturx_xml=xml):
-                frappe.throw( _("XML validation failed") )
+            try:
+                if not check_facturx_xsd(facturx_xml=xml.encode('utf-8')):
+                    return _("XML validation failed")
+            except Exception as err:
+                frappe.log_error("XML validation error: {0}\n{1}".format(err, xml), "ZUGFeRD XSD validation")
         return xml
     except Exception as err:
         return "Unable to open sales invoice: {0}".format(err)

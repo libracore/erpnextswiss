@@ -36,10 +36,14 @@ def generate_transfer_file(start_date, end_date, limit=10000, aggregated=0):
 
         # add sales invoice transactions
         if aggregated == 1:
-            sql_query = """SELECT `tabSales Invoice`.`name`, `tabSales Invoice`.`posting_date`, `tabSales Invoice`.`currency`, 
-                  SUM(`tabSales Invoice`.`base_grand_total`) AS `debit`, `tabSales Invoice`.`debit_to`,
-                  SUM(`tabSales Invoice`.`base_net_total`) AS `income`, `tabSales Invoice Item`.`income_account`,  
-                  SUM(`tabSales Invoice`.`total_taxes_and_charges`) AS `tax`, `tabSales Taxes and Charges`.`account_head`,
+            sql_query = """SELECT `tabSales Invoice`.`name`, 
+                  `tabSales Invoice`.`posting_date`, `tabSales Invoice`.`currency`, 
+                  SUM(`tabSales Invoice`.`base_grand_total`) AS `debit`, 
+                  `tabSales Invoice`.`debit_to`,
+                  SUM(`tabSales Invoice`.`base_net_total`) AS `income`, 
+                  `tabSales Invoice Item`.`income_account`,  
+                  SUM(`tabSales Invoice`.`total_taxes_and_charges`) AS `tax`, 
+                  `tabSales Taxes and Charges`.`account_head`,
                   `tabSales Invoice`.`taxes_and_charges`,
                   `tabSales Taxes and Charges`.`rate`,
                   CONCAT(IFNULL(`tabSales Invoice`.`debit_to`, ""),
@@ -56,10 +60,15 @@ def generate_transfer_file(start_date, end_date, limit=10000, aggregated=0):
                     AND `tabSales Invoice`.`exported_to_abacus` = 0
                 GROUP BY `key`""".format(start_date=start_date, end_date=end_date)
         else:
-            sql_query = """SELECT DISTINCT `tabSales Invoice`.`name`, `tabSales Invoice`.`posting_date`, `tabSales Invoice`.`currency`, 
-                  `tabSales Invoice`.`base_grand_total` AS `debit`, `tabSales Invoice`.`debit_to`,
-                  `tabSales Invoice`.`base_net_total` AS `income`, `tabSales Invoice Item`.`income_account`,  
-                  `tabSales Invoice`.`total_taxes_and_charges` AS `tax`, `tabSales Taxes and Charges`.`account_head`,
+            sql_query = """SELECT DISTINCT `tabSales Invoice`.`name`, 
+                  `tabSales Invoice`.`posting_date`, 
+                  `tabSales Invoice`.`currency`, 
+                  `tabSales Invoice`.`grand_total` AS `debit`, 
+                  `tabSales Invoice`.`debit_to`,
+                  `tabSales Invoice`.`net_total` AS `income`, 
+                  `tabSales Invoice Item`.`income_account`,  
+                  `tabSales Invoice`.`total_taxes_and_charges` AS `tax`, 
+                  `tabSales Taxes and Charges`.`account_head`,
                   `tabSales Invoice`.`taxes_and_charges`,
                   `tabSales Taxes and Charges`.`rate`
                 FROM `tabSales Invoice`
@@ -119,8 +128,10 @@ def generate_transfer_file(start_date, end_date, limit=10000, aggregated=0):
         # add payment entry transactions
         if aggregated == 1:
             sql_query = """SELECT `tabPayment Entry`.`name`,
-                      `tabPayment Entry`.`posting_date`, `tabPayment Entry`.`paid_from_account_currency` AS `currency`,
-                      SUM(`tabPayment Entry`.`paid_amount`) AS `amount`, `tabPayment Entry`.`paid_from`,
+                      `tabPayment Entry`.`posting_date`, 
+                      `tabPayment Entry`.`paid_from_account_currency` AS `currency`,
+                      SUM(`tabPayment Entry`.`paid_amount`) AS `amount`, 
+                      `tabPayment Entry`.`paid_from`,
                       `tabPayment Entry`.`paid_to`,
                       CONCAT(IFNULL(`tabPayment Entry`.`paid_from`, ""),
                         IFNULL(`tabPayment Entry`.`paid_to`, "")
@@ -135,8 +146,10 @@ def generate_transfer_file(start_date, end_date, limit=10000, aggregated=0):
                 """.format(start_date=start_date, end_date=end_date)
         else:
             sql_query = """SELECT `tabPayment Entry`.`name`,
-                      `tabPayment Entry`.`posting_date`, `tabPayment Entry`.`paid_from_account_currency` AS `currency`,
-                      `tabPayment Entry`.`paid_amount` AS `amount`, `tabPayment Entry`.`paid_from`,
+                      `tabPayment Entry`.`posting_date`, 
+                      `tabPayment Entry`.`paid_from_account_currency` AS `currency`,
+                      `tabPayment Entry`.`paid_amount` AS `amount`, 
+                      `tabPayment Entry`.`paid_from`,
                       `tabPayment Entry`.`paid_to`,
                       CONCAT(IFNULL(`tabPayment Entry`.`paid_from`, ""),
                         IFNULL(`tabPayment Entry`.`paid_to`, "")

@@ -21,14 +21,22 @@
                 <DebitCredit>{{ transaction.debit_credit }}</DebitCredit>
                 {% if transaction.customer %}<Client>{{ transaction.customer }}</Client>{% endif %}
                 <Division>0</Division>
+                {% if transaction.key_currency %}
+                <KeyCurrency>{{ transaction.key_currency }}</KeyCurrency>
+                {% else %}
                 <KeyCurrency>{{ transaction.currency }}</KeyCurrency>
+                {% endif %}
                 <EntryDate>{{ transaction.date }}</EntryDate>
                 <ValueDate>{{ transaction.date }}</ValueDate>
                 <AmountData mode="SAVE">")
                     <Currency>{{ transaction.currency }}</Currency>
                     <Amount>{{ transaction.amount }}</Amount>
                 </AmountData>
+                {% if transaction.key_amount %}
+                <KeyAmount>{{ transaction.key_amount }}</KeyAmount>
+                {% else %}
                 <KeyAmount>{{ transaction.amount }}</KeyAmount>
+                {% endif %}
                 <Account>{{ transaction.account }}</Account>
                 <IntercompanyId>0</IntercompanyId>
                 <IntercompanyCode></IntercompanyCode>

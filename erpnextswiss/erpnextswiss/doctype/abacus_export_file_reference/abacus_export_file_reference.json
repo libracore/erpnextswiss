@@ -1,0 +1,39 @@
+{
+ "creation": "2019-10-30 08:15:10.139074",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "dt",
+  "dn"
+ ],
+ "fields": [
+  {
+   "fieldname": "dt",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Reference Doctype",
+   "options": "DocType",
+   "reqd": 1
+  },
+  {
+   "fieldname": "dn",
+   "fieldtype": "Dynamic Link",
+   "in_list_view": 1,
+   "label": "Reference Document",
+   "options": "dt",
+   "reqd": 1
+  }
+ ],
+ "istable": 1,
+ "modified": "2019-10-30 08:15:10.139074",
+ "modified_by": "Administrator",
+ "module": "ERPNextSwiss",
+ "name": "Abacus Export File Reference",
+ "owner": "Administrator",
+ "permissions": [],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

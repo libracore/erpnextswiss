@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 # Copyright (c) 2017-2019, libracore and contributors
 # License: AGPL v3. See LICENCE
+#
+# NOTE: this is the old transfer method. 
+# It is replaced by the Abacus Transfer File and will be deprecated soon
+#
 
 from __future__ import unicode_literals
 import frappe
@@ -444,6 +448,8 @@ def reset_export_flags():
     sql_query = """UPDATE `tabSales Invoice` SET `exported_to_abacus` = 0;"""
     frappe.db.sql(sql_query, as_dict=True)
     sql_query = """UPDATE `tabPayment Entry` SET `exported_to_abacus` = 0;"""
+    frappe.db.sql(sql_query, as_dict=True)
+    sql_query = """UPDATE `tabPurchase Invoice` SET `exported_to_abacus` = 0;"""
     frappe.db.sql(sql_query, as_dict=True)
     return { 'message': 'OK' }
 

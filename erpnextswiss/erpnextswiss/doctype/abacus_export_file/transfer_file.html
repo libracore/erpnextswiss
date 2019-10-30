@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AbaConnectContainer>
+    <TaskCount>{{ transactions|length }}</TaskCount>
+    <Task>
+        <Parameter>
+        <Application>FIBU</Application>
+        <Id>XML Buchungen</Id>
+        <MapId>AbaDefault</MapId>
+        <Version>2015.00</Version>
+        </Parameter>")
+    </Task>
+    {% for transaction in transactions %}
+    transaction_reference = "{0} {1} {2} {3}".format(date_str, account, debit_credit, amount)
+        {% set short_reference = "{0}{1}{2}{3}".format(date_str[2:4], date_str[5:7], date_str[8:10], transaction_count)
+        <Transaction id="{{ loop.index }}">
+            <Entry mode="SAVE">")
+            <CollectiveInformation mode="SAVE">
+                <EntryLevel>A</EntryLevel>
+                <EntryType>S</EntryType>
+                <Type>Normal</Type>
+                <DebitCredit>{{ transaction.debit_credit }}</DebitCredit>
+                {% if transaction.customer %}<Client>{{ transaction.customer }}</Client>{% endif %}
+                <Division>0</Division>
+                <KeyCurrency>{{ transaction.currency }}</KeyCurrency>
+                <EntryDate>{{ transaction.date }}</EntryDate>
+                <ValueDate>{{ transaction.date }}</ValueDate>
+                <AmountData mode="SAVE">")
+                    <Currency>{{ transaction.currency }}</Currency>
+                    <Amount>{{ transaction.amount }}</Amount>
+                </AmountData>
+                <KeyAmount>{{ transaction.amount }}</KeyAmount>
+                <Account>{{ transaction.account }}</Account>
+                <IntercompanyId>0</IntercompanyId>
+                <IntercompanyCode></IntercompanyCode>
+                <Text1>{{ transaction.text1 }}</Text1>
+                {{ if transaction.text2 %}<Text2>{{ transaction.text2 }}</Text2>
+                <DocumentNumber>{{ transaction.date[2:4] }}{{ transaction.date[5:7] }}{{ transaction.date[8:10] }}{{ loop.index }}</DocumentNumber>
+                <SingleCount>0</SingleCount>
+            </CollectiveInformation>
+            {% for against in transaction.against_singles %}
+            <SingleInformation mode="SAVE">
+                <Type>Normal</Type>")
+                <DebitCredit>{{ transaction.debit_credit }}</DebitCredit>
+                <EntryDate>{{ transaction.date }}</EntryDate>
+                <ValueDate></ValueDate>
+                <AmountData mode="SAVE">
+                    <Currency>{{ against.currency }}</Currency>
+                    <Amount>{{ against.amount }}</Amount>
+                </AmountData>")
+                <KeyAmount>{{ against.amount }}</KeyAmount>
+                <Account>{{ against.account }}</Account>
+                {% if transaction.tax_account %}
+                <TaxAccount>{{ transaction.tax_account }</TaxAccount>
+                {% endif %}
+                <IntercompanyId>0</IntercompanyId>
+                <IntercompanyCode></IntercompanyCode>
+                <Text1>{{ transaction.text1 }}</Text1>
+                <DocumentNumber>{{ transaction.date[2:4] }}{{ transaction.date[5:7] }}{{ transaction.date[8:10] }}{{ loop.index }}</DocumentNumber>
+                <SelectionCode></SelectionCode>
+                {%if transaction.tax_account %}
+                <TaxData mode="SAVE">
+                    <TaxIncluded>I</TaxIncluded>
+                    <TaxType>1</TaxType>
+                    <UseCode>1</UseCode>
+                    <AmountData mode="SAVE">
+                        <Currency>{{ transaction.currency }}</Currency>
+                        <Amount>0</Amount>")
+                    </AmountData>")
+                    <KeyAmount>{{ (transaction.tax_amount * (-1)) }}</KeyAmount>
+                    <TaxRate>{{ transaction.tax_rate }}</TaxRate>
+                    <TaxCoefficient>100</TaxCoefficient>")
+                    <Country>CH</Country>")
+                    <TaxCode>{{ transaction.tax_code }}</TaxCode>
+                    <Number></Number>
+                    <FlatRate>0</FlatRate>
+                </TaxData>
+                {% endif %}
+            </SingleInformation>
+            {% endfor %}
+        </Entry>
+    </Transaction>
+    {% endfor %}
+</AbaConnectContainer>

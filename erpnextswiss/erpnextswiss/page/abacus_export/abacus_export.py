@@ -140,9 +140,9 @@ def generate_transfer_file(start_date, end_date, limit=10000, aggregated=0):
                   `tabPurchase Invoice`.`posting_date`, 
                   `tabPurchase Invoice`.`currency`, 
                   SUM(`tabPurchase Invoice`.`grand_total`) AS `debit`, 
-                  `tabPurchase Invoice`.`debit_to`,
+                  `tabPurchase Invoice`.`credit_to`,
                   SUM(`tabPurchase Invoice`.`net_total`) AS `income`, 
-                  `tabPurchase Invoice Item`.`income_account`,  
+                  `tabPurchase Invoice Item`.`expense_account`,  
                   SUM(`tabPurchase Invoice`.`total_taxes_and_charges`) AS `tax`, 
                   `tabPurchase Taxes and Charges`.`account_head`,
                   `tabPurchase Invoice`.`taxes_and_charges`,
@@ -153,8 +153,8 @@ def generate_transfer_file(start_date, end_date, limit=10000, aggregated=0):
                     IFNULL(`tabPurchase Taxes and Charges`.`account_head`, "")
                   ) AS `key`
                 FROM `tabPurchase Invoice`
-                LEFT JOIN `tabPurchase Invoice Item` ON `tabSales Invoice`.`name` = `tabPurchase Invoice Item`.`parent`
-                LEFT JOIN `tabPurchase Taxes and Charges` ON `tabSales Invoice`.`name` = `tabPurchase Taxes and Charges`.`parent`
+                LEFT JOIN `tabPurchase Invoice Item` ON `tabPurchase Invoice`.`name` = `tabPurchase Invoice Item`.`parent`
+                LEFT JOIN `tabPurchase Taxes and Charges` ON `tabPurchase Invoice`.`name` = `tabPurchase Taxes and Charges`.`parent`
                 WHERE
                     `tabPurchase Invoice`.`posting_date` >= '{start_date}'
                     AND `tabPurchase Invoice`.`posting_date` <= '{end_date}'
@@ -166,17 +166,17 @@ def generate_transfer_file(start_date, end_date, limit=10000, aggregated=0):
                   `tabPurchase Invoice`.`posting_date`, 
                   `tabPurchase Invoice`.`currency`, 
                   `tabPurchase Invoice`.`grand_total` AS `debit`, 
-                  `tabPurchase Invoice`.`debit_to`,
+                  `tabPurchase Invoice`.`credit_to`,
                   `tabPurchase Invoice`.`net_total` AS `income`, 
-                  `tabPurchase Invoice Item`.`income_account`,  
+                  `tabPurchase Invoice Item`.`expense_account`,  
                   `tabPurchase Invoice`.`total_taxes_and_charges` AS `tax`, 
                   `tabPurchase Taxes and Charges`.`account_head`,
                   `tabPurchase Invoice`.`taxes_and_charges`,
                   `tabPurchase Taxes and Charges`.`rate`,
                   `tabPurchase Invoice`.`supplier_name`
                 FROM `tabPurchase Invoice`
-                LEFT JOIN `tabPurchase Invoice Item` ON `tabSales Invoice`.`name` = `tabPurchase Invoice Item`.`parent`
-                LEFT JOIN `tabPurchase Taxes and Charges` ON (`tabSales Invoice`.`name` = `tabPurchase Taxes and Charges`.`parent` AND  `tabSales Taxes and Charges`.`idx` = 1)
+                LEFT JOIN `tabPurchase Invoice Item` ON `tabPurchase Invoice`.`name` = `tabPurchase Invoice Item`.`parent`
+                LEFT JOIN `tabPurchase Taxes and Charges` ON (`tabPurchase Invoice`.`name` = `tabPurchase Taxes and Charges`.`parent` AND  `tabPurchase Taxes and Charges`.`idx` = 1)
                 WHERE
                     `tabPurchase Invoice`.`posting_date` >= '{start_date}'
                     AND `tabPurchase Invoice`.`posting_date` <= '{end_date}'

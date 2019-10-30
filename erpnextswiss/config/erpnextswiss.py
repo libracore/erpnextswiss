@@ -122,11 +122,17 @@ def get_data():
             "icon": "octicon octicon-git-compare",
             "items": [
                    {
+                       "type": "doctype",
+                       "name": "Abacus Export File",
+                       "label": _("Abacus Export File"),
+                       "description": _("Abacus Export File")                   
+                   },
+                   {
                        "type": "page",
                        "name": "abacus_export",
                        "label": _("Abacus Export"),
                        "description": _("Abacus Export")                   
-                   }                   
+                   }                 
             ]
         },
         {

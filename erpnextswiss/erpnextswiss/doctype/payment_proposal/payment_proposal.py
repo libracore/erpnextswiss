@@ -505,7 +505,8 @@ def create_payment_proposal(date=None, company=None):
         'title': "{year:04d}-{month:02d}-{day:02d}".format(year=now.year, month=now.month, day=now.day),
         'date': "{year:04d}-{month:02d}-{day:02d}".format(year=date.year, month=date.month, day=date.day),
         'purchase_invoices': invoices,
-        'expenses': expenses
+        'expenses': expenses,
+        'company': company
     })
     proposal_record = new_proposal.insert()
     new_record = proposal_record.name

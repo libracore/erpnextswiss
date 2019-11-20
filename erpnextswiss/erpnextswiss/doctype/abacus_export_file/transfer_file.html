@@ -77,8 +77,8 @@
                             <Currency>{{ transaction.tax_currency }}</Currency>
                             <Amount>0</Amount>
                         </AmountData>
-                        <KeyAmount>{{ "{:.2f}".format((transaction.tax_amount * (-1))) }}</KeyAmount>
-                        <TaxRate>{{ transaction.tax_rate }}</TaxRate>
+                        <KeyAmount>{{ "{:.2f}".format(((transaction.tax_amount or 0) * (-1))) }}</KeyAmount>
+                        <TaxRate>{{ transaction.tax_rate or 0 }}</TaxRate>
                         <TaxCoefficient>100</TaxCoefficient>
                         <Country>CH</Country>
                         <TaxCode>{{ transaction.tax_code }}</TaxCode>

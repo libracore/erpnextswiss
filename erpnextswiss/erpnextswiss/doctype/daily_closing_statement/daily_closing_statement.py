@@ -22,7 +22,9 @@ class DailyClosingStatement(Document):
               `tabSales Invoice Item`.`item_group` AS `item_group`,
               `tabSales Taxes and Charges`.`rate` AS `tax_rate`, 
               `tabSales Invoice Item`.`amount` AS `amount`,
-              ROUND(IF(`tabSales Taxes and Charges`.`rate` IS NULL, 1, 1 + (`tabSales Taxes and Charges`.`rate` / 100)) * `tabSales Invoice Item`.`amount`, 5) AS `gross`
+              IF(`tabSales Taxes and Charges`.`included_in_print_rate` = 1, 
+			    `tabSales Invoice Item`.`amount`,
+			    ROUND(IF(`tabSales Taxes and Charges`.`rate` IS NULL, 1, 1 + (`tabSales Taxes and Charges`.`rate` / 100)) * `tabSales Invoice Item`.`amount`, 5)) AS `gross`
             FROM `tabSales Invoice Item`
             LEFT JOIN `tabSales Taxes and Charges` ON `tabSales Invoice Item`. `parent` = `tabSales Taxes and Charges`.`parent`
             LEFT JOIN `tabSales Invoice` ON `tabSales Invoice Item`.`parent` = `tabSales Invoice`.`name`

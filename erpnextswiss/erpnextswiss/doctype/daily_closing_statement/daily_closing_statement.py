@@ -84,7 +84,7 @@ class DailyClosingStatement(Document):
             WHERE 
               `tabSales Invoice`.`docstatus` = 1
               AND`tabSales Invoice`.`posting_date` >= "{start_date}" 
-              AND `tabSales Invoice`.`posting_date` <= "{end_date}";";
+              AND `tabSales Invoice`.`posting_date` <= "{end_date}";
         """.format(start_date=self.start_date, end_date=self.end_date)
         results = frappe.db.sql(sql_query, as_dict=True)
         self.discounts = results[0]['discounts']  

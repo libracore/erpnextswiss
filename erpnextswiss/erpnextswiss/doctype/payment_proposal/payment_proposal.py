@@ -13,6 +13,16 @@ import cgi          # used to escape xml content
 
 class PaymentProposal(Document):
     def validate(self):
+        # check company settigs
+        company_address = get_primary_address(target_name=self.company, target_type="Company")
+        if (not company_address
+            or not company_address.address_line1
+            or not company_address.pincode
+            or not company_address.city):
+                frappe.throw( _("Company address missing or incomplete.") )
+        payment_account = frappe.get_doc('Account', self.pay_from_account)
+        if not payment_account.iban:
+            frappe.throw( _("IBAN missing in pay from account.") )
         # perform some checks to improve file quality/stability
         for purchase_invoice in self.purchase_invoices: 
             pinv = frappe.get_doc("Purchase Invoice", purchase_invoice.purchase_invoice)
@@ -20,13 +30,18 @@ class PaymentProposal(Document):
             if not pinv.supplier_address:
                 frappe.throw( _("Address missing for purchase invoice {0}").format(pinv.name) )
             # check target account info
-            if purchase_invoice.payment_type == "ESR" 
+            if purchase_invoice.payment_type == "ESR":
                 if not purchase_invoice.esr_reference or not purchase_invoice.esr_participation_number:
                     frappe.throw( _("ESR: missing transaction information (participant number or reference) in {0}").format(pinv.name) )
             else:
-                supl = frappe.get_doc("Supplier", supplier)
+                supl = frappe.get_doc("Supplier", pinv.supplier)
                 if not supl.iban:
                     frappe.throw( _("Missing IBAN for purchase invoice {0}").format(pinv.name) )
+        # check expense records
+        for expense_claim in self.expenses:
+            emp = frappe.get_doc("Employee", expense_claim.employee)
+            if not emp.bank_ac_no:
+                frappe.throw( _("Employee {0} has no bank account number.").format(emp.name) )
         return
         
     def on_submit(self):
@@ -203,20 +218,23 @@ class PaymentProposal(Document):
         # total amount of all transactions ( e.g. 15850.00 )  (sum of all amounts)
         control_sum = 0.0
         # define company address
+        data['company'] = {
+            'name': self.company
+        }
         company_address = get_primary_address(target_name=self.company, target_type="Company")
         if company_address:
             data['company']['address_line1'] = cgi.escape(company_address.address_line1)
-            data['company']['address_line2'] = "{0} {1}".format(cgi.escape(company_address.pincode), cgi.escape(company_address.town)
-            data['company']['country'] = company_address['country_code']
+            data['company']['address_line2'] = "{0} {1}".format(cgi.escape(company_address.pincode), cgi.escape(company_address.city))
+            data['company']['country_code'] = company_address['country_code']
         ### Payment Information (PmtInf, B-Level)
         # payment information records (1 .. 99'999)
         payment_account = frappe.get_doc('Account', self.pay_from_account)
         if not payment_account:
             frappe.throw( _("{0}: no account IBAN found ({1})".format(
                 payment.references, self.pay_from_account) ) )
-		data['company']['iban'] = "{0}".format(payment_account.iban.replace(" ", ""))
-		data['company']['bic'] = payment_account.bic
-		data['payments'] = []
+        data['company']['iban'] = "{0}".format(payment_account.iban.replace(" ", ""))
+        data['company']['bic'] = payment_account.bic
+        data['payments'] = []
         for payment in self.payments:
             payment_content = ""
             payment_record = {
@@ -229,44 +247,41 @@ class PaymentProposal(Document):
                     'account': "{0}".format(payment_account.iban.replace(" ", "")),
                     'bic': "{0}".format(payment_account.bic)
                 },
-                'instruction_id': "INSTRID-{0}-{1}".format(self.name, transaction_count)),          # instruction identification
+                'instruction_id': "INSTRID-{0}-{1}".format(self.name, transaction_count),          # instruction identification
                 'end_to_end_id': "{0}".format((payment.reference[:33] + '..') if len(payment.reference) > 35 else payment.reference),   # end-to-end identification (should be used and unique within B-level; payment entry name)
                 'currency': payment.currency,
-                'amount': payment.amount
+                'amount': payment.amount,
                 'creditor': {
                     'name': cgi.escape(payment.receiver),
-                    'address_line1': cgi.escape(payment.address_line1),
-                    'address_line2': cgi.escape(payment.address_line2),
-                    'country': payment.receiver_country
+                    'address_line1': cgi.escape(payment.receiver_address_line1),
+                    'address_line2': cgi.escape(payment.receiver_address_line2),
+                    'country_code': frappe.get_value("Country", payment.receiver_country, "code").upper()
                 }
-            if company_address:
-                payment_record['company']['address_line1'] = cgi.escape(company_address.address_line1)
-                payment_record['company']['address_line2'] = "{0} {1}".format(cgi.escape(company_address.pincode), cgi.escape(company_address.town)
-                payment_record['company']['country'] = company_address['country_code']
+            }
             if payment.payment_type == "SEPA":
                 # service level code (e.g. SEPA)
-                payment_record['    '] = "SEPA"
-                payment_record['iban'] = payment.iban.replace(" ", "") ))
+                payment_record['service_level'] = "SEPA"
+                payment_record['iban'] = payment.iban.replace(" ", "")
                 payment_record['reference'] = payment.reference
             elif payment.payment_type == "ESR":
-                # proprietary (nothing or CH01 for ESR)			
+                # proprietary (nothing or CH01 for ESR)            
                 payment_record['local_instrument'] = "CH01"
-                payment_record['    '] = "ESR"                    # only internal information
+                payment_record['service_level'] = "ESR"                    # only internal information
                 payment_record['esr_participation_number'] = payment.esr_participation_number
                 payment_record['esr_reference'] = payment.esr_reference.replace(" ", "")
             else:
-				payment_record['    '] = "IBAN"
+                payment_record['service_level'] = "IBAN"
                 payment_record['iban'] = payment.iban.replace(" ", "")
                 payment_record['reference'] = payment.reference
             # once the payment is extracted for payment, submit the record
             transaction_count += 1
             control_sum += payment.amount
-			data['payments'].append(payment_record)
+            data['payments'].append(payment_record)
         data['transaction_count'] = transaction_count
         data['control_sum'] = control_sum
         
-		# render file
-		content = frappe.render_template('erpnextswiss/erpnextswiss/doctype/payment_proposal/pain-001.xml', data)
+        # render file
+        content = frappe.render_template('erpnextswiss/erpnextswiss/doctype/payment_proposal/pain-001.html', data)
         return { 'content': content }
     
     def add_creditor_info(self, payment):
@@ -296,7 +311,7 @@ class PaymentProposal(Document):
 def create_payment_proposal(date=None, company=None):
     if not date:
         # get planning days
-        planning_days = frappe.get_value("ERPNextSwiss Settings", "ERPNextSwiss Settings", 'planning_days')
+        planning_days = int(frappe.get_value("ERPNextSwiss Settings", "ERPNextSwiss Settings", 'planning_days'))
         date = datetime.now() + timedelta(days=planning_days) 
         if not planning_days:
             frappe.throw( "Please configure the planning period in ERPNextSwiss Settings.")

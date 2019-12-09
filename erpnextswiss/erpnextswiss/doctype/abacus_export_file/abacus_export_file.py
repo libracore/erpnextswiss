@@ -253,7 +253,7 @@ class AbacusExportFile(Document):
             """.format(pes=self.get_sql_list(pes))
 
         pe_items = frappe.db.sql(sql_query, as_dict=True)
-		
+        
         # create item entries
         for item in pe_items:
             # create content
@@ -308,10 +308,10 @@ class AbacusExportFile(Document):
             else:
                 tax_code = None
             # create content
-			if item.customer_name:
-				text2 = cgi.escape(item.customer_name)
-			else:
-				text2 = ""
+            if item.customer_name:
+                text2 = cgi.escape(item.customer_name)
+            else:
+                text2 = ""
             transactions.append({
                 'account': self.get_account_number(item.debit_to), 
                 'amount': item.debit, 
@@ -356,10 +356,10 @@ class AbacusExportFile(Document):
         
         pinv_items = frappe.db.sql(sql_query, as_dict=True)
         # create item entries
-		if item.supplier_name:
-			text2 = cgi.escape(item.supplier_name)
-		else:
-			text2 = ""
+        if item.supplier_name:
+            text2 = cgi.escape(item.supplier_name)
+        else:
+            text2 = ""
         for item in pinv_items:
             if item.taxes_and_charges:
                 tax_record = frappe.get_doc("Purchase Taxes and Charges Template", item.taxes_and_charges)
@@ -405,7 +405,7 @@ class AbacusExportFile(Document):
             """.format(pes=self.get_sql_list(pes))
 
         pe_items = frappe.db.sql(sql_query, as_dict=True)
-		
+        
         # create item entries
         for item in pe_items:
             # create content

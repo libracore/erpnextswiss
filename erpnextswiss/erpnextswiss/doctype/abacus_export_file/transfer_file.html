@@ -18,6 +18,7 @@
                     <EntryType>S</EntryType>
                     <Type>Normal</Type>
                     <DebitCredit>{{ transaction.debit_credit }}</DebitCredit>
+					<Client></Client>
                     {%- if transaction.customer %}
                     <Client>{{ transaction.customer }}</Client>
                     {%- endif %}

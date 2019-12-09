@@ -330,7 +330,7 @@ class AbacusExportFile(Document):
                 'tax_rate': item.rate or None, 
                 'tax_currency': base_currency,
                 'tax_code': tax_code or "312", 
-                'text1': cgi.escpae(item.name),
+                'text1': cgi.escape(item.name),
                 'text2': text2
             })
         

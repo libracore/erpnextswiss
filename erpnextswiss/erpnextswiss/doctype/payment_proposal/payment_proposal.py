@@ -226,6 +226,9 @@ class PaymentProposal(Document):
             data['company']['address_line1'] = cgi.escape(company_address.address_line1)
             data['company']['address_line2'] = "{0} {1}".format(cgi.escape(company_address.pincode), cgi.escape(company_address.city))
             data['company']['country_code'] = company_address['country_code']
+            # crop lines if required (length limitation)
+            data['company']['address_line1'] = data['company']['address_line1'][:35]
+            data['company']['address_line2'] = data['company']['address_line2'][:35]
         ### Payment Information (PmtInf, B-Level)
         # payment information records (1 .. 99'999)
         payment_account = frappe.get_doc('Account', self.pay_from_account)
@@ -253,8 +256,8 @@ class PaymentProposal(Document):
                 'amount': payment.amount,
                 'creditor': {
                     'name': cgi.escape(payment.receiver),
-                    'address_line1': cgi.escape(payment.receiver_address_line1),
-                    'address_line2': cgi.escape(payment.receiver_address_line2),
+                    'address_line1': cgi.escape(payment.receiver_address_line1[:35]),
+                    'address_line2': cgi.escape(payment.receiver_address_line2[:35]),
                     'country_code': frappe.get_value("Country", payment.receiver_country, "code").upper()
                 }
             }

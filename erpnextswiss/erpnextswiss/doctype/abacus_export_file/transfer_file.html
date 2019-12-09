@@ -29,7 +29,7 @@
                     {%- endif %}
                     <EntryDate>{{ transaction.date }}</EntryDate>
                     <ValueDate>{{ transaction.date }}</ValueDate>
-                    <AmountData mode="SAVE">")
+                    <AmountData mode="SAVE">
                         <Currency>{{ transaction.currency }}</Currency>
                         <Amount>{{ "{:.2f}".format(transaction.amount) }}</Amount>
                     </AmountData>

@@ -5,6 +5,7 @@
 from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
+import cgi          # used to escape xml content
 
 class AbacusExportFile(Document):
     def submit(self):
@@ -307,6 +308,10 @@ class AbacusExportFile(Document):
             else:
                 tax_code = None
             # create content
+			if item.customer_name:
+				text2 = cgi.escape(item.customer_name)
+			else:
+				text2 = ""
             transactions.append({
                 'account': self.get_account_number(item.debit_to), 
                 'amount': item.debit, 
@@ -325,8 +330,8 @@ class AbacusExportFile(Document):
                 'tax_rate': item.rate or None, 
                 'tax_currency': base_currency,
                 'tax_code': tax_code or "312", 
-                'text1': item.name,
-                'text2': item.customer_name or ""
+                'text1': cgi.escpae(item.name),
+                'text2': text2
             })
         
         pinvs = self.get_docs([ref.__dict__ for ref in self.references], "Purchase Invoice")
@@ -351,6 +356,10 @@ class AbacusExportFile(Document):
         
         pinv_items = frappe.db.sql(sql_query, as_dict=True)
         # create item entries
+		if item.supplier_name:
+			text2 = cgi.escape(item.supplier_name)
+		else:
+			text2 = ""
         for item in pinv_items:
             if item.taxes_and_charges:
                 tax_record = frappe.get_doc("Purchase Taxes and Charges Template", item.taxes_and_charges)
@@ -376,8 +385,8 @@ class AbacusExportFile(Document):
                 'tax_rate': item.rate or None, 
                 'tax_code': tax_code or "312", 
                 'tax_currency': base_currency,
-                'text1': item.name,
-                'text2': item.supplier_name or ""
+                'text1': cgi.escape(item.name),
+                'text2': text2
             })
             
         # add payment entry transactions
@@ -415,7 +424,7 @@ class AbacusExportFile(Document):
                 'tax_amount': None, 
                 'tax_rate': None, 
                 'tax_code': None, 
-                'text1': item.name
+                'text1': cgi.escape(item.name)
             })
         
         return transactions        

@@ -491,7 +491,7 @@ def read_camt_transactions(transaction_entries, account):
                         filters=[['name', '=', payment_proposal_payments[0]['reference']], ['outstanding_amount', '>', 0]], 
                         fields=['name', 'grand_total'])
                     if match_invoices:
-                        invoice_match = match_invoices[0]['name']
+                        invoice_match = [match_invoices[0]['name']]
                         matched_amount = match_invoices[0]['grand_total']
                     if payment_proposal_payments:
                         new_txn = {
@@ -508,7 +508,7 @@ def read_camt_transactions(transaction_entries, account):
                             'unique_reference': unique_reference,
                             'transaction_reference': payment_proposal_payments[0]['reference'],
                             'party_match': party_match,
-                            'invoice_matches': [invoice_match],
+                            'invoice_matches': invoice_match,
                             'matched_amount': matched_amount
                         }
                         txns.append(new_txn)

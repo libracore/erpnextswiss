@@ -44,7 +44,7 @@
       </DbtrAcct>
       <DbtrAgt>
           <FinInstnId>
-              {% if xml_region == "CH" %}
+              {%- if xml_region == "CH" %}{# CH only: BIC mandatory #}
               <BIC>{{ company.bic }}</BIC>
               {%- else %}
               <Othr><Id>NOTPROVIDED</Id></Othr>
@@ -53,6 +53,9 @@
       </DbtrAgt>
       <CdtTrfTxInf>
         <PmtId>
+          {%- if xml_region == "CH" %}{# CH only: instruction ID mandatory #}
+          <InstrId>{{ payment.id }}</InstrId>
+          {%- endif %}
           <EndToEndId>{{ payment.end_to_end_id }}</EndToEndId>
         </PmtId>
         {%- if payment.service_level == "ESR" %}

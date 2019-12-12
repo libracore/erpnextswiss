@@ -49,9 +49,9 @@
       </DbtrAgt>
       <CdtTrfTxInf>
         <PmtId>
-          <InstrId>{{ payment.id }}</InstrId>
           <EndToEndId>{{ payment.end_to_end_id }}</EndToEndId>
         </PmtId>
+        {%- if payment.service_level == "ESR" %}
         <PmtTpInf>
           {%- if payment.service_level == "SEPA" %}
           <SvcLvl><Cd>SEPA</Cd></SvcLvl>
@@ -59,6 +59,7 @@
           <LclInstrm><Prtry>CH01</Prtry></LclInstrm>
           {%- endif %}
         </PmtTpInf>
+        {%- endif %}
         <Amt>
           <InstdAmt Ccy="{{ payment.currency }}">{{ "{:.2f}".format(payment.amount) }}</InstdAmt>
         </Amt>

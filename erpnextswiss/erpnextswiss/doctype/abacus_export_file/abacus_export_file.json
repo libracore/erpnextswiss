@@ -5,16 +5,6 @@
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
- "field_order": [
-  "from_date",
-  "to_date",
-  "column_head",
-  "company",
-  "aggregated",
-  "amended_from",
-  "section_transactions",
-  "references"
- ],
  "fields": [
   {
    "fieldname": "from_date",

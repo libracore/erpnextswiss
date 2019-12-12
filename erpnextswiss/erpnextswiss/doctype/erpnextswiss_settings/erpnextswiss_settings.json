@@ -3,25 +3,6 @@
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
- "field_order": [
-  "default_customer",
-  "column_default_parties",
-  "default_supplier",
-  "section_payment_reminder",
-  "payment_reminder_auto_submit",
-  "column_payment_reminder",
-  "payment_reminder_charges",
-  "section_automated_payments",
-  "planning_days",
-  "participant_number",
-  "column_automated_payments",
-  "banking_region",
-  "xml_version",
-  "section_bank_wizard",
-  "intermediate_account",
-  "bank_import_section",
-  "bankimport_table"
- ],
  "fields": [
   {
    "description": "Use this to define a default customer",

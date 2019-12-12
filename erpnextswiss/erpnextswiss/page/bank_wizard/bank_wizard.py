@@ -480,7 +480,8 @@ def read_camt_transactions(transaction_entries, account):
                         fields=['receiver', 'receiver_address_line1', 'receiver_address_line2', 'iban', 'reference'])
                     # suppliers 
                     party_match = None
-                    match_suppliers = frappe.get_all("Supplier", filters={'supplier_name': party_name}, fields=['name'])
+                    match_suppliers = frappe.get_all("Supplier", filters={'supplier_name': payment_proposal_payments[0]['receiver']}, 
+                        fields=['name'])
                     if match_suppliers:
                         party_match = match_suppliers[0]['name']
                     # purchase invoices 
@@ -507,7 +508,7 @@ def read_camt_transactions(transaction_entries, account):
                             'unique_reference': unique_reference,
                             'transaction_reference': payment_proposal_payments[0]['reference'],
                             'party_match': party_match,
-                            'invoice_matches': invoice_match,
+                            'invoice_matches': [invoice_match],
                             'matched_amount': matched_amount
                         }
                         txns.append(new_txn)

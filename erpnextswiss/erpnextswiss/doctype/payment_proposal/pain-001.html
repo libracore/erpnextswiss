@@ -44,7 +44,11 @@
       </DbtrAcct>
       <DbtrAgt>
           <FinInstnId>
+              {% if xml_region == "CH" %}
+              <BIC>{{ company.bic }}</BIC>
+              {%- else %}
               <Othr><Id>NOTPROVIDED</Id></Othr>
+              {%- endif %}
           </FinInstnId>
       </DbtrAgt>
       <CdtTrfTxInf>

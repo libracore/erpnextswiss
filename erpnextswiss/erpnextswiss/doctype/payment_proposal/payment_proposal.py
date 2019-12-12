@@ -20,28 +20,29 @@ class PaymentProposal(Document):
             or not company_address.pincode
             or not company_address.city):
                 frappe.throw( _("Company address missing or incomplete.") )
-        payment_account = frappe.get_doc('Account', self.pay_from_account)
-        if not payment_account.iban:
-            frappe.throw( _("IBAN missing in pay from account.") )
+        if self.pay_from_account:
+            payment_account = frappe.get_doc('Account', self.pay_from_account)
+            if not payment_account.iban:
+                frappe.throw( _("IBAN missing in pay from account.") )
         # perform some checks to improve file quality/stability
         for purchase_invoice in self.purchase_invoices: 
             pinv = frappe.get_doc("Purchase Invoice", purchase_invoice.purchase_invoice)
             # check addresses (mandatory in ISO 20022
             if not pinv.supplier_address:
-                frappe.throw( _("Address missing for purchase invoice {0}").format(pinv.name) )
+                frappe.throw( _("Address missing for purchase invoice <a href=\"/desk#Form/Purchase Invoice/{0}\">{0}</a>").format(pinv.name) )
             # check target account info
             if purchase_invoice.payment_type == "ESR":
                 if not purchase_invoice.esr_reference or not purchase_invoice.esr_participation_number:
-                    frappe.throw( _("ESR: missing transaction information (participant number or reference) in {0}").format(pinv.name) )
+                    frappe.throw( _("ESR: missing transaction information (participant number or reference) in <a href=\"/desk#Form/Purchase Invoice/{0}\">{0}</a>").format(pinv.name) )
             else:
                 supl = frappe.get_doc("Supplier", pinv.supplier)
                 if not supl.iban:
-                    frappe.throw( _("Missing IBAN for purchase invoice {0}").format(pinv.name) )
+                    frappe.throw( _("Missing IBAN for purchase invoice <a href=\"/desk#Form/Purchase Invoice/{0}\">{0}</a>").format(pinv.name) )
         # check expense records
         for expense_claim in self.expenses:
             emp = frappe.get_doc("Employee", expense_claim.employee)
             if not emp.bank_ac_no:
-                frappe.throw( _("Employee {0} has no bank account number.").format(emp.name) )
+                frappe.throw( _("Employee <a href=\"/desk#Form/Employee/{0}\">{0}</a> has no bank account number.").format(emp.name) )
         return
         
     def on_submit(self):
@@ -211,6 +212,7 @@ class PaymentProposal(Document):
         
     def create_bank_file(self):
         data = {}
+        data['xml_version'] = frappe.get_value("ERPNextSwiss Settings", "ERPNextSwiss Settings", "xml_version")
         data['msgid'] = "MSG-" + time.strftime("%Y%m%d%H%M%S")                # message ID (unique, SWIFT-characters only)
         data['date'] = time.strftime("%Y-%m-%dT%H:%M:%S")                    # creation date and time ( e.g. 2010-02-15T07:30:00 )
         # number of transactions in the file

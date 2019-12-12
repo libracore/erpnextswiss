@@ -398,7 +398,6 @@ def create_payment_proposal(date=None, company=None):
         'expenses': expenses,
         'company': company
     })
-    print("{0} {1}".format(invoices, expenses))
     proposal_record = new_proposal.insert()
     new_record = proposal_record.name
     frappe.db.commit()

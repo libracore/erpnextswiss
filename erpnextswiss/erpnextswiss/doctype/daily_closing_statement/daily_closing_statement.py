@@ -22,7 +22,9 @@ class DailyClosingStatement(Document):
               `tabSales Invoice Item`.`item_group` AS `item_group`,
               `tabSales Taxes and Charges`.`rate` AS `tax_rate`, 
               `tabSales Invoice Item`.`amount` AS `amount`,
-              ROUND(IF(`tabSales Taxes and Charges`.`rate` IS NULL, 1, 1 + (`tabSales Taxes and Charges`.`rate` / 100)) * `tabSales Invoice Item`.`amount`, 5) AS `gross`
+              IF(`tabSales Taxes and Charges`.`included_in_print_rate` = 1, 
+			    `tabSales Invoice Item`.`amount`,
+			    ROUND(IF(`tabSales Taxes and Charges`.`rate` IS NULL, 1, 1 + (`tabSales Taxes and Charges`.`rate` / 100)) * `tabSales Invoice Item`.`amount`, 5)) AS `gross`
             FROM `tabSales Invoice Item`
             LEFT JOIN `tabSales Taxes and Charges` ON `tabSales Invoice Item`. `parent` = `tabSales Taxes and Charges`.`parent`
             LEFT JOIN `tabSales Invoice` ON `tabSales Invoice Item`.`parent` = `tabSales Invoice`.`name`
@@ -82,11 +84,10 @@ class DailyClosingStatement(Document):
             WHERE 
               `tabSales Invoice`.`docstatus` = 1
               AND`tabSales Invoice`.`posting_date` >= "{start_date}" 
-              AND `tabSales Invoice`.`posting_date` <= "{end_date}
-            GROUP BY `tabSales Invoice`.`customer`";
+              AND `tabSales Invoice`.`posting_date` <= "{end_date}";
         """.format(start_date=self.start_date, end_date=self.end_date)
         results = frappe.db.sql(sql_query, as_dict=True)
-        self.discounts = results[0]['discounts']  
+        self.total_discount = results[0]['discounts']  
         
         # by groups
         sql_query = """SELECT 
@@ -94,7 +95,10 @@ class DailyClosingStatement(Document):
               `tabSales Invoice Item`.`item_group` AS `item_group`,
               `tabSales Taxes and Charges`.`rate` AS `tax_rate`, 
               SUM(`tabSales Invoice Item`.`amount`) AS `amount`,
-              SUM(ROUND(IF(`tabSales Taxes and Charges`.`rate` IS NULL, 1, 1 + (`tabSales Taxes and Charges`.`rate` / 100)) * `tabSales Invoice Item`.`amount`, 5)) AS `gross`
+              SUM(IF(`tabSales Taxes and Charges`.`included_in_print_rate` = 1, 
+			    `tabSales Invoice Item`.`amount`,
+			    ROUND(IF(`tabSales Taxes and Charges`.`rate` IS NULL, 1, 1 + 
+			      (`tabSales Taxes and Charges`.`rate` / 100)) * `tabSales Invoice Item`.`amount`, 5))) AS `gross`
             FROM `tabSales Invoice Item`
             LEFT JOIN `tabSales Taxes and Charges` ON `tabSales Invoice Item`. `parent` = `tabSales Taxes and Charges`.`parent`
             LEFT JOIN `tabSales Invoice` ON `tabSales Invoice Item`.`parent` = `tabSales Invoice`.`name`

@@ -18,6 +18,7 @@
                     <EntryType>S</EntryType>
                     <Type>Normal</Type>
                     <DebitCredit>{{ transaction.debit_credit }}</DebitCredit>
+					<Client></Client>
                     {%- if transaction.customer %}
                     <Client>{{ transaction.customer }}</Client>
                     {%- endif %}
@@ -29,7 +30,7 @@
                     {%- endif %}
                     <EntryDate>{{ transaction.date }}</EntryDate>
                     <ValueDate>{{ transaction.date }}</ValueDate>
-                    <AmountData mode="SAVE">")
+                    <AmountData mode="SAVE">
                         <Currency>{{ transaction.currency }}</Currency>
                         <Amount>{{ "{:.2f}".format(transaction.amount) }}</Amount>
                     </AmountData>
@@ -77,8 +78,8 @@
                             <Currency>{{ transaction.tax_currency }}</Currency>
                             <Amount>0</Amount>
                         </AmountData>
-                        <KeyAmount>{{ "{:.2f}".format((transaction.tax_amount * (-1))) }}</KeyAmount>
-                        <TaxRate>{{ transaction.tax_rate }}</TaxRate>
+                        <KeyAmount>{{ "{:.2f}".format(((transaction.tax_amount or 0) * (-1))) }}</KeyAmount>
+                        <TaxRate>{{ transaction.tax_rate or 0 }}</TaxRate>
                         <TaxCoefficient>100</TaxCoefficient>
                         <Country>CH</Country>
                         <TaxCode>{{ transaction.tax_code }}</TaxCode>

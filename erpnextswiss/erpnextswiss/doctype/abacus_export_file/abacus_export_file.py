@@ -295,7 +295,8 @@ class AbacusExportFile(Document):
                   `tabSales Taxes and Charges`.`account_head`,
                   `tabSales Invoice`.`taxes_and_charges`,
                   `tabSales Taxes and Charges`.`rate`,
-                  `tabSales Invoice`.`customer_name`
+                  `tabSales Invoice`.`customer_name`,
+                  `tabSales Invoice`.`conversion_rate`
                 FROM `tabSales Invoice`
                 LEFT JOIN `tabSales Invoice Item` ON `tabSales Invoice`.`name` = `tabSales Invoice Item`.`parent`
                 LEFT JOIN `tabSales Taxes and Charges` ON (`tabSales Invoice`.`name` = `tabSales Taxes and Charges`.`parent` AND  `tabSales Taxes and Charges`.`idx` = 1)
@@ -317,7 +318,8 @@ class AbacusExportFile(Document):
                 'amount': item.debit, 
                 'currency': item.currency, 
                 'key_amount': item.base_debit, 
-                'key_currency': base_currency,              
+                'key_currency': base_currency,
+                'exchange_rate': item.conversion_rate,
                 'against_singles': [{
                     'account': self.get_account_number(item.income_account),
                     'amount': item.base_income,

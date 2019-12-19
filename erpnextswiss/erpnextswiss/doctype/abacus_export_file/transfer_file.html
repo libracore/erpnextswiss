@@ -39,6 +39,13 @@
                     {%- else %}
                     <KeyAmount>{{ "{:.2f}".format(transaction.amount) }}</KeyAmount>
                     {%- endif %}
+                    {%- if transaction.exchange_rate %}
+                    <ExchangeRateData mode="SAVE">
+                        <FromCurrency>{{ transaction.currency }}</FromCurrency>
+                        <ToCurrency>{{ transaction.key_currency or "CHF" }}</ToCurrency>
+                        <Exchangerate>{{ transaction.exchange_rate }}</Exchangerate>
+                    </ExchangeRateData>
+                    {%- endif %}
                     <Account>{{ transaction.account }}</Account>
                     <IntercompanyId>0</IntercompanyId>
                     <IntercompanyCode></IntercompanyCode>

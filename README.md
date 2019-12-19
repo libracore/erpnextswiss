@@ -7,6 +7,8 @@ open source enterprise resource planning software. ERPNext is a trademark by Fra
 The ERPNextSwiss application adds country-specific features to this platform such as 
 bank, tax and payment integrations.
 
+ERPNextSwiss is maintaned by [https://www.libracore.com](libracore).
+
 For more information, refer to [https://erpnext.swiss](https://erpnext.swiss)
 
 ## License 

@@ -256,7 +256,7 @@ class PaymentProposal(Document):
                 'instruction_id': "INSTRID-{0}-{1}".format(self.name, transaction_count),          # instruction identification
                 'end_to_end_id': "{0}".format((payment.reference[:33] + '..') if len(payment.reference) > 35 else payment.reference),   # end-to-end identification (should be used and unique within B-level; payment entry name)
                 'currency': payment.currency,
-                'amount': payment.amount,
+                'amount': round(payment.amount, 2),
                 'creditor': {
                     'name': cgi.escape(payment.receiver),
                     'address_line1': cgi.escape(payment.receiver_address_line1[:35]),
@@ -281,7 +281,7 @@ class PaymentProposal(Document):
                 payment_record['reference'] = payment.reference
             # once the payment is extracted for payment, submit the record
             transaction_count += 1
-            control_sum += payment.amount
+            control_sum += round(payment.amount, 2)
             data['payments'].append(payment_record)
         data['transaction_count'] = transaction_count
         data['control_sum'] = control_sum

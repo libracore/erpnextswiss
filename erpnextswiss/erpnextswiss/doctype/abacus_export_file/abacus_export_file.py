@@ -159,7 +159,8 @@ class AbacusExportFile(Document):
                 LEFT JOIN `tabSales Taxes and Charges` ON `tabSales Invoice`.`name` = `tabSales Taxes and Charges`.`parent`
                 WHERE `tabSales Invoice`.`name` IN ({sinvs})
                 GROUP BY `key`""".format(sinvs=self.get_sql_list(sinvs))
-        sinv_items = frappe.db.sql(sql_query, as_dict=True)    
+        base_currency = frappe.get_value("Company", self.company, "default_currency")
+        sinv_items = frappe.db.sql(sql_query, as_dict=True)
         for item in sinv_items:
             if item.taxes_and_charges:
                 tax_record = frappe.get_doc("Sales Taxes and Charges Template", item.taxes_and_charges)

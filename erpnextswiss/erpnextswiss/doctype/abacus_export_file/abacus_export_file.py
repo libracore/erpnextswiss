@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
 import cgi          # used to escape xml content
+import ast
 
 class AbacusExportFile(Document):
     def submit(self):
@@ -117,7 +118,9 @@ class AbacusExportFile(Document):
             return None
         
     # prepare transfer file
-    def render_transfer_file(self):
+    def render_transfer_file(self, restrict_currencies=None):
+        if restrict_currencies and type(restrict_currencies) == str:
+            restrict_currencies = ast.list_eval(restrict_currencies)
         # collect task information
         if self.aggregated == 1:
             """ aggregated method """
@@ -128,7 +131,7 @@ class AbacusExportFile(Document):
         else:
             # normal method (each document)
             data = {
-                'transactions': self.get_individual_transactions()
+                'transactions': self.get_individual_transactions(restrict_currencies)
             }            
             
         
@@ -279,7 +282,7 @@ class AbacusExportFile(Document):
         return transactions
 
 
-    def get_individual_transactions(self):
+    def get_individual_transactions(self, restrict_currencies=None):
         base_currency = frappe.get_value("Company", self.company, "default_currency")
         transactions = []
         sinvs = self.get_docs([ref.__dict__ for ref in self.references], "Sales Invoice")
@@ -314,28 +317,54 @@ class AbacusExportFile(Document):
                 text2 = cgi.escape(item.customer_name)
             else:
                 text2 = ""
-            transactions.append({
-                'account': self.get_account_number(item.debit_to), 
-                'amount': item.debit, 
-                'currency': item.currency, 
-                'key_amount': item.base_debit, 
-                'key_currency': base_currency,
-                'exchange_rate': item.conversion_rate,
-                'against_singles': [{
-                    'account': self.get_account_number(item.income_account),
-                    'amount': item.base_income,
-                    'currency': base_currency
-                }],
-                'debit_credit': "D", 
-                'date': item.posting_date, 
-                'tax_account': self.get_account_number(item.account_head) or None, 
-                'tax_amount': item.tax or None, 
-                'tax_rate': item.rate or None, 
-                'tax_currency': base_currency,
-                'tax_code': tax_code or "312", 
-                'text1': cgi.escape(item.name),
-                'text2': text2
-            })
+            if not restrict_currencies or item.currency in restrict_currencies:
+                # use values in actual currency
+                transactions.append({
+                    'account': self.get_account_number(item.debit_to), 
+                    'amount': item.debit, 
+                    'currency': item.currency, 
+                    'key_amount': item.base_debit, 
+                    'key_currency': base_currency,
+                    'exchange_rate': item.conversion_rate,
+                    'against_singles': [{
+                        'account': self.get_account_number(item.income_account),
+                        'amount': item.base_income,
+                        'currency': base_currency
+                    }],
+                    'debit_credit': "D", 
+                    'date': item.posting_date, 
+                    'tax_account': self.get_account_number(item.account_head) or None, 
+                    'tax_amount': item.tax or None, 
+                    'tax_rate': item.rate or None, 
+                    'tax_currency': base_currency,
+                    'tax_code': tax_code or "312", 
+                    'text1': cgi.escape(item.name),
+                    'text2': text2
+                })
+            else:
+                # use base currency
+                transactions.append({
+                    'account': self.get_account_number(item.debit_to), 
+                    'amount': item.base_debit, 
+                    'currency': base_currency, 
+                    'key_amount': item.base_debit, 
+                    'key_currency': base_currency,
+                    'exchange_rate': item.conversion_rate,
+                    'against_singles': [{
+                        'account': self.get_account_number(item.income_account),
+                        'amount': item.base_income,
+                        'currency': base_currency
+                    }],
+                    'debit_credit': "D", 
+                    'date': item.posting_date, 
+                    'tax_account': self.get_account_number(item.account_head) or None, 
+                    'tax_amount': item.tax or None, 
+                    'tax_rate': item.rate or None, 
+                    'tax_currency': base_currency,
+                    'tax_code': tax_code or "312", 
+                    'text1': cgi.escape(item.name),
+                    'text2': text2
+                })                
         
         pinvs = self.get_docs([ref.__dict__ for ref in self.references], "Purchase Invoice")
         sql_query = """SELECT DISTINCT `tabPurchase Invoice`.`name`, 
@@ -370,27 +399,52 @@ class AbacusExportFile(Document):
             else:
                 tax_code = None
             # create content
-            transactions.append({
-                'account': self.get_account_number(item.credit_to), 
-                'amount': item.credit, 
-                'key_amount': item.base_credit, 
-                'key_currency': base_currency,  
-                'against_singles': [{
-                    'account': self.get_account_number(item.expense_account),
-                    'amount': item.base_expense,
-                    'currency': item.currency
-                }],
-                'debit_credit': "C", 
-                'date': item.posting_date, 
-                'currency': item.currency, 
-                'tax_account': self.get_account_number(item.account_head) or None, 
-                'tax_amount': item.tax or None, 
-                'tax_rate': item.rate or None, 
-                'tax_code': tax_code or "312", 
-                'tax_currency': base_currency,
-                'text1': cgi.escape(item.name),
-                'text2': text2
-            })
+            if not restrict_currencies or item.currency in restrict_currencies:
+                # use values in actual currency
+                transactions.append({
+                    'account': self.get_account_number(item.credit_to), 
+                    'amount': item.credit, 
+                    'key_amount': item.base_credit, 
+                    'key_currency': base_currency,  
+                    'against_singles': [{
+                        'account': self.get_account_number(item.expense_account),
+                        'amount': item.base_expense,
+                        'currency': item.currency
+                    }],
+                    'debit_credit': "C", 
+                    'date': item.posting_date, 
+                    'currency': item.currency, 
+                    'tax_account': self.get_account_number(item.account_head) or None, 
+                    'tax_amount': item.tax or None, 
+                    'tax_rate': item.rate or None, 
+                    'tax_code': tax_code or "312", 
+                    'tax_currency': base_currency,
+                    'text1': cgi.escape(item.name),
+                    'text2': text2
+                })
+            else:
+                # use base currency
+                transactions.append({
+                    'account': self.get_account_number(item.credit_to), 
+                    'amount': item.base_credit, 
+                    'key_amount': item.base_credit, 
+                    'key_currency': base_currency,  
+                    'against_singles': [{
+                        'account': self.get_account_number(item.expense_account),
+                        'amount': item.base_expense,
+                        'currency': base_currency
+                    }],
+                    'debit_credit': "C", 
+                    'date': item.posting_date, 
+                    'currency': item.currency, 
+                    'tax_account': self.get_account_number(item.account_head) or None, 
+                    'tax_amount': item.tax or None, 
+                    'tax_rate': item.rate or None, 
+                    'tax_code': tax_code or "312", 
+                    'tax_currency': base_currency,
+                    'text1': cgi.escape(item.name),
+                    'text2': text2
+                })
             
         # add payment entry transactions
         pes = self.get_docs([ref.__dict__ for ref in self.references], "Payment Entry")
@@ -422,6 +476,7 @@ class AbacusExportFile(Document):
                 }],
                 'debit_credit': "C", 
                 'date': item.posting_date, 
+                'key_currency': item.currency,
                 'currency': item.currency, 
                 'tax_account': None, 
                 'tax_amount': None, 

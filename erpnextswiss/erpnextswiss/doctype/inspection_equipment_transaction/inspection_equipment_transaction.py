@@ -10,8 +10,11 @@ class InspectionEquipmentTransaction(Document):
 	def on_submit(self):
 		equipment = frappe.get_doc("Inspection Equipment", self.inspection_equipment)
 		if self.current_status == 'On Stock':
+			employee = frappe.get_doc("Employee", self.employee)
 			equipment.transaction_status = "Taken"
+			equipment.taken_by = employee.employee_name
 			equipment.save()
 		else:
 			equipment.transaction_status = "On Stock"
+			equipment.taken_by = ''
 			equipment.save()

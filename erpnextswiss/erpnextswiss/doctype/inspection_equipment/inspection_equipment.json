@@ -13,6 +13,7 @@
   "measurement_range",
   "purchase_price",
   "transaction_status",
+  "taken_by",
   "cb_1",
   "manufacturer",
   "location",
@@ -139,10 +140,16 @@
    "fieldtype": "Link",
    "label": "Calibration Test Set",
    "options": "Calibration Test Set"
+  },
+  {
+   "fieldname": "taken_by",
+   "fieldtype": "Data",
+   "label": "Taken by",
+   "read_only": 1
   }
  ],
  "image_field": "equipment_image",
- "modified": "2019-10-14 15:39:33.340461",
+ "modified": "2020-01-13 14:27:57.511422",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "Inspection Equipment",

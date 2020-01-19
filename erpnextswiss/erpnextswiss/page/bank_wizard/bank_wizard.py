@@ -137,7 +137,7 @@ def get_default_customer():
 def get_bank_accounts():
     accounts = frappe.get_list('Account', filters={'account_type': 'Bank', 'is_group': 0}, fields=['name'])
     selectable_accounts = []
-    for account in accounts:
+    for account in accounts.sort():
         selectable_accounts.append(account.name)    
     
     # frappe.throw(selectable_accounts)
@@ -390,7 +390,7 @@ def read_camt_transactions(transaction_entries, account):
                     matched_amount = 0.0
                     if credit_debit == "DBIT":
                         # suppliers 
-                        match_suppliers = frappe.get_all("Supplier", filters={'supplier_name': party_name}, fields=['name'])
+                        match_suppliers = frappe.get_all("Supplier", filters={'supplier_name': party_name, 'disabled': 0}, fields=['name'])
                         if match_suppliers:
                             party_match = match_suppliers[0]['name']
                         # purchase invoices
@@ -407,7 +407,7 @@ def read_camt_transactions(transaction_entries, account):
                                     
                     else:
                         # customers & sales invoices
-                        match_customers = frappe.get_all("Customer", filters={'customer_name': party_name}, fields=['name'])
+                        match_customers = frappe.get_all("Customer", filters={'customer_name': party_name, 'disabled': 0}, fields=['name'])
                         if match_customers:
                             party_match = match_customers[0]['name']
                         # sales invoices

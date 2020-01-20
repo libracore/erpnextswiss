@@ -114,11 +114,11 @@
    "options": "BankImport Bank"
   },
   {
-   "default": "05",
+   "default": "03",
    "fieldname": "xml_version",
    "fieldtype": "Select",
    "label": "XML-Version",
-   "options": "03\n05"
+   "options": "03\n05\n03CH02"
   }
  ], 
  "has_web_view": 0, 
@@ -131,7 +131,7 @@
  "issingle": 1, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2019-12-12 11:22:38.578658",
+ "modified": "2020-01-20 10:44:38.578658",
  "modified_by": "Administrator", 
  "module": "ERPNextSwiss", 
  "name": "ERPNextSwiss Settings", 

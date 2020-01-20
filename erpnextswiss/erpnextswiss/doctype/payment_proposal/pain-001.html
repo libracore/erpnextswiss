@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 {%- if xml_version == "05" %}
 <Document xmlns="urn:iso:std:iso:20022:tech:xsd:pain.001.001.05" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="">
+{%- elif xml_version == "03CH02" %}
+<Document xmlns="http://www.six-interbank-clearing.com/de/pain.001.001.03.ch.02.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.six-interbank-clearing.com/de/pain.001.001.03.ch.02.xsd  pain.001.001.03.ch.02.xsd">
 {%- else %}
 <Document xmlns="urn:iso:std:iso:20022:tech:xsd:pain.001.001.03" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="">
 {%- endif %}    

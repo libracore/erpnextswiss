@@ -240,3 +240,43 @@ DocType: Daily Closing Statement,Discounts,Rabatte
 DocType: Daily Closing Statement,Count,Anzahl
 DocType: Daily Closing Statement,Currencies,Währungen
 DocType: Daily Closing Statement,Payment Modes,Zahlungsweisen
+DocType: Inspection Equipment,Inspection Equipment,Prüfmittel
+DocType: Inspection Equipment,Transaction,Transaktion
+DocType: Inspection Equipment,Calibration / Test,Kalibration / Test
+DocType: Inspection Equipment,Inspection Equipment Transaction,Prüfmittel Transaktion
+DocType: Inspection Equipment,General,Allgemein
+DocType: Inspection Equipment,Type,Typ
+DocType: Inspection Equipment,Manufacturer,Hersteller
+DocType: Inspection Equipment,Inventory Number,Inventar Nummer
+DocType: Inspection Equipment,Location,Ort
+DocType: Inspection Equipment,Measurement Range,Messbereich
+DocType: Inspection Equipment,Usage,Verwendung
+DocType: Inspection Equipment,Purchase Price,Einkaufspreis
+DocType: Inspection Equipment,Purchase Date,Beschaffungsdatum
+DocType: Inspection Equipment,Transaction Status,Transaktionsstatus
+DocType: Inspection Equipment,On Stock,An Lager
+DocType: Inspection Equipment,Taken,Entnommen
+DocType: Inspection Equipment,Calibration,Kalibration
+DocType: Inspection Equipment,Last Calibration,Letzte Kalibration
+DocType: Inspection Equipment,Next Calibration,Nächste Kalibration
+DocType: Inspection Equipment,Calibration Test Set,Kalibration Test Set
+DocType: Inspection Equipment,Calibration Test,Kalibration Test
+DocType: Inspection Equipment,Calibration Interval,Kalibrations Interval
+DocType: Inspection Equipment,Current Inspection Equipment Status,Aktueller Prüfmittel Transaktionsstatus
+DocType: Inspection Equipment,New Inspection Equipment Status,Neuer Prüfmittel Transaktionsstatus
+DocType: Inspection Equipment,Inspection Equipment Type,Prüfmitteltyp
+DocType: Inspection Equipment,Perform Test, Test durchführen
+DocType: Inspection Equipment,Test Plan Items, Testschritte
+DocType: Inspection Equipment,Operating Instructions, Ausführungsanweisung
+DocType: Inspection Equipment,Test based on,Test basierend auf
+DocType: Inspection Equipment,Inspection Decision OK?,Prüfkriterium OK?
+DocType: Inspection Equipment,Inspection Decision OK,Prüfkriterium OK
+DocType: Inspection Equipment,Calibration / Test-Set,Kalibration / Test-Set
+DocType: Inspection Equipment,Caution; the actual value is not between OTG and UTG!,Achtung; der gemessene Wert liegt ausserhalb der Toleranzgrenzen!
+DocType: Inspection Equipment,To Calibrate,Zu Kalibrieren
+DocType: Inspection Equipment,Calibrated,Kalibriert
+DocType: Inspection Equipment,Without Calibration,Ohne Kalibration
+DocType: Inspection Equipment,Scrap,Verschrottet
+DocType: Inspection Equipment,Blocked,Gesperrt
+DocType: Inspection Equipment,in months,in Monaten
+DocType: Inspection Equipment,Taken by,Entnommen von

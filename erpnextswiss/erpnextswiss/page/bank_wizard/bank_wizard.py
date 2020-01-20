@@ -137,7 +137,7 @@ def get_default_customer():
 def get_bank_accounts():
     accounts = frappe.get_list('Account', filters={'account_type': 'Bank', 'is_group': 0}, fields=['name'])
     selectable_accounts = []
-    for account in accounts:
+    for account in accounts.sort():
         selectable_accounts.append(account.name)    
     
     # frappe.throw(selectable_accounts)
@@ -220,230 +220,334 @@ def read_camt_transactions(transaction_entries, account):
         except:
             global_account_service_reference = ""
         transaction_count = 0
-        for transaction in transactions:
-            transaction_count += 1
-            if six.PY2:
-                transaction_soup = BeautifulSoup(unicode(transaction), 'lxml')
-            else:
-                transaction_soup = BeautifulSoup(str(transaction), 'lxml')
-            # --- find transaction type: paid or received: (DBIT: paid, CRDT: received)
+        if transactions and len(transactions) > 0:
+            for transaction in transactions:
+                transaction_count += 1
+                if six.PY2:
+                    transaction_soup = BeautifulSoup(unicode(transaction), 'lxml')
+                else:
+                    transaction_soup = BeautifulSoup(str(transaction), 'lxml')
+                # --- find transaction type: paid or received: (DBIT: paid, CRDT: received)
+                try:
+                    credit_debit = transaction_soup.cdtdbtind.get_text()
+                except:
+                    # fallback to entry indicator
+                    credit_debit = entry_soup.cdtdbtind.get_text()
+                
+                #try:
+                # --- find unique reference
+                try:
+                    # try to use the account service reference
+                    unique_reference = transaction_soup.txdtls.refs.acctsvcrref.get_text()
+                except:
+                    # fallback: use tx id
+                    try:
+                        unique_reference = transaction_soup.txid.get_text()
+                    except:
+                        # fallback to pmtinfid
+                        try:
+                            unique_reference = transaction_soup.pmtinfid.get_text()
+                        except:
+                            # fallback to group account service reference plus transaction_count
+                            if global_account_service_reference != "":
+                                unique_reference = "{0}-{1}".format(global_account_service_reference, transaction_count)
+                            else:
+                                # fallback to ustrd (do not use)
+                                # unique_reference = transaction_soup.ustrd.get_text()
+                                # fallback to hash
+                                amount = transaction_soup.txdtls.amt.get_text()
+                                party = transaction_soup.nm.get_text()
+                                code = "{0}:{1}:{2}".format(date, amount, party)
+                                frappe.log_error("Code: {0}".format(code))
+                                unique_reference = hashlib.md5(code.encode("utf-8")).hexdigest()
+                # --- find amount and currency
+                try:
+                    # try to find as <TxAmt>
+                    amount = float(transaction_soup.txdtls.txamt.amt.get_text())
+                    currency = transaction_soup.txdtls.txamt.amt['ccy']
+                except:
+                    try:
+                        # fallback to pure <AMT>
+                        amount = float(transaction_soup.txdtls.amt.get_text())
+                        currency = transaction_soup.txdtls.amt['ccy']
+                    except:
+                        # fallback to amount from entry level
+                        amount = entry_amount
+                        currency = entry_currency
+                try:
+                    # --- find party IBAN
+                    if credit_debit == "DBIT":
+                        # use RltdPties:Cdtr
+                        if six.PY2:
+                            party_soup = BeautifulSoup(unicode(transaction_soup.txdtls.rltdpties.cdtr)) 
+                        else:
+                            party_soup = BeautifulSoup(str(transaction_soup.txdtls.rltdpties.cdtr)) 
+                        try:
+                            party_iban = transaction_soup.cdtracct.id.iban.get_text()
+                        except:
+                            party_iban = ""
+                    else:
+                        # CRDT: use RltdPties:Dbtr
+                        if six.PY2:
+                            party_soup = BeautifulSoup(unicode(transaction_soup.txdtls.rltdpties.dbtr))
+                        else:
+                            party_soup = BeautifulSoup(str(transaction_soup.txdtls.rltdpties.dbtr))
+                        try:
+                            party_iban = transaction_soup.dbtracct.id.iban.get_text()
+                        except:
+                            party_iban = ""
+                    try:
+                        party_name = party_soup.nm.get_text()
+                        if party_soup.strtnm:
+                            # parse by street name, ...
+                            try:
+                                street = party_soup.strtnm.get_text()
+                                try:
+                                    street_number = party_soup.bldgnb.get_text()
+                                    address_line = "{0} {1}".format(street, street_number)
+                                except:
+                                    address_line = street
+                                    
+                            except:
+                                address_line = ""
+                            try:
+                                plz = party_soup.pstcd.get_text()
+                            except:
+                                plz = ""
+                            try:
+                                town = party_soup.twnnm.get_text()
+                            except:
+                                town = ""
+                            address_line2 = "{0} {1}".format(plz, town)
+                        else:
+                            # parse by address lines
+                            try:
+                                address_lines = party_soup.find_all("adrline")
+                                address_line1 = address_lines[0].get_text()
+                                address_line2 = address_lines[1].get_text()
+                            except:
+                                # in case no address is provided
+                                address_line1 = ""
+                                address_line2 = ""                            
+                    except:
+                        # party is not defined (e.g. DBIT from Bank)
+                        try:
+                            # this is a fallback for ZKB which does not provide nm tag, but address line
+                            address_lines = party_soup.find_all("adrline")
+                            party_name = address_lines[0].get_text()
+                        except:
+                            party_name = "not found"
+                        address_line1 = ""
+                        address_line2 = ""
+                    try:
+                        country = party_soup.ctry.get_text()
+                    except:
+                        country = ""
+                    if (address_line1 != "") and (address_line2 != ""):
+                        party_address = "{0}, {1}, {2}".format(
+                            address_line1,
+                            address_line2,
+                            country)
+                    elif (address_line1 != ""):
+                        party_address = "{0}, {1}".format(address_line1, country)
+                    else:
+                        party_address = "{0}".format(country)
+                except:
+                    # key related parties not found / no customer info
+                    party_name = ""
+                    party_address = ""
+                    party_iban = ""
+                try:
+                    charges = float(transaction_soup.chrgs.ttlchrgsandtaxamt[text])
+                except:
+                    charges = 0.0
+
+                try:
+                    # try to find ESR reference
+                    transaction_reference = transaction_soup.rmtinf.strd.cdtrrefinf.ref.get_text()
+                except:
+                    try:
+                        # try to find a user-defined reference (e.g. SINV.)
+                        transaction_reference = transaction_soup.rmtinf.ustrd.get_text()
+                    except:
+                        try:
+                            # try to find an end-to-end ID
+                            transaction_reference = transaction_soup.cdtdbtind.get_text() 
+                        except:
+                            transaction_reference = unique_reference
+                # debug: show collected record in error log
+                #frappe.log_error("type:{type}\ndate:{date}\namount:{currency} {amount}\nunique ref:{unique}\nparty:{party}\nparty address:{address}\nparty iban:{iban}\nremarks:{remarks}".format(
+                #    type=credit_debit, date=date, currency=currency, amount=amount, unique=unique_reference, party=party_name, address=party_address, iban=party_iban, remarks=transaction_reference))
+                
+                # check if this transaction is already recorded
+                match_payment_entry = frappe.get_all('Payment Entry', filters={'reference_no': unique_reference}, fields=['name'])
+                if match_payment_entry:
+                    frappe.log_error("Transaction {0} is already imported in {1}.".format(unique_reference, match_payment_entry[0]['name']))
+                else:
+                    # try to find matching parties & invoices
+                    party_match = None
+                    invoice_matches = None
+                    matched_amount = 0.0
+                    if credit_debit == "DBIT":
+                        # suppliers 
+                        match_suppliers = frappe.get_all("Supplier", filters={'supplier_name': party_name, 'disabled': 0}, fields=['name'])
+                        if match_suppliers:
+                            party_match = match_suppliers[0]['name']
+                        # purchase invoices
+                        possible_pinvs = frappe.get_all("Purchase Invoice", filters=[['grand_total', '=', amount], ['outstanding_amount', '>', 0]], fields=['name', 'supplier', 'outstanding_amount', 'bill_no'])
+                        if possible_pinvs:
+                            invoice_matches = []
+                            for pinv in possible_pinvs:
+                                if pinv['name'] in transaction_reference or pinv['bill_no'] in transaction_reference:
+                                    invoice_matches.append(pinv['name'])
+                                    # override party match in case there is one from the sales invoice
+                                    party_match = pinv['supplier']
+                                    # add total matched amount
+                                    matched_amount += float(pinv['outstanding_amount'])
+                                    
+                    else:
+                        # customers & sales invoices
+                        match_customers = frappe.get_all("Customer", filters={'customer_name': party_name, 'disabled': 0}, fields=['name'])
+                        if match_customers:
+                            party_match = match_customers[0]['name']
+                        # sales invoices
+                        possible_sinvs = frappe.get_all("Sales Invoice", filters=[['outstanding_amount', '>', 0]], fields=['name', 'customer', 'outstanding_amount'])
+                        if possible_sinvs:
+                            invoice_matches = []
+                            for sinv in possible_sinvs:
+                                if sinv['name'] in transaction_reference:
+                                    invoice_matches.append(sinv['name'])
+                                    # override party match in case there is one from the sales invoice
+                                    party_match = sinv['customer']
+                                    # add total matched amount
+                                    matched_amount += float(sinv['outstanding_amount'])
+                                    
+                    # reset invoice matches in case there are no matches
+                    try:
+                        if len(invoice_matches) == 0:
+                            invoice_matches = None
+                    except:
+                        pass                                                                                                
+                    new_txn = {
+                        'txid': len(txns),
+                        'date': date,
+                        'currency': currency,
+                        'amount': amount,
+                        'party_name': party_name,
+                        'party_address': party_address,
+                        'credit_debit': credit_debit,
+                        'party_iban': party_iban,
+                        'unique_reference': unique_reference,
+                        'transaction_reference': transaction_reference,
+                        'party_match': party_match,
+                        'invoice_matches': invoice_matches,
+                        'matched_amount': matched_amount
+                    }
+                    txns.append(new_txn)
+        else:
+            # transaction without TxDtls: occurs at CS when transaction is from a pain.001 instruction
+            # get unique ID
             try:
-                credit_debit = transaction_soup.cdtdbtind.get_text()
-            except:
-                # fallback to entry indicator
-                credit_debit = entry_soup.cdtdbtind.get_text()
-            
-            #try:
-            # --- find unique reference
-            try:
-                # try to use the account service reference
-                unique_reference = transaction_soup.txdtls.refs.acctsvcrref.get_text()
+                unique_reference = entry_soup.acctsvcrref.get_text()
             except:
                 # fallback: use tx id
                 try:
-                    unique_reference = transaction_soup.txid.get_text()
+                    unique_reference = entry_soup.txid.get_text()
                 except:
                     # fallback to pmtinfid
                     try:
-                        unique_reference = transaction_soup.pmtinfid.get_text()
+                        unique_reference = entry_soup.pmtinfid.get_text()
                     except:
-                        # fallback to group account service reference plus transaction_count
-                        if global_account_service_reference != "":
-                            unique_reference = "{0}-{1}".format(global_account_service_reference, transaction_count)
-                        else:
-                            # fallback to ustrd (do not use)
-                            # unique_reference = transaction_soup.ustrd.get_text()
-                            # fallback to hash
-                            amount = transaction_soup.txdtls.amt.get_text()
-                            party = transaction_soup.nm.get_text()
-                            code = "{0}:{1}:{2}".format(date, amount, party)
-                            frappe.log_error("Code: {0}".format(code))
-                            unique_reference = hashlib.md5(code.encode("utf-8")).hexdigest()
-            # --- find amount and currency
-            try:
-                # try to find as <TxAmt>
-                amount = float(transaction_soup.txdtls.txamt.amt.get_text())
-                currency = transaction_soup.txdtls.txamt.amt['ccy']
-            except:
-                try:
-                    # fallback to pure <AMT>
-                    amount = float(transaction_soup.txdtls.amt.get_text())
-                    currency = transaction_soup.txdtls.amt['ccy']
-                except:
-                    # fallback to amount from entry level
-                    amount = entry_amount
-                    currency = entry_currency
-            try:
-                # --- find party IBAN
-                if credit_debit == "DBIT":
-                    # use RltdPties:Cdtr
-                    if six.PY2:
-                        party_soup = BeautifulSoup(unicode(transaction_soup.txdtls.rltdpties.cdtr)) 
-                    else:
-                        party_soup = BeautifulSoup(str(transaction_soup.txdtls.rltdpties.cdtr)) 
-                    try:
-                        party_iban = transaction_soup.cdtracct.id.iban.get_text()
-                    except:
-                        party_iban = ""
-                else:
-                    # CRDT: use RltdPties:Dbtr
-                    if six.PY2:
-                        party_soup = BeautifulSoup(unicode(transaction_soup.txdtls.rltdpties.dbtr))
-                    else:
-                        party_soup = BeautifulSoup(str(transaction_soup.txdtls.rltdpties.dbtr))
-                    try:
-                        party_iban = transaction_soup.dbtracct.id.iban.get_text()
-                    except:
-                        party_iban = ""
-                try:
-                    party_name = party_soup.nm.get_text()
-                    if party_soup.strtnm:
-                        # parse by street name, ...
-                        try:
-                            street = party_soup.strtnm.get_text()
-                            try:
-                                street_number = party_soup.bldgnb.get_text()
-                                address_line = "{0} {1}".format(street, street_number)
-                            except:
-                                address_line = street
-                                
-                        except:
-                            address_line = ""
-                        try:
-                            plz = party_soup.pstcd.get_text()
-                        except:
-                            plz = ""
-                        try:
-                            town = party_soup.twnnm.get_text()
-                        except:
-                            town = ""
-                        address_line2 = "{0} {1}".format(plz, town)
-                    else:
-                        # parse by address lines
-                        try:
-                            address_lines = party_soup.find_all("adrline")
-                            address_line1 = address_lines[0].get_text()
-                            address_line2 = address_lines[1].get_text()
-                        except:
-                            # in case no address is provided
-                            address_line1 = ""
-                            address_line2 = ""                            
-                except:
-                    # party is not defined (e.g. DBIT from Bank)
-                    try:
-                        # this is a fallback for ZKB which does not provide nm tag, but address line
-                        address_lines = party_soup.find_all("adrline")
-                        party_name = address_lines[0].get_text()
-                    except:
-                        party_name = "not found"
-                    address_line1 = ""
-                    address_line2 = ""
-                try:
-                    country = party_soup.ctry.get_text()
-                except:
-                    country = ""
-                if (address_line1 != "") and (address_line2 != ""):
-                    party_address = "{0}, {1}, {2}".format(
-                        address_line1,
-                        address_line2,
-                        country)
-                elif (address_line1 != ""):
-                    party_address = "{0}, {1}".format(address_line1, country)
-                else:
-                    party_address = "{0}".format(country)
-            except:
-                # key related parties not found / no customer info
-                party_name = ""
-                party_address = ""
-                party_iban = ""
-            try:
-                charges = float(transaction_soup.chrgs.ttlchrgsandtaxamt[text])
-            except:
-                charges = 0.0
-
-            try:
-                # try to find ESR reference
-                transaction_reference = transaction_soup.rmtinf.strd.cdtrrefinf.ref.get_text()
-            except:
-                try:
-                    # try to find a user-defined reference (e.g. SINV.)
-                    transaction_reference = transaction_soup.rmtinf.ustrd.get_text()
-                except:
-                    try:
-                        # try to find an end-to-end ID
-                        transaction_reference = transaction_soup.cdtdbtind.get_text() 
-                    except:
-                        transaction_reference = unique_reference
-            # debug: show collected record in error log
-            #frappe.log_error("type:{type}\ndate:{date}\namount:{currency} {amount}\nunique ref:{unique}\nparty:{party}\nparty address:{address}\nparty iban:{iban}\nremarks:{remarks}".format(
-            #    type=credit_debit, date=date, currency=currency, amount=amount, unique=unique_reference, party=party_name, address=party_address, iban=party_iban, remarks=transaction_reference))
-            
+                        # fallback to hash
+                        code = "{0}:{1}:{2}".format(date, entry_currency, entry_amount)
+                        unique_reference = hashlib.md5(code.encode("utf-8")).hexdigest()
             # check if this transaction is already recorded
             match_payment_entry = frappe.get_all('Payment Entry', filters={'reference_no': unique_reference}, fields=['name'])
             if match_payment_entry:
                 frappe.log_error("Transaction {0} is already imported in {1}.".format(unique_reference, match_payment_entry[0]['name']))
             else:
-                # try to find matching parties & invoices
-                party_match = None
-                invoice_matches = None
-                matched_amount = 0.0
-                if credit_debit == "DBIT":
+                # --- find transaction type: paid or received: (DBIT: paid, CRDT: received)
+                credit_debit = entry_soup.cdtdbtind.get_text()
+                # find payment instruction ID
+                try:
+                    payment_instruction_id = entry_soup.pmtinfid.get_text()     # instruction ID, PMTINF-[payment proposal]-row
+                    payment_instruction_fields = payment_instruction_id.split("-")
+                    payment_instruction_row = int(payment_instruction_fields[2]) + 1
+                    payment_proposal_id = payment_instruction_fields[1]
+                    # find original instruction record
+                    payment_proposal_payments = frappe.get_all("Payment Proposal Payment", 
+                        filters={'parent': payment_proposal_id, 'idx': payment_instruction_row},
+                        fields=['receiver', 'receiver_address_line1', 'receiver_address_line2', 'iban', 'reference'])
                     # suppliers 
-                    match_suppliers = frappe.get_all("Supplier", filters={'supplier_name': party_name}, fields=['name'])
+                    party_match = None
+                    match_suppliers = frappe.get_all("Supplier", filters={'supplier_name': payment_proposal_payments[0]['receiver']}, 
+                        fields=['name'])
                     if match_suppliers:
                         party_match = match_suppliers[0]['name']
-                    # purchase invoices
-                    possible_pinvs = frappe.get_all("Purchase Invoice", filters=[['grand_total', '=', amount], ['outstanding_amount', '>', 0]], fields=['name', 'supplier', 'outstanding_amount', 'bill_no'])
-                    if possible_pinvs:
-                        invoice_matches = []
-                        for pinv in possible_pinvs:
-                            if pinv['name'] in transaction_reference or pinv['bill_no'] in transaction_reference:
-                                invoice_matches.append(pinv['name'])
-                                # override party match in case there is one from the sales invoice
-                                party_match = pinv['supplier']
-                                # add total matched amount
-                                matched_amount += float(pinv['outstanding_amount'])
-                                
-                else:
-                    # customers & sales invoices
-                    match_customers = frappe.get_all("Customer", filters={'customer_name': party_name}, fields=['name'])
-                    if match_customers:
-                        party_match = match_customers[0]['name']
-                    # sales invoices
-                    possible_sinvs = frappe.get_all("Sales Invoice", filters=[['outstanding_amount', '>', 0]], fields=['name', 'customer', 'outstanding_amount'])
-                    if possible_sinvs:
-                        invoice_matches = []
-                        for sinv in possible_sinvs:
-                            if sinv['name'] in transaction_reference:
-                                invoice_matches.append(sinv['name'])
-                                # override party match in case there is one from the sales invoice
-                                party_match = sinv['customer']
-                                # add total matched amount
-                                matched_amount += float(sinv['outstanding_amount'])
-                                
-                # reset invoice matches in case there are no matches
-                try:
-                    if len(invoice_matches) == 0:
-                        invoice_matches = None
-                except:
-                    pass                                                                                                
-                new_txn = {
-                    'txid': len(txns),
-                    'date': date,
-                    'currency': currency,
-                    'amount': amount,
-                    'party_name': party_name,
-                    'party_address': party_address,
-                    'credit_debit': credit_debit,
-                    'party_iban': party_iban,
-                    'unique_reference': unique_reference,
-                    'transaction_reference': transaction_reference,
-                    'party_match': party_match,
-                    'invoice_matches': invoice_matches,
-                    'matched_amount': matched_amount
-                }
-                txns.append(new_txn)    
-
+                    # purchase invoices 
+                    invoice_match = None
+                    matched_amount = 0
+                    match_invoices = frappe.get_all("Purchase Invoice", 
+                        filters=[['name', '=', payment_proposal_payments[0]['reference']], ['outstanding_amount', '>', 0]], 
+                        fields=['name', 'grand_total'])
+                    if match_invoices:
+                        invoice_match = [match_invoices[0]['name']]
+                        matched_amount = match_invoices[0]['grand_total']
+                    if payment_proposal_payments:
+                        new_txn = {
+                            'txid': len(txns),
+                            'date': date,
+                            'currency': entry_currency,
+                            'amount': entry_amount,
+                            'party_name': payment_proposal_payments[0]['receiver'],
+                            'party_address': "{0}, {1}".format(
+                                payment_proposal_payments[0]['receiver_address_line1'], 
+                                payment_proposal_payments[0]['receiver_address_line2']),
+                            'credit_debit': credit_debit,
+                            'party_iban': payment_proposal_payments[0]['iban'],
+                            'unique_reference': unique_reference,
+                            'transaction_reference': payment_proposal_payments[0]['reference'],
+                            'party_match': party_match,
+                            'invoice_matches': invoice_match,
+                            'matched_amount': matched_amount
+                        }
+                        txns.append(new_txn)
+                    else:
+                        # not matched against payment instruction
+                        new_txn = {
+                            'txid': len(txns),
+                            'date': date,
+                            'currency': entry_currency,
+                            'amount': entry_amount,
+                            'party_name': "???",
+                            'party_address': "???",
+                            'credit_debit': credit_debit,
+                            'party_iban': "???",
+                            'unique_reference': unique_reference,
+                            'transaction_reference': unique_reference,
+                            'party_match': None,
+                            'invoice_matches': None,
+                            'matched_amount': None
+                        }
+                        txns.append(new_txn)
+                except Exception as err:
+                    # no payment instruction
+                    new_txn = {
+                        'txid': len(txns),
+                        'date': date,
+                        'currency': entry_currency,
+                        'amount': entry_amount,
+                        'party_name': "???",
+                        'party_address': "???",
+                        'credit_debit': credit_debit,
+                        'party_iban': "???",
+                        'unique_reference': unique_reference,
+                        'transaction_reference': unique_reference,
+                        'party_match': None,
+                        'invoice_matches': None,
+                        'matched_amount': None
+                    }
+                    txns.append(new_txn)
     return txns
 
 @frappe.whitelist()

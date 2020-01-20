@@ -7,8 +7,9 @@ def get_data():
 		{
 			"module_name": "ERPNextSwiss",
 			"color": "#92d050",
-			"icon": "fa fa-diamond",
+			"icon": "icon erpnextswiss-blue",
 			"type": "module",
-			"label": _("ERPNextSwiss")
+			"label": _("ERPNextSwiss"),
+            "description": "Banking integration and Swiss applications"
 		}
 	]

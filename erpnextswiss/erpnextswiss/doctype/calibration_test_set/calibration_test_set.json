@@ -1,0 +1,49 @@
+{
+ "autoname": "field:title",
+ "creation": "2019-09-09 14:02:10.423772",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "title",
+  "test_plan"
+ ],
+ "fields": [
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "label": "Name",
+   "unique": 1
+  },
+  {
+   "fieldname": "test_plan",
+   "fieldtype": "Table",
+   "label": "Test Plan",
+   "options": "Calibration Test Item",
+   "reqd": 1
+  }
+ ],
+ "modified": "2019-09-12 09:43:46.834164",
+ "modified_by": "Administrator",
+ "module": "ERPNextSwiss",
+ "name": "Calibration Test Set",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

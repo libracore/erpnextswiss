@@ -122,14 +122,32 @@ def get_data():
             "icon": "octicon octicon-git-compare",
             "items": [
                    {
+                       "type": "doctype",
+                       "name": "Abacus Export File",
+                       "label": _("Abacus Export File"),
+                       "description": _("Abacus Export File")                   
+                   },
+                   {
                        "type": "page",
                        "name": "abacus_export",
                        "label": _("Abacus Export"),
                        "description": _("Abacus Export")                   
-                   }                   
+                   }                 
             ]
         },
         {
+            "label": _("POS"),
+            "icon": "fa fa-money-bill",
+            "items": [
+                   {
+                        "type": "doctype",
+                       "name": "Daily Closing Statement",
+                       "label": _("Daily Closing Statement"),
+                       "description": _("Daily Closing Statement")                      
+                   } 
+			]
+		},
+		{
             "label": _("Quality"),
             "icon": "octicon octicon-verified",
             "items": [
@@ -138,7 +156,37 @@ def get_data():
                        "name": "Non Conformity Report 8D",
                        "label": _("Non Conformity Report 8D"),
                        "description": _("Non Conformity Report 8D")                   
-                   }               
+                   },
+				   {
+                       "type": "doctype",              
+                       "name": "Inspection Equipment",
+                       "label": _("Inspection Equipment"),
+                       "description": _("Inspection Equipment")                   
+                   },
+				   {
+                       "type": "doctype",
+                       "name": "Inspection Equipment Transaction",
+                       "label": _("Inspection Equipment Transaction"),
+                       "description": _("Inspection Equipment Transaction")                   
+                   },
+				   {
+                       "type": "doctype",
+                       "name": "Inspection Equipment Type",
+                       "label": _("Inspection Equipment Type"),
+                       "description": _("Inspection Equipment Type")                   
+                   },
+				   {
+                       "type": "doctype",
+                       "name": "Calibration Test",
+                       "label": _("Calibration / Test"),
+                       "description": _("Calibration Test")                   
+                   },
+				   {
+                       "type": "doctype",
+                       "name": "Calibration Test Set",
+                       "label": _("Calibration / Test-Set"),
+                       "description": _("Calibration Test Set")                   
+                   }
             ]
         }
 ]

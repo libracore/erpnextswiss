@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 # Copyright (c) 2017-2019, libracore and contributors
 # License: AGPL v3. See LICENCE
+#
+# NOTE: this is the old transfer method. 
+# It is replaced by the Abacus Transfer File and will be deprecated soon
+#
 
 from __future__ import unicode_literals
 import frappe
@@ -36,12 +40,18 @@ def generate_transfer_file(start_date, end_date, limit=10000, aggregated=0):
 
         # add sales invoice transactions
         if aggregated == 1:
-            sql_query = """SELECT `tabSales Invoice`.`name`, `tabSales Invoice`.`posting_date`, `tabSales Invoice`.`currency`, 
-                  SUM(`tabSales Invoice`.`base_grand_total`) AS `debit`, `tabSales Invoice`.`debit_to`,
-                  SUM(`tabSales Invoice`.`base_net_total`) AS `income`, `tabSales Invoice Item`.`income_account`,  
-                  SUM(`tabSales Invoice`.`total_taxes_and_charges`) AS `tax`, `tabSales Taxes and Charges`.`account_head`,
+            sql_query = """SELECT `tabSales Invoice`.`name`, 
+                  `tabSales Invoice`.`posting_date`, 
+                  `tabSales Invoice`.`currency`, 
+                  SUM(`tabSales Invoice`.`grand_total`) AS `debit`, 
+                  `tabSales Invoice`.`debit_to`,
+                  SUM(`tabSales Invoice`.`net_total`) AS `income`, 
+                  `tabSales Invoice Item`.`income_account`,  
+                  SUM(`tabSales Invoice`.`total_taxes_and_charges`) AS `tax`, 
+                  `tabSales Taxes and Charges`.`account_head`,
                   `tabSales Invoice`.`taxes_and_charges`,
                   `tabSales Taxes and Charges`.`rate`,
+                  "Various" AS `customer_name`,
                   CONCAT(IFNULL(`tabSales Invoice`.`debit_to`, ""),
                     IFNULL(`tabSales Invoice Item`.`income_account`, ""),  
                     IFNULL(`tabSales Taxes and Charges`.`account_head`, "")
@@ -56,12 +66,18 @@ def generate_transfer_file(start_date, end_date, limit=10000, aggregated=0):
                     AND `tabSales Invoice`.`exported_to_abacus` = 0
                 GROUP BY `key`""".format(start_date=start_date, end_date=end_date)
         else:
-            sql_query = """SELECT DISTINCT `tabSales Invoice`.`name`, `tabSales Invoice`.`posting_date`, `tabSales Invoice`.`currency`, 
-                  `tabSales Invoice`.`base_grand_total` AS `debit`, `tabSales Invoice`.`debit_to`,
-                  `tabSales Invoice`.`base_net_total` AS `income`, `tabSales Invoice Item`.`income_account`,  
-                  `tabSales Invoice`.`total_taxes_and_charges` AS `tax`, `tabSales Taxes and Charges`.`account_head`,
+            sql_query = """SELECT DISTINCT `tabSales Invoice`.`name`, 
+                  `tabSales Invoice`.`posting_date`, 
+                  `tabSales Invoice`.`currency`, 
+                  `tabSales Invoice`.`grand_total` AS `debit`, 
+                  `tabSales Invoice`.`debit_to`,
+                  `tabSales Invoice`.`net_total` AS `income`, 
+                  `tabSales Invoice Item`.`income_account`,  
+                  `tabSales Invoice`.`total_taxes_and_charges` AS `tax`, 
+                  `tabSales Taxes and Charges`.`account_head`,
                   `tabSales Invoice`.`taxes_and_charges`,
-                  `tabSales Taxes and Charges`.`rate`
+                  `tabSales Taxes and Charges`.`rate`,
+                  `tabSales Invoice`.`customer_name`
                 FROM `tabSales Invoice`
                 LEFT JOIN `tabSales Invoice Item` ON `tabSales Invoice`.`name` = `tabSales Invoice Item`.`parent`
                 LEFT JOIN `tabSales Taxes and Charges` ON (`tabSales Invoice`.`name` = `tabSales Taxes and Charges`.`parent` AND  `tabSales Taxes and Charges`.`idx` = 1)
@@ -106,21 +122,121 @@ def generate_transfer_file(start_date, end_date, limit=10000, aggregated=0):
                     against_account=item.income_account, against_amount=item.income, 
                     debit_credit="D", date=date, currency=item.currency, transaction_count=transaction_count, 
                     tax_account=item.account_head, tax_amount=item.tax, tax_rate=item.rate, 
-                    tax_code=tax_record.tax_code or "312", doc_ref=item.name)
+                    tax_code=tax_record.tax_code or "312", doc_ref=item.name,
+                    doc_text=item.customer_name)
             else:
                 # create content block without taxes
                 content += add_transaction_block(account=item.debit_to, amount=item.debit, 
                     against_account=item.income_account, against_amount=item.income, 
                     debit_credit="D", date=date, currency=item.currency, transaction_count=transaction_count,
-                    tax_account=None, tax_amount=None, tax_rate=None, tax_code=None, doc_ref=item.name)
+                    tax_account=None, tax_amount=None, tax_rate=None, tax_code=None, doc_ref=item.name,
+                    doc_text=item.customer_name)
 
             transaction_count += 1        
         
+        # add purchase invoice transactions
+        if aggregated == 1:
+            sql_query = """SELECT `tabPurchase Invoice`.`name`, 
+                  `tabPurchase Invoice`.`posting_date`, 
+                  `tabPurchase Invoice`.`currency`, 
+                  SUM(`tabPurchase Invoice`.`grand_total`) AS `debit`, 
+                  `tabPurchase Invoice`.`credit_to`,
+                  SUM(`tabPurchase Invoice`.`net_total`) AS `income`, 
+                  `tabPurchase Invoice Item`.`expense_account`,  
+                  SUM(`tabPurchase Invoice`.`total_taxes_and_charges`) AS `tax`, 
+                  `tabPurchase Taxes and Charges`.`account_head`,
+                  `tabPurchase Invoice`.`taxes_and_charges`,
+                  `tabPurchase Taxes and Charges`.`rate`,
+                  "Various" AS `supplier_name`,
+                  CONCAT(IFNULL(`tabPurchase Invoice`.`debit_to`, ""),
+                    IFNULL(`tabPurchase Invoice Item`.`income_account`, ""),  
+                    IFNULL(`tabPurchase Taxes and Charges`.`account_head`, "")
+                  ) AS `key`
+                FROM `tabPurchase Invoice`
+                LEFT JOIN `tabPurchase Invoice Item` ON `tabPurchase Invoice`.`name` = `tabPurchase Invoice Item`.`parent`
+                LEFT JOIN `tabPurchase Taxes and Charges` ON `tabPurchase Invoice`.`name` = `tabPurchase Taxes and Charges`.`parent`
+                WHERE
+                    `tabPurchase Invoice`.`posting_date` >= '{start_date}'
+                    AND `tabPurchase Invoice`.`posting_date` <= '{end_date}'
+                    AND `tabPurchase Invoice`.`docstatus` = 1
+                    AND `tabPurchase Invoice`.`exported_to_abacus` = 0
+                GROUP BY `key`""".format(start_date=start_date, end_date=end_date)
+        else:
+            sql_query = """SELECT DISTINCT `tabPurchase Invoice`.`name`, 
+                  `tabPurchase Invoice`.`posting_date`, 
+                  `tabPurchase Invoice`.`currency`, 
+                  `tabPurchase Invoice`.`grand_total` AS `debit`, 
+                  `tabPurchase Invoice`.`credit_to`,
+                  `tabPurchase Invoice`.`net_total` AS `income`, 
+                  `tabPurchase Invoice Item`.`expense_account`,  
+                  `tabPurchase Invoice`.`total_taxes_and_charges` AS `tax`, 
+                  `tabPurchase Taxes and Charges`.`account_head`,
+                  `tabPurchase Invoice`.`taxes_and_charges`,
+                  `tabPurchase Taxes and Charges`.`rate`,
+                  `tabPurchase Invoice`.`supplier_name`
+                FROM `tabPurchase Invoice`
+                LEFT JOIN `tabPurchase Invoice Item` ON `tabPurchase Invoice`.`name` = `tabPurchase Invoice Item`.`parent`
+                LEFT JOIN `tabPurchase Taxes and Charges` ON (`tabPurchase Invoice`.`name` = `tabPurchase Taxes and Charges`.`parent` AND  `tabPurchase Taxes and Charges`.`idx` = 1)
+                WHERE
+                    `tabPurchase Invoice`.`posting_date` >= '{start_date}'
+                    AND `tabPurchase Invoice`.`posting_date` <= '{end_date}'
+                    AND `tabPurchase Invoice`.`docstatus` = 1
+                    AND `tabPurchase Invoice`.`exported_to_abacus` = 0 
+                LIMIT {limit}""".format(start_date=start_date, end_date=end_date, limit=limit)
+        
+        items = frappe.db.sql(sql_query, as_dict=True)
+        
+        if aggregated == 1:
+            flag_sinvs_as_exportet = frappe.db.sql("""UPDATE `tabPurchase Invoice` SET `exported_to_abacus` = 1 WHERE `posting_date` >= '{start_date}' AND `posting_date` <= '{end_date}' AND `docstatus` = 1 AND `exported_to_abacus` = 0""".format(start_date=start_date, end_date=end_date), as_list=True)
+        else:
+            sinv_range = []
+            for sinv in items:
+                sinv_range.append(sinv.name)
+        
+        # mark all entries as exported
+            export_matches = frappe.get_all("Purchase Invoice", filters=[
+                ["posting_date",">=", start_date],
+                ["posting_date","<=", end_date],
+                ["docstatus","=", 1],
+                ["name","in", sinv_range],
+                ["exported_to_abacus","=",0]], fields=['name'])
+            for export_match in export_matches:
+                record = frappe.get_doc("Purchase Invoice", export_match['name'])
+                record.exported_to_abacus = 1
+                record.save(ignore_permissions=True)
+        # create item entries
+        transaction_count = 0
+        for item in items:
+            if aggregated == 1:
+                date = end_date
+            else:
+                date = item.posting_date
+            if item.taxes_and_charges:
+                tax_record = frappe.get_doc("Purchase Taxes and Charges Template", item.taxes_and_charges)
+                # create content block with taxes
+                content += add_transaction_block(account=item.debit_to, amount=item.debit, 
+                    against_account=item.income_account, against_amount=item.income, 
+                    debit_credit="D", date=date, currency=item.currency, transaction_count=transaction_count, 
+                    tax_account=item.account_head, tax_amount=item.tax, tax_rate=item.rate, 
+                    tax_code=tax_record.tax_code or "312", doc_ref=item.name,
+                    doc_text=item.supplier_name)
+            else:
+                # create content block without taxes
+                content += add_transaction_block(account=item.debit_to, amount=item.debit, 
+                    against_account=item.income_account, against_amount=item.income, 
+                    debit_credit="D", date=date, currency=item.currency, transaction_count=transaction_count,
+                    tax_account=None, tax_amount=None, tax_rate=None, tax_code=None, doc_ref=item.name,
+                    doc_text=item.supplier_name)
+
+            transaction_count += 1      
+            
         # add payment entry transactions
         if aggregated == 1:
             sql_query = """SELECT `tabPayment Entry`.`name`,
-                      `tabPayment Entry`.`posting_date`, `tabPayment Entry`.`paid_from_account_currency` AS `currency`,
-                      SUM(`tabPayment Entry`.`paid_amount`) AS `amount`, `tabPayment Entry`.`paid_from`,
+                      `tabPayment Entry`.`posting_date`, 
+                      `tabPayment Entry`.`paid_from_account_currency` AS `currency`,
+                      SUM(`tabPayment Entry`.`paid_amount`) AS `amount`, 
+                      `tabPayment Entry`.`paid_from`,
                       `tabPayment Entry`.`paid_to`,
                       CONCAT(IFNULL(`tabPayment Entry`.`paid_from`, ""),
                         IFNULL(`tabPayment Entry`.`paid_to`, "")
@@ -135,8 +251,10 @@ def generate_transfer_file(start_date, end_date, limit=10000, aggregated=0):
                 """.format(start_date=start_date, end_date=end_date)
         else:
             sql_query = """SELECT `tabPayment Entry`.`name`,
-                      `tabPayment Entry`.`posting_date`, `tabPayment Entry`.`paid_from_account_currency` AS `currency`,
-                      `tabPayment Entry`.`paid_amount` AS `amount`, `tabPayment Entry`.`paid_from`,
+                      `tabPayment Entry`.`posting_date`, 
+                      `tabPayment Entry`.`paid_from_account_currency` AS `currency`,
+                      `tabPayment Entry`.`paid_amount` AS `amount`, 
+                      `tabPayment Entry`.`paid_from`,
                       `tabPayment Entry`.`paid_to`,
                       CONCAT(IFNULL(`tabPayment Entry`.`paid_from`, ""),
                         IFNULL(`tabPayment Entry`.`paid_to`, "")
@@ -200,7 +318,7 @@ def generate_transfer_file(start_date, end_date, limit=10000, aggregated=0):
 #  debit_credit: "D" or "C"
 def add_transaction_block(account, amount, against_account, against_amount, 
         debit_credit, date, currency, transaction_count, tax_account=None, 
-        tax_amount=None, tax_rate=None, tax_code=None, doc_ref="Sammelbuchung"):
+        tax_amount=None, tax_rate=None, tax_code=None, doc_ref="Sammelbuchung", dec_text=None):
     date_str = six.text_type(date)
     transaction_reference = "{0} {1} {2} {3}".format(date_str, account, debit_credit, amount)
     short_reference = "{0}{1}{2}{3}".format(date_str[2:4], date_str[5:7], date_str[8:10], transaction_count)
@@ -225,6 +343,8 @@ def add_transaction_block(account, amount, against_account, against_amount,
     content += make_line("     <IntercompanyId>0</IntercompanyId>")
     content += make_line("     <IntercompanyCode></IntercompanyCode>")
     content += make_line("     <Text1>{0}</Text1>".format(doc_ref))
+    if doc_text:
+        content += make_line("     <Text2>{0}</Text2>".format(doc_text))
     content += make_line("     <DocumentNumber>{0}</DocumentNumber>".format(short_reference))
     content += make_line("     <SingleCount>0</SingleCount>")
     content += make_line("    </CollectiveInformation>")
@@ -328,6 +448,8 @@ def reset_export_flags():
     sql_query = """UPDATE `tabSales Invoice` SET `exported_to_abacus` = 0;"""
     frappe.db.sql(sql_query, as_dict=True)
     sql_query = """UPDATE `tabPayment Entry` SET `exported_to_abacus` = 0;"""
+    frappe.db.sql(sql_query, as_dict=True)
+    sql_query = """UPDATE `tabPurchase Invoice` SET `exported_to_abacus` = 0;"""
     frappe.db.sql(sql_query, as_dict=True)
     return { 'message': 'OK' }
 

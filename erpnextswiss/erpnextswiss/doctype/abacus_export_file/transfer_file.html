@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AbaConnectContainer>
+    <TaskCount>{{ transactions|length }}</TaskCount>
+    <Task>
+        <Parameter>
+            <Application>FIBU</Application>
+            <Id>XML Buchungen</Id>
+            <MapId>AbaDefault</MapId>
+            <Version>2015.00</Version>
+        </Parameter>
+        {%- for transaction in transactions %}
+        {%- set date_str = "{0}".format(transaction.date) %}
+        {%- set short_reference = "{0}{1}{2}{3}".format(date_str[2:4], date_str[5:7], date_str[8:10], loop.index) %}
+        <Transaction id="{{ loop.index }}">
+            <Entry mode="SAVE">
+                <CollectiveInformation mode="SAVE">
+                    <EntryLevel>A</EntryLevel>
+                    <EntryType>S</EntryType>
+                    <Type>Normal</Type>
+                    <DebitCredit>{{ transaction.debit_credit }}</DebitCredit>
+					<Client></Client>
+                    {%- if transaction.customer %}
+                    <Client>{{ transaction.customer }}</Client>
+                    {%- endif %}
+                    <Division>0</Division>
+                    {%- if transaction.key_currency %}
+                    <KeyCurrency>{{ transaction.key_currency }}</KeyCurrency>
+                    {%- else %}
+                    <KeyCurrency>{{ transaction.currency }}</KeyCurrency>
+                    {%- endif %}
+                    <EntryDate>{{ transaction.date }}</EntryDate>
+                    <ValueDate>{{ transaction.date }}</ValueDate>
+                    <AmountData mode="SAVE">
+                        <Currency>{{ transaction.currency }}</Currency>
+                        <Amount>{{ "{:.2f}".format(transaction.amount) }}</Amount>
+                    </AmountData>
+                    {%- if transaction.key_amount %}
+                    <KeyAmount>{{ "{:.2f}".format(transaction.key_amount) }}</KeyAmount>
+                    {%- else %}
+                    <KeyAmount>{{ "{:.2f}".format(transaction.amount) }}</KeyAmount>
+                    {%- endif %}
+                    {%- if transaction.key_currency != transaction.currency %}
+                    <ExchangeRateData mode="SAVE">
+                        <FromCurrency>{{ transaction.currency }}</FromCurrency>
+                        <ToCurrency>{{ transaction.key_currency or "CHF" }}</ToCurrency>
+                        <Exchangerate>{{ transaction.exchange_rate }}</Exchangerate>
+                    </ExchangeRateData>
+                    {%- endif %}
+                    <Account>{{ transaction.account }}</Account>
+                    <IntercompanyId>0</IntercompanyId>
+                    <IntercompanyCode></IntercompanyCode>
+                    <Text1>{{ transaction.text1 }}</Text1>
+                    {%- if transaction.text2 %}
+                    <Text2>{{ transaction.text2 }}</Text2>
+                    {%- endif %}
+                    <DocumentNumber>{{ short_reference }}</DocumentNumber>
+                    <SingleCount>0</SingleCount>
+                </CollectiveInformation>
+                {%- for against in transaction.against_singles %}
+                <SingleInformation mode="SAVE">
+                    <Type>Normal</Type>
+                    <DebitCredit>{{ transaction.debit_credit }}</DebitCredit>
+                    <EntryDate>{{ transaction.date }}</EntryDate>
+                    <ValueDate></ValueDate>
+                    <AmountData mode="SAVE">
+                        <Currency>{{ against.currency }}</Currency>
+                        <Amount>{{ "{:.2f}".format(against.amount) }}</Amount>
+                    </AmountData>
+                    <KeyAmount>{{ "{:.2f}".format(against.amount) }}</KeyAmount>
+                    <Account>{{ against.account }}</Account>
+                    {%- if transaction.tax_account %}
+                    <TaxAccount>{{ transaction.tax_account }}</TaxAccount>
+                    {%- endif %}
+                    <IntercompanyId>0</IntercompanyId>
+                    <IntercompanyCode></IntercompanyCode>
+                    <Text1>{{ transaction.text1 }}</Text1>
+                    <DocumentNumber>{{ short_reference }}</DocumentNumber>
+                    <SelectionCode></SelectionCode>
+                    {%- if transaction.tax_account %}
+                    <TaxData mode="SAVE">
+                        <TaxIncluded>I</TaxIncluded>
+                        <TaxType>1</TaxType>
+                        <UseCode>1</UseCode>
+                        <AmountData mode="SAVE">
+                            <Currency>{{ transaction.tax_currency }}</Currency>
+                            <Amount>0</Amount>
+                        </AmountData>
+                        <KeyAmount>{{ "{:.2f}".format(((transaction.tax_amount or 0) * (-1))) }}</KeyAmount>
+                        <TaxRate>{{ transaction.tax_rate or 0 }}</TaxRate>
+                        <TaxCoefficient>100</TaxCoefficient>
+                        <Country>CH</Country>
+                        <TaxCode>{{ transaction.tax_code }}</TaxCode>
+                        <Number></Number>
+                        <FlatRate>0</FlatRate>
+                    </TaxData>
+                    {%- endif %}
+                </SingleInformation>
+                {%- endfor %}
+            </Entry>
+        </Transaction>
+        {%- endfor %}
+    </Task>
+</AbaConnectContainer>

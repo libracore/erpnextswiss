@@ -1,0 +1,103 @@
+{
+ "autoname": "IET-.#####",
+ "creation": "2019-09-09 13:59:12.555729",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "inspection_equipment",
+  "employee",
+  "cb_1",
+  "date",
+  "section_status",
+  "current_status",
+  "cb_2",
+  "new_status",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "inspection_equipment",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Inspection Equipment",
+   "options": "Inspection Equipment",
+   "reqd": 1
+  },
+  {
+   "fieldname": "employee",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Employee",
+   "options": "Employee",
+   "reqd": 1
+  },
+  {
+   "fieldname": "cb_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_status",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fetch_from": "inspection_equipment.transaction_status",
+   "fieldname": "current_status",
+   "fieldtype": "Select",
+   "label": "Current Inspection Equipment Status",
+   "options": "Taken\nOn Stock",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "new_status",
+   "fieldtype": "Select",
+   "label": "New Inspection Equipment Status",
+   "options": "Taken\nOn Stock",
+   "read_only": 1
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Inspection Equipment Transaction",
+   "print_hide": 1,
+   "read_only": 1
+  }
+ ],
+ "is_submittable": 1,
+ "modified": "2019-09-12 08:50:43.854078",
+ "modified_by": "Administrator",
+ "module": "ERPNextSwiss",
+ "name": "Inspection Equipment Transaction",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

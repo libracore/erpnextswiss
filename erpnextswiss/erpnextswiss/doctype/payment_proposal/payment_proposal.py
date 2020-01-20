@@ -8,10 +8,43 @@ from frappe.model.document import Document
 from frappe import _
 from datetime import datetime, timedelta
 import time
-from erpnextswiss.erpnextswiss.common_functions import get_building_number, get_street_name, get_pincode, get_city
+from erpnextswiss.erpnextswiss.common_functions import get_building_number, get_street_name, get_pincode, get_city, get_primary_address
 import cgi          # used to escape xml content
 
 class PaymentProposal(Document):
+    def validate(self):
+        # check company settigs
+        company_address = get_primary_address(target_name=self.company, target_type="Company")
+        if (not company_address
+            or not company_address.address_line1
+            or not company_address.pincode
+            or not company_address.city):
+                frappe.throw( _("Company address missing or incomplete.") )
+        if self.pay_from_account:
+            payment_account = frappe.get_doc('Account', self.pay_from_account)
+            if not payment_account.iban:
+                frappe.throw( _("IBAN missing in pay from account.") )
+        # perform some checks to improve file quality/stability
+        for purchase_invoice in self.purchase_invoices: 
+            pinv = frappe.get_doc("Purchase Invoice", purchase_invoice.purchase_invoice)
+            # check addresses (mandatory in ISO 20022
+            if not pinv.supplier_address:
+                frappe.throw( _("Address missing for purchase invoice <a href=\"/desk#Form/Purchase Invoice/{0}\">{0}</a>").format(pinv.name) )
+            # check target account info
+            if purchase_invoice.payment_type == "ESR":
+                if not purchase_invoice.esr_reference or not purchase_invoice.esr_participation_number:
+                    frappe.throw( _("ESR: missing transaction information (participant number or reference) in <a href=\"/desk#Form/Purchase Invoice/{0}\">{0}</a>").format(pinv.name) )
+            else:
+                supl = frappe.get_doc("Supplier", pinv.supplier)
+                if not supl.iban:
+                    frappe.throw( _("Missing IBAN for purchase invoice <a href=\"/desk#Form/Purchase Invoice/{0}\">{0}</a>").format(pinv.name) )
+        # check expense records
+        for expense_claim in self.expenses:
+            emp = frappe.get_doc("Employee", expense_claim.employee)
+            if not emp.bank_ac_no:
+                frappe.throw( _("Employee <a href=\"/desk#Form/Employee/{0}\">{0}</a> has no bank account number.").format(emp.name) )
+        return
+        
     def on_submit(self):
         # clean payments (to prevent accumulation on re-submit)
         self.payments = {}
@@ -178,226 +211,84 @@ class PaymentProposal(Document):
         return inserted_payment_entry
         
     def create_bank_file(self):
-        #try:
-            # create xml header
-            content = make_line("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
-            # define xml template reference
-            # load namespace based on banking region
-            banking_region = frappe.get_value("ERPNextSwiss Settings", "ERPNextSwiss Settings", "banking_region")
-            if banking_region == "AT":
-                content += make_line("<Document xmlns=\"urn:iso:std:iso:20022:tech:xsd:pain.001.001.03\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"\">")
+        data = {}
+        data['xml_version'] = frappe.get_value("ERPNextSwiss Settings", "ERPNextSwiss Settings", "xml_version")
+        data['xml_region'] = frappe.get_value("ERPNextSwiss Settings", "ERPNextSwiss Settings", "banking_region")
+        data['msgid'] = "MSG-" + time.strftime("%Y%m%d%H%M%S")                # message ID (unique, SWIFT-characters only)
+        data['date'] = time.strftime("%Y-%m-%dT%H:%M:%S")                    # creation date and time ( e.g. 2010-02-15T07:30:00 )
+        # number of transactions in the file
+        transaction_count = 0
+        # total amount of all transactions ( e.g. 15850.00 )  (sum of all amounts)
+        control_sum = 0.0
+        # define company address
+        data['company'] = {
+            'name': self.company
+        }
+        company_address = get_primary_address(target_name=self.company, target_type="Company")
+        if company_address:
+            data['company']['address_line1'] = cgi.escape(company_address.address_line1)
+            data['company']['address_line2'] = "{0} {1}".format(cgi.escape(company_address.pincode), cgi.escape(company_address.city))
+            data['company']['country_code'] = company_address['country_code']
+            # crop lines if required (length limitation)
+            data['company']['address_line1'] = data['company']['address_line1'][:35]
+            data['company']['address_line2'] = data['company']['address_line2'][:35]
+        ### Payment Information (PmtInf, B-Level)
+        # payment information records (1 .. 99'999)
+        payment_account = frappe.get_doc('Account', self.pay_from_account)
+        if not payment_account:
+            frappe.throw( _("{0}: no account IBAN found ({1})".format(
+                payment.references, self.pay_from_account) ) )
+        data['company']['iban'] = "{0}".format(payment_account.iban.replace(" ", ""))
+        data['company']['bic'] = payment_account.bic
+        data['payments'] = []
+        for payment in self.payments:
+            payment_content = ""
+            payment_record = {
+                'id': "PMTINF-{0}-{1}".format(self.name, transaction_count),   # unique (in this file) identification for the payment ( e.g. PMTINF-01, PMTINF-PE-00005 )
+                'method': "TRF",             # payment method (TRF or TRA, no impact in Switzerland)
+                'batch': "true",             # batch booking (true or false; recommended true)
+                'required_execution_date': "{0}".format(payment.execution_date.split(" ")[0]),         # Requested Execution Date (e.g. 2010-02-22, remove time element)
+                'debtor': {                    # debitor (technically ignored, but recommended)  
+                    'name': cgi.escape(self.company),
+                    'account': "{0}".format(payment_account.iban.replace(" ", "")),
+                    'bic': "{0}".format(payment_account.bic)
+                },
+                'instruction_id': "INSTRID-{0}-{1}".format(self.name, transaction_count),          # instruction identification
+                'end_to_end_id': "{0}".format((payment.reference[:33] + '..') if len(payment.reference) > 35 else payment.reference),   # end-to-end identification (should be used and unique within B-level; payment entry name)
+                'currency': payment.currency,
+                'amount': round(payment.amount, 2),
+                'creditor': {
+                    'name': cgi.escape(payment.receiver),
+                    'address_line1': cgi.escape(payment.receiver_address_line1[:35]),
+                    'address_line2': cgi.escape(payment.receiver_address_line2[:35]),
+                    'country_code': frappe.get_value("Country", payment.receiver_country, "code").upper()
+                }
+            }
+            if payment.payment_type == "SEPA":
+                # service level code (e.g. SEPA)
+                payment_record['service_level'] = "SEPA"
+                payment_record['iban'] = payment.iban.replace(" ", "")
+                payment_record['reference'] = payment.reference
+            elif payment.payment_type == "ESR":
+                # proprietary (nothing or CH01 for ESR)            
+                payment_record['local_instrument'] = "CH01"
+                payment_record['service_level'] = "ESR"                    # only internal information
+                payment_record['esr_participation_number'] = payment.esr_participation_number
+                payment_record['esr_reference'] = payment.esr_reference.replace(" ", "")
             else:
-                content += make_line("<Document xmlns=\"http://www.six-interbank-clearing.com/de/pain.001.001.03.ch.02.xsd\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.six-interbank-clearing.com/de/pain.001.001.03.ch.02.xsd  pain.001.001.03.ch.02.xsd\">")
-            # transaction holder
-            content += make_line("  <CstmrCdtTrfInitn>")
-            ### Group Header (GrpHdr, A-Level)
-            # create group header
-            content += make_line("    <GrpHdr>")
-            # message ID (unique, SWIFT-characters only)
-            content += make_line("      <MsgId>MSG-" + time.strftime("%Y%m%d%H%M%S") + "</MsgId>")
-            # creation date and time ( e.g. 2010-02-15T07:30:00 )
-            content += make_line("      <CreDtTm>" + time.strftime("%Y-%m-%dT%H:%M:%S") + "</CreDtTm>")
-            # number of transactions in the file
-            transaction_count = 0
-            transaction_count_identifier = "<!-- $COUNT -->"
-            content += make_line("      <NbOfTxs>" + transaction_count_identifier + "</NbOfTxs>")
-            # total amount of all transactions ( e.g. 15850.00 )  (sum of all amounts)
-            control_sum = 0.0
-            control_sum_identifier = "<!-- $CONTROL_SUM -->"
-            content += make_line("      <CtrlSum>" + control_sum_identifier + "</CtrlSum>")
-            # initiating party requires at least name or identification
-            content += make_line("      <InitgPty>")
-            # initiating party name ( e.g. MUSTER AG )
-            content += make_line("        <Nm>" + cgi.escape(self.company) + "</Nm>")
-            content += make_line("      </InitgPty>")
-            content += make_line("    </GrpHdr>")
-            
-            ### Payment Information (PmtInf, B-Level)
-            # payment information records (1 .. 99'999)
-            for payment in self.payments:
-                # create temporary code block to compile the payment record (only add to overall on submit)
-                # use 'continue' to skip a record (in case a validation fails)
-                payment_content = ""
-                # create the payment entries
-                payment_content += make_line("    <PmtInf>")
-                # unique (in this file) identification for the payment ( e.g. PMTINF-01, PMTINF-PE-00005 )
-                payment_content += make_line("      <PmtInfId>PMTINF-{0}-{1}</PmtInfId>".format(self.name, transaction_count))
-                # payment method (TRF or TRA, no impact in Switzerland)
-                payment_content += make_line("      <PmtMtd>TRF</PmtMtd>")
-                # batch booking (true or false; recommended true)
-                payment_content += make_line("      <BtchBookg>true</BtchBookg>")
-                # Requested Execution Date (e.g. 2010-02-22, remove time element)
-                payment_content += make_line("      <ReqdExctnDt>{0}</ReqdExctnDt>".format(
-                    payment.execution_date.split(" ")[0]))
-                # debitor (technically ignored, but recommended)   
-                payment_content += make_line("      <Dbtr>")
-                # debitor name
-                payment_content += make_line("        <Nm>{0}</Nm>".format(cgi.escape(self.company)))
-                # postal address 
-                # try to find company address
-                try:
-                    company_address_links = frappe.get_all('Dynamic Link', filters={'link_doctype': 'Company', 'link_name': self.company, 'parenttype': 'Address', 'is_primary_address': 1}, fields='parent')
-                    if not company_address_links:
-                        company_address_links = frappe.get_all('Dynamic Link', filters={'link_doctype': 'Company', 'link_name': self.company, 'parenttype': 'Address'}, fields='parent')
-                    address = frappe.get_doc("Address", company_address_links.first['parent'])
-                    payment_content += make_line("        <PstlAdr>")
-                    country = frappe.get_doc("Country", address.country)
-                    payment_content += make_line("          <Ctry>{0}</Ctry>".format(country.code.upper()))
-                    payment_content += make_line("          <AdrLine>{0}</AdrLine>".format(cgi.escape(address.address_line1)))
-                    payment_content += make_line("          <AdrLine>{0} {1}</AdrLine>".format(cgi.escape(address.pincode), cgi.escape(address.town)))
-                    payment_content += make_line("        </PstlAdr>")
-                except Exception as e:
-                    # no company information available
-                    payment_content += make_line("        <!-- no company address found ({0}) -->".format(e))
-                payment_content += make_line("      </Dbtr>")
-                # debitor account (sender) - IBAN
-                payment_account = frappe.get_doc('Account', self.pay_from_account)
-                payment_content += make_line("      <DbtrAcct>")
-                payment_content += make_line("        <Id>")
-                if payment_account.iban:
-                    payment_content += make_line("          <IBAN>{0}</IBAN>".format(
-                        payment_account.iban.replace(" ", "") ))
-                else:
-                    # no paying account IBAN: not valid record, skip
-                    frappe.throw( _("{0}: no account IBAN found ({1})".format(
-                        payment.references, self.pay_from_account) ) )
-                payment_content += make_line("        </Id>")
-                payment_content += make_line("      </DbtrAcct>")
-                if payment_account.bic:
-                    # debitor agent (sender) - BIC
-                    payment_content += make_line("      <DbtrAgt>")
-                    payment_content += make_line("        <FinInstnId>")
-                    payment_content += make_line("          <BIC>{0}</BIC>".format(payment_account.bic))
-                    payment_content += make_line("        </FinInstnId>")
-                    payment_content += make_line("      </DbtrAgt>")
-                    
-                ### Credit Transfer Transaction Information (CdtTrfTxInf, C-Level)
-                payment_content += make_line("      <CdtTrfTxInf>")
-                # payment identification
-                payment_content += make_line("        <PmtId>")
-                # instruction identification 
-                payment_content += make_line("          <InstrId>INSTRID-{0}-{1}</InstrId>".format(self.name, transaction_count))
-                # end-to-end identification (should be used and unique within B-level; payment entry name)
-                payment_content += make_line("          <EndToEndId>{0}</EndToEndId>".format(
-                    (payment.reference[:33] + '..') if len(payment.reference) > 35 else payment.reference))
-                payment_content += make_line("        </PmtId>")
-                # payment type information
-                payment_content += make_line("        <PmtTpInf>")
-                # service level: only used for SEPA (currently not implemented)
-                if payment.payment_type == "SEPA":
-                    payment_content += make_line("          <SvcLvl>")
-                    # service level code (e.g. SEPA)
-                    payment_content += make_line("            <Cd>SEPA</Cd>")
-                    payment_content += make_line("          </SvcLvl>")
-                # local instrument
-                if payment.payment_type == "ESR":
-                    payment_content += make_line("          <LclInstrm>")
-                    # proprietary (nothing or CH01 for ESR)        
-                    payment_content += make_line("            <Prtry>CH01</Prtry>")
-                    payment_content += make_line("          </LclInstrm>")        
-                payment_content += make_line("        </PmtTpInf>")
-                # amount 
-                payment_content += make_line("        <Amt>")
-                payment_content += make_line("          <InstdAmt Ccy=\"{0}\">{1:.2f}</InstdAmt>".format(
-                    payment.currency,
-                    payment.amount))
-                payment_content += make_line("        </Amt>")
-                # creditor account
-                # creditor account identification
-                if payment.payment_type == "ESR":
-                    # add creditor information
-                    creditor_info = self.add_creditor_info(payment)
-                    if creditor_info:
-                        payment_content += creditor_info
-                    else:
-                        # no address found, skip entry (not valid)
-                        content += add_invalid_remark( _("{0}: no address (or country) found").format(payment) )
-                        skipped.append(payment)
-                        continue
-                    # ESR payment
-                    payment_content += make_line("        <CdtrAcct>")
-                    payment_content += make_line("          <Id>")
-                    payment_content += make_line("            <Othr>")
-                    # ESR participant number
-                    if payment.esr_participation_number:
-                        payment_content += make_line("              <Id>" +
-                            payment.esr_participation_number + "</Id>")
-                    else:
-                        # no particpiation number: not valid record, skip
-                        frappe.throw( _("{0}: no ESR participation number found").format(payment) )
-                    payment_content += make_line("            </Othr>")
-                    payment_content += make_line("          </Id>")
-                    payment_content += make_line("        </CdtrAcct>")
-                    # Remittance Information
-                    payment_content += make_line("        <RmtInf>")
-                    payment_content += make_line("          <Strd>")
-                    # Creditor Reference Information
-                    payment_content += make_line("            <CdtrRefInf>")
-                    # ESR reference 
-                    if payment.esr_reference:
-                        payment_content += make_line("              <Ref>" +
-                            payment.esr_reference.replace(" ", "") + "</Ref>")
-                    else:
-                        # no ESR reference: not valid record, skip
-                        frappe.throw( _("{0}: no ESR reference found").format(payment) )
-                    payment_content += make_line("            </CdtrRefInf>")
-                    payment_content += make_line("          </Strd>")
-                    payment_content += make_line("        </RmtInf>")
-                else:
-                    # IBAN or SEPA payment
-                    # add creditor information
-                    creditor_info = self.add_creditor_info(payment)
-                    if creditor_info:
-                        payment_content += creditor_info
-                    else:
-                        # no address found, skip entry (not valid)
-                        self.throw( _("{0}: no address (or country) found").format(payment) )
-                    # creditor agent (BIC, optional; removed to resolve issue #15), added for TR payments
-                    if payment.payment_type == "SEPA" and payment_record.bic:                
-                        payment_content += make_line("        <CdtrAgt>")
-                        payment_content += make_line("          <FinInstnId>")
-                        payment_content += make_line("            <BIC>" + 
-                            payment_record.bic + "</BIC>")
-                        payment_content += make_line("          </FinInstnId>")
-                        payment_content += make_line("        </CdtrAgt>")    
-                    # creditor account
-                    payment_content += make_line("        <CdtrAcct>")
-                    payment_content += make_line("          <Id>")
-                    if payment.iban:
-                        payment_content += make_line("            <IBAN>{0}</IBAN>".format( 
-                            payment.iban.replace(" ", "") ))
-                    else:
-                        # no iban: not valid record, skip
-                        frappe.throw( _("{0}: no IBAN found").format(payment) )
-                    payment_content += make_line("          </Id>")
-                    payment_content += make_line("        </CdtrAcct>")
-                    # Remittance Information
-                    payment_content += make_line("        <RmtInf>")
-                    payment_content += make_line("          <Ustrd>{0}</Ustrd>".format(payment.reference))
-                    payment_content += make_line("        </RmtInf>")
-                                            
-                # close payment record
-                payment_content += make_line("      </CdtTrfTxInf>")
-                payment_content += make_line("    </PmtInf>")
-                # once the payment is extracted for payment, submit the record
-                transaction_count += 1
-                control_sum += payment.amount
-                content += payment_content
-            # add footer
-            content += make_line("  </CstmrCdtTrfInitn>")
-            content += make_line("</Document>")
-            # insert control numbers
-            content = content.replace(transaction_count_identifier, "{0}".format(transaction_count))
-            content = content.replace(control_sum_identifier, "{:.2f}".format(control_sum))
-            
-            return { 'content': content }
+                payment_record['service_level'] = "IBAN"
+                payment_record['iban'] = payment.iban.replace(" ", "")
+                payment_record['reference'] = payment.reference
+            # once the payment is extracted for payment, submit the record
+            transaction_count += 1
+            control_sum += round(payment.amount, 2)
+            data['payments'].append(payment_record)
+        data['transaction_count'] = transaction_count
+        data['control_sum'] = control_sum
         
-        #except IndexError:
-        #    frappe.msgprint( _("Please select at least one payment."), _("Information") )
-        #    return
-        #except:
-        #    frappe.throw( _("Error while generating xml. Make sure that you made required customisations to the DocTypes.") )
-        #    return
+        # render file
+        content = frappe.render_template('erpnextswiss/erpnextswiss/doctype/payment_proposal/pain-001.html', data)
+        return { 'content': content }
     
     def add_creditor_info(self, payment):
         payment_content = ""
@@ -426,7 +317,7 @@ class PaymentProposal(Document):
 def create_payment_proposal(date=None, company=None):
     if not date:
         # get planning days
-        planning_days = frappe.get_value("ERPNextSwiss Settings", "ERPNextSwiss Settings", 'planning_days')
+        planning_days = int(frappe.get_value("ERPNextSwiss Settings", "ERPNextSwiss Settings", 'planning_days'))
         date = datetime.now() + timedelta(days=planning_days) 
         if not planning_days:
             frappe.throw( "Please configure the planning period in ERPNextSwiss Settings.")
@@ -458,6 +349,7 @@ def create_payment_proposal(date=None, company=None):
                   AND `tabPurchase Invoice`.`company` = '{company}';""".format(date=date, company=company))
     purchase_invoices = frappe.db.sql(sql_query, as_dict=True)
     # get all purchase invoices that pending
+    total = 0.0
     invoices = []
     for invoice in purchase_invoices:
         reference = invoice.external_reference or invoice.name
@@ -474,6 +366,7 @@ def create_payment_proposal(date=None, company=None):
             'esr_participation_number': invoice.esr_participation_number,
             'external_reference': reference
         }
+        total += invoice.outstanding_amount
         invoices.append(new_invoice)
     # get all open expense claims
     sql_query = ("""SELECT `name`, 
@@ -495,6 +388,7 @@ def create_payment_proposal(date=None, company=None):
             'amount': expense.amount,
             'payable_account': expense.payable_account
         }
+        total += expense.amount
         expenses.append(new_expense)
     # create new record
     new_record = None
@@ -505,7 +399,9 @@ def create_payment_proposal(date=None, company=None):
         'title': "{year:04d}-{month:02d}-{day:02d}".format(year=now.year, month=now.month, day=now.day),
         'date': "{year:04d}-{month:02d}-{day:02d}".format(year=date.year, month=date.month, day=date.day),
         'purchase_invoices': invoices,
-        'expenses': expenses
+        'expenses': expenses,
+        'company': company,
+        'total': total
     })
     proposal_record = new_proposal.insert()
     new_record = proposal_record.name

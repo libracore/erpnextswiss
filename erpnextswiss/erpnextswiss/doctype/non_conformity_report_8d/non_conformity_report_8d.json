@@ -20,21 +20,27 @@
   "d2_complete",
   "section_d3",
   "html_d3",
+  "interim_containment_plan",
   "d3_complete",
   "section_d4",
   "html_d4",
+  "root_cause_analysis",
   "d4_complete",
   "section_d5",
   "html_d5",
+  "remedial_actions",
   "d5_complete",
   "section_d6",
   "html_d6",
+  "d6_remarks",
   "d6_complete",
   "section_d7",
   "html_d7",
+  "d7_remarks",
   "d7_complete",
   "section_d8",
   "html_d8",
+  "d8_remarks",
   "d8_complete"
  ],
  "fields": [
@@ -214,9 +220,41 @@
    "fieldname": "title",
    "fieldtype": "Data",
    "label": "Title"
+  },
+  {
+   "fieldname": "interim_containment_plan",
+   "fieldtype": "Table",
+   "label": "Interim Containment Plan",
+   "options": "D3 Interim Containment Plan"
+  },
+  {
+   "fieldname": "root_cause_analysis",
+   "fieldtype": "Text Editor",
+   "label": "Root Cause Analysis"
+  },
+  {
+   "fieldname": "remedial_actions",
+   "fieldtype": "Table",
+   "label": "Remedial Actions",
+   "options": "D5 Remedial Actions"
+  },
+  {
+   "fieldname": "d6_remarks",
+   "fieldtype": "Text",
+   "label": "Remarks"
+  },
+  {
+   "fieldname": "d7_remarks",
+   "fieldtype": "Text",
+   "label": "Remarks"
+  },
+  {
+   "fieldname": "d8_remarks",
+   "fieldtype": "Text",
+   "label": "Remarks"
   }
  ],
- "modified": "2019-10-14 14:46:41.849609",
+ "modified": "2020-01-20 09:45:23.030334",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "Non Conformity Report 8D",

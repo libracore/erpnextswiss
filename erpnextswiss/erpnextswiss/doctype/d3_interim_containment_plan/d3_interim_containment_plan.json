@@ -1,0 +1,51 @@
+{
+ "creation": "2019-10-14 14:59:33.175999",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "action",
+  "responsible",
+  "due_date",
+  "status"
+ ],
+ "fields": [
+  {
+   "fieldname": "action",
+   "fieldtype": "Text",
+   "in_list_view": 1,
+   "label": "Action"
+  },
+  {
+   "fieldname": "responsible",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Responsible",
+   "options": "Employee"
+  },
+  {
+   "fieldname": "due_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Due Date"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "Planned\nWorking\nDone"
+  }
+ ],
+ "istable": 1,
+ "modified": "2019-10-14 15:11:51.739552",
+ "modified_by": "Administrator",
+ "module": "ERPNextSwiss",
+ "name": "D3 Interim Containment Plan",
+ "owner": "Administrator",
+ "permissions": [],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

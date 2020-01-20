@@ -5,6 +5,7 @@ frappe.ui.form.on('Non Conformity Report 8D', {
 	refresh: function(frm) {
 		if (frm.doc.status == "Completed") {
 			cur_frm.set_df_property("title","read_only",1);
+			cur_frm.set_df_property("interim_containment_plan","read_only",1);
 			cur_frm.set_df_property("customer","read_only",1);
 			cur_frm.set_df_property("d1_team","read_only",1);
 			cur_frm.set_df_property("d1_complete","read_only",1);
@@ -16,6 +17,8 @@ frappe.ui.form.on('Non Conformity Report 8D', {
 			cur_frm.set_df_property("d6_complete","read_only",1);
 			cur_frm.set_df_property("d7_complete","read_only",1);
 			cur_frm.set_df_property("d8_complete","read_only",1);
+			cur_frm.set_df_property("root_cause_analysis","read_only",1);
+			cur_frm.set_df_property("remedial_actions","read_only",1);
 			frm.add_custom_button(__("Reopen 8D"),  function() { reopen(frm); });
 		}
 	}
@@ -23,6 +26,7 @@ frappe.ui.form.on('Non Conformity Report 8D', {
 
 function reopen(frm) {
 	cur_frm.set_df_property("title","read_only",0);
+	cur_frm.set_df_property("interim_containment_plan","read_only",0);
 	cur_frm.set_df_property("customer","read_only",0);
 	cur_frm.set_df_property("d1_team","read_only",0);
 	cur_frm.set_df_property("d1_complete","read_only",0);
@@ -34,5 +38,7 @@ function reopen(frm) {
 	cur_frm.set_df_property("d6_complete","read_only",0);
 	cur_frm.set_df_property("d7_complete","read_only",0);
 	cur_frm.set_df_property("d8_complete","read_only",0);
+	cur_frm.set_df_property("root_cause_analysis","read_only",0);
+	cur_frm.set_df_property("remedial_actions","read_only",0);
 	cur_frm.set_value('status', 'Reopen');
 }

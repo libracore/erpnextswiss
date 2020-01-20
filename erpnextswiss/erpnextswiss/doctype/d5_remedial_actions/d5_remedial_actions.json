@@ -1,0 +1,51 @@
+{
+ "creation": "2019-10-14 15:06:58.830381",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "action",
+  "responsible",
+  "due_date",
+  "status"
+ ],
+ "fields": [
+  {
+   "fieldname": "action",
+   "fieldtype": "Text",
+   "in_list_view": 1,
+   "label": "Action"
+  },
+  {
+   "fieldname": "responsible",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Responsible",
+   "options": "Employee"
+  },
+  {
+   "fieldname": "due_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Due Date"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "Planned\nWorking\nDone\nVerified"
+  }
+ ],
+ "istable": 1,
+ "modified": "2019-10-14 15:13:40.490045",
+ "modified_by": "Administrator",
+ "module": "ERPNextSwiss",
+ "name": "D5 Remedial Actions",
+ "owner": "Administrator",
+ "permissions": [],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

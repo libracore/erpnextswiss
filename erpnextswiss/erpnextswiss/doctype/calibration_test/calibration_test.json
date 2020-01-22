@@ -1,0 +1,81 @@
+{
+ "autoname": "CT-.#####",
+ "creation": "2019-09-09 14:01:50.883315",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "inspection_equipment",
+  "calibration_test_set",
+  "perform_test",
+  "perform_test_html",
+  "test_plan_items",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "inspection_equipment",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Inspection Equipment",
+   "options": "Inspection Equipment",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "inspection_equipment.calibration_test_set",
+   "fieldname": "calibration_test_set",
+   "fieldtype": "Link",
+   "label": "Calibration Test Set",
+   "options": "Calibration Test Set",
+   "reqd": 1
+  },
+  {
+   "fieldname": "test_plan_items",
+   "fieldtype": "Table",
+   "label": "Test Plan Items",
+   "options": "Calibration Test Item"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Calibration Test",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "perform_test",
+   "fieldtype": "Button",
+   "label": "Perform Test"
+  },
+  {
+   "fieldname": "perform_test_html",
+   "fieldtype": "HTML",
+   "options": "<div class=\"row\" id=\"perform_test_div\"></div>"
+  }
+ ],
+ "is_submittable": 1,
+ "modified": "2019-09-12 15:37:58.518312",
+ "modified_by": "Administrator",
+ "module": "ERPNextSwiss",
+ "name": "Calibration Test",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

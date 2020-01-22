@@ -349,6 +349,7 @@ def create_payment_proposal(date=None, company=None):
                   AND `tabPurchase Invoice`.`company` = '{company}';""".format(date=date, company=company))
     purchase_invoices = frappe.db.sql(sql_query, as_dict=True)
     # get all purchase invoices that pending
+    total = 0.0
     invoices = []
     for invoice in purchase_invoices:
         reference = invoice.external_reference or invoice.name
@@ -365,6 +366,7 @@ def create_payment_proposal(date=None, company=None):
             'esr_participation_number': invoice.esr_participation_number,
             'external_reference': reference
         }
+        total += invoice.outstanding_amount
         invoices.append(new_invoice)
     # get all open expense claims
     sql_query = ("""SELECT `name`, 
@@ -386,6 +388,7 @@ def create_payment_proposal(date=None, company=None):
             'amount': expense.amount,
             'payable_account': expense.payable_account
         }
+        total += expense.amount
         expenses.append(new_expense)
     # create new record
     new_record = None
@@ -397,7 +400,8 @@ def create_payment_proposal(date=None, company=None):
         'date': "{year:04d}-{month:02d}-{day:02d}".format(year=date.year, month=date.month, day=date.day),
         'purchase_invoices': invoices,
         'expenses': expenses,
-        'company': company
+        'company': company,
+        'total': total
     })
     proposal_record = new_proposal.insert()
     new_record = proposal_record.name

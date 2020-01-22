@@ -39,7 +39,7 @@
                     {%- else %}
                     <KeyAmount>{{ "{:.2f}".format(transaction.amount) }}</KeyAmount>
                     {%- endif %}
-                    {%- if transaction.exchange_rate %}
+                    {%- if transaction.key_currency != transaction.currency %}
                     <ExchangeRateData mode="SAVE">
                         <FromCurrency>{{ transaction.currency }}</FromCurrency>
                         <ToCurrency>{{ transaction.key_currency or "CHF" }}</ToCurrency>

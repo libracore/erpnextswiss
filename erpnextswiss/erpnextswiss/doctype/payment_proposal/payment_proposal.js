@@ -81,3 +81,26 @@ function set_payment_date(frm) {
         'Set'
     );
 }
+
+frappe.ui.form.on('Payment Proposal Purchase Invoice', {
+    purchase_invoices_remove: function(frm) {
+        recalculate_total(frm);
+    }
+});
+
+frappe.ui.form.on('Payment Proposal Expense', {
+    expenses_remove: function(frm) {
+        recalculate_total(frm);
+    }
+});
+
+function recalculate_total(frm) {
+    var total = 0;
+    for (var i = 0; i < frm.doc.purchase_invoices.length; i++) {
+        total += frm.doc.purchase_invoices[i].skonto_amount
+    }
+    for (var i = 0; i < frm.doc.expenses.length; i++) {
+        total += frm.doc.expenses[i].amount
+    }
+    cur_frm.set_value('total', total);
+}

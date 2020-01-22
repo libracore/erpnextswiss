@@ -1,0 +1,84 @@
+{
+ "creation": "2019-09-12 09:20:49.326115",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "test_based_on",
+  "designation",
+  "operating_instructions",
+  "nominal_value",
+  "otg",
+  "utg",
+  "actual_value",
+  "remarks",
+  "inspection_decision_ok"
+ ],
+ "fields": [
+  {
+   "fieldname": "designation",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Designation"
+  },
+  {
+   "fieldname": "operating_instructions",
+   "fieldtype": "Small Text",
+   "label": "Operating Instructions"
+  },
+  {
+   "depends_on": "eval:doc.test_based_on=='Value'",
+   "fieldname": "nominal_value",
+   "fieldtype": "Data",
+   "label": "Nominal Value"
+  },
+  {
+   "depends_on": "eval:doc.test_based_on=='Value'",
+   "fieldname": "otg",
+   "fieldtype": "Data",
+   "label": "OTG"
+  },
+  {
+   "depends_on": "eval:doc.test_based_on=='Value'",
+   "fieldname": "utg",
+   "fieldtype": "Data",
+   "label": "UTG"
+  },
+  {
+   "depends_on": "eval:doc.test_based_on=='Value'",
+   "fieldname": "actual_value",
+   "fieldtype": "Data",
+   "label": "Actual Value"
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Small Text",
+   "label": "Remarks"
+  },
+  {
+   "default": "0",
+   "fieldname": "inspection_decision_ok",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Inspection Decision OK?"
+  },
+  {
+   "fieldname": "test_based_on",
+   "fieldtype": "Select",
+   "label": "Test based on",
+   "options": "Verdict\nValue",
+   "reqd": 1
+  }
+ ],
+ "istable": 1,
+ "modified": "2019-09-12 09:53:57.201892",
+ "modified_by": "Administrator",
+ "module": "ERPNextSwiss",
+ "name": "Calibration Test Item",
+ "owner": "Administrator",
+ "permissions": [],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

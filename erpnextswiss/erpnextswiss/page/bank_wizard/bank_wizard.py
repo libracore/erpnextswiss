@@ -135,11 +135,11 @@ def get_default_customer():
 
 @frappe.whitelist()
 def get_bank_accounts():
-    accounts = frappe.get_list('Account', filters={'account_type': 'Bank', 'is_group': 0}, fields=['name'])
+    accounts = frappe.get_list('Account', filters={'account_type': 'Bank', 'is_group': 0}, fields=['name'], order_by='account_number')
     selectable_accounts = []
-    for account in accounts.sort():
-        selectable_accounts.append(account.name)    
-    
+    for account in accounts:
+        selectable_accounts.append(account.name)
+
     # frappe.throw(selectable_accounts)
     return {'accounts': selectable_accounts }
 

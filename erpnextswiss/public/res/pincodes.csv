@@ -1,4 +1,4 @@
-pincode,city,canton,canton_code,country,country_code,long,lat
+pincode,city,canton,canton_code,country,country_code,longitude,latitude
 1000,Lausanne,Waadt,VD,Schweiz,CH,6.65230780339362,46.552043140147
 1003,Lausanne,Waadt,VD,Schweiz,CH,6.65230780339362,46.552043140147
 1004,Lausanne,Waadt,VD,Schweiz,CH,6.63233,46.519595

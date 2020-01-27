@@ -472,7 +472,7 @@ def read_camt_transactions(transaction_entries, account):
                 try:
                     payment_instruction_id = entry_soup.pmtinfid.get_text()     # instruction ID, PMTINF-[payment proposal]-row
                     payment_instruction_fields = payment_instruction_id.split("-")
-                    payment_instruction_row = int(payment_instruction_fields[2]) + 1
+                    payment_instruction_row = int(payment_instruction_fields[-1]) + 1
                     payment_proposal_id = payment_instruction_fields[1]
                     # find original instruction record
                     payment_proposal_payments = frappe.get_all("Payment Proposal Payment", 
@@ -480,19 +480,21 @@ def read_camt_transactions(transaction_entries, account):
                         fields=['receiver', 'receiver_address_line1', 'receiver_address_line2', 'iban', 'reference'])
                     # suppliers 
                     party_match = None
-                    match_suppliers = frappe.get_all("Supplier", filters={'supplier_name': payment_proposal_payments[0]['receiver']}, 
-                        fields=['name'])
-                    if match_suppliers:
-                        party_match = match_suppliers[0]['name']
+                    if payment_proposal_payments:
+                        match_suppliers = frappe.get_all("Supplier", filters={'supplier_name': payment_proposal_payments[0]['receiver']}, 
+                            fields=['name'])
+                        if match_suppliers:
+                            party_match = match_suppliers[0]['name']
                     # purchase invoices 
                     invoice_match = None
                     matched_amount = 0
-                    match_invoices = frappe.get_all("Purchase Invoice", 
-                        filters=[['name', '=', payment_proposal_payments[0]['reference']], ['outstanding_amount', '>', 0]], 
-                        fields=['name', 'grand_total'])
-                    if match_invoices:
-                        invoice_match = [match_invoices[0]['name']]
-                        matched_amount = match_invoices[0]['grand_total']
+                    if payment_proposal_payments:
+                        match_invoices = frappe.get_all("Purchase Invoice", 
+                            filters=[['name', '=', payment_proposal_payments[0]['reference']], ['outstanding_amount', '>', 0]], 
+                            fields=['name', 'grand_total'])
+                        if match_invoices:
+                            invoice_match = [match_invoices[0]['name']]
+                            matched_amount = match_invoices[0]['grand_total']
                     if payment_proposal_payments:
                         new_txn = {
                             'txid': len(txns),

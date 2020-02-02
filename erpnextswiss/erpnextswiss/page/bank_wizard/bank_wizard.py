@@ -561,6 +561,11 @@ def make_payment_entry(amount, date, reference_no, paid_from=None, paid_to=None,
     if str(auto_submit) == "1":
         auto_submit = True
     reference_type = "Sales Invoice"
+    # find company
+    if paid_from:
+        company = frappe.get_value("Account", paid_from, "company")
+    elif paid_to:
+        company = frappe.get_value("Account", paid_to, "company")
     if type == "Receive":
         # receive
         payment_entry = frappe.get_doc({
@@ -575,7 +580,8 @@ def make_payment_entry(amount, date, reference_no, paid_from=None, paid_to=None,
             'reference_date': date,
             'posting_date': date,
             'remarks': remarks,
-            'camt_amount': float(amount)
+            'camt_amount': float(amount),
+            'company': company
         })
     elif type == "Pay":
         # pay
@@ -591,7 +597,8 @@ def make_payment_entry(amount, date, reference_no, paid_from=None, paid_to=None,
             'reference_date': date,
             'posting_date': date,
             'remarks': remarks,
-            'camt_amount': float(amount)
+            'camt_amount': float(amount),
+            'company': company
         })
         reference_type = "Purchase Invoice"
     else:
@@ -607,7 +614,8 @@ def make_payment_entry(amount, date, reference_no, paid_from=None, paid_to=None,
             'reference_date': date,
             'posting_date': date,
             'remarks': remarks,
-            'camt_amount': float(amount)
+            'camt_amount': float(amount),
+            'company': company
         })    
     new_entry = payment_entry.insert()
     # add references after insert (otherwise they are overwritten)

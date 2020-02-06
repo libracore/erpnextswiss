@@ -43,7 +43,7 @@
                     <ExchangeRateData mode="SAVE">
                         <FromCurrency>{{ transaction.currency }}</FromCurrency>
                         <ToCurrency>{{ transaction.key_currency or "CHF" }}</ToCurrency>
-                        <Exchangerate>{{ transaction.exchange_rate }}</Exchangerate>
+                        <ExchangeRate>{{ transaction.exchange_rate }}</ExchangeRate>
                     </ExchangeRateData>
                     {%- endif %}
                     <Account>{{ transaction.account }}</Account>

@@ -27,7 +27,13 @@
     <PmtInf>
       <PmtInfId>{{ payment.id }}</PmtInfId>
       <PmtMtd>{{ payment.method }}</PmtMtd>
+      {%- if payment.service_level == "SEPA" %}
+      <PmtTpInf>
+        <SvcLvl><Cd>SEPA</Cd></SvcLvl>
+      </PmtTpInf>
+      {%- else %}
       <BtchBookg>{{ payment.batch }}</BtchBookg>
+      {%- endif %}
       <ReqdExctnDt>{{ payment.required_execution_date }}</ReqdExctnDt>
       <Dbtr>
         <Nm>{{ company.name }}</Nm>
@@ -62,11 +68,7 @@
         </PmtId>
         {%- if payment.service_level == "ESR" %}
         <PmtTpInf>
-          {%- if payment.service_level == "SEPA" %}
-          <SvcLvl><Cd>SEPA</Cd></SvcLvl>
-          {%- elif payment.service_level == "ESR" %}
           <LclInstrm><Prtry>CH01</Prtry></LclInstrm>
-          {%- endif %}
         </PmtTpInf>
         {%- endif %}
         <Amt>

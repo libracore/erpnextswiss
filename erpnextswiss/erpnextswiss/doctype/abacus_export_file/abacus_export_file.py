@@ -380,7 +380,8 @@ class AbacusExportFile(Document):
                   `tabPurchase Taxes and Charges`.`account_head`,
                   `tabPurchase Invoice`.`taxes_and_charges`,
                   `tabPurchase Taxes and Charges`.`rate`,
-                  `tabPurchase Invoice`.`supplier_name`
+                  `tabPurchase Invoice`.`supplier_name`,
+                  `tabPurchase Invoice`.`conversion_rate`
                 FROM `tabPurchase Invoice`
                 LEFT JOIN `tabPurchase Invoice Item` ON `tabPurchase Invoice`.`name` = `tabPurchase Invoice Item`.`parent`
                 LEFT JOIN `tabPurchase Taxes and Charges` ON (`tabPurchase Invoice`.`name` = `tabPurchase Taxes and Charges`.`parent` AND  `tabPurchase Taxes and Charges`.`idx` = 1)
@@ -405,7 +406,8 @@ class AbacusExportFile(Document):
                     'account': self.get_account_number(item.credit_to), 
                     'amount': item.credit, 
                     'key_amount': item.base_credit, 
-                    'key_currency': base_currency,  
+                    'key_currency': base_currency,
+                    'exchange_rate': item.conversion_rate,
                     'against_singles': [{
                         'account': self.get_account_number(item.expense_account),
                         'amount': item.base_expense,
@@ -428,7 +430,8 @@ class AbacusExportFile(Document):
                     'account': self.get_account_number(item.credit_to), 
                     'amount': item.base_credit, 
                     'key_amount': item.base_credit, 
-                    'key_currency': base_currency,  
+                    'key_currency': base_currency,
+                    'exchange_rate': item.conversion_rate,
                     'against_singles': [{
                         'account': self.get_account_number(item.expense_account),
                         'amount': item.base_expense,

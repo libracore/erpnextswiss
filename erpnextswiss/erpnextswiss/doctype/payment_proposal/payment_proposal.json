@@ -18,7 +18,8 @@
   "total",
   "section_payments",
   "payments",
-  "section_intermediate_account",
+  "section_options",
+  "individual_payments",
   "use_intermediate",
   "column_intermdiate_account",
   "intermediate_account"
@@ -98,11 +99,6 @@
    "read_only": 1
   },
   {
-   "fieldname": "section_intermediate_account",
-   "fieldtype": "Section Break",
-   "label": "Intermediate Account"
-  },
-  {
    "default": "0",
    "fieldname": "use_intermediate",
    "fieldtype": "Check",
@@ -126,13 +122,25 @@
   },
   {
    "fieldname": "total",
-   "fieldtype": "Currency",
+   "fieldtype": "Float",
    "label": "Total",
+   "precision": "2",
    "read_only": 1
+  },
+  {
+   "fieldname": "section_options",
+   "fieldtype": "Section Break",
+   "label": "Options"
+  },
+  {
+   "default": "0",
+   "fieldname": "individual_payments",
+   "fieldtype": "Check",
+   "label": "Individual payments"
   }
  ],
  "is_submittable": 1,
- "modified": "2020-01-19 21:20:31.423543",
+ "modified": "2020-02-08 20:23:12.997408",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "Payment Proposal",

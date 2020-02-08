@@ -61,8 +61,8 @@ class PaymentProposal(Document):
             currency = ""
             address = ""
             payment_type = "SEPA"
-            # try executing in 30 days (will be reduced by actual due dates)
-            exec_date = datetime.strptime(self.date, "%Y-%m-%d") + timedelta(days=30)
+            # try executing in 90 days (will be reduced by actual due dates)
+            exec_date = datetime.strptime(self.date, "%Y-%m-%d") + timedelta(days=90)
             for purchase_invoice in self.purchase_invoices:
                 if purchase_invoice.supplier == supplier:
                     currency = purchase_invoice.currency
@@ -82,13 +82,13 @@ class PaymentProposal(Document):
                         if exec_date.date() > due_date.date():
                             exec_date = due_date
                     payment_type = purchase_invoice.payment_type
-                    if payment_type == "ESR":
+                    if payment_type == "ESR" or self.individual_payments == 1:
                         # run as individual payment (not aggregated)
                         supl = frappe.get_doc("Supplier", supplier)
                         addr = frappe.get_doc("Address", address)
                         self.add_payment(supl.supplier_name, supl.iban, payment_type,
                             addr.address_line1, "{0} {1}".format(addr.pincode, addr.city), addr.country,
-                            this_amount, currency, " ".join(references), exec_date, 
+                            this_amount, currency, purchase_invoice.external_reference, skonto_date or due_date, 
                             purchase_invoice.esr_reference, purchase_invoice.esr_participation_number)
                     else:
                         amount += this_amount
@@ -111,7 +111,7 @@ class PaymentProposal(Document):
                 self.add_payment(supl.supplier_name, supl.iban, payment_type,
                     addr.address_line1, "{0} {1}".format(addr.pincode, addr.city), addr.country,
                     amount, currency, " ".join(references), exec_date)
-            
+
         # collect employees
         employees = []
         account_currency = frappe.get_value("Account", self.pay_from_account, 'account_currency')
@@ -328,13 +328,24 @@ def create_payment_proposal(date=None, company=None):
     # get all suppliers with open purchase invoices
     sql_query = ("""SELECT 
                   `tabPurchase Invoice`.`supplier` AS `supplier`, 
-                  `tabPurchase Invoice`.`name` AS `name`,  
-                  `tabPurchase Invoice`.`outstanding_amount` AS `outstanding_amount`, 
+                  `tabPurchase Invoice`.`name` AS `name`,
+                  /* if company currency, use outstanding amount, otherwise grand total (in currency) */
+                  (IF (`tabPurchase Invoice`.`base_grand_total` = `tabPurchase Invoice`.`grand_total`,
+                   `tabPurchase Invoice`.`outstanding_amount`,
+                   `tabPurchase Invoice`.`grand_total`
+                   )) AS `outstanding_amount`,
                   `tabPurchase Invoice`.`due_date` AS `due_date`, 
                   `tabPurchase Invoice`.`currency` AS `currency`,
                   `tabPurchase Invoice`.`bill_no` AS `external_reference`,
-                  (IF (IFNULL(`tabPayment Terms Template`.`skonto_days`, 0) = 0, `tabPurchase Invoice`.`due_date`, (DATE_ADD(`tabPurchase Invoice`.`posting_date`, INTERVAL `tabPayment Terms Template`.`skonto_days` DAY)))) AS `skonto_date`,
-                  (((100 - IFNULL(`tabPayment Terms Template`.`skonto_percent`, 0))/100) * `tabPurchase Invoice`.`outstanding_amount`) AS `skonto_amount`,
+                  (IF (IFNULL(`tabPayment Terms Template`.`skonto_days`, 0) = 0, 
+                     `tabPurchase Invoice`.`due_date`, 
+                     (DATE_ADD(`tabPurchase Invoice`.`posting_date`, INTERVAL `tabPayment Terms Template`.`skonto_days` DAY))
+                     )) AS `skonto_date`,
+                  /* if company currency, use outstanding amount, otherwise grand total (in currency) */
+                  (IF (`tabPurchase Invoice`.`base_grand_total` = `tabPurchase Invoice`.`grand_total`,
+                    (((100 - IFNULL(`tabPayment Terms Template`.`skonto_percent`, 0))/100) * `tabPurchase Invoice`.`outstanding_amount`),
+                    (((100 - IFNULL(`tabPayment Terms Template`.`skonto_percent`, 0))/100) * `tabPurchase Invoice`.`grand_total`)
+                    )) AS `skonto_amount`,
                   `tabPurchase Invoice`.`payment_type` AS `payment_type`,
                   `tabPurchase Invoice`.`esr_reference_number` AS `esr_reference`,
                   `tabSupplier`.`esr_participation_number` AS `esr_participation_number`

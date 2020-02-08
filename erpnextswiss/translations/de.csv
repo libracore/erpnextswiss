@@ -227,6 +227,7 @@ DocType: Payment Proposal,Invoice Amount,Rechnungsbetrag
 DocType: Payment Proposal,External Reference,Externe Referenz
 DocType: Payment Proposal,Skonto Date,Skonto-Datum
 DocType: Payment Proposal,Skonto Amount,Skonto-Betrag
+DocType: Payment Proposal,Individual payments,Jede Rechnung einzeln bezahlen
 Page: Bank Wizard,Bank Wizard,Bankassistent
 Page: Bank Wizard,Transaction matched,Zahlung zugewiesen
 Page: Bank Wizard, transactions found, Zahlungen gefunden

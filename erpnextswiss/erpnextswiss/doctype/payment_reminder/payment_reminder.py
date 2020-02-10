@@ -36,7 +36,7 @@ def create_payment_reminders():
     # get all sales invoices that are overdue
     if customers:
         # find maximum reminder level
-        sql_query = ("""SELECT MAX(`reminder_level`) AS `max` FROM 1bd3e0294da19198.`tabERPNextSwiss Settings Payment Reminder Charge`;""")
+        sql_query = ("""SELECT MAX(`reminder_level`) AS `max` FROM `tabERPNextSwiss Settings Payment Reminder Charge`;""")
         try:
             max_level = frappe.db.sql(sql_query, as_dict=True)[0]['max']
         except:

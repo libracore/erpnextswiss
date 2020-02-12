@@ -17,6 +17,8 @@
   "section_d2",
   "html_d2",
   "problem_description",
+  "item_code",
+  "item_name",
   "d2_complete",
   "section_d3",
   "html_d3",
@@ -252,9 +254,22 @@
    "fieldname": "d8_remarks",
    "fieldtype": "Text",
    "label": "Remarks"
+  },
+  {
+   "fetch_from": "item_code.item_name",
+   "fieldname": "item_name",
+   "fieldtype": "Data",
+   "label": "Item name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "item_code",
+   "fieldtype": "Link",
+   "label": "Item",
+   "options": "Item"
   }
  ],
- "modified": "2020-01-20 09:45:23.030334",
+ "modified": "2020-02-12 21:03:09.337922",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "Non Conformity Report 8D",

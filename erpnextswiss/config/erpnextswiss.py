@@ -153,6 +153,12 @@ def get_data():
             "items": [
                    {
                        "type": "doctype",
+                       "name": "Non Conformity Report 8D",
+                       "label": _("Non Conformity Report 8D"),
+                       "description": _("Non Conformity Report 8D")                   
+                   },
+				   {
+                       "type": "doctype",              
                        "name": "Inspection Equipment",
                        "label": _("Inspection Equipment"),
                        "description": _("Inspection Equipment")                   

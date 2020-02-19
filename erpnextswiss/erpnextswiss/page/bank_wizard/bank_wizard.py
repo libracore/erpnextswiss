@@ -372,9 +372,13 @@ def read_camt_transactions(transaction_entries, account):
                     except:
                         try:
                             # try to find an end-to-end ID
-                            transaction_reference = transaction_soup.cdtdbtind.get_text() 
+                            transaction_reference = transaction_soup.endtoendid.get_text() 
                         except:
-                            transaction_reference = unique_reference
+                            try:
+                                # try to find an AddtlTxInf
+                                transaction_reference = transaction_soup.addtltxinf.get_text() 
+                            except:
+                                transaction_reference = unique_reference
                 # debug: show collected record in error log
                 #frappe.log_error("type:{type}\ndate:{date}\namount:{currency} {amount}\nunique ref:{unique}\nparty:{party}\nparty address:{address}\nparty iban:{iban}\nremarks:{remarks}".format(
                 #    type=credit_debit, date=date, currency=currency, amount=amount, unique=unique_reference, party=party_name, address=party_address, iban=party_iban, remarks=transaction_reference))

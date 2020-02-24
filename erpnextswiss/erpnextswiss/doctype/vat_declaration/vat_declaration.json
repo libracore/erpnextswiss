@@ -929,7 +929,7 @@
    "bold": 0, 
    "collapsible": 0, 
    "columns": 0, 
-   "default": "3.8", 
+   "default": "3.7", 
    "depends_on": "eval:doc.vat_type == 'effective'", 
    "fieldname": "lodging_rate", 
    "fieldtype": "Percent", 

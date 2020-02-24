@@ -18,10 +18,12 @@ function create_payment_proposal() {
                 var d = new Date();
                 d = new Date(d.setDate(d.getDate() + response.message.planning_days));
                 frappe.prompt([
-                        {'fieldname': 'date', 'fieldtype': 'Date', 'label': 'Include Payments Until', 'reqd': 1, 'default': d}  
+                        {'fieldname': 'date', 'fieldtype': 'Date', 'label': __('Include Payments Until'), 'reqd': 1, 'default': d},
+                        {'fieldname': 'company', 'fieldtype': 'Link', 'label': __("Company"), 'options': 'Company', 
+                         'default': frappe.defaults.get_default("Company") }
                     ],
                     function(values){
-                        create_direct_debit_proposal(values.date);
+                        create_direct_debit_proposal(values.date, values.company);
                     },
                     'Payment Proposal',
                     'Create'
@@ -35,10 +37,10 @@ function create_payment_proposal() {
  
 }
 
-function create_direct_debit_proposal(date) {
+function create_direct_debit_proposal(date, company) {
     frappe.call({
         "method": "erpnextswiss.erpnextswiss.doctype.payment_proposal.payment_proposal.create_payment_proposal",
-        "args": { "date": date },
+        "args": { "date": date, "company": company },
         "callback": function(response) {
             if (response.message) {
                 // redirect to the new record

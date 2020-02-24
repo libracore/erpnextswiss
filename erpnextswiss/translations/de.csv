@@ -15,7 +15,7 @@ Page: payment_export,No payment entries to be paid found with status draft,Es wu
 Page: payment_export,Exports the selected payment entries for execution by file transfer to a bank,Exportiert die gewählten Zahlungen zur Ausführung durch eine Bank
 Page: payment_export,Payment entries,Zahlungen
 Page: payment_export,Create payment file,Zahlungsdatei erstellen
-Page: bankimport,Import payment entries from bank account file,Importiert Zahlungen aus einem Bankkonto-CSV
+Page: bankimport,Import payment entries from bank account file,Importiert Zahlungen aus einer Bankkonto-Datei
 Page: bankimport,Payment account,Konto
 Page: bankimport,Automatically submit,Automatisch buchen
 Page: bankimport,Parse,Einlesen
@@ -214,6 +214,8 @@ DocType: Direct Debit Proposal,Banking,Bankverbindung
 DocType: Direct Debit Proposal,LSV Code,LSV-Code
 DocType: Direct Debit Proposal,LSV Date,LSV-Datum
 DocType: Direct Debit Proposal,Please select an account to receive to.,Bitte wählen Sie ein Zielkonto aus.
+Close Invoice on Intermediate Account,Rechnungen gegen Zwischenkonto schliessen
+DocType: Direct Debit Proposal,Intermediate,Zwischen
 DocType: Payment Proposal,Create Payment Proposal,Zahlungsvorschlag erstellen
 DocType: Payment Proposal,Payment Proposal,Zahlungsvorschlag
 DocType: Payment Proposal,No suitable invoices found.,Keine passenden Rechnungen gefunden.
@@ -223,6 +225,61 @@ DocType: Payment Proposal,Please select an intermediate account.,Bitte ein Zwisc
 DocType: Payment Proposal,Set Payment Date,Zahlungsdatum setzen
 DocType: Payment Proposal,Pay from Account,Zahlungen von diesem Konto ausführen
 DocType: Payment Proposal,Execute Payments On,Zahlungen an diesem Datum ausführen
+DocType: Payment Proposal,Invoice Amount,Rechnungsbetrag
+DocType: Payment Proposal,External Reference,Externe Referenz
+DocType: Payment Proposal,Skonto Date,Skonto-Datum
+DocType: Payment Proposal,Skonto Amount,Skonto-Betrag
+DocType: Payment Proposal,Individual payments,Jede Rechnung einzeln bezahlen
 Page: Bank Wizard,Bank Wizard,Bankassistent
 Page: Bank Wizard,Transaction matched,Zahlung zugewiesen
 Page: Bank Wizard, transactions found, Zahlungen gefunden
+DocType: Daily Closing Statement,Daily Closing Statement,Tagesabschluss
+DocType: Daily Closing Statement,Statistics,Statistik
+DocType: Daily Closing Statement,Total Sales,Total Umsatz
+DocType: Daily Closing Statement,Average Sales,Durchschnittlicher Umsatz
+DocType: Daily Closing Statement,Number of Customers,Anzahl Kunden
+DocType: Daily Closing Statement,Highest Sale,Höchster Umsatz
+DocType: Daily Closing Statement,Discounts,Rabatte
+DocType: Daily Closing Statement,Count,Anzahl
+DocType: Daily Closing Statement,Currencies,Währungen
+DocType: Daily Closing Statement,Payment Modes,Zahlungsweisen
+DocType: Inspection Equipment,Inspection Equipment,Prüfmittel
+DocType: Inspection Equipment,Transaction,Transaktion
+DocType: Inspection Equipment,Calibration / Test,Kalibration / Test
+DocType: Inspection Equipment,Inspection Equipment Transaction,Prüfmittel Transaktion
+DocType: Inspection Equipment,General,Allgemein
+DocType: Inspection Equipment,Type,Typ
+DocType: Inspection Equipment,Manufacturer,Hersteller
+DocType: Inspection Equipment,Inventory Number,Inventar Nummer
+DocType: Inspection Equipment,Location,Ort
+DocType: Inspection Equipment,Measurement Range,Messbereich
+DocType: Inspection Equipment,Usage,Verwendung
+DocType: Inspection Equipment,Purchase Price,Einkaufspreis
+DocType: Inspection Equipment,Purchase Date,Beschaffungsdatum
+DocType: Inspection Equipment,Transaction Status,Transaktionsstatus
+DocType: Inspection Equipment,On Stock,An Lager
+DocType: Inspection Equipment,Taken,Entnommen
+DocType: Inspection Equipment,Calibration,Kalibration
+DocType: Inspection Equipment,Last Calibration,Letzte Kalibration
+DocType: Inspection Equipment,Next Calibration,Nächste Kalibration
+DocType: Inspection Equipment,Calibration Test Set,Kalibration Test Set
+DocType: Inspection Equipment,Calibration Test,Kalibration Test
+DocType: Inspection Equipment,Calibration Interval,Kalibrations Interval
+DocType: Inspection Equipment,Current Inspection Equipment Status,Aktueller Prüfmittel Transaktionsstatus
+DocType: Inspection Equipment,New Inspection Equipment Status,Neuer Prüfmittel Transaktionsstatus
+DocType: Inspection Equipment,Inspection Equipment Type,Prüfmitteltyp
+DocType: Inspection Equipment,Perform Test, Test durchführen
+DocType: Inspection Equipment,Test Plan Items, Testschritte
+DocType: Inspection Equipment,Operating Instructions, Ausführungsanweisung
+DocType: Inspection Equipment,Test based on,Test basierend auf
+DocType: Inspection Equipment,Inspection Decision OK?,Prüfkriterium OK?
+DocType: Inspection Equipment,Inspection Decision OK,Prüfkriterium OK
+DocType: Inspection Equipment,Calibration / Test-Set,Kalibration / Test-Set
+DocType: Inspection Equipment,Caution; the actual value is not between OTG and UTG!,Achtung; der gemessene Wert liegt ausserhalb der Toleranzgrenzen!
+DocType: Inspection Equipment,To Calibrate,Zu Kalibrieren
+DocType: Inspection Equipment,Calibrated,Kalibriert
+DocType: Inspection Equipment,Without Calibration,Ohne Kalibration
+DocType: Inspection Equipment,Scrap,Verschrottet
+DocType: Inspection Equipment,Blocked,Gesperrt
+DocType: Inspection Equipment,in months,in Monaten
+DocType: Inspection Equipment,Taken by,Entnommen von

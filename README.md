@@ -7,6 +7,8 @@ open source enterprise resource planning software. ERPNext is a trademark by Fra
 The ERPNextSwiss application adds country-specific features to this platform such as 
 bank, tax and payment integrations.
 
+ERPNextSwiss is maintaned by [libracore AG](https://www.libracore.com).
+
 For more information, refer to [https://erpnext.swiss](https://erpnext.swiss)
 
 ## License 
@@ -18,6 +20,11 @@ The software comes as-is without any warranty.
 
 ## Requirements
 Requires an ERPNext server instance (refer to [https://github.com/frappe/erpnext](https://github.com/frappe/erpnext))
+
+## Compatibility
+ERPNextSwiss is tested against ERPNext v12. There is a compatibility branch v11 (for user who prefer the old desk).
+
+ERPNextSwiss is also compatible with Dokos ([https://dokos.io](https://dokos.io))
 
 ## Installation
 From the frappe-bench folder, execute
@@ -54,6 +61,9 @@ In case you update from the sources and observe an error, make sure to update de
     * Script-based data import
     * Large data import tools
     * Dynamic newsletter content
+ * Interfaces
+    * Interface to ESTV
+    * Interface to abacus (export transaction data)
 
 ## Release notes
 Refer to [https://github.com/libracore/erpnextswiss/wiki/Release-Notes](https://github.com/libracore/erpnextswiss/wiki/Release-Notes)

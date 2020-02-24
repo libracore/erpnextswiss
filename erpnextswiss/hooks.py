@@ -17,8 +17,8 @@ app_license = "AGPL"
 # include js, css files in header of desk.html
 # app_include_css = "/assets/erpnextswiss/css/erpnextswiss.css"
 app_include_js = [
-    "/assets/erpnextswiss/js/swiss_common.js",
-    "/assets/erpnextswiss/js/fullsize.js"]
+    "/assets/erpnextswiss/js/swiss_common.js"
+    ]
 
 # include js, css files in header of web template
 # web_include_css = "/assets/erpnextswiss/css/erpnextswiss.css"
@@ -29,6 +29,9 @@ app_include_js = [
 
 # include js in doctype views
 # doctype_js = {"doctype" : "public/js/doctype.js"}
+doctype_js = {
+    "Item" : "public/js/item.js"
+}
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
@@ -109,6 +112,11 @@ after_install = "erpnextswiss.setup.install.after_install"
 # 		"erpnextswiss.tasks.monthly"
 # 	]
 # }
+scheduler_events = {
+	"daily": [
+		"erpnextswiss.erpnextswiss.doctype.inspection_equipment.inspection_equipment.check_calibration_status"
+	]
+}
 
 # Testing
 # -------

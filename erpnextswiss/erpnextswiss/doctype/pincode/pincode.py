@@ -8,6 +8,7 @@ from frappe.model.document import Document
 from frappe import _
 import csv
 from frappe.utils.background_jobs import enqueue
+from math import sin, cos, sqrt, atan2, radians
 
 class Pincode(Document):
 	pass
@@ -32,7 +33,7 @@ def import_pincodes(content):
     isfirst = True
     field_index = {}
     # read csv
-    elements = unicode_csv_reader(content.splitlines())
+    elements = csv.reader(content.splitlines(), dialect=csv.excel)
     # process elements
     for element in elements:
         if isfirst:
@@ -66,21 +67,50 @@ def import_pincodes(content):
                 'canton_code': element[field_index['canton_code']] or "",
                 'country': country,
                 'country_code': country_code,
-                'title': "{0}-{1}".format(element[field_index['pincode']] or 0, element[field_index['city']] or "")
+                'title': "{0}-{1}".format(element[field_index['pincode']] or 0, element[field_index['city']] or ""),
+                'longitude': element[field_index['longitude']] or "",
+                'latitude': element[field_index['latitude']] or "",
             })
             pincode = pincode.insert()
+            frappe.db.commit()
+        else:
+            # update pincode
+            pincode = frappe.get_doc('Pincode', db_pincodes[0]['name'])
+            pincode.longitude = element[field_index['longitude']] or ""
+            pincode.latitude = element[field_index['latitude']] or ""
+            pincode.save()
             frappe.db.commit()
     
     return {'result': _('Successfully imported')}
 
-def unicode_csv_reader(unicode_csv_data, dialect=csv.excel, **kwargs):
-    # csv.py doesn't do Unicode; encode temporarily as UTF-8:
-    csv_reader = csv.reader(utf_8_encoder(unicode_csv_data),
-                            dialect=dialect, **kwargs)
-    for row in csv_reader:
-        # decode UTF-8 back to Unicode, cell by cell:
-        yield [unicode(cell, 'utf-8') for cell in row]
+@frappe.whitelist()
+def get_distance(pincode1, pincode2):
+    # compute the distance between to pincodes
+    # approximate radius of earth in km
+    R = 6373.0
 
-def utf_8_encoder(unicode_csv_data):
-    for line in unicode_csv_data:
-        yield line.encode('utf-8')
+    p1 = frappe.get_all("Pincode", filters={'pincode': pincode1}, fields=['name', 'longitude', 'latitude'])
+    p2 = frappe.get_all("Pincode", filters={'pincode': pincode2}, fields=['name', 'longitude', 'latitude'])
+
+    if p1 and p2:
+        if p2[0]['longitude'] and p1[0]['longitude'] and p2[0]['latitude'] and p1[0]['latitude']:
+            lat1 = radians(float(p1[0]['latitude']))
+            lat2 = radians(float(p2[0]['latitude']))
+            long1 = radians(float(p1[0]['longitude']))
+            long2 = radians(float(p2[0]['longitude']))
+            print("{0}/{1} .. {2}/{3}".format(lat1, long1, lat2, long2))
+            dlon = long2 - long1
+            dlat = lat2 - lat1
+
+            a = sin(dlat / 2)**2 + cos(lat1) * cos(lat2) * sin(dlon / 2)**2
+            c = 2 * atan2(sqrt(a), sqrt(1 - a))
+
+            distance = R * c
+
+            return round(distance, 2)
+        else:
+            print("lat/long missing")
+            return 0.0
+    else:
+        print("pincode not found")
+        return 0.0

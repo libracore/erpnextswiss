@@ -1,0 +1,175 @@
+{
+ "autoname": "field:title",
+ "creation": "2019-09-09 13:48:54.920597",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "title",
+  "equipment_image",
+  "section_general",
+  "type",
+  "inventory_number",
+  "measurement_range",
+  "purchase_price",
+  "transaction_status",
+  "taken_by",
+  "cb_1",
+  "manufacturer",
+  "location",
+  "usage",
+  "purchase_date",
+  "section_calibration",
+  "last_calibration",
+  "calibration_interval",
+  "calibration_test_set",
+  "cb_2",
+  "next_calibration",
+  "status"
+ ],
+ "fields": [
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "label": "Name",
+   "unique": 1
+  },
+  {
+   "fieldname": "type",
+   "fieldtype": "Link",
+   "label": "Type",
+   "options": "Inspection Equipment Type"
+  },
+  {
+   "fieldname": "inventory_number",
+   "fieldtype": "Data",
+   "label": "Inventory Number"
+  },
+  {
+   "fieldname": "measurement_range",
+   "fieldtype": "Data",
+   "label": "Measurement Range"
+  },
+  {
+   "fieldname": "cb_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "manufacturer",
+   "fieldtype": "Link",
+   "label": "Manufacturer",
+   "options": "Supplier"
+  },
+  {
+   "fieldname": "location",
+   "fieldtype": "Data",
+   "label": "Location"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Calibrated\nTo Calibrate\nWithout Calibration\nBlocked\nScrap"
+  },
+  {
+   "default": "0",
+   "description": "in months",
+   "fieldname": "calibration_interval",
+   "fieldtype": "Int",
+   "label": "Calibration Interval"
+  },
+  {
+   "fieldname": "last_calibration",
+   "fieldtype": "Date",
+   "label": "Last Calibration"
+  },
+  {
+   "default": "1900-01-01",
+   "fieldname": "next_calibration",
+   "fieldtype": "Date",
+   "label": "Next Calibration",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_general",
+   "fieldtype": "Section Break",
+   "label": "General"
+  },
+  {
+   "fieldname": "section_calibration",
+   "fieldtype": "Section Break",
+   "label": "Calibration"
+  },
+  {
+   "fieldname": "cb_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "On Stock",
+   "fieldname": "transaction_status",
+   "fieldtype": "Select",
+   "in_preview": 1,
+   "label": "Transaction Status",
+   "options": "Taken\nOn Stock",
+   "read_only": 1
+  },
+  {
+   "fieldname": "equipment_image",
+   "fieldtype": "Attach Image",
+   "hidden": 1,
+   "label": "Equipment Image"
+  },
+  {
+   "default": "0.00",
+   "fieldname": "purchase_price",
+   "fieldtype": "Currency",
+   "label": "Purchase Price"
+  },
+  {
+   "fieldname": "usage",
+   "fieldtype": "Data",
+   "label": "Usage"
+  },
+  {
+   "fieldname": "purchase_date",
+   "fieldtype": "Date",
+   "label": "Purchase Date"
+  },
+  {
+   "fieldname": "calibration_test_set",
+   "fieldtype": "Link",
+   "label": "Calibration Test Set",
+   "options": "Calibration Test Set"
+  },
+  {
+   "fieldname": "taken_by",
+   "fieldtype": "Data",
+   "label": "Taken by",
+   "read_only": 1
+  }
+ ],
+ "image_field": "equipment_image",
+ "modified": "2020-01-13 14:27:57.511422",
+ "modified_by": "Administrator",
+ "module": "ERPNextSwiss",
+ "name": "Inspection Equipment",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

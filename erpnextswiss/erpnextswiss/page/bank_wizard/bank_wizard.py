@@ -390,25 +390,49 @@ def read_camt_transactions(transaction_entries, account):
                 else:
                     # try to find matching parties & invoices
                     party_match = None
+                    employee_match = None
                     invoice_matches = None
+                    expense_matches = None
                     matched_amount = 0.0
                     if credit_debit == "DBIT":
                         # suppliers 
-                        match_suppliers = frappe.get_all("Supplier", filters={'supplier_name': party_name, 'disabled': 0}, fields=['name'])
+                        match_suppliers = frappe.get_all("Supplier", 
+                            filters={'supplier_name': party_name, 'disabled': 0}, 
+                            fields=['name'])
                         if match_suppliers:
                             party_match = match_suppliers[0]['name']
                         # purchase invoices
-                        possible_pinvs = frappe.get_all("Purchase Invoice", filters=[['grand_total', '=', amount], ['outstanding_amount', '>', 0]], fields=['name', 'supplier', 'outstanding_amount', 'bill_no'])
+                        possible_pinvs = frappe.get_all("Purchase Invoice", 
+                            filters=[['docstatus', '=', 1], ['outstanding_amount', '>', 0]], 
+                            fields=['name', 'supplier', 'outstanding_amount', 'bill_no'])
                         if possible_pinvs:
                             invoice_matches = []
                             for pinv in possible_pinvs:
-                                if pinv['name'] in transaction_reference or pinv['bill_no'] in transaction_reference:
+                                if pinv['name'] in transaction_reference or (pinv['bill_no'] or pinv['name']) in transaction_reference:
                                     invoice_matches.append(pinv['name'])
                                     # override party match in case there is one from the sales invoice
                                     party_match = pinv['supplier']
                                     # add total matched amount
                                     matched_amount += float(pinv['outstanding_amount'])
-                                    
+                        # employees 
+                        match_employees = frappe.get_all("Employee", 
+                            filters={'employee_name': party_name, 'status': 'active'}, 
+                            fields=['name'])
+                        if match_employees:
+                            employee_match = match_employees[0]['name']
+                        # expense claims
+                        possible_expenses = frappe.get_all("Expense Claim", 
+                            filters=[['docstatus', '=', 1], ['status', '=', 'Unpaid']], 
+                            fields=['name', 'employee', 'total_claimed_amount'])
+                        if possible_expenses:
+                            expense_matches = []
+                            for exp in possible_expenses:
+                                if exp['name'] in transaction_reference:
+                                    expense_matches.append(exp['name'])
+                                    # override party match in case there is one from the sales invoice
+                                    employee_match = exp['employee']
+                                    # add total matched amount
+                                    matched_amount += float(exp['total_claimed_amount'])            
                     else:
                         # customers & sales invoices
                         match_customers = frappe.get_all("Customer", filters={'customer_name': party_name, 'disabled': 0}, fields=['name'])
@@ -430,6 +454,8 @@ def read_camt_transactions(transaction_entries, account):
                     try:
                         if len(invoice_matches) == 0:
                             invoice_matches = None
+                        if len(expense_matches) == 0:
+                            expense_matches = None                            
                     except:
                         pass                                                                                                
                     new_txn = {
@@ -445,7 +471,9 @@ def read_camt_transactions(transaction_entries, account):
                         'transaction_reference': transaction_reference,
                         'party_match': party_match,
                         'invoice_matches': invoice_matches,
-                        'matched_amount': matched_amount
+                        'matched_amount': matched_amount,
+                        'employee_match': employee_match,
+                        'expense_matches': expense_matches
                     }
                     txns.append(new_txn)
         else:
@@ -558,7 +586,7 @@ def read_camt_transactions(transaction_entries, account):
 
 @frappe.whitelist()
 def make_payment_entry(amount, date, reference_no, paid_from=None, paid_to=None, type="Receive", 
-    party=None, party_type=None, references=None, remarks=None, auto_submit=False):
+    party=None, party_type=None, references=None, remarks=None, auto_submit=False, exchange_rate=1):
     # assert list
     if references:
         references = ast.literal_eval(references)
@@ -585,7 +613,9 @@ def make_payment_entry(amount, date, reference_no, paid_from=None, paid_to=None,
             'posting_date': date,
             'remarks': remarks,
             'camt_amount': float(amount),
-            'company': company
+            'company': company,
+            'source_exchange_rate': exchange_rate,
+            'target_exchange_rate': exchange_rate
         })
     elif type == "Pay":
         # pay
@@ -602,9 +632,14 @@ def make_payment_entry(amount, date, reference_no, paid_from=None, paid_to=None,
             'posting_date': date,
             'remarks': remarks,
             'camt_amount': float(amount),
-            'company': company
+            'company': company,
+            'source_exchange_rate': exchange_rate,
+            'target_exchange_rate': exchange_rate
         })
-        reference_type = "Purchase Invoice"
+        if party_type == "Employee":
+            reference_type = "Expense Claim"
+        else:
+            reference_type = "Purchase Invoice"
     else:
         # internal transfer (against intermediate account)
         payment_entry = frappe.get_doc({
@@ -619,8 +654,12 @@ def make_payment_entry(amount, date, reference_no, paid_from=None, paid_to=None,
             'posting_date': date,
             'remarks': remarks,
             'camt_amount': float(amount),
-            'company': company
-        })    
+            'company': company,
+            'source_exchange_rate': exchange_rate,
+            'target_exchange_rate': exchange_rate
+        })
+    if party_type == "Employee":
+        payment_entry.paid_to = get_payable_account(company)['account'] or paid_to         # note: at creation, this is ignored
     new_entry = payment_entry.insert()
     # add references after insert (otherwise they are overwritten)
     if references:
@@ -641,13 +680,23 @@ def create_reference(payment_entry, invoice_reference, invoice_type="Sales Invoi
     reference_entry.parenttype = "Payment Entry"
     reference_entry.reference_doctype = invoice_type
     reference_entry.reference_name = invoice_reference
-    reference_entry.total_amount = frappe.get_value(invoice_type, invoice_reference, "base_grand_total")
-    reference_entry.outstanding_amount = frappe.get_value(invoice_type, invoice_reference, "outstanding_amount")
-    paid_amount = frappe.get_value("Payment Entry", payment_entry, "paid_amount")
-    if paid_amount > reference_entry.outstanding_amount:
-        reference_entry.allocated_amount = reference_entry.outstanding_amount
+    if "Invoice" in invoice_type:
+        reference_entry.total_amount = frappe.get_value(invoice_type, invoice_reference, "base_grand_total")
+        reference_entry.outstanding_amount = frappe.get_value(invoice_type, invoice_reference, "outstanding_amount")
+        paid_amount = frappe.get_value("Payment Entry", payment_entry, "paid_amount")
+        if paid_amount > reference_entry.outstanding_amount:
+            reference_entry.allocated_amount = reference_entry.outstanding_amount
+        else:
+            reference_entry.allocated_amount = paid_amount
     else:
-        reference_entry.allocated_amount = paid_amount
+        # expense claim:
+        reference_entry.total_amount = frappe.get_value(invoice_type, invoice_reference, "total_claimed_amount")
+        reference_entry.outstanding_amount = reference_entry.total_amount
+        paid_amount = frappe.get_value("Payment Entry", payment_entry, "paid_amount")
+        if paid_amount > reference_entry.outstanding_amount:
+            reference_entry.allocated_amount = reference_entry.outstanding_amount
+        else:
+            reference_entry.allocated_amount = paid_amount
     reference_entry.insert();
     # update unallocated amount
     payment_record = frappe.get_doc("Payment Entry", payment_entry)

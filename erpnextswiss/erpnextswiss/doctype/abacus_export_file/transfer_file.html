@@ -15,7 +15,7 @@
             <Entry mode="SAVE">
                 <CollectiveInformation mode="SAVE">
                     <EntryLevel>A</EntryLevel>
-                    <EntryType>{% if transaction.against_singles|len == 1 %}S{% else %}C{% endif% }</EntryType>
+                    <EntryType>{%- if transaction.against_singles|len == 1 %}S{%- else %}C{%- endif %}</EntryType>
                     <Type>Normal</Type>
                     <DebitCredit>{{ transaction.debit_credit }}</DebitCredit>
 					<Client></Client>

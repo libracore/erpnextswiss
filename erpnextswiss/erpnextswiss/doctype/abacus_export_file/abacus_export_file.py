@@ -439,7 +439,7 @@ class AbacusExportFile(Document):
                     'against_singles': [{
                         'account': self.get_account_number(item.expense_account),
                         'amount': item.base_expense,
-                        'currency': item.currency
+                        'currency': base_currency
                     }],
                     'debit_credit': "C", 
                     'date': item.posting_date, 
@@ -467,7 +467,7 @@ class AbacusExportFile(Document):
                     }],
                     'debit_credit': "C", 
                     'date': item.posting_date, 
-                    'currency': item.currency, 
+                    'currency': base_currency, 
                     'tax_account': self.get_account_number(item.account_head) or None, 
                     'tax_amount': item.tax or None, 
                     'tax_rate': item.rate or None, 
@@ -492,15 +492,17 @@ class AbacusExportFile(Document):
             # create content
             transaction = {
                 'account': self.get_account_number(pe_record.paid_from), 
-                'amount': pe_record.amount, 
+                'amount': pe_record.paid_amount, 
                 'against_singles': [{
                     'account': self.get_account_number(pe_record.paid_to),
-                    'amount': pe_record.amount,
+                    'amount': pe_record.received_amount,
                     'currency': pe_record.paid_to_account_currency
                 }],
                 'debit_credit': "C", 
                 'date': pe_record.posting_date, 
                 'currency': pe_record.paid_from_account_currency, 
+                'key_currency': pe_record.paid_to_account_currency,
+                'exchange_rate': pe_record.source_exchange_rate,
                 'tax_account': None, 
                 'tax_amount': None, 
                 'tax_rate': None, 
@@ -527,16 +529,18 @@ class AbacusExportFile(Document):
         jv_items = frappe.db.sql(sql_query, as_dict=True)
         
         # create item entries
-        for item in pe_items:
+        for item in jv_items:
             jv_record = frappe.get_doc("Journal Entry", item.name)
             if jv_record.accounts[0].debit_in_account_currency != 0:
                 debit_credit = "D"
+                amount = jv_record.accounts[0].debit_in_account_currency
             else:
                 debit_credit = "C"
+                amount = jv_record.accounts[0].credit_in_account_currency
             # create content
             transaction = {
                 'account': self.get_account_number(jv_record.accounts[0].account), 
-                'amount': jv_record.accounts[0].amount, 
+                'amount': amount, 
                 'against_singles': [],
                 'debit_credit': debit_credit, 
                 'date': jv_record.posting_date, 
@@ -549,6 +553,9 @@ class AbacusExportFile(Document):
             }
             if jv_record.multi_currency == 1:
                 transaction['exchange_rate'] = jv_record.accounts[0].exchange_rate
+                transaction['key_currency'] = jv_record.accounts[0].account_currency
+            else:
+                transaction['key_currency'] = jv_record.accounts[0].account_currency
             # append single accounts
             for i in range(1, len(jv_record.accounts), 1):
                 if debit_credit == "D":
@@ -561,7 +568,8 @@ class AbacusExportFile(Document):
                     'currency': jv_record.accounts[i].account_currency
                 }
                 if jv_record.multi_currency == 1:
-                    transaction_single = jv_record.accounts[i].exchange_rate
+                    transaction_single['exchange_rate'] = jv_record.accounts[i].exchange_rate
+                    transaction_single['key_currency'] = jv_record.accounts[i].account_currency
                 transaction['against_singles'].append(transaction_single)
             # insert transaction
             transactions.append(transaction)  

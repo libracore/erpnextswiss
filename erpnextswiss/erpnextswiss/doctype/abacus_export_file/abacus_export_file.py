@@ -45,7 +45,17 @@ class AbacusExportFile(Document):
                     AND `tabPayment Entry`.`posting_date` <= '{end_date}'
                     AND `tabPayment Entry`.`docstatus` = 1
                     AND `tabPayment Entry`.`exported_to_abacus` = 0
-                    AND `tabPayment Entry`.`company` = '{company}';""".format(
+                    AND `tabPayment Entry`.`company` = '{company}'
+                UNION SELECT 
+                    "Journal Entry" AS `dt`,
+                    `tabJournal Entry`.`name` AS `dn`
+                FROM `tabJournal Entry`
+                WHERE
+                    `tabJournal Entry`.`posting_date` >= '{start_date}'
+                    AND `tabJournal Entry`.`posting_date` <= '{end_date}'
+                    AND `tabJournal Entry`.`docstatus` = 1
+                    AND `tabJournal Entry`.`exported_to_abacus` = 0
+                    AND `tabJournal Entry`.`company` = '{company}';""".format(
                     start_date=self.from_date, end_date=self.to_date, 
                     company=self.company)
         
@@ -63,6 +73,7 @@ class AbacusExportFile(Document):
         sinvs = self.get_docs(docs, "Sales Invoice")
         pinvs = self.get_docs(docs, "Purchase Invoice")
         pes = self.get_docs(docs, "Payment Entry")
+        jvs = self.get_docs(docs, "Journal Entry")
         update_query = """UPDATE `tabSales Invoice`
                 SET `tabSales Invoice`.`exported_to_abacus` = 1
                 WHERE
@@ -80,6 +91,12 @@ class AbacusExportFile(Document):
                 WHERE
                     `tabPayment Entry`.`name` IN ({pes});""".format(
                     pes=self.get_sql_list(pes))
+        frappe.db.sql(update_query)
+        update_query = """UPDATE `tabJournal Entry`
+                SET `tabJournal Entry`.`exported_to_abacus` = 1
+                WHERE
+                    `tabJournal Entry`.`name` IN ({jvs});""".format(
+                    jvs=self.get_sql_list(jvs))
         frappe.db.sql(update_query)
         return
     
@@ -107,6 +124,8 @@ class AbacusExportFile(Document):
         sql_query = """UPDATE `tabPayment Entry` SET `exported_to_abacus` = 0;"""
         frappe.db.sql(sql_query, as_dict=True)
         sql_query = """UPDATE `tabPurchase Invoice` SET `exported_to_abacus` = 0;"""
+        frappe.db.sql(sql_query, as_dict=True)
+        sql_query = """UPDATE `tabJournal Entry` SET `exported_to_abacus` = 0;"""
         frappe.db.sql(sql_query, as_dict=True)
         return { 'message': 'OK' }
     
@@ -243,7 +262,7 @@ class AbacusExportFile(Document):
         # add payment entry transactions
         pes = self.get_docs([ref.__dict__ for ref in self.references], "Payment Entry")
         sql_query = """SELECT `tabPayment Entry`.`name`,
-                  `tabPayment Entry`.`posting_date`, 
+                  `tabPayment Entry`.`posting_date`,
                   `tabPayment Entry`.`paid_from_account_currency` AS `currency`,
                   SUM(`tabPayment Entry`.`paid_amount`) AS `amount`, 
                   `tabPayment Entry`.`paid_from`,
@@ -260,25 +279,34 @@ class AbacusExportFile(Document):
         
         # create item entries
         for item in pe_items:
+            pe_record = frappe.get_doc("Payment Entry", item.name)
             # create content
-            transactions.append({
+            transaction = {
                 'account': self.get_account_number(item.paid_from), 
                 'amount': item.amount, 
                 'against_singles': [{
                     'account': self.get_account_number(item.paid_to),
                     'amount': item.amount,
-                    'currency': item.currency
+                    'currency': pe_record.paid_to_account_currency
                 }],
                 'debit_credit': "C", 
                 'date': self.to_date, 
-                'currency': item.currency, 
+                'currency': pe_record.paid_from_account_currency, 
                 'tax_account': None, 
                 'tax_amount': None, 
                 'tax_rate': None, 
                 'tax_code': None, 
                 'text1': item.name
-            })
-        
+            }
+            # append deductions
+            for deduction in pe_record.deductions:
+                transaction['against_singles'].append({
+                    'account': self.get_account_number(deduction.account),
+                    'amount': deduction.amount,
+                    'currency': item.currency                
+                })
+            # insert transaction
+            transactions.append(transaction)        
         return transactions
 
 
@@ -451,15 +479,7 @@ class AbacusExportFile(Document):
             
         # add payment entry transactions
         pes = self.get_docs([ref.__dict__ for ref in self.references], "Payment Entry")
-        sql_query = """SELECT `tabPayment Entry`.`name`,
-                      `tabPayment Entry`.`posting_date`, 
-                      `tabPayment Entry`.`paid_from_account_currency` AS `currency`,
-                      `tabPayment Entry`.`paid_amount` AS `amount`, 
-                      `tabPayment Entry`.`paid_from`,
-                      `tabPayment Entry`.`paid_to`,
-                      CONCAT(IFNULL(`tabPayment Entry`.`paid_from`, ""),
-                        IFNULL(`tabPayment Entry`.`paid_to`, "")
-                      ) AS `key`
+        sql_query = """SELECT `tabPayment Entry`.`name`
                     FROM `tabPayment Entry`
                     WHERE`tabPayment Entry`.`name` IN ({pes})
             """.format(pes=self.get_sql_list(pes))
@@ -468,25 +488,83 @@ class AbacusExportFile(Document):
         
         # create item entries
         for item in pe_items:
+            pe_record = frappe.get_doc("Payment Entry", item.name)
             # create content
-            transactions.append({
-                'account': self.get_account_number(item.paid_from), 
-                'amount': item.amount, 
+            transaction = {
+                'account': self.get_account_number(pe_record.paid_from), 
+                'amount': pe_record.amount, 
                 'against_singles': [{
-                    'account': self.get_account_number(item.paid_to),
-                    'amount': item.amount,
-                    'currency': item.currency
+                    'account': self.get_account_number(pe_record.paid_to),
+                    'amount': pe_record.amount,
+                    'currency': pe_record.paid_to_account_currency
                 }],
                 'debit_credit': "C", 
-                'date': item.posting_date, 
-                'key_currency': item.currency,
-                'currency': item.currency, 
+                'date': pe_record.posting_date, 
+                'currency': pe_record.paid_from_account_currency, 
                 'tax_account': None, 
                 'tax_amount': None, 
                 'tax_rate': None, 
                 'tax_code': None, 
-                'text1': cgi.escape(item.name)
-            })
+                'text1': cgi.escape(pe_record.name)
+            }
+            # append deductions
+            for deduction in pe_record.deductions:
+                transaction['against_singles'].append({
+                    'account': self.get_account_number(deduction.account),
+                    'amount': deduction.amount,
+                    'currency': pe_record.paid_to_account_currency                
+                })
+            # insert transaction
+            transactions.append(transaction)  
+
+        # add journal entry transactions
+        jvs = self.get_docs([ref.__dict__ for ref in self.references], "Journal Entry")
+        sql_query = """SELECT `tabJournal Entry`.`name`
+                    FROM `tabJournal Entry`
+                    WHERE`tabJournal Entry`.`name` IN ({jvs})
+            """.format(jvs=self.get_sql_list(jvs))
+
+        jv_items = frappe.db.sql(sql_query, as_dict=True)
         
+        # create item entries
+        for item in pe_items:
+            jv_record = frappe.get_doc("Journal Entry", item.name)
+            if jv_record.accounts[0].debit_in_account_currency != 0:
+                debit_credit = "D"
+            else:
+                debit_credit = "C"
+            # create content
+            transaction = {
+                'account': self.get_account_number(jv_record.accounts[0].account), 
+                'amount': jv_record.accounts[0].amount, 
+                'against_singles': [],
+                'debit_credit': debit_credit, 
+                'date': jv_record.posting_date, 
+                'currency': jv_record.accounts[0].account_currency, 
+                'tax_account': None, 
+                'tax_amount': None, 
+                'tax_rate': None, 
+                'tax_code': None, 
+                'text1': cgi.escape(jv_record.name)
+            }
+            if jv_record.multi_currency == 1:
+                transaction['exchange_rate'] = jv_record.accounts[0].exchange_rate
+            # append single accounts
+            for i in range(1, len(jv_record.accounts), 1):
+                if debit_credit == "D":
+                    amount = jv_record.accounts[i].credit_in_account_currency - jv_record.accounts[i].debit_in_account_currency
+                else:
+                    amount = jv_record.accounts[i].debit_in_account_currency - jv_record.accounts[i].credit_in_account_currency
+                transaction_single = {
+                    'account': self.get_account_number(jv_record.accounts[i].account),
+                    'amount': amount,
+                    'currency': jv_record.accounts[i].account_currency
+                }
+                if jv_record.multi_currency == 1:
+                    transaction_single = jv_record.accounts[i].exchange_rate
+                transaction['against_singles'].append(transaction_single)
+            # insert transaction
+            transactions.append(transaction)  
+                    
         return transactions        
         

@@ -15,7 +15,7 @@
             <Entry mode="SAVE">
                 <CollectiveInformation mode="SAVE">
                     <EntryLevel>A</EntryLevel>
-                    <EntryType>S</EntryType>
+                    <EntryType>{% if transaction.against_singles|len == 1 %}S{% else %}C{% endif% }</EntryType>
                     <Type>Normal</Type>
                     <DebitCredit>{{ transaction.debit_credit }}</DebitCredit>
 					<Client></Client>
@@ -54,7 +54,7 @@
                     <Text2>{{ transaction.text2 }}</Text2>
                     {%- endif %}
                     <DocumentNumber>{{ short_reference }}</DocumentNumber>
-                    <SingleCount>0</SingleCount>
+                    <SingleCount>{{ transaction.against_singles|len }}</SingleCount>
                 </CollectiveInformation>
                 {%- for against in transaction.against_singles %}
                 <SingleInformation mode="SAVE">

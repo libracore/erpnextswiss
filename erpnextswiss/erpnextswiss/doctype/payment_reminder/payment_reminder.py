@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2018-2020, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
 
 from __future__ import unicode_literals
@@ -16,6 +16,9 @@ class PaymentReminder(Document):
             sales_invoice.payment_reminder_level = invoice.reminder_level
             sales_invoice.save()
         return
+	# apply payment reminder levels on submit (server based)
+	def on_submit(self):
+		self.update_reminder_levels()
     pass
 
 # this function will create new payment reminders

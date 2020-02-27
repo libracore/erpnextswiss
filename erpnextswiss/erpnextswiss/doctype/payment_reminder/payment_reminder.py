@@ -17,8 +17,8 @@ class PaymentReminder(Document):
             sales_invoice.save()
         return
 	# apply payment reminder levels on submit (server based)
-	def on_submit(self):
-		self.update_reminder_levels()
+    def on_submit(self):
+        self.update_reminder_levels()
     pass
 
 # this function will create new payment reminders

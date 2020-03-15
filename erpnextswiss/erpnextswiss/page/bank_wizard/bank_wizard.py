@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2017-2019, libracore and contributors
+# Copyright (c) 2017-2020, libracore and contributors
 # License: AGPL v3. See LICENCE
 
 from __future__ import unicode_literals
@@ -401,10 +401,15 @@ def read_camt_transactions(transaction_entries, account):
                             fields=['name'])
                         if match_suppliers:
                             party_match = match_suppliers[0]['name']
-                        # purchase invoices
-                        possible_pinvs = frappe.get_all("Purchase Invoice", 
-                            filters=[['docstatus', '=', 1], ['outstanding_amount', '>', 0]], 
-                            fields=['name', 'supplier', 'outstanding_amount', 'bill_no'])
+                            # restrict pins to supplier
+                            possible_pinvs = frappe.get_all("Purchase Invoice",
+                                filters=[['docstatus', '=', 1], ['outstanding_amount', '>', 0], ['supplier', '=', party_match]],
+                                fields=['name', 'supplier', 'outstanding_amount', 'bill_no'])
+                        else:
+                            # purchase invoices
+                            possible_pinvs = frappe.get_all("Purchase Invoice", 
+                                filters=[['docstatus', '=', 1], ['outstanding_amount', '>', 0]], 
+                                fields=['name', 'supplier', 'outstanding_amount', 'bill_no'])
                         if possible_pinvs:
                             invoice_matches = []
                             for pinv in possible_pinvs:

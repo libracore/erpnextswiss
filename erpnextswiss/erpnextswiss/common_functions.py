@@ -43,6 +43,7 @@ def get_primary_address(target_name, target_type="Customer"):
             `tabAddress`.`address_line2`, 
             `tabAddress`.`pincode`, 
             `tabAddress`.`city`, 
+            `tabAddress`.`county`,
             `tabAddress`.`country`, 
             UPPER(`tabCountry`.`code`) AS `country_code`, 
             `tabAddress`.`is_primary_address`

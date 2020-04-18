@@ -29,10 +29,10 @@ def create_zugferd_pdf(sales_invoice_name, verify=True, format=None, doc=None, n
         xml = create_zugferd_xml(sales_invoice_name)
     
         # facturx_pdf = generate_facturx_from_binary(pdf, xml.encode('utf-8'))  ## The second argument of the method generate_facturx must be either a string, an etree.Element() object or a file (it is a <class 'bytes'>).
-        facturx_pdf = generate_facturx_from_binary(pdf, xml)  ## Unicode strings with encoding declaration are not supported. Please use bytes input or XML fragments without declaration.
+        #facturx_pdf = generate_facturx_from_binary(pdf, xml)  ## Unicode strings with encoding declaration are not supported. Please use bytes input or XML fragments without declaration.
         
          
-        return facturx_pdf
+        return xml
     except Exception as err:
         frappe.log_error("Unable to create zugferdPDF: {0}\n{1}".format(err, xml), "ZUGFeRD")
         # fallback to normal pdf

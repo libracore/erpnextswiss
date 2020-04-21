@@ -283,3 +283,4 @@ DocType: Inspection Equipment,Scrap,Verschrottet
 DocType: Inspection Equipment,Blocked,Gesperrt
 DocType: Inspection Equipment,in months,in Monaten
 DocType: Inspection Equipment,Taken by,Entnommen von
+DocType: VAT query,VAT query,MwSt-Abfrage

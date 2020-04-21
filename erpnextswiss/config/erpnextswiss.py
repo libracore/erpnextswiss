@@ -114,6 +114,12 @@ def get_data():
                        "name": "BankImport Template",
                        "label": _("BankImport Templates"),
                        "description": _("BankImport Templates")
+                   },
+                   {
+                       "type": "doctype",
+                       "name": "VAT query",
+                       "label": _("VAT query"),
+                       "description": _("VAT query")
                    }
             ]
         },

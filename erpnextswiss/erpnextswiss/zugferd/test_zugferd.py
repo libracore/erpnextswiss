@@ -10,7 +10,7 @@ from __future__ import unicode_literals
 import frappe
 import unittest
 from frappe.utils.pdf import get_pdf
-from zugferd_xml import create_zugferd_xml
+from erpnextswiss.erpnextswiss.zugferd.zugferd_xml import create_zugferd_xml
 from facturx import generate_facturx_from_binary
 
 class TestZugferd(unittest.TestCase):
@@ -21,7 +21,7 @@ class TestZugferd(unittest.TestCase):
 
 def create_pdf ():
     doctype = "Sales Invoice"
-    name = "SINV-00001"
+    name = "ACC-SINV-2020-00001"
     format=None
     doc=None
     no_letterhead=0

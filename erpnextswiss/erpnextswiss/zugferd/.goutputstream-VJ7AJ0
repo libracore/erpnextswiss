@@ -5,20 +5,14 @@
 #
 #
 #
-import frappe, os
+import frappe
 from frappe.utils.pdf import get_pdf
 from erpnextswiss.erpnextswiss.zugferd.zugferd_xml import create_zugferd_xml
-#from facturx import generate_facturx_from_binary, get_facturx_xml_from_pdf, check_facturx_xsd, generate_facturx_from_file
-from erpnextswiss.erpnextswiss.zugferd.facturx.facturx.facturx import generate_facturx_from_binary
+from facturx import generate_facturx_from_binary, get_facturx_xml_from_pdf, check_facturx_xsd
 from bs4 import BeautifulSoup
 from frappe.utils.file_manager import save_file
 from pathlib import Path
-import unicodedata
-from PyPDF2 import PdfFileWriter
-import xml.etree.ElementTree as ET
-import xml.etree.ElementTree
-from xml.etree import ElementTree
-from lxml import etree
+import codecs
 
 """
 Creates an XML file from a sales invoice
@@ -29,18 +23,29 @@ Creates an XML file from a sales invoice
 def create_zugferd_pdf(sales_invoice_name, verify=True, format=None, doc=None, no_letterhead=0):
     try:
         frappe.msgprint("andere1")
-        doctype1 = "Sales Invoice"
-        html = frappe.get_print(doctype1, sales_invoice_name, format, doc=doc, no_letterhead=no_letterhead)
-        
+        doctype = "Sales Invoice"
+        html = frappe.get_print(doctype, sales_invoice_name, format, doc=doc, no_letterhead=no_letterhead)
+        print("succes1")
         pdf = get_pdf(html)
-        xml1 = create_zugferd_xml(sales_invoice_name)
+        print("succes2")
+        xml = create_zugferd_xml(sales_invoice_name)
+        print("succes3")
+        #pdf_string = pdf.decode('utf-8')
+        #pdf_string = str(pdf, 'utf-8')
+        print("fier1")
+        # assume bytes_io is a `BytesIO` object
+        #byte_str = bytes_io.read()
+        #byte_str = pdf.getvalue()
+        print("fier12")
+        # Convert to a "unicode" object
+        #text_obj = byte_str.decode('UTF-8')
+        print("fier")
+
+        print("first")
+        stri = pdf.decode('utf-8')
+        facturx_pdf = generate_facturx_from_binary(stri, xml.encode('utf-8'))  ## The second argument of the method generate_facturx must be either a string, an etree.Element() object or a file (it is a <class 'bytes'>).
+        #facturx_pdf = generate_facturx_from_binary(pdf, xml)  ## Unicode strings with encoding declaration are not supported. Please use bytes input or XML fragments without declaration.
         
-       
-        #facturx_pdf = generate_facturx_from_file(file, xml)  
-        ## The second argument of the method generate_facturx must be either a string, an etree.Element() object or a file (it is a <class 'bytes'>).
-        facturx_pdf = generate_facturx_from_binary(pdf, xml1.encode('utf-8'))  ## Unicode strings with encoding declaration are not supported. Please use bytes input or XML fragments without declaration.
-        
-        reca = "gut"
         print("succes")
         return facturx_pdf
     except Exception as err:
@@ -48,7 +53,6 @@ def create_zugferd_pdf(sales_invoice_name, verify=True, format=None, doc=None, n
         print("error")
         # fallback to normal pdf
         pdf = get_pdf(html)
-        reca2 = "FALSCHH"
         return pdf
 
 @frappe.whitelist()
@@ -70,20 +74,16 @@ def test(sales_invoice_name, format=None, doc=None, no_letterhead=0, verify=True
 	
     doctype = "Sales Invoice"
     html = frappe.get_print(doctype, sales_invoice_name, format, doc=doc, no_letterhead=no_letterhead)
-
+	
+    
+    
+    
     #pdf = get_pdf(html)
     xml = create_zugferd_xml(sales_invoice_name)
     check_facturx_xsd(facturx_xml=xml.encode('utf-8'))
     #facturx_pdf = generate_facturx_from_binary(pdf, xml.encode('utf-8')) 
     #xml_test = create_zugferd_xml(sales_invoice_name)
     return xml
-    
-    
-    
-    
-    
-    
-    
     
 @frappe.whitelist()
 def test4(sales_invoice_name, format=None, doc=None, no_letterhead=0, verify=True):
@@ -92,19 +92,11 @@ def test4(sales_invoice_name, format=None, doc=None, no_letterhead=0, verify=Tru
     print("succes1")
     pdf = get_pdf(html)
     #pdf_string = pdf.decode('utf-8')
-    print(pdf)
-    #pdf_a = pdf.decode('ASCII')
-    #pdf_c = pdf.decode('unicode_escape')
-    #print(pdf_c)
-    pdf_u = pdf.decode('Latin-1')
-    pdf_utf = pdf_u.encode('utf-8')
-    pd = pdf_utf.decode('utf-8')
-    #print(pd)
-    #pdf_o = pdf.decode('cp1252').encode('utf-8')
-    #print(pdf_o)
+    pdf_o = pdf.decode('unicode_escape').encode('utf-8')
     #stri = decode(pdf, errors='ignore')
+    pdf_i = unicode(pdf, errors='ignore')
     #stri = pdf.decode('cp1252').encode('utf-8')
-    return pdf_u
+    return pdf_o
 
     
     

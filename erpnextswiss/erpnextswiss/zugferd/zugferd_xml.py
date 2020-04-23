@@ -7,7 +7,7 @@
 #
 #
 import frappe
-from erpnextswiss.erpnextswiss.common_functions import make_line, get_primary_address
+from erpnextswiss.erpnextswiss.common_functions import get_primary_address
 from frappe import _
 from bs4 import BeautifulSoup
 from datetime import datetime
@@ -45,17 +45,17 @@ def create_zugferd_xml(sales_invoice, verify=True):
         xml += ("      <ram:Content>{invoice} {title} ({number}), {date}</ram:Content>".format(invoice=_("Sales Invoice"), title=sinv.title, number=sinv.name, date=sinv.posting_date))
         xml += ("    </ram:IncludedNote>")
         # details of the invoice issuing company
-        xml += ("    <ram:IncludedNote>")
+        #xml += ("    <ram:IncludedNote>")
         company = frappe.get_doc("Company", sinv.company)
-        address = get_primary_address(sinv.company)
-        if not address:
-            frappe.throw( _("Company address not find. Please add a company address for {company}.").format(company=sinv.company))
-        country = frappe.get_doc("Country", address.country)
-        xml += ("      <ram:Content>{company}, {address}, Geschäftsführer: {ceo}, Handelsregisternummer: {tax_id}</ram:Content>".format(
-            company=sinv.company, address="{adr}, {plz}, {city}".format(adr=address.address_line1, plz=address.pincode, city=address.city), ceo="-", tax_id=company.tax_id or "-"))
+        #address = get_primary_address(sinv.company)
+        #if not address:
+        #    frappe.throw( _("Company address not found. Please add a company address for {company}.").format(company=sinv.company))
+        #country = frappe.get_doc("Country", address.country)
+        #xml += ("      <ram:Content>Geschäftsführer: Benjamin Helmy, Handelsregisternummer: 55555</ram:Content>".format(
+        #    company=sinv.company, address="{adr}, {plz}, {city}".format(adr=address.address_line1, plz=address.pincode, city=address.city), ceo="-", tax_id=company.tax_id or "-"))
         # subject code: see UNCL 4451
-        xml += ("      <ram:SubjectCode>REG</ram:SubjectCode>")
-        xml += ("    </ram:IncludedNote>")
+        #xml += ("      <ram:Content>REG</ram:Conent>")
+        #xml += ("    </ram:IncludedNote>")
         xml += ("  </rsm:ExchangedDocument>")
         xml += ("  <rsm:SupplyChainTradeTransaction>")
         # add line items
@@ -87,8 +87,10 @@ def create_zugferd_xml(sales_invoice, verify=True):
             # tax per item
             gross_item_amount = item.amount
             for tax in sinv.taxes:
-                gross_item_amount = gross_item_amount * ((100 + tax.rate) / 100)
-            overall_tax_rate_percent = 100 * (gross_item_amount / item.amount)
+                #gross_item_amount = gross_item_amount * ((100 + tax.rate) / 100)
+                gross_item_amount = 5
+            #overall_tax_rate_percent = 100 * (gross_item_amount / item.amount)
+            overall_tax_rate_percent = 100
             xml += ("        <ram:ApplicableTradeTax>")
             xml += ("          <ram:TypeCode>VAT</ram:TypeCode>")
             xml += ("          <ram:CategoryCode>S</ram:CategoryCode>")
@@ -106,10 +108,10 @@ def create_zugferd_xml(sales_invoice, verify=True):
         #xml += ("        <ram:GlobalID schemeID='0088'>4000001123452</ram:GlobalID>")
         xml += ("        <ram:Name>{company}</ram:Name>".format(company=sinv.company))
         xml += ("        <ram:PostalTradeAddress>")
-        xml += ("          <ram:PostcodeCode>{plz}</ram:PostcodeCode>".format(plz=address.pincode))
-        xml += ("          <ram:LineOne>{adr}</ram:LineOne>".format(adr=address.address_line1))
-        xml += ("          <ram:CityName>{city}</ram:CityName>".format(city=address.city))
-        xml += ("          <ram:CountryID>{country}</ram:CountryID>".format(country=country.code.upper()))
+        xml += ("          <ram:PostcodeCode>PLZ</ram:PostcodeCode>")
+        xml += ("          <ram:LineOne>Addresse</ram:LineOne>")
+        xml += ("          <ram:CityName>City</ram:CityName>")
+        xml += ("          <ram:CountryID>CH</ram:CountryID>")
         xml += ("        </ram:PostalTradeAddress>")
         # tax registration
         #xml += ("        <ram:SpecifiedTaxRegistration>")
@@ -124,16 +126,16 @@ def create_zugferd_xml(sales_invoice, verify=True):
         xml += ("        <ram:ID>{customer}</ram:ID>".format(customer=sinv.customer))
         #xml += ("        <ram:GlobalID schemeID='0088'>4000001987658</ram:GlobalID>")
         xml += ("        <ram:Name>{customer_name}</ram:Name>".format(customer_name=sinv.customer_name))
-        try:
-            customer_address = frappe.get_doc("Address", sinv.customer_address)
-        except:
-            frappe.throw( _("Customer address not found. Please make sure the customer has an address.") )
-        customer_country = frappe.get_doc("Country", customer_address.country)
+        #try:
+        #    customer_address = frappe.get_doc("Address", sinv.customer_address)
+        #except:
+        #    frappe.throw( _("Customer address not found. Please make sure the customer has an address.") )
+        #customer_country = frappe.get_doc("Country", customer_address.country)
         xml += ("        <ram:PostalTradeAddress>")
-        xml += ("          <ram:PostcodeCode>{plz}</ram:PostcodeCode>".format(plz=customer_address.pincode))
-        xml += ("          <ram:LineOne>{adr}</ram:LineOne>".format(adr=customer_address.address_line1))
-        xml += ("          <ram:CityName>{city}</ram:CityName>".format(city=customer_address.city))
-        xml += ("          <ram:CountryID>{country}</ram:CountryID>".format(country=customer_country.code.upper()))
+        xml += ("          <ram:PostcodeCode>plz</ram:PostcodeCode>")
+        xml += ("          <ram:LineOne>adr</ram:LineOne>")
+        xml += ("          <ram:CityName>city</ram:CityName>")
+        xml += ("          <ram:CountryID>CH</ram:CountryID>")
         xml += ("        </ram:PostalTradeAddress>")
         xml += ("      </ram:BuyerTradeParty>")
         xml += ("    </ram:ApplicableHeaderTradeAgreement>")
@@ -197,6 +199,8 @@ def create_zugferd_xml(sales_invoice, verify=True):
         xml += ("    </ram:ApplicableHeaderTradeSettlement>")
         xml += ("  </rsm:SupplyChainTradeTransaction>")
         xml += ("</rsm:CrossIndustryInvoice>")
+        
+
         
         # verify the generated xml
         if verify:

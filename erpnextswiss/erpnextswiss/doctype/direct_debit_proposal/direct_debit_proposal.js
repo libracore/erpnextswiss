@@ -1,4 +1,4 @@
-// Copyright (c) 2018, libracore (https://www.libracore.com) and contributors
+// Copyright (c) 2018-2020, libracore (https://www.libracore.com) and contributors
 // For license information, please see license.txt
 
 frappe.ui.form.on('Direct Debit Proposal', {
@@ -23,10 +23,6 @@ frappe.ui.form.on('Direct Debit Proposal', {
                frappe.msgprint( __("Please select an account to receive to.") );
                frappe.validated = false;
           }
-          if ((frm.doc.use_intermediate == 1) && (frm.doc.intermediate_account == null)) {
-               frappe.msgprint( __("Please select an intermediate account.") );
-               frappe.validated = false;
-		  }
      }
 });
 

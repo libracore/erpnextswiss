@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018-2019, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2018-2020, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
 
 from __future__ import unicode_literals
@@ -8,8 +8,19 @@ from frappe.model.document import Document
 from datetime import datetime
 import time
 import cgi          # used to escape xml content
+from frappe import _
 
 class DirectDebitProposal(Document):
+    def validate(self):
+        # check if closing on intermediate account that fields are set
+        if self.use_intermediate == 1:
+            if not self.intermediate_account:
+                frappe.throw( _("Please provide an intermediate account.") )
+            # if skonto applies, skonto fields are required
+            for sinv in self.sales_invoices:
+                if sinv.amount != sinv.outstanding_amount:
+                    if not self.skonto_account or not self.skonto_cost_center:
+                        frappe.throw( _("Please provide a skonto account and cost center.") )
     def on_submit(self):
         # clean payments (to prevent accumulation on re-submit)
         self.payments = {}

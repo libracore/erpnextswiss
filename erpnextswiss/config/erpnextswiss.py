@@ -9,6 +9,30 @@ def get_data():
             "items": [
                    {
                        "type": "page",
+                       "name": "bank_wizard",
+                       "label": _("Bank Wizard"),
+                       "description": _("Bank Wizard")
+                   },
+                   {
+                       "type": "doctype",
+                       "name": "Payment Proposal",
+                       "label": _("Payment Proposal"),
+                       "description": _("Payment Proposal")
+                   },
+                   {
+                       "type": "doctype",
+                       "name": "Direct Debit Proposal",
+                       "label": _("Direct Debit Proposal"),
+                       "description": _("Direct Debit Proposal")
+                   },
+                   {
+                       "type": "doctype",
+                       "name": "Payment Reminder",
+                       "label": _("Payment Reminder"),
+                       "description": _("Payment Reminder")
+                   },
+                   {
+                       "type": "page",
                        "name": "bankimport",
                        "label": _("Bank import"),
                        "description": _("Bank import")
@@ -24,30 +48,6 @@ def get_data():
                        "name": "payment_export",
                        "label": _("Payment export"),
                        "description": _("Payment export")
-                   },
-                   {
-                       "type": "doctype",
-                       "name": "Payment Reminder",
-                       "label": _("Payment Reminder"),
-                       "description": _("Payment Reminder")
-                   },
-                   {
-                       "type": "doctype",
-                       "name": "Direct Debit Proposal",
-                       "label": _("Direct Debit Proposal"),
-                       "description": _("Direct Debit Proposal")
-                   },
-                   {
-                       "type": "doctype",
-                       "name": "Payment Proposal",
-                       "label": _("Payment Proposal"),
-                       "description": _("Payment Proposal")
-                   },
-                   {
-                       "type": "page",
-                       "name": "bank_wizard",
-                       "label": _("Bank Wizard"),
-                       "description": _("Bank Wizard")
                    }
             ]
         },

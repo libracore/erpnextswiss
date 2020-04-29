@@ -204,6 +204,8 @@ DocType: Payment Reminder,Are you sure you want to create payment reminders?,"Si
 Module: ERPNextSwiss,Is proposed,Abgeholt
 Module: ERPNextSwiss,Skonto Percent,Skonto-Prozent
 Module: ERPNextSwiss,Skonto Days,Skonto-Tage
+Module: ERPNextSwiss,Skonto Account,Skonto-Konto
+Module: ERPNextSwiss,Skonto Cost Center,Skonto-Kostenstelle
 Module: ERPNextSwiss,Enable LSV,LSV aktivieren
 DocType: Direct Debit Proposal,Direct Debit Proposal,Lastschrifteinzugsvorschlag
 DocType: Direct Debit Proposal,Create Direct Debit Proposal,Lastschrifteinzug vorbereiten
@@ -228,7 +230,7 @@ DocType: Payment Proposal,Execute Payments On,Zahlungen an diesem Datum ausführ
 DocType: Payment Proposal,Invoice Amount,Rechnungsbetrag
 DocType: Payment Proposal,External Reference,Externe Referenz
 DocType: Payment Proposal,Skonto Date,Skonto-Datum
-DocType: Payment Proposal,Skonto Amount,Skonto-Betrag
+DocType: Payment Proposal,Skonto Amount,Betrag mit Skonto
 DocType: Payment Proposal,Individual payments,Jede Rechnung einzeln bezahlen
 Page: Bank Wizard,Bank Wizard,Bankassistent
 Page: Bank Wizard,Transaction matched,Zahlung zugewiesen

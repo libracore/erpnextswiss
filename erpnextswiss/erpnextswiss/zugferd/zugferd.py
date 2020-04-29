@@ -31,24 +31,18 @@ def create_zugferd_pdf(sales_invoice_name, verify=True, format=None, doc=None, n
         frappe.msgprint("andere1")
         doctype1 = "Sales Invoice"
         html = frappe.get_print(doctype1, sales_invoice_name, format, doc=doc, no_letterhead=no_letterhead)
-        
         pdf = get_pdf(html)
         xml1 = create_zugferd_xml(sales_invoice_name)
         
-       
         #facturx_pdf = generate_facturx_from_file(file, xml)  
         ## The second argument of the method generate_facturx must be either a string, an etree.Element() object or a file (it is a <class 'bytes'>).
         facturx_pdf = generate_facturx_from_binary(pdf, xml1.encode('utf-8'))  ## Unicode strings with encoding declaration are not supported. Please use bytes input or XML fragments without declaration.
         
-        reca = "gut"
-        print("succes")
         return facturx_pdf
     except Exception as err:
         frappe.log_error("Unable to create zugferdPDF: {0}\n{1}".format(err, xml), "ZUGFeRD")
-        print("error")
         # fallback to normal pdf
         pdf = get_pdf(html)
-        reca2 = "FALSCHH"
         return pdf
 
 @frappe.whitelist()
@@ -56,7 +50,6 @@ def download_zugferd_pdf(sales_invoice_name, format=None, doc=None, no_letterhea
     frappe.msgprint("white1")
     print("test")
     frappe.local.response.filename = "{name}.pdf".format(name=sales_invoice_name.replace(" ", "-").replace("/", "-"))
-
     frappe.local.response.filecontent = create_zugferd_pdf(sales_invoice_name, verify, format, doc, no_letterhead)
     #html = frappe.get_print(doctype, sales_invoice_name, format, doc=doc, no_letterhead=no_letterhead)
     #frappe.local.response.filecontent = get_pdf(html)
@@ -65,50 +58,14 @@ def download_zugferd_pdf(sales_invoice_name, format=None, doc=None, no_letterhea
     return 
     
     
-@frappe.whitelist()
-def test(sales_invoice_name, format=None, doc=None, no_letterhead=0, verify=True):
-	
-    doctype = "Sales Invoice"
-    html = frappe.get_print(doctype, sales_invoice_name, format, doc=doc, no_letterhead=no_letterhead)
 
-    #pdf = get_pdf(html)
-    xml = create_zugferd_xml(sales_invoice_name)
-    check_facturx_xsd(facturx_xml=xml.encode('utf-8'))
-    #facturx_pdf = generate_facturx_from_binary(pdf, xml.encode('utf-8')) 
-    #xml_test = create_zugferd_xml(sales_invoice_name)
-    return xml
+@frappe.whitelist() 
+def import_pdf(pdf_file1=None):
+    print(pdf_file1)
     
-    
-    
-    
-    
-    
-    
-    
-@frappe.whitelist()
-def test4(sales_invoice_name, format=None, doc=None, no_letterhead=0, verify=True):
-    doctype = "Sales Invoice"
-    html = frappe.get_print(doctype, sales_invoice_name, format, doc=doc, no_letterhead=no_letterhead)
-    print("succes1")
-    pdf = get_pdf(html)
-    #pdf_string = pdf.decode('utf-8')
-    print(pdf)
-    #pdf_a = pdf.decode('ASCII')
-    #pdf_c = pdf.decode('unicode_escape')
-    #print(pdf_c)
-    pdf_u = pdf.decode('Latin-1')
-    pdf_utf = pdf_u.encode('utf-8')
-    pd = pdf_utf.decode('utf-8')
-    #print(pd)
-    #pdf_o = pdf.decode('cp1252').encode('utf-8')
-    #print(pdf_o)
-    #stri = decode(pdf, errors='ignore')
-    #stri = pdf.decode('cp1252').encode('utf-8')
-    return pdf_u
-
-    
-    
-    
+    frappe.msgprint("hallo")
+    frappe.msgprint(type(pdf_file1))
+    return pdf_file1
 
 #this is the method that does not work
 @frappe.whitelist()    

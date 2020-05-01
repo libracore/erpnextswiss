@@ -1,0 +1,23 @@
+{
+ "content": null,
+ "creation": "2020-04-30 20:53:10.633483",
+ "docstatus": 0,
+ "doctype": "Page",
+ "idx": 0,
+ "modified": "2020-04-30 20:53:10.633483",
+ "modified_by": "Administrator",
+ "module": "ERPNextSwiss",
+ "name": "zugferd-assistant",
+ "owner": "Administrator",
+ "page_name": "Zugferd Assistant",
+ "roles": [
+  {
+   "role": "All"
+  }
+ ],
+ "script": null,
+ "standard": "Yes",
+ "style": null,
+ "system_page": 0,
+ "title": "Zugferd Assistant"
+}

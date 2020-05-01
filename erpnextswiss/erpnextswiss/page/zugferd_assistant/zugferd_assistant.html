@@ -1,0 +1,41 @@
+<div style="margin: 5px; margin-top: 50px; border-top: 1px solid white;">
+	<p class="text-muted">{%= __("Import ZUGFeRD Purchase Invoices") %}</p>
+	<div class="section-body">
+		<!-- 
+		<div class="row">
+			<div class="form-column col-sm-4">
+				<p>{{ __("ZUGFeRD-PDF") }}</p>
+			</div>
+			
+
+		</div>
+		-->
+		<div class="row">
+			<div class="form-column col-sm-4">
+				<p>{{ __("ZUGFeRD-PDF") }} <input type="file" id="input_file" /> </p> 
+			</div>
+			<div class="form-column col-sm-4">
+				<button type="submit" class="btn btn-sm btn-primary btn-import-file">{{ __("Import") }}</button>
+				<div class="waiting-gif hide"><img src="/assets/frappe/images/ui/ajax-loader.gif" /></div>
+			</div>
+			
+			<div class="form-column col-sm-4">
+				<div class="insert-log-messages"></div>
+			</div>
+			
+		</div>
+	
+	</div>
+</div>
+
+
+
+
+
+<div id="waitingScreen" class="overlay">
+	<!-- Overlay content -->
+	<div class="overlay-content">
+		<p><i class="fa fa-spinner fa-spin" style="font-size:80px"></i></p>
+		<p>{{ __("Please wait, parsing data...") }}</p>
+	</div>
+</div>

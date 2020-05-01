@@ -9,7 +9,7 @@ import frappe, os
 from frappe.utils.pdf import get_pdf
 from erpnextswiss.erpnextswiss.zugferd.zugferd_xml import create_zugferd_xml
 #from facturx import generate_facturx_from_binary, get_facturx_xml_from_pdf, check_facturx_xsd, generate_facturx_from_file
-from erpnextswiss.erpnextswiss.zugferd.facturx.facturx.facturx import generate_facturx_from_binary
+from erpnextswiss.erpnextswiss.zugferd.facturx.facturx.facturx import generate_facturx_from_binary, get_facturx_xml_from_pdf, check_facturx_xsd
 from bs4 import BeautifulSoup
 from frappe.utils.file_manager import save_file
 from pathlib import Path
@@ -61,11 +61,25 @@ def download_zugferd_pdf(sales_invoice_name, format=None, doc=None, no_letterhea
 
 @frappe.whitelist() 
 def import_pdf(pdf_file1=None):
-    print(pdf_file1)
     
-    frappe.msgprint("hallo")
-    frappe.msgprint(type(pdf_file1))
+    
+    frappe.msgprint("hallo du hure")
+    
+    dec = pdf_file1.encode('utf-8') 
+    frappe.msgprint(dec)
+    xml_filename, xml_content = get_facturx_xml_from_pdf(dec)
+    check_facturx_xsd(xml_content)
+    #frappe.msgprint(xml_content.decode('utf-8'))
+    #frappe.msgprint("XML: {0}".format(xml_content))
     return pdf_file1
+
+
+
+
+
+
+
+
 
 #this is the method that does not work
 @frappe.whitelist()    

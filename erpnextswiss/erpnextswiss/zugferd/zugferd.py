@@ -10,7 +10,7 @@ from frappe.utils.pdf import get_pdf
 from erpnextswiss.erpnextswiss.zugferd.zugferd_xml import create_zugferd_xml
 #from facturx import generate_facturx_from_binary, get_facturx_xml_from_pdf, check_facturx_xsd, generate_facturx_from_file
 from erpnextswiss.erpnextswiss.zugferd.facturx.facturx.facturx import generate_facturx_from_binary, get_facturx_xml_from_pdf, check_facturx_xsd
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup as bs
 from frappe.utils.file_manager import save_file
 from pathlib import Path
 import unicodedata
@@ -63,7 +63,7 @@ def download_zugferd_pdf(sales_invoice_name, format=None, doc=None, no_letterhea
 def import_pdf(pdf_file1=None):
     
     
-    frappe.msgprint("hallo du hure")
+    
     
     dec = pdf_file1.encode('utf-8') 
     frappe.msgprint(dec)
@@ -115,28 +115,119 @@ def get_content_from_zugferd(zugferd_xml, debug=False):
     # dict for invoice
     invoice = {}
     
-    if suppliers_global_id:
-        global_id_xml = soup.SpecifiedTradeProduct.GlobalID.get_text()
-        suppliers_global_id = frappe.get_all('Supplier', filters={'supplier': global_id_xml}, fields = supplier_name[0])        
-        invoice['supplier_name'] = soup.sellertradeparty.name.get_text()
-        frappe.printmsg("Name of supplier is" + global_id_xml)
-    elif suppliers_tax:
-        tax_id_xml = soup.find_all(schemeID='VA')
-        suppliers_tax = frappe.get_all('Supplier', filters={'supplier': tax_id_xml[0]}, fields = supplier_name[0])
-        supplier = frappe.get_doc('Supplier', 'suppliers tax')       
-        invoice['supplier_name'] = soup.sellertradeparty.name.get_text()
-        supplier.global_id = soup.SpecifiedTradeProduct.GlobalID.get_text()
-        supplier.save()
-    else:
-        tax_id_list = soup.find_all(schemeID='VA')
-        # insert a new Suppler:
-        frappe.db.insert({
-        doctype: 'Supplier',
-        supplier_name: soup.sellertradeparty.name.get_text(),
-        tax_id: tax_id_list[0],
-        global_id: soup.SpecifiedTradeProduct.GlobalID.get_text()
-    })
+    tax_id_xml = soup.find_all(schemeID='VA')
+    suppliers_name = frappe.get_all('Supplier', filters={'supplier': tax_id_xml[0]}, fields = supplier_name[0])
     
+    if suppliers_name:
+        global_id_xml = soup.SpecifiedTradeProduct.GlobalID.get_text()
+        invoice['supplier_name'] = soup.sellertradeparty.name.get_text()
+        #todo add dict entries if suppliert exists
+        
+        frappe.printmsg("Name of supplier is" + global_id_xml)
+    #elif suppliers_tax:
+        #supplier = frappe.get_doc('Supplier', 'suppliers_name')       
+        #invoice['supplier_name'] = soup.sellertradeparty.name.get_text()
+        #supplier.global_id = soup.SpecifiedTradeProduct.GlobalID.get_text()
+        #supplier.save()
+    else:
+        # supplier from invoice does not exist yet in  system, need to be added
+        tax_id_list = soup.find_all(schemeID='VA')
+        supplier_group = frappe.get_doc("Supplier Group", "All Supplier Groups")
+        
+        # insert a new Suppler document:
+        doc = frappe.get_doc({
+        'doctype': 'Supplier',
+        'title': soup.sellertradeparty.name.get_text(),
+        'supplier_name': soup.sellertradeparty.name.get_text(),
+        'global_id': 'ID: ?',
+        'tax_id': tax_id_list[0],
+        'supplier_group': supplier_group
+        })
+        doc.insert()
+        
+        #add supplier information to dict
+        invoice['supplier_name'] = soup.sellertradeparty.name.get_text()
+        #todo add dict entries if suppliert exists; should/could be 
+        
+        # add address of n ew supplier to address doctype
+        address_doc = frappe.get_doc({
+        'doctype': 'Address',
+        'itle': soup.sellertradeparty.name.get_text() + " address",
+        'pincode': soup.PostalTradeAddress.PostCodeCode.get_text(),
+        'address_line1': soup.PostalTradeAddress.LineOne.get_text(),
+        'city': soup.PostalTradeAddress.CityName.get_text(),
+        'country': soup.PostalTradeAddress.CountryID.get_text()
+        })
+        doc.insert()
+        
+        #add supplier address to dict
+        invoice['supplier_addressline1'] = soup.PostalTradeAddress.LineOne.get_text(),
+        #todo add dict entries if suppliert exists; should/could be optimized to reduce duplicate code
+       
+        
+        # screen information to show what got added, whot was found in pdf, and what will be generated new
+        frappe.msgprint("Added new Supplier: "  + doc.supplier_name + "to System with information")
+        
+        frappe.msgprint("Title: "  + doc.supplier_name )
+        frappe.msgprint("Supplier Name: "  + doc.supplier_name)
+        frappe.msgprint("Global ID: "  + doc.global_id )
+        frappe.msgprint("Supplier Group: "  + doc.supplier_group )
+        frappe.msgprint("Added address for new Supplier: "  + doc.supplier_group )
+        frappe.msgprint("Address Line: "  + address_doc.address_line1)
+        frappe.msgprint("City: "  + address_doc.city )
+        frappe.msgprint("Country: "  + address_doc.country )
+        frappe.msgprint("Pincode "  + address_doc.pincode )
+        
+        
+        
+        
+    try:
+        invoice['due_date'] = datetime.strptime(soup.DueDateDateTime.DateTimeString.get_text(), "%Y%m%d")
+    except Exception as err:
+        if debug:
+            print("Read posting date failed: {err}".format(err=err))
+        pass
+        
+    invoice['SupplierInvoiceNo'] = soup.ExchangedDocument.ID.get_text()
+        
+    try:
+        invoice['invoice_date'] = datetime.strptime(soup.IssueDateTime.DateTimeString.get_text(), "%Y%m%d")
+    except Exception as err:
+        if debug:
+            print("Read posting date failed: {err}".format(err=err))
+        pass
+        
+        
+        
+        invoice['item_global_id'] = soup.SpecifiedTradeProduct.GlobalID.get_text()
+        invoice['item_name'] = soup.SpecifiedTradeProduct.name.get_text()
+        nivoice['item_amount'] = soup.NetPriceProductTradePrice.chargeAmount.get_text() #billed amount, in rechnung gestellte menge 
+        invoice['item_rate'] = soup.SpecifiedLineTradeDelivery.BilledQuantity.get_text() #nettopreis eines artikels
+        
+        
+        doc = frappe.get_doc({
+        'doctype': 'Purchase Taxes and Charges Template',
+        'title': "added zugferd purchase template",
+        'tax_code': soup.ApplicableTradeTax.TypeCode.get_text(),
+        #todo how can i access tabelle?
+        })
+        doc.insert()
+        
+        
+        
+        invoice['tc_name'] = "Terms and Conditions"
+        invoice['terms'] = soup.IncludedNote.Content.get_text() #freitext aus content
+        
+        
+        
+        
+        #frappe.db.insert({
+        #doctype: 'Supplier',
+        #supplier_name: soup.sellertradeparty.name.get_text(),
+        #tax_id: tax_id_list[0],
+        #global_id: soup.SpecifiedTradeProduct.GlobalID.get_text()
+        #})
+
 
     
     # get article information (items)
@@ -151,3 +242,121 @@ def get_content_from_zugferd(zugferd_xml, debug=False):
             print("Read posting date failed: {err}".format(err=err))
         pass
     return invoice
+
+    
+    
+    #this works to add a new document into existing doctype    
+    #duplicate doctypes will not be added
+@frappe.whitelist()
+def gen():
+    
+    frappe.msgprint("hallo du hure")
+    doc = frappe.get_doc({
+    'doctype': 'Supplier',
+    'title': 'New Supplier',
+    'supplier_name': 'Benjamin chef',
+    'global_id': 'ID: 69',
+    'supplier_group': 'Services' 
+    })
+    doc.insert()
+    
+    frappe.msgprint("ok " + doc.supplier_name)
+    
+
+    return 
+    
+    
+    
+    #this works to add a new document into existing doctype    
+    #duplicate doctypes will not be added
+@frappe.whitelist()
+def gen():
+    
+    frappe.msgprint("hallo du hure")
+    doc = frappe.get_doc({
+    'doctype': 'Supplier',
+    'title': 'New Supplier',
+    'supplier_name': 'Benjamin ehrer',
+    'global_id': 'ID: 69',
+    'supplier_group': 'Services' 
+    })
+    doc.insert()
+    
+    frappe.msgprint("Found supplier: " +  doc.supplier_name + "\n with details")
+    
+
+    return 
+    
+    
+def con(zugferd_xml, debug=False): 
+    content = []
+    # Read the XML file
+    with open(zugferd_xml, "r") as file:
+    # Read each line in the file, readlines() returns a list of lines
+        content = file.readlines()
+        # Combine the lines in the list into a string
+        content = "".join(content)
+        bs_content = bs(content, "lxml")
+        result = ID.get("name")
+        print(result)
+
+    return
+    
+    
+    
+def test_content(zugferd_xml, debug=False):
+    soup = BeautifulSoup(zugferd_xml, 'lxml')
+    # dict for invoice
+    invoice = {}
+
+        #todo add dict entries if suppliert exists; should/could be 
+        
+        # add address of n ew supplier to address doctype
+    address_doc = frappe.get_doc({
+        'doctype': 'Address',
+        'title': soup.sellertradeparty.name.get_text() + " address",
+        'pincode': soup.PostalTradeAddress.PostCodeCode.get_text(),
+        'address_line1': soup.PostalTradeAddress.LineOne.get_text(),
+        'city': soup.PostalTradeAddress.CityName.get_text(),
+        'country': soup.PostalTradeAddress.CountryID.get_text()
+    })
+    doc.insert()
+        
+    #add supplier address doc to dict
+    invoice['supplier_addressline1'] = soup.PostalTradeAddress.LineOne.get_text(),
+    #todo add dict entries if suppliert exists; should/could be optimized to reduce duplicate code
+       
+    
+    # insert a new Supplier document:
+    doc = frappe.get_doc({
+        'doctype': 'Supplier',
+        'title': soup.sellertradeparty.name.get_text(),
+        'supplier_name': soup.sellertradeparty.name.get_text(),
+        'global_id': 'ID: ?',
+        'tax_id': tax_id_list[0],
+        'supplier_group': supplier_group
+    })
+    doc.insert()
+        
+    #add supplier information doc to dict
+    invoice['supplier_name'] = soup.sellertradeparty.name.get_text()
+
+        
+        
+    # screen information to show what got added, whot was found in pdf, and what will be generated new
+    frappe.msgprint("Added new Supplier: "  + doc.supplier_name + "to System with information")
+        
+    frappe.msgprint("Title: "  + doc.supplier_name )
+    frappe.msgprint("Supplier Name: "  + doc.supplier_name)
+    frappe.msgprint("Global ID: "  + doc.global_id )
+    frappe.msgprint("Supplier Group: "  + doc.supplier_group )
+    frappe.msgprint("Added address for new Supplier: "  + doc.supplier_group )
+    frappe.msgprint("Address Line: "  + address_doc.address_line1)
+    frappe.msgprint("City: "  + address_doc.city )
+    frappe.msgprint("Country: "  + address_doc.country )
+    frappe.msgprint("Pincode "  + address_doc.pincode )
+        
+     
+    return invoice
+
+

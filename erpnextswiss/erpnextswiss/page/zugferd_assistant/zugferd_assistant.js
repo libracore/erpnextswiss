@@ -39,16 +39,16 @@ frappe.zugferd_assistant = {
         reader.onload = function (event) {
 			// read file content
 			//content = String.fromCharCode.apply(null, Array.prototype.slice.apply(new Uint8Array(event.target.result)));
-             //var content = btoa(String.fromCharCode.apply(null, new Uint8Array(event.target.result)));
-             var uint8ar = new Uint8Array(event.target.result)
-             var st = new TextDecoder().decode(uint8ar)
+            //var content = btoa(String.fromCharCode.apply(null, new Uint8Array(event.target.result)));
+            var uint8ar = new Uint8Array(event.target.result)
+            var st = new TextDecoder().decode(uint8ar)
            
              
-             //console.log("con tent name..." + uint8ar.name);
-             //console.log("con tent is..." + typeof(uint8ar));
+            //console.log("content name..." + uint8ar.name);
+            //console.log("content is..." + typeof(uint8ar));
              
-             console.log("st is..." + st);
-             console.log("st type of is..." + typeof(st));
+            console.log("st is..." + st);
+            console.log("st type of is..." + typeof(st));
             // read file content
             //console.log("reading file...");
             var t = event.target.result
@@ -57,8 +57,8 @@ frappe.zugferd_assistant = {
             //console.log( "event t " + t)
             //console.log("type of t " + typeof(t))
             
-           //console.log("only reader" + reader);
-             //console.log("reader ersult is" + reader.result);
+            //console.log("only reader" + reader);
+            //console.log("reader ersult is" + reader.result);
            
             // call pars
             frappe.zugferd_assistant.send_read(st);
@@ -79,21 +79,15 @@ frappe.zugferd_assistant = {
 
 send_read: function(inp){
     
-
     frappe.call({
                 method: 'erpnextswiss.erpnextswiss.zugferd.zugferd.import_pdf',
                 args: {
                     'pdf_file1': inp 
-                },
-            
+                },          
                 callback: function(r) {
-                    if (r.message) {
-                       
+                    if (r.message) {                  
                     } 
                 }
             });
-    
-    
 	}
-
-}
+} //func

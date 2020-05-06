@@ -288,7 +288,8 @@ def gen():
     return 
     
     
-def con(zugferd_xml, debug=False): 
+def con(zugferd_xml): 
+    
     content = []
     # Read the XML file
     with open(zugferd_xml, "r") as file:

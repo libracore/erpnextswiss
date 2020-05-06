@@ -61,8 +61,7 @@ def import_pdf(content):
     #f.write(content)
     #content_bytes = bytes(content, 'utf8')
     #f = open("/tmp/test.pdf", 'wb')
-    #f.write(content_bytes)
-    
+    #f.write(content_bytes)   
     xml_content=content
     #xml_filename, xml_content = get_facturx_xml_from_pdf(content_bytes)
     #check_facturx_xsd(xml_content)
@@ -103,3 +102,92 @@ def get_content_from_zugferd(zugferd_xml, debug=False):
             print("Read posting date failed: {err}".format(err=err))
         pass
     return invoice
+
+    #this works to add a new document into existing doctype    
+    #duplicate doctypes will not be added
+
+@frappe.whitelist()
+def gen():
+    
+    frappe.msgprint("hallo ")
+    doc = frappe.get_doc({
+    'doctype': 'Supplier',
+    'title': 'New Supplier',
+    'supplier_name': 'Benjamin ehrer',
+    'global_id': 'ID: 69',
+    'supplier_group': 'Services' 
+    })
+    doc.insert()
+    
+    frappe.msgprint("Found supplier: " +  doc.supplier_name + "\n with details")
+    
+    return 
+    
+def con(zugferd_xml): 
+    content = []
+    # Read the XML file
+    with open(zugferd_xml, "r") as file:
+    # Read each line in the file, readlines() returns a list of lines
+        content = file.readlines()
+        # Combine the lines in the list into a string
+        content = "".join(content)
+        bs_content = bs(content, "lxml")
+        result = ID.get("name")
+        print(result)
+
+    return
+    
+def test_content(zugferd_xml, debug=False):
+    soup = BeautifulSoup(zugferd_xml, 'lxml')
+    # dict for invoice
+    invoice = {}
+
+        #todo add dict entries if suppliert exists; should/could be 
+        
+        # add address of n ew supplier to address doctype
+    address_doc = frappe.get_doc({
+        'doctype': 'Address',
+        'title': soup.sellertradeparty.name.get_text() + " address",
+        'pincode': soup.PostalTradeAddress.PostCodeCode.get_text(),
+        'address_line1': soup.PostalTradeAddress.LineOne.get_text(),
+        'city': soup.PostalTradeAddress.CityName.get_text(),
+        'country': soup.PostalTradeAddress.CountryID.get_text()
+    })
+    doc.insert()
+        
+    #add supplier address doc to dict
+    invoice['supplier_addressline1'] = soup.PostalTradeAddress.LineOne.get_text(),
+    #todo add dict entries if suppliert exists; should/could be optimized to reduce duplicate code
+       
+    
+    # insert a new Supplier document:
+    doc = frappe.get_doc({
+        'doctype': 'Supplier',
+        'title': soup.sellertradeparty.name.get_text(),
+        'supplier_name': soup.sellertradeparty.name.get_text(),
+        'global_id': 'ID: ?',
+        'tax_id': tax_id_list[0],
+        'supplier_group': supplier_group
+    })
+    doc.insert()
+        
+    #add supplier information doc to dict
+    invoice['supplier_name'] = soup.sellertradeparty.name.get_text()
+
+    # screen information to show what got added, whot was found in pdf, and what will be generated new
+    frappe.msgprint("Added new Supplier: "  + doc.supplier_name + "to System with information")
+        
+    frappe.msgprint("Title: "  + doc.supplier_name )
+    frappe.msgprint("Supplier Name: "  + doc.supplier_name)
+    frappe.msgprint("Global ID: "  + doc.global_id )
+    frappe.msgprint("Supplier Group: "  + doc.supplier_group )
+    frappe.msgprint("Added address for new Supplier: "  + doc.supplier_group )
+    frappe.msgprint("Address Line: "  + address_doc.address_line1)
+    frappe.msgprint("City: "  + address_doc.city )
+    frappe.msgprint("Country: "  + address_doc.country )
+    frappe.msgprint("Pincode "  + address_doc.pincode )
+        
+     
+    return invoice
+
+

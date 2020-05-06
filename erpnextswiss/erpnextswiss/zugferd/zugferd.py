@@ -245,25 +245,7 @@ def get_content_from_zugferd(zugferd_xml, debug=False):
 
     
     
-    #this works to add a new document into existing doctype    
-    #duplicate doctypes will not be added
-@frappe.whitelist()
-def gen():
-    
-    frappe.msgprint("hallo du hure")
-    doc = frappe.get_doc({
-    'doctype': 'Supplier',
-    'title': 'New Supplier',
-    'supplier_name': 'Benjamin chef',
-    'global_id': 'ID: 69',
-    'supplier_group': 'Services' 
-    })
-    doc.insert()
-    
-    frappe.msgprint("ok " + doc.supplier_name)
-    
-
-    return 
+   
     
     
     
@@ -272,7 +254,7 @@ def gen():
 @frappe.whitelist()
 def gen():
     
-    frappe.msgprint("hallo du hure")
+    frappe.msgprint("hallo ")
     doc = frappe.get_doc({
     'doctype': 'Supplier',
     'title': 'New Supplier',

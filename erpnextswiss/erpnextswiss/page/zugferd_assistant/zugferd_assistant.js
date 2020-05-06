@@ -5,7 +5,7 @@ frappe.pages['zugferd_assistant'].on_page_load = function(wrapper) {
 		single_column: true
 	});
 	frappe.zugferd_assistant.make(page);
-    
+
     // add the application reference
     frappe.breadcrumbs.add("ERPNextSwiss");
 	
@@ -21,79 +21,68 @@ frappe.zugferd_assistant = {
         var data = "";
         $(frappe.render_template('zugferd_assistant', data)).appendTo(me.body);
         
+        // file handler for import button
         this.page.main.find(".btn-import-file").on('click', function(event, debug=false) {
-			
-		
-			
-			
-			console.log("success")
-			 var file = document.getElementById("input_file").files[0];
+            //frappe.zugferd_assistant.read_file();
+            var options = {
+                allow_multiple: false,
+                on_success: file => {
+                    frappe.zugferd_assistant.upload_complete(file)
+                }
+            }
+            this.file_uploader = new frappe.ui.FileUploader(options);
+            
+        });
+    },
+   
+    read_file: function(file) {
+        if (document.getElementById("input_file").files.length > 0) {
+            var file = document.getElementById("input_file").files[0];
 			console.log("importes file is type of: " + typeof(file))
 			console.log("found file " + file.name);
 			
-    if (file.name.toLowerCase().endsWith(".pdf")) {
-        console.log("create reader instance...");
-        // create a new reader instance
-        var reader = new FileReader();
-        // assign load event to process the file
-        reader.onload = function (event) {
-			// read file content
-			//content = String.fromCharCode.apply(null, Array.prototype.slice.apply(new Uint8Array(event.target.result)));
-             //var content = btoa(String.fromCharCode.apply(null, new Uint8Array(event.target.result)));
-             var uint8ar = new Uint8Array(event.target.result)
-             var st = new TextDecoder().decode(uint8ar)
-           
-             
-             //console.log("con tent name..." + uint8ar.name);
-             //console.log("con tent is..." + typeof(uint8ar));
-             
-             console.log("st is..." + st);
-             console.log("st type of is..." + typeof(st));
-            // read file content
-            //console.log("reading file...");
-            var t = event.target.result
-            //console.log("reader result" + reader.result);
-           
-            //console.log( "event t " + t)
-            //console.log("type of t " + typeof(t))
-            
-           //console.log("only reader" + reader);
-             //console.log("reader ersult is" + reader.result);
-           
-            // call pars
-            frappe.zugferd_assistant.send_read(st);
-        }
-        // assign an error handler event
-        reader.onerror = function (event) {
-            frappe.msgprint(__("Error reading file"), __("Error"));
-        }
-        console.log("read binary...");
-        reader.readAsArrayBuffer(file);
-    } //if file end with
-			
-			}); //this. button handler
-			
-			
-    },
-    
-
-send_read: function(inp){
-    
-
-    frappe.call({
-                method: 'erpnextswiss.erpnextswiss.zugferd.zugferd.import_pdf',
-                args: {
-                    'pdf_file1': inp 
-                },
-            
-                callback: function(r) {
-                    if (r.message) {
-                       
-                    } 
+            if (file.name.toLowerCase().endsWith(".pdf")) {
+                console.log("create reader instance...");
+                // create a new reader instance
+                var reader = new FileReader();
+                // assign load event to process the file
+                reader.onload = function (event) {
+                    console.log("file read...");
+                    // read file content
+                    var content = event.target.result
+                    // convert from ArrayBuffer to bytes
+                    //var bytes = new Uint8Array(content);
+                    // call parser
+                    frappe.zugferd_assistant.parse(content);
                 }
-            });
-    
-    
-	}
-
+                // assign an error handler event
+                reader.onerror = function (event) {
+                    frappe.msgprint(__("Error reading file"), __("Error"));
+                }
+                console.log("read binary...");
+                //reader.readAsArrayBuffer(file);
+                reader.readAsBinaryString(file);
+            } 
+        } else {
+            frappe.msgprint( __("Please select a file to import") );
+        }
+    },
+    parse: function(content){
+        console.log(content);
+        frappe.call({
+            method: 'erpnextswiss.erpnextswiss.zugferd.zugferd.import_pdf',
+            args: {
+                'content': content 
+            },
+            callback: function(r) {
+                frappe.msgprint("done");
+                console.log(r.message);
+            }
+        });
+        
+        
+    },
+    upload_complete: function(file) {
+        console.log(file);
+    }
 }

@@ -20,14 +20,17 @@
    "in_list_view": 1,
    "label": "Customer",
    "options": "Customer",
-   "reqd": 1
+   "reqd": 1,
+   "columns", 2
   },
   {
    "fieldname": "customer_name",
    "fieldtype": "Data",
    "label": "Customer Name",
    "options": "customer.customer_name",
-   "read_only": 1
+   "fetch_from": "customer.customer_name",
+   "read_only": 1,
+   "columns", 2
   },
   {
    "fieldname": "sales_invoice",

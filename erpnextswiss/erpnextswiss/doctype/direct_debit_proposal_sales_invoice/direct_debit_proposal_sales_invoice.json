@@ -21,7 +21,7 @@
    "label": "Customer",
    "options": "Customer",
    "reqd": 1,
-   "columns", 2
+   "columns": 2
   },
   {
    "fieldname": "customer_name",
@@ -30,7 +30,7 @@
    "options": "customer.customer_name",
    "fetch_from": "customer.customer_name",
    "read_only": 1,
-   "columns", 2
+   "columns": 2
   },
   {
    "fieldname": "sales_invoice",

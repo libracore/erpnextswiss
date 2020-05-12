@@ -144,6 +144,13 @@ def get_bank_accounts():
     return {'accounts': selectable_accounts }
 
 @frappe.whitelist()
+def get_default_accounts(bank_account):
+    company = frappe.get_value("Account", bank_account, "company")
+    receivable_account = frappe.get_value('Company', company, 'default_receivable_account')
+    payable_account = frappe.get_value('Company', company, 'default_payable_account')
+    return { 'company': company, 'receivable_account': receivable_account, 'payable_account': payable_account }
+
+@frappe.whitelist()
 def get_intermediate_account():
     account = frappe.get_value('ERPNextSwiss Settings', 'ERPNextSwiss Settings', 'intermediate_account')
     return {'account': account or "" }
@@ -591,7 +598,8 @@ def read_camt_transactions(transaction_entries, account):
 
 @frappe.whitelist()
 def make_payment_entry(amount, date, reference_no, paid_from=None, paid_to=None, type="Receive", 
-    party=None, party_type=None, references=None, remarks=None, auto_submit=False, exchange_rate=1):
+    party=None, party_type=None, references=None, remarks=None, auto_submit=False, exchange_rate=1,
+    company=None):
     # assert list
     if references:
         references = ast.literal_eval(references)
@@ -599,10 +607,11 @@ def make_payment_entry(amount, date, reference_no, paid_from=None, paid_to=None,
         auto_submit = True
     reference_type = "Sales Invoice"
     # find company
-    if paid_from:
-        company = frappe.get_value("Account", paid_from, "company")
-    elif paid_to:
-        company = frappe.get_value("Account", paid_to, "company")
+    if not company:
+        if paid_from:
+            company = frappe.get_value("Account", paid_from, "company")
+        elif paid_to:
+            company = frappe.get_value("Account", paid_to, "company")
     if type == "Receive":
         # receive
         payment_entry = frappe.get_doc({

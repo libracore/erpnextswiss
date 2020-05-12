@@ -95,13 +95,13 @@ frappe.bank_wizard = {
             },
             callback: function(r) {
                 if (r.message) {
-		    try {
+                    try {
                         frappe.show_alert( r.message.transactions.length +  __(" transactions found") );
                         frappe.bank_wizard.render_response(r.message);
-		    } catch {
-	                frappe.msgprint( "An error occurred while parsing. Please check the log files." );
-			frappe.bank_wizard.end_wait();
-		    }
+                    } catch {
+                        frappe.msgprint( "An error occurred while parsing. Please check the log files." );
+                        frappe.bank_wizard.end_wait();
+                    }
                 } 
             }
         });
@@ -113,12 +113,18 @@ frappe.bank_wizard = {
             callback: function(r) {
                 if (r.message) {
                     var select = document.getElementById("bank_account");
+                    // add on change event
+                    select.onchange = function() {
+                        frappe.bank_wizard.set_default_accounts(select.value);
+                    };
                     for (var i = 0; i < r.message.accounts.length; i++) {
                         var opt = document.createElement("option");
                         opt.value = r.message.accounts[i];
                         opt.innerHTML = r.message.accounts[i];
                         select.appendChild(opt);
                     }
+                    // call with initial value
+                    frappe.bank_wizard.set_default_accounts(select.value);
                 } 
             }
         }); 
@@ -129,27 +135,6 @@ frappe.bank_wizard = {
                     document.getElementById("intermediate_account").value = r.message.account;
                 } else {
                     frappe.msgprint( __("Please set the <b>intermediate bank account</b> in <a href=\"/desk#Form/ERPNextSwiss Settings\">ERPNextSwiss Settings</a>.") );
-                }
-            }
-        }); 
-        frappe.call({
-            method: 'erpnextswiss.erpnextswiss.page.bank_wizard.bank_wizard.get_payable_account',
-            callback: function(r) {
-                if ((r.message) && (r.message.account != "")) {
-                    document.getElementById("payable_account").value = r.message.account;
-		    
-                } else {
-                    frappe.msgprint( __("Please set the <b>default payable bank account</b> in the company.") );
-                }
-            }
-        }); 
-        frappe.call({
-            method: 'erpnextswiss.erpnextswiss.page.bank_wizard.bank_wizard.get_receivable_account',
-            callback: function(r) {
-                if ((r.message) && (r.message.account != "")) {
-                    document.getElementById("receivable_account").value = r.message.account;
-                } else {
-                    frappe.msgprint( __("Please set the <b>default receivable bank account</b> in the company.") );
                 }
             }
         }); 
@@ -174,6 +159,23 @@ frappe.bank_wizard = {
             }
         }); 
     },
+    set_default_accounts: function(bank_account) {
+        frappe.call({
+            method: 'erpnextswiss.erpnextswiss.page.bank_wizard.bank_wizard.get_default_accounts',
+            args: {
+                'bank_account': bank_account
+            },
+            callback: function(r) {
+                if (r.message) {
+                    document.getElementById("company").value = r.message.company;
+                    document.getElementById("payable_account").value = r.message.payable_account;
+                    document.getElementById("receivable_account").value = r.message.receivable_account;
+                } else {
+                    frappe.msgprint( __("Please set the <b>default accounts</b> in <a href=\"/desk#Form/Company/{0}\">{0}</a>.").replace("{0}", r.message.company) );
+                }
+            }
+        }); 
+    },
     start_wait: function() {
         document.getElementById("waitingScreen").classList.remove("hidden");
         document.getElementById("btn-parse-file").classList.add("disabled");
@@ -193,6 +195,7 @@ frappe.bank_wizard = {
     
         // attach button handlers
         var bank_account = document.getElementById("bank_account").value;
+        var company = document.getElementById("company").value;
         var intermediate_account = document.getElementById("intermediate_account").value;
         var payable_account = document.getElementById("payable_account").value;
         var receivable_account = document.getElementById("receivable_account").value;
@@ -216,7 +219,8 @@ frappe.bank_wizard = {
                         'party': transaction.party_match,
                         'references': transaction.invoice_matches,
                         'remarks': (transaction.transaction_reference + ", " + transaction.party_name + ", " + transaction.party_address),
-                        'auto_submit': 1
+                        'auto_submit': 1,
+                        'company': company
                     }
                     frappe.bank_wizard.quick_payment_entry(payment, transaction.txid);
                 });
@@ -236,7 +240,8 @@ frappe.bank_wizard = {
                         'party': transaction.employee_match,
                         'references': transaction.expense_matches,
                         'remarks': (transaction.transaction_reference + ", " + transaction.party_name + ", " + transaction.party_address),
-                        'auto_submit': 1
+                        'auto_submit': 1,
+                        'company': company
                     }
                     frappe.bank_wizard.quick_payment_entry(payment, transaction.txid);
                 });
@@ -255,7 +260,8 @@ frappe.bank_wizard = {
                         'party_type': "Supplier",
                         'party': transaction.party_match,
                         'references': transaction.invoice_matches,
-                        'remarks': (transaction.transaction_reference + ", " + transaction.party_name + ", " + transaction.party_address)
+                        'remarks': (transaction.transaction_reference + ", " + transaction.party_name + ", " + transaction.party_address),
+                        'company': company
                     }
                     frappe.bank_wizard.create_payment_entry(payment, transaction.txid);
                 });
@@ -274,7 +280,8 @@ frappe.bank_wizard = {
                         'party_type': "Employee",
                         'party': transaction.employee_match,
                         'references': transaction.expense_matches,
-                        'remarks': (transaction.transaction_reference + ", " + transaction.party_name + ", " + transaction.party_address)
+                        'remarks': (transaction.transaction_reference + ", " + transaction.party_name + ", " + transaction.party_address),
+                        'company': company
                     }
                     frappe.bank_wizard.create_payment_entry(payment, transaction.txid);
                 });
@@ -292,7 +299,8 @@ frappe.bank_wizard = {
                         'type': "Pay",
                         'party_type': "Supplier",
                         'party': transaction.party_match,
-                        'remarks': (transaction.transaction_reference + ", " + transaction.party_name + ", " + transaction.party_address)
+                        'remarks': (transaction.transaction_reference + ", " + transaction.party_name + ", " + transaction.party_address),
+                        'company': company
                     }
                     frappe.bank_wizard.create_payment_entry(payment, transaction.txid);
                 });
@@ -310,7 +318,8 @@ frappe.bank_wizard = {
                         'type': "Pay",
                         'party_type': "Employee",
                         'party': transaction.employee_match,
-                        'remarks': (transaction.transaction_reference + ", " + transaction.party_name + ", " + transaction.party_address)
+                        'remarks': (transaction.transaction_reference + ", " + transaction.party_name + ", " + transaction.party_address),
+                        'company': company
                     }
                     frappe.bank_wizard.create_payment_entry(payment, transaction.txid);
                 });
@@ -328,7 +337,8 @@ frappe.bank_wizard = {
                         'type': "Pay",
                         'party_type': "Supplier",
                         'party': default_supplier,
-                        'remarks': (transaction.transaction_reference + ", " + transaction.party_name + ", " + transaction.party_address)
+                        'remarks': (transaction.transaction_reference + ", " + transaction.party_name + ", " + transaction.party_address),
+                        'company': company
                     }
                     frappe.bank_wizard.create_payment_entry(payment, transaction.txid);
                 });
@@ -349,7 +359,8 @@ frappe.bank_wizard = {
                         'party': transaction.party_match,
                         'references': transaction.invoice_matches,
                         'remarks': (transaction.transaction_reference + ", " + transaction.party_name + ", " + transaction.party_address),
-                        'auto_submit': 1
+                        'auto_submit': 1,
+                        'company': company
                     }
                     frappe.bank_wizard.quick_payment_entry(payment, transaction.txid);
                 });
@@ -368,7 +379,8 @@ frappe.bank_wizard = {
                         'party_type': "Customer",
                         'party': transaction.party_match,
                         'references': transaction.invoice_matches,
-                        'remarks': (transaction.transaction_reference + ", " + transaction.party_name + ", " + transaction.party_address)
+                        'remarks': (transaction.transaction_reference + ", " + transaction.party_name + ", " + transaction.party_address),
+                        'company': company
                     }
                     frappe.bank_wizard.create_payment_entry(payment, transaction.txid);
                 });
@@ -386,7 +398,8 @@ frappe.bank_wizard = {
                         'type': "Receive",
                         'party_type': "Customer",
                         'party': transaction.party_match,
-                        'remarks': (transaction.transaction_reference + ", " + transaction.party_name + ", " + transaction.party_address)
+                        'remarks': (transaction.transaction_reference + ", " + transaction.party_name + ", " + transaction.party_address),
+                        'company': company
                     }
                     frappe.bank_wizard.create_payment_entry(payment, transaction.txid);
                 });
@@ -404,7 +417,8 @@ frappe.bank_wizard = {
                         'type': "Receive",
                         'party_type': "Customer",
                         'party': default_customer,
-                        'remarks': (transaction.transaction_reference + ", " + transaction.party_name + ", " + transaction.party_address)
+                        'remarks': (transaction.transaction_reference + ", " + transaction.party_name + ", " + transaction.party_address),
+                        'company': company
                     }
                     frappe.bank_wizard.create_payment_entry(payment, transaction.txid);
                 });
@@ -428,7 +442,8 @@ frappe.bank_wizard = {
                         'paid_to': paid_to,
                         'reference_no': transaction.unique_reference,
                         'type': "Internal Transfer",
-                        'remarks': (transaction.transaction_reference + ", " + transaction.party_name + ", " + transaction.party_address)
+                        'remarks': (transaction.transaction_reference + ", " + transaction.party_name + ", " + transaction.party_address),
+                        'company': company
                     }
                     frappe.bank_wizard.create_payment_entry(payment, transaction.txid);
                 });

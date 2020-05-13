@@ -45,11 +45,16 @@ def create_zugferd_pdf(docname, verify=True, format=None, doc=None, doctype="Sal
         return pdf
 
 @frappe.whitelist()
-def download_zugferd_pdf(docname, doctype="Sales Invoice", format=None, no_letterhead=0, verify=True):
+def download_zugferd_pdf(docname, doctype="Sales Invoice", format=None, doc=None, no_letterhead=0, verify=True):
+    frappe.msgprint("hallo1")
     frappe.local.response.filename = "{name}.pdf".format(name=docname.replace(" ", "-").replace("/", "-"))
+    frappe.msgprint("hallo2")
     frappe.local.response.filecontent = create_zugferd_pdf(docname, verify, format, no_letterhead)
-    html = frappe.get_print(doctype, sales_invoice_name, format, doc=doc, no_letterhead=no_letterhead)
-    frappe.local.response.filecontent = get_pdf(html)
+    frappe.msgprint("hallo3")
+    #html = frappe.get_print(doctype, docname, format, doc=doc, no_letterhead=no_letterhead)
+    frappe.msgprint("hallo4")
+    #frappe.local.response.filecontent = get_pdf(html)
+    frappe.msgprint("hallo5")
     frappe.local.response.type = "download"
     return 
     
@@ -81,6 +86,34 @@ Extracts the relevant content for a purchase invoice from a ZUGFeRD XML
 :return:                simplified dict with content
 """
 def get_content_from_zugferd(zugferd_xml, debug=False):
+    
+    '''
+        if suppliers_global_id:
+         global_id_xml = soup.SpecifiedTradeProduct.GlobalID.get_text()
+         suppliers_global_id = frappe.get_all('Supplier', filters={'supplier': global_id_xml}, fields = supplier_name[0])        
+         invoice['supplier_name'] = soup.sellertradeparty.name.get_text()
+         frappe.printmsg("Name of supplier is" + global_id_xml)
+     elif suppliers_tax:
+         tax_id_xml = soup.find_all(schemeID='VA')
+         suppliers_tax = frappe.get_all('Supplier', filters={'supplier': tax_id_xml[0]}, fields = supplier_name[0])
+         supplier = frappe.get_doc('Supplier', 'suppliers tax')       
+         invoice['supplier_name'] = soup.sellertradeparty.name.get_text()
+         supplier.global_id = soup.SpecifiedTradeProduct.GlobalID.get_text()
+         supplier.save()
+     else:
+         tax_id_list = soup.find_all(schemeID='VA')
+         # insert a new Suppler:
+         frappe.db.insert({
+         doctype: 'Supplier',
+         supplier_name: soup.sellertradeparty.name.get_text(),
+         tax_id: tax_id_list[0],
+         global_id: soup.SpecifiedTradeProduct.GlobalID.get_text()
+     })
+
+    '''
+    
+    
+    
     # create soup object
     soup = BeautifulSoup(zugferd_xml, 'lxml')
     # dict for invoice
@@ -88,12 +121,78 @@ def get_content_from_zugferd(zugferd_xml, debug=False):
     
     # seller information
     seller = soup.find('ram:sellertradeparty')
-    invoice['supplier_name'] = seller.find('ram:name').string
+    invoice['supplier_name'] = seller.find('ram:lineone').string
+    
+    
+    #generate new supplier and add to system
+    #supplier_group = frappe.get_doc("Supplier Group", "All Supplier Groups")
+    doc = frappe.get_doc({
+        'doctype': 'Supplier',
+        'title': seller.find('ram:name').string,
+        'supplier_name': seller.find('ram:name').string,
+        'global_id': "99999", #not avaibale in xml
+        'supplier_group': "All Supplier Groups" #supplier_group
+    })
+    
+    doc.insert()
+    
+    frappe.msgprint("<b>" + "Added new supplier with details: " + "</b>" + "<br>" + "<br>" + "<b>" + "Title: " + "</b>" 
+    + doc.title + "<br>" + "<b>" + "Supplier Name: " "</b>" + doc.supplier_name + "<br>" + "<b>" + "Global ID: " 
+    + "</b>" + doc.global_id + "<br>" + "<b>" + "Supplier Group: " + "</b>" + doc.supplier_group + "<br>")
+    
+    #frappe.msgprint(+ "<b>" + "Title: " + "</b>" + doc.supplier_name + "<br>" + "<b>" + "Supplier Name: " "</b>" + doc.supplier_name)
+    #frappe.msgprint("<br>" + "<b>" + "Supplier Group: " + "<b>" + doc.supplier_group )
+    #frappe.msgprint("Supplier Group: "  + doc.supplier_group )
+    
+    
+    
+    address_doc = frappe.get_doc({
+		'doctype': 'Address',
+        'address_title': doc.supplier_name + " address",
+        'pincode': seller.find('ram:postcodecode').string,
+        'address_line1': seller.find('ram:lineone').string,
+        'city': "zürich", #seller.find('ram:cityname').string or "",
+        #'country': "Schweiz" #seller.find('ram:CountryID').string or ""
+    })
+    address_doc.insert()
+    frappe.msgprint("<b>" + "Added new address to  supplier:" + "</b>" 
+    + "<br>" + "<br>" + "<b>" + "Title: " + "</b>" + address_doc.address_title + "<br>" + "<b>" + "Postal Code: " "</b>" + address_doc.pincode + "<br>" + "<b>" + "Address Line 1: " 
+    + "</b>" + address_doc.address_line1 + "<br>" + "<b>" + "City: " + "</b>" + address_doc.city + "<br>" + "<b>" + "City: " + "</b>" + address_doc.city)
+    
+    try:
+        invoice['due_date'] = datetime.strtime(soup.find('ram: duedatedatetime').string, "%Y%m%d")
+    except Exception as err:
+        if debug:
+            print("Read posting date failed: {err}".format(err=err))
+        pass
+    
+    exchanged_document = soup.find('rsm: exchangeddocument')
+    invoice['bill_no'] = exchanged_document.find('ram:id').string #check what is meant witth this
+    
+    invoice['currency'] = soup.find('ram:InvoiceCurrencyCode').string
+    
+    invoice['items'] = soup.find().string
+    
+    
+    
+    item_name_code = soup.find('ram:SpecifiedTradeProduct')
+    
+    item_doc = frappe.get_doc({
+		'doctype': 'Item',
+        'title': item_name_code.find('ram:name').string,
+        'item_code': item_name_code.find('ram:name').string,
+        'item_name': item_name_code.find('ram:GlobalID').string,    
+        'item_group': "All Item Groups"
+    })
+    
+    item_doc.insert()
+    
     
     # get article information (items)
     #TODO invoice['items'] = soup.sellertradeparty.name.get_text()
     
     # dates (codes: UNCL 2379: 102=JJJJMMTT, 610=JJJJMM, 616=JJJJWW)
+    '''
     try:
         invoice['posting_date'] = datetime.strptime(
             soup.issuedatetime.datetimestring.get_text(), "%Y%m%d")
@@ -101,6 +200,8 @@ def get_content_from_zugferd(zugferd_xml, debug=False):
         if debug:
             print("Read posting date failed: {err}".format(err=err))
         pass
+     '''
+     
     return invoice
 
     #this works to add a new document into existing doctype    
@@ -161,6 +262,7 @@ def test_content(zugferd_xml, debug=False):
        
     
     # insert a new Supplier document:
+    
     doc = frappe.get_doc({
         'doctype': 'Supplier',
         'title': soup.sellertradeparty.name.get_text(),

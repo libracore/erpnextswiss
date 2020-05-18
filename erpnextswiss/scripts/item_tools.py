@@ -19,7 +19,7 @@ def get_next_item_code():
 	last_item_code = frappe.db.sql("""SELECT `name` FROM `tabItem` ORDER BY CAST(`name` AS int) DESC LIMIT 1""", as_dict=True)
 	#Check if already an item exist
 	if last_item_code:
-		last_item_code = str(last_item_code[0].item_code)
+		last_item_code = str(last_item_code[0].name)
 		last_item_code_len = len(last_item_code.split("-"))
 		if last_item_code_len > 1:
 			last_item_code = last_item_code.split("-")[last_item_code_len - 1]

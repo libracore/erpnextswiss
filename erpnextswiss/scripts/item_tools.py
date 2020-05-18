@@ -14,26 +14,25 @@ import frappe
 import re
 
 @frappe.whitelist()
-def get_next_item_code(start_value="1"):
-	#This function is used to automatically create a new item code that is 1 higher than the last one created.
-	
-	#get last created Item Code
-	last_item_code = frappe.db.sql("SELECT item_code FROM tabItem ORDER BY creation DESC LIMIT 1", as_dict=True)
-
+def get_next_item_code():
+	prefix = None
+	last_item_code = frappe.db.sql("""SELECT `item_code` FROM `tabItem` ORDER BY `item_code` DESC LIMIT 1""", as_dict=True)
 	#Check if already an item exist
 	if last_item_code:
-		#Get numeric part of item code for increase with regex
-		pattern = re.compile("(\D*)(\d+)")
-		last_item_code_clean = pattern.findall((last_item_code[0]["item_code"]))
+		last_item_code = last_item_code[0].item_code
+		last_item_code_len = len(last_item_code.split("-"))
+		if last_item_code_len > 1:
+			last_item_code = last_item_code.split("-")[last_item_code_len - 1]
+			prefix = last_item_code.replace(last_item_code.split("-")[last_item_code_len - 1], "")
+			new_item_code = int(last_item_code) + 1
+			new_item_code = prefix + str(new_item_code)
+		else:
+			new_item_code = int(last_item_code) + 1
+		return new_item_code
 		
-		#increase numeric item code with 1 and add prefix (if avaible)
-		next_item_code = str(last_item_code_clean[0][0]) + str(int(last_item_code_clean[0][1]) + 1)
-	
-		return next_item_code
+	else:
+		return 1
 		
-	#if its the first item, return start value
-	return start_value
-    
 @frappe.whitelist()
 def get_voucher_value(voucher_code, customer):
     sql_query = u"""SELECT 

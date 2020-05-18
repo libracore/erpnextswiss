@@ -8,13 +8,13 @@ class GTIN(object):
         self.barcode = barcode
     
     def __checkDigit(self, digits):
-            total = sum(digits) + sum(map(lambda d: d*2, digits[-1::-2]))
+            total = sum(digits) + sum(list(map(lambda d: d*2, digits[-1::-2])))
             return (10 - (total % 10)) % 10
     
     def validateCheckDigit(self, barcode=''):
         barcode = (barcode if barcode else self.barcode)
         if len(barcode) in (8,12,13,14) and barcode.isdigit():
-            digits = map(int, barcode)
+            digits = list(map(int, barcode))
             checkDigit = self.__checkDigit( digits[0:-1] )
             return checkDigit == digits[-1]
         return False
@@ -22,7 +22,7 @@ class GTIN(object):
     def addCheckDigit(self, barcode=''):
         barcode = (barcode if barcode else self.barcode)
         if len(barcode) in (7,11,12,13) and barcode.isdigit():
-            digits = map(int, barcode)
+            digits = list(map(int, barcode))
             return barcode + str(self.__checkDigit(digits))
         return ''
 

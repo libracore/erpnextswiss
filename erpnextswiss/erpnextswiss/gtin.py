@@ -34,39 +34,39 @@ def test_gtin():
     # validateCheckDigit()
     gtin = GTIN()
     if gtin.validateCheckDigit('1'*11 +'7') == True:
-        print 'Pass'
+        print('Pass')
     else:
-        print 'Fail'
+        print('Fail')
     gtin = GTIN()
     if gtin.validateCheckDigit('1'*11 +'7') == True:
-        print 'Pass'
+        print('Pass')
     else:
-        print 'Fail'
+        print('Fail')
     if GTIN('1'*11 +'7').validateCheckDigit() == True:
-        print 'Pass'
+        print('Pass')
     else:
-        print 'Fail'
+        print('Fail')
     if GTIN().validateCheckDigit('1'*11 +'6') == False:
-        print 'Pass'
+        print('Pass')
     else:
-        print 'Fail'
+        print('Fail')
     
     # addCheckDigit()
     gtin = GTIN()
     if GTIN().addCheckDigit('1' *11) == '1'*11 +'7':
-        print 'Pass'
+        print('Pass')
     else:
-        print 'Fail'
+        print('Fail')
     gtin = GTIN('1'*7)
     if gtin.addCheckDigit() == '1'*7 +'5':
-        print 'Pass'
+        print('Pass')
     else:
-        print 'Fail'
+        print('Fail')
     if GTIN('1'*12).addCheckDigit() == '1'*12 +'6':
-        print 'Pass'
+        print('Pass')
     else:
-        print 'Fail'
+        print('Fail')
     if GTIN().addCheckDigit('1'*11) == '1'*11 + '7':
-        print 'Pass'
+        print('Pass')
     else:
-        print 'Fail'
+        print('Fail')

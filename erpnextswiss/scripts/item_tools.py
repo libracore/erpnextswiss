@@ -16,7 +16,7 @@ import re
 @frappe.whitelist()
 def get_next_item_code():
 	prefix = None
-	last_item_code = frappe.db.sql("""SELECT `item_code` FROM `tabItem` ORDER BY `item_code` DESC LIMIT 1""", as_dict=True)
+	last_item_code = frappe.db.sql("""SELECT `name` FROM `tabItem` ORDER BY CAST(`name` AS int) DESC LIMIT 1""", as_dict=True)
 	#Check if already an item exist
 	if last_item_code:
 		last_item_code = last_item_code[0].item_code

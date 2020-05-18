@@ -26,7 +26,7 @@ class GTIN(object):
             return barcode + str(self.__checkDigit(digits))
         return ''
 
-#frappe.whitelist()
+@frappe.whitelist()
 def add_check_digit(code):
     return GTIN().addCheckDigit(code)
     

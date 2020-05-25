@@ -42,6 +42,8 @@ def create_payment_reminders():
         sql_query = ("""SELECT MAX(`reminder_level`) AS `max` FROM `tabERPNextSwiss Settings Payment Reminder Charge`;""")
         try:
             max_level = frappe.db.sql(sql_query, as_dict=True)[0]['max']
+            if not max_level:
+                max_level = 3
         except:
             max_level = 3
         for customer in customers:

@@ -30,8 +30,8 @@ def create_zugferd_xml(sales_invoice, verify=True):
             'name': cgi.escape(sinv.name),
             'issue_date': "{year:04d}{month:02d}{day:02d}".format(
               year=sinv.posting_date.year, month=sinv.posting_date.month, day=sinv.posting_date.day),
-            'note': "Sales Invoice {title} ({number}), {date}".format(
-              title=sinv.title, number=sinv.name, date=sinv.posting_date),
+            'note': cgi.escape("Sales Invoice {title} ({number}), {date}".format(
+              title=sinv.title, number=sinv.name, date=sinv.posting_date)),
             'company': cgi.escape(sinv.company),
             'tax_id': cgi.escape(company.tax_id or ""),
             'customer': cgi.escape(sinv.customer),

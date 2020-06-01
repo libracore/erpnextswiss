@@ -8,8 +8,8 @@
 import frappe, os
 from frappe.utils.pdf import get_pdf
 from erpnextswiss.erpnextswiss.zugferd.zugferd_xml import create_zugferd_xml
-#from facturx import generate_facturx_from_binary, get_facturx_xml_from_pdf, check_facturx_xsd, generate_facturx_from_file
-from erpnextswiss.erpnextswiss.zugferd.facturx.facturx import generate_facturx_from_binary, get_facturx_xml_from_pdf, check_facturx_xsd
+from facturx import generate_facturx_from_binary, get_facturx_xml_from_pdf, check_facturx_xsd, generate_facturx_from_file
+#from erpnextswiss.erpnextswiss.zugferd.facturx.facturx import generate_facturx_from_binary, get_facturx_xml_from_pdf, check_facturx_xsd
 from bs4 import BeautifulSoup
 from frappe.utils.file_manager import save_file
 from pathlib import Path

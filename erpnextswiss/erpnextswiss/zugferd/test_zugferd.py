@@ -55,4 +55,4 @@ def read_pdf_from_file(path):
     content = f.read()
     xml_content = import_pdf(content)
     print("{0}".format(xml_content))
-return
+    return

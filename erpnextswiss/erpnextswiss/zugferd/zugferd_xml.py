@@ -119,11 +119,11 @@ def create_zugferd_xml(sales_invoice, verify=True):
         if verify:
             try:
                 if not check_facturx_xsd(facturx_xml=xml.encode('utf-8')):
-                    frappe.log_error( _("XML validation failed", "ZUGFeRD") )
+                    frappe.log_error( _("XML validation failed for {0}").format(sales_invoice), "ZUGFeRD")
                     return None
             except Exception as err:
-                frappe.log_error("XML validation error: {0}\n{1}".format(err, xml), "ZUGFeRD XSD validation")
+                frappe.log_error("XML validation error ({2}): {0}\n{1}".format(err, xml, sales_invoice), "ZUGFeRD XSD validation")
         return xml
     except Exception as err:
-        frappe.log_error("Failure during XML generation: {0}".format(err), "ZUGFeRD")
+        frappe.log_error("Failure during XML generation for {1}: {0}".format(err, sales_invoice), "ZUGFeRD")
         return None

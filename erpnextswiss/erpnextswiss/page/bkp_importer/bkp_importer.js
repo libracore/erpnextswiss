@@ -47,7 +47,6 @@ frappe.bkpimporter = {
 			},
 			allow_multiple: false,
 			on_success: (file_doc) => {
-				//uploaded_files.push(file_doc);
 				if (document.getElementById('data_place_holder')) {
 					document.getElementById('data_place_holder').outerHTML = "";
 				}
@@ -95,9 +94,8 @@ frappe.bkpimporter = {
 				},
 				callback: function(r) {
 					if (r.message != 'Error') {
-						//console.log("items eingelesen:");
-						//console.log(r.message);
-						show_alert({message:__("Startet Backgroundjob to Import/Update Items from BKP file<br>You can track the status <a href='/desk#background_jobs'>here</a>."), indicator:'green'});
+						frappe.msgprint(__("Die Artikel werden importiert / updated.") + '<br>' + __("Bitte warten Sie bis das System Ihnen mitteilt, dass der Import abgeschlossen ist."));
+						//show_alert({message:__("Startet Backgroundjob to Import/Update Items from BKP file<br>You can track the status <a href='/desk#background_jobs'>here</a>."), indicator:'green'});
 					} else {
 						console.log("fehler beim einlesen");
 					}

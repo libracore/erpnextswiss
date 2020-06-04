@@ -48,109 +48,6 @@ def read_xml(file_path, name):
 		except:
 			return 'Error'
 		return file
-	# soup = BeautifulSoup(content, 'lxml')
-
-	# # general information
-	# try:
-		# iban = soup.DataExpert.Head.Code_Sprache.get_text()
-	# except:
-		# # node not found, probably wrong format
-		# #return { "message": _("Unable to read structure. Please make sure that you have selected the correct format."), "records": None }
-		# return soup
-	# # transactions
-	# # new_payment_entries = read_camt_transactions(soup.find_all('ntry'), bank, account, auto_submit)
-	# # message = _("Successfully imported {0} payments.".format(len(new_payment_entries)))
-
-	# # return { "message": message, "records": new_payment_entries } 
-	# return iban
-    
-def read_camt_transactions(transaction_entries, bank, account, auto_submit=False):
-    # new_payment_entries = []
-    # for entry in transaction_entries:
-        # entry_soup = BeautifulSoup(six.text_type(entry), 'lxml')
-        # date = entry_soup.bookgdt.dt.get_text()
-        # transactions = entry_soup.find_all('txdtls')
-        # # fetch entry amount as fallback
-        # entry_amount = float(entry_soup.amt.get_text())
-        # entry_currency = entry_soup.amt['ccy']
-        # for transaction in transactions:
-            # transaction_soup = BeautifulSoup(six.text_type(transaction), 'lxml')
-            # try:
-                # unique_reference = transaction_soup.refs.acctsvcrref.get_text()
-                # amount = float(transaction_soup.amt.get_text())
-                # currency = transaction_soup.amt['ccy']
-                # try:
-                    # party_soup = BeautifulSoup(six.text_type(transaction_soup.dbtr), 'lxml')
-                    # customer_name = party_soup.nm.get_text()
-                    # try:
-                        # street = party_soup.strtnm.get_text()
-                        # try:
-                            # street_number = party_soup.bldgnb.get_text()
-                            # address_line = "{0} {1}".format(street, street_number)
-                        # except:
-                            # address_line = street
-                            
-                    # except:
-                        # address_line = ""
-                    # try:
-                        # plz = party_soup.pstcd.get_text()
-                    # except:
-                        # plz = ""
-                    # try:
-                        # town = party_soup.twnnm.get_text()
-                    # except:
-                        # town = ""
-                    # try:
-                        # country = party_soup.ctry.get_text()
-                    # except:
-                        # party_iban = ""
-                    # customer_address = "{0}, {1}, {2}".format(address_line, plz, town)
-                    # try:
-                        # customer_iban = "{0}".format(transaction_soup.dbtracct.id.iban.get_text())
-                    # except:
-                        # customer_iban = ""
-                # except:
-                    # # CRDT: use RltdPties:Dbtr
-                    # #party_soup = BeautifulSoup(str(transaction_soup.txdtls.rltdpties.dbtr)) 
-                    # try:
-                        # customer_iban = transaction_soup.dbtracct.id.iban.get_text()
-                    # except Exception as e:
-                        # customer_iban = ""
-                        # frappe.log_error("Error parsing customer info: {0} ({1})".format(e, six.text_type(transaction_soup.dbtr)))
-                        # # key related parties not found / no customer info
-                        # customer_name = "Postschalter"
-                        # customer_address = ""
-                # try:
-                    # charges = float(transaction_soup.chrgs.ttlchrgsandtaxamt.get_text())
-                # except:
-                    # charges = 0.0
-                # # paid or received: (DBIT: paid, CRDT: received)
-                # credit_debit = transaction_soup.cdtdbtind.get_text()
-                # try:
-                    # # try to find ESR reference
-                    # transaction_reference = transaction_soup.rmtinf.strd.cdtrrefinf.ref.get_text()
-                # except:
-                    # try:
-                        # # try to find a user-defined reference (e.g. SINV.)
-                        # transaction_reference = transaction_soup.rmtinf.ustrd.get_text()
-                    # except:
-                        # try:
-                            # # try to find an end-to-end ID
-                            # transaction_reference = transaction_soup.refs.endtoendid.get_text()
-                        # except:
-                            # transaction_reference = unique_reference
-                # if credit_debit == "CRDT":
-                    # inserted_payment_entry = create_payment_entry(date=date, to_account=account, received_amount=amount, 
-                        # transaction_id=unique_reference, remarks="ESR: {0}, {1}, {2}, IBAN: {3}".format(
-                        # transaction_reference, customer_name, customer_address, customer_iban), 
-                        # auto_submit=False)
-                    # if inserted_payment_entry:
-                        # new_payment_entries.append(inserted_payment_entry.name)
-            # except Exception as e:
-                # frappe.msgprint("Parsing error: {0}:{1}".format(six.text_type(transaction), e))
-                # pass
-    # return new_payment_entries
-	return "ok"
 
 @frappe.whitelist()
 def import_update_items(xml_files):
@@ -159,11 +56,11 @@ def import_update_items(xml_files):
 		if site_name == 'localhost':
 			site_name = 'site1.local'
 		max_time = 4800
-		args = {
+		kwargs = {
 			'xml_files': xml_files,
 			'site_name': site_name
 		}
-		enqueue("erpnextswiss.erpnextswiss.page.bkp_importer.bkp_importer._import_update_items", queue='long', job_name='Import / Update Items from BKP File(s)', timeout=max_time, **args)
+		enqueue("erpnextswiss.erpnextswiss.page.bkp_importer.bkp_importer._import_update_items", queue='long', job_name='Import / Update Items from BKP File(s)', timeout=max_time, is_async=False, **kwargs)
 		return 'Backgroundjob'
 	except:
 		return 'Error'

@@ -140,10 +140,11 @@ def create_item_group(item_group):
 	return
 	
 def create_item_price(item, price):
+	default_price_list = frappe.db.sql("""SELECT `name` FROM `tabPrice List` WHERE `selling` = 1""", as_list=True)[0][0]
 	new_item_price = frappe.get_doc({
 		"doctype": "Item Price",
 		"item_code": item,
-		"price_list": _("Standard Selling"),
+		"price_list": default_price_list,
 		"selling": 1,
 		"buying": 0,
 		"price_list_rate": price
@@ -153,7 +154,8 @@ def create_item_price(item, price):
 	return
 	
 def update_item_price(item, price):
-	price_lists = frappe.db.sql("""SELECT `name` FROM `tabItem Price` WHERE `item_code` = '{item}' AND `price_list` = '{price_list}' AND `selling` = 1""".format(item=item, price_list=_("Standard Selling")), as_list=True)
+	default_price_list = frappe.db.sql("""SELECT `name` FROM `tabPrice List` WHERE `selling` = 1""", as_list=True)[0][0]
+	price_lists = frappe.db.sql("""SELECT `name` FROM `tabItem Price` WHERE `item_code` = '{item}' AND `price_list` = '{default_price_list}' AND `selling` = 1""".format(item=item, default_price_list=default_price_list), as_list=True)
 	try:
 		_price_list = price_lists[0][0]
 		price_list = frappe.get_doc("Item Price", _price_list)

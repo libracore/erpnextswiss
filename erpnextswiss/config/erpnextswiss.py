@@ -138,6 +138,12 @@ def get_data():
                        "name": "abacus_export",
                        "label": _("Abacus Export"),
                        "description": _("Abacus Export")                   
+                   },
+                   {
+                       "type": "page",
+                       "name": "bkp-importer",
+                       "label": _("BKP Importer"),
+                       "description": _("BKP Importer")                   
                    }                 
             ]
         },

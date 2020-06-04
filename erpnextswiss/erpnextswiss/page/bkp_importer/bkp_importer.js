@@ -93,11 +93,8 @@ frappe.bkpimporter = {
 					'xml_files': files
 				},
 				callback: function(r) {
-					if (r.message != 'Error') {
-						frappe.msgprint(__("Die Artikel werden importiert / updated.") + '<br>' + __("Bitte warten Sie bis das System Ihnen mitteilt, dass der Import abgeschlossen ist."));
-						//show_alert({message:__("Startet Backgroundjob to Import/Update Items from BKP file<br>You can track the status <a href='/desk#background_jobs'>here</a>."), indicator:'green'});
-					} else {
-						console.log("fehler beim einlesen");
+					if (r.message == 'Error') {
+						frappe.msgprint("Es ist ein unerwarteter Fehler aufgetreten. Bitte informieren Sie libracore.");
 					}
 				}
 			});

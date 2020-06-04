@@ -60,8 +60,9 @@ def import_update_items(xml_files):
 			'xml_files': xml_files,
 			'site_name': site_name
 		}
-		enqueue("erpnextswiss.erpnextswiss.page.bkp_importer.bkp_importer._import_update_items", queue='long', job_name='Import / Update Items from BKP File(s)', timeout=max_time, is_async=False, **kwargs)
-		return 'Backgroundjob'
+		frappe.publish_realtime(event='msgprint', message={'message': "Der Import / Das Updaten wurde gestartet. Bitte warten Sie bis das System mitteilt, dass der Auftrag ausgeführt wurde."}, user=frappe.session.user)
+		enqueue(method="erpnextswiss.erpnextswiss.page.bkp_importer.bkp_importer._import_update_items", queue='long', job_name='Import / Update Items from BKP File(s)', timeout=max_time, **kwargs)
+		return
 	except:
 		return 'Error'
 

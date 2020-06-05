@@ -14,7 +14,7 @@ import re
 import six
 from frappe.utils import get_site_name
 import zipfile
-from frappe.utils.background_jobs import enqueue
+from frappe.utils.background_jobs import enqueue, get_jobs
 import os
 
 @frappe.whitelist()
@@ -56,13 +56,20 @@ def import_update_items(xml_files):
 		if site_name == 'localhost':
 			site_name = 'site1.local'
 		max_time = 4800
-		kwargs = {
+		args = {
 			'xml_files': xml_files,
 			'site_name': site_name
 		}
-		frappe.publish_realtime(event='msgprint', message={'message': "Der Import / Das Updaten wurde gestartet. Bitte warten Sie bis das System mitteilt, dass der Auftrag ausgeführt wurde."}, user=frappe.session.user)
-		enqueue(method="erpnextswiss.erpnextswiss.page.bkp_importer.bkp_importer._import_update_items", queue='long', job_name='Import / Update Items from BKP File(s)', timeout=max_time, **kwargs)
-		return
+		queue="default"
+		queued_jobs = get_jobs(site=frappe.local.site, queue=queue)
+		method = "erpnextswiss.erpnextswiss.page.bkp_importer.bkp_importer._import_update_items"
+		job_name='Import / Update Items from BKP File(s)'
+		if method not in queued_jobs[frappe.local.site]:
+			frappe.msgprint(_("Der Import / Das Updaten wurde gestartet. Bitte warten Sie bis das System Ihnen mitteilt, dass der Auftrag ausgeführt wurde."), 'Import / Update gestartet')
+			enqueue(method=method, queue=queue, timeout=max_time, event=None, is_async=True, job_name=job_name, now=False, enqueue_after_commit=False, **args)
+			return
+		else:
+			frappe.msgprint(_("Der Backup Job wurde bereits gestartet. Bitte warten Sie bis das System Ihnen mitteilt dass der Job erledigt ist."), 'Bitte Warten')
 	except:
 		return 'Error'
 
@@ -81,8 +88,8 @@ def _import_update_items(xml_files, site_name):
 				item_group = soup.DataExpert.Head.Anbieter.Firma.get_text()
 				if not frappe.db.exists('Item Group', item_group):
 					create_item_group(item_group)
-			except:
-				return 'Error'
+			except Exception as e:
+				frappe.publish_realtime(event='msgprint', message={'message': "Melden Sie folgenden Fehler an libracore:<br>Lesen Artikel: {e}".format(e=e), 'title': 'Ein unerwarteter Fehler ist aufgetreten'}, user=frappe.session.user)
 		for item in items:
 			if not frappe.db.exists('Item', item.get('Art_Nr_Anbieter')):
 				#create new item
@@ -98,73 +105,85 @@ def _import_update_items(xml_files, site_name):
 			for file_to_delete in files_from_home_bkp_uploads:
 				frappe.db.sql("""DELETE FROM `tabFile` WHERE `name` = '{file_to_delete}'""".format(file_to_delete=file_to_delete[0]), as_list=True)
 				
-	frappe.publish_realtime(event='msgprint', message={'message': "Es wurden erfolgreich {new_created_items} Artikel angelegt und {updated_items} updated".format(new_created_items=new_created_items, updated_items=updated_items)}, user=frappe.session.user)
-	return {
-			'created': new_created_items,
-			'updated': updated_items
-		}
+	frappe.publish_realtime(event='msgprint', message={'message': "Es wurden erfolgreich {new_created_items} Artikel angelegt und {updated_items} updated".format(new_created_items=new_created_items, updated_items=updated_items), 'title': 'Auftrag abgeschlossen'}, user=frappe.session.user)
 		
 def create_new_item(item, soup, item_group):
-	new_item = frappe.get_doc({
-		"doctype": "Item",
-		"item_code": item.get('Art_Nr_Anbieter'),
-		"item_name": item.Art_Txt_Kurz.get_text(),
-		"description": item.Art_Txt_Lang.get_text(),
-		"uom": item.BM_Einheit_Code.get('BM_Einheit'),
-		"item_group": item_group
-	})
-	new_item.insert()
-	frappe.db.commit()
-	create_item_price(new_item.name, item.Preis_Bestimmen.Preis.Preis_Pos.get_text())
-	return
+	try:
+		new_item = frappe.get_doc({
+			"doctype": "Item",
+			"item_code": item.get('Art_Nr_Anbieter'),
+			"item_name": item.Art_Txt_Kurz.get_text(),
+			"description": item.Art_Txt_Lang.get_text(),
+			"uom": item.BM_Einheit_Code.get('BM_Einheit'),
+			"item_group": item_group
+		})
+		new_item.insert()
+		frappe.db.commit()
+		create_item_price(new_item.name, item.Preis_Bestimmen.Preis.Preis_Pos.get_text())
+		return
+	except Exception as e:
+		frappe.publish_realtime(event='msgprint', message={'message': "Melden Sie folgenden Fehler an libracore:<br>Erstellen Artikel: {e}".format(e=e), 'title': 'Ein unerwarteter Fehler ist aufgetreten'}, user=frappe.session.user)
 
 def update_item(_item, soup, item_group):
-	item = frappe.get_doc("Item", _item.get('Art_Nr_Anbieter'))
-	item.item_name = _item.Art_Txt_Kurz.get_text()
-	item.description = _item.Art_Txt_Lang.get_text()
-	item.uom = _item.BM_Einheit_Code.get('BM_Einheit')
-	item.item_group = item_group
-	item.save()
-	frappe.db.commit()
-	update_item_price(item.name, _item.Preis_Bestimmen.Preis.Preis_Pos.get_text())
-	return
+	try:
+		item = frappe.get_doc("Item", _item.get('Art_Nr_Anbieter'))
+		item.item_name = _item.Art_Txt_Kurz.get_text()
+		item.description = _item.Art_Txt_Lang.get_text()
+		item.uom = _item.BM_Einheit_Code.get('BM_Einheit')
+		item.item_group = item_group
+		item.save()
+		frappe.db.commit()
+		update_item_price(item.name, _item.Preis_Bestimmen.Preis.Preis_Pos.get_text())
+		return
+	except Exception as e:
+		frappe.publish_realtime(event='msgprint', message={'message': "Melden Sie folgenden Fehler an libracore:<br>Updaten Artikel: {e}".format(e=e), 'title': 'Ein unerwarteter Fehler ist aufgetreten'}, user=frappe.session.user)
 	
 def create_item_group(item_group):
-	new_item_group = frappe.get_doc({
-		"doctype": "Item Group",
-		"parent_item_group": _("All Item Groups"),
-		"item_group_name": item_group
-	})
-	new_item_group.insert()
-	frappe.db.commit()
-	return
+	try:
+		default_item_group = frappe.db.get_single_value('Stock Settings', 'item_group')
+		new_item_group = frappe.get_doc({
+			"doctype": "Item Group",
+			"parent_item_group": default_item_group,
+			"item_group_name": item_group
+		})
+		new_item_group.insert()
+		frappe.db.commit()
+		return
+	except Exception as e:
+		frappe.publish_realtime(event='msgprint', message={'message': "Melden Sie folgenden Fehler an libracore:<br>Erstellen Artikelgruppe: {e}".format(e=e), 'title': 'Ein unerwarteter Fehler ist aufgetreten'}, user=frappe.session.user)
 	
 def create_item_price(item, price):
-	default_price_list = frappe.db.sql("""SELECT `name` FROM `tabPrice List` WHERE `selling` = 1""", as_list=True)[0][0]
-	new_item_price = frappe.get_doc({
-		"doctype": "Item Price",
-		"item_code": item,
-		"price_list": default_price_list,
-		"selling": 1,
-		"buying": 0,
-		"price_list_rate": price
-	})
-	new_item_price.insert()
-	frappe.db.commit()
-	return
+	try:
+		default_price_list = frappe.db.sql("""SELECT `name` FROM `tabPrice List` WHERE `selling` = 1""", as_list=True)[0][0]
+		new_item_price = frappe.get_doc({
+			"doctype": "Item Price",
+			"item_code": item,
+			"price_list": default_price_list,
+			"selling": 1,
+			"buying": 0,
+			"price_list_rate": price
+		})
+		new_item_price.insert()
+		frappe.db.commit()
+		return
+	except Exception as e:
+		frappe.publish_realtime(event='msgprint', message={'message': "Melden Sie folgenden Fehler an libracore:<br>Erstellen Artikelpreis: {e}".format(e=e), 'title': 'Ein unerwarteter Fehler ist aufgetreten'}, user=frappe.session.user)
 	
 def update_item_price(item, price):
-	default_price_list = frappe.db.sql("""SELECT `name` FROM `tabPrice List` WHERE `selling` = 1""", as_list=True)[0][0]
-	price_lists = frappe.db.sql("""SELECT `name` FROM `tabItem Price` WHERE `item_code` = '{item}' AND `price_list` = '{default_price_list}' AND `selling` = 1""".format(item=item, default_price_list=default_price_list), as_list=True)
 	try:
-		_price_list = price_lists[0][0]
-		price_list = frappe.get_doc("Item Price", _price_list)
-		price_list.price_list_rate = price
-		price_list.save()
-		frappe.db.commit()
-	except:
-		create_item_price(item, price)
-	return
+		default_price_list = frappe.db.sql("""SELECT `name` FROM `tabPrice List` WHERE `selling` = 1""", as_list=True)[0][0]
+		price_lists = frappe.db.sql("""SELECT `name` FROM `tabItem Price` WHERE `item_code` = '{item}' AND `price_list` = '{default_price_list}' AND `selling` = 1""".format(item=item, default_price_list=default_price_list), as_list=True)
+		try:
+			_price_list = price_lists[0][0]
+			price_list = frappe.get_doc("Item Price", _price_list)
+			price_list.price_list_rate = price
+			price_list.save()
+			frappe.db.commit()
+		except:
+			create_item_price(item, price)
+		return
+	except Exception as e:
+		frappe.publish_realtime(event='msgprint', message={'message': "Melden Sie folgenden Fehler an libracore:<br>Update Artikelpreis: {e}".format(e=e), 'title': 'Ein unerwarteter Fehler ist aufgetreten'}, user=frappe.session.user)
 	
 def unzip_file(path_to_file_folder, file):
 	with zipfile.ZipFile(file,"r") as zip_ref:

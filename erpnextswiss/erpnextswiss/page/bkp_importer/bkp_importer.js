@@ -91,13 +91,12 @@ frappe.bkpimporter = {
 				method: 'erpnextswiss.erpnextswiss.page.bkp_importer.bkp_importer.import_update_items',
 				args: {
 					'xml_files': files
-				},
-				callback: function(r) {
-					if (r.message == 'Error') {
-						frappe.msgprint("Es ist ein unerwarteter Fehler aufgetreten. Bitte informieren Sie libracore.");
-					}
 				}
 			});
+			if (document.getElementById('extracted_data')) {
+				document.getElementById('extracted_data').outerHTML = "";
+			}
+			$("#bitte_warten").removeClass("hidden");
 		}
 	}
 }

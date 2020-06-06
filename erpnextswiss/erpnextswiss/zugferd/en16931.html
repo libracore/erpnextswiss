@@ -11,9 +11,11 @@
     <ram:IssueDateTime>
       <udt:DateTimeString format='102'>{{ issue_date }}</udt:DateTimeString>
     </ram:IssueDateTime>
+    {%- for note in notes %}
     <ram:IncludedNote>
-      <ram:Content>{{ note }}</ram:Content>
+      <ram:Content>{{ note.text }}</ram:Content>
     </ram:IncludedNote>
+    {%- endfor %}
   </rsm:ExchangedDocument>
   <rsm:SupplyChainTradeTransaction>
 {%- for item in items %}

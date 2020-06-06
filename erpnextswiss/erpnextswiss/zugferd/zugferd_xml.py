@@ -25,13 +25,27 @@ def create_zugferd_xml(sales_invoice, verify=True):
         # get original document
         sinv = frappe.get_doc("Sales Invoice", sales_invoice)
         company = frappe.get_doc("Company", sinv.company)
+        # compile notes
+        notes = []
+        if sinv.terms:
+            notes.append({
+                'text': cgi.escape(BeautifulSoup(sinv.terms, "lxml").text or "")
+            })
+        if hasattr(sinv, 'eingangstext') and sinv.eingangstext:
+            notes.append({
+                'text': cgi.escape(BeautifulSoup(sinv.eingangstext, "lxml").text or "")
+            })
+        if len(notes) == 0:
+            notes.append({
+                'text': cgi.escape("Sales Invoice {title} ({number}), {date}".format(
+                    title=sinv.title, number=sinv.name, date=sinv.posting_date))
+            })
         # compile xml content
         data = {
             'name': cgi.escape(sinv.name),
             'issue_date': "{year:04d}{month:02d}{day:02d}".format(
               year=sinv.posting_date.year, month=sinv.posting_date.month, day=sinv.posting_date.day),
-            'note': cgi.escape("Sales Invoice {title} ({number}), {date}".format(
-              title=sinv.title, number=sinv.name, date=sinv.posting_date)),
+            'notes': notes,
             'company': cgi.escape(sinv.company),
             'tax_id': cgi.escape(company.tax_id or ""),
             'customer': cgi.escape(sinv.customer),

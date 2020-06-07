@@ -58,8 +58,8 @@ def create_zugferd_xml(sales_invoice, verify=True):
             'discount': (sinv.total - sinv.net_total),
             'net_total': sinv.net_total,
             'total_tax': sinv.total_taxes_and_charges,
-            'grand_total': sinv.rounded_total,
-            'prepaid_amount': (sinv.rounded_total - sinv.outstanding_amount),
+            'grand_total': (sinv.rounded_total or sinv.grand_total),
+            'prepaid_amount': ((sinv.rounded_total or sinv.grand_total) - sinv.outstanding_amount),
             'outstanding_amount': sinv.outstanding_amount
         }
         data['items'] = []

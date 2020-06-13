@@ -60,7 +60,14 @@ def get_data():
                        "name": "VAT Declaration",
                        "label": _("VAT Declaration"),
                        "description": _("VAT Declaration")
-                   }
+                   },
+                   {
+                        "type": "report",
+                        "name": "Kontrolle MwSt",
+                        "label": _("Kontrolle MwSt"),
+                        "doctype": "Sales Invoice",
+                        "is_query_report": True
+                    }
             ]
         },
         {

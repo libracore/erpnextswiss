@@ -21,7 +21,6 @@ from xml.etree import ElementTree
 from lxml import etree
 from io import BytesIO
 import datetime
-from datetime import date
 
 """
 Creates an XML file from a sales invoice
@@ -114,15 +113,28 @@ def get_content_from_zugferd(zugferd_xml, debug=False):
 
     '''
     
+
+    
+    
+    # create soup object
     soup = BeautifulSoup(zugferd_xml, 'lxml')
     # dict for invoice
     invoice = {}
-  
+    
+    
+    
+    
+    
     # seller information
     seller = soup.find('ram:sellertradeparty')
-    invoice['supplier_name'] = seller.find('ram:name').string
+    invoice['supplier_name'] = seller.find('ram:lineone').string
     
-    #INSERTION
+    
+    
+     #INSERTION
+    
+    #generate new supplier and add to system
+    #supplier_group = frappe.get_doc("Supplier Group", "All Supplier Groups")
     doc = frappe.get_doc({
         'doctype': 'Supplier',
         'title': seller.find('ram:name').string,
@@ -131,11 +143,23 @@ def get_content_from_zugferd(zugferd_xml, debug=False):
         'tax_id': seller.find('ram:id').string,
         'supplier_group': "All Supplier Groups" #supplier_group
     })
+    
     doc.insert()
     
-    frappe.msgprint("<b>" + "Added new supplier: " + "</b>" + "<br>" + "<br>" + "<b>" + "Title: " + "</b>" 
+    
+
+    
+    
+     #INSERTION
+    
+    frappe.msgprint("<b>" + "Added new supplier with details: " + "</b>" + "<br>" + "<br>" + "<b>" + "Title: " + "</b>" 
     + doc.title + "<br>" + "<b>" + "Supplier Name: " "</b>" + doc.supplier_name + "<br>" + "<b>" + "Global ID: " 
     + "</b>" + doc.global_id + "<br>" + "<b>" + "Supplier Group: " + "</b>" + doc.supplier_group + "<br>")
+    
+    #frappe.msgprint(+ "<b>" + "Title: " + "</b>" + doc.supplier_name + "<br>" + "<b>" + "Supplier Name: " "</b>" + doc.supplier_name)
+    #frappe.msgprint("<br>" + "<b>" + "Supplier Group: " + "<b>" + doc.supplier_group )
+    #frappe.msgprint("Supplier Group: "  + doc.supplier_group )
+    
     
     #INSERTION
     address_doc = frappe.get_doc({
@@ -148,120 +172,136 @@ def get_content_from_zugferd(zugferd_xml, debug=False):
         #'country': "Schweiz" #seller.find('ram:CountryID').string or ""
     })
     address_doc.insert()
-           
+    
+    #INSERTION
+    
+    
     frappe.msgprint("<b>" + "Added new address to  supplier:" + "</b>" 
     + "<br>" + "<br>" + "<b>" + "Title: " + "</b>" + address_doc.address_title + "<br>" + "<b>" + "Postal Code: " "</b>" + address_doc.pincode + "<br>" + "<b>" + "Address Line 1: " 
     + "</b>" + address_doc.address_line1 + "<br>" + "<b>" + "City: " + "</b>" + address_doc.city + "<br>" + "<b>" + "City: " + "</b>" + address_doc.city)
     
-    today = date.today()
-    d3 = today.strftime("%Y-%m-%d")
-    invoice['due_date'] = d3
+    
+    
+  
+
+    
+    t = soup.find('ram:includedsupplychaintradelineitem')
+    
+    items = []
+    for item in soup.find_all('ram:includedsupplychaintradelineitem'):
+        frappe.msgprint("first")
+        d = { 
+            'item_code': item.find('ram:sellerassignedid').string,
+            'item_name': item.find('ram:name').string,
+            'item_group': "All Item Groups"
+        }
+        
+        items.append(d)
+    frappe.msgprint("outer" + items[0]['item_code'])  
+    
+
+    terms_and_duedate =  soup.find('ram:specifiedtradepaymentterms')
+    
+    #invoice['payment_terms'] = terms_and_duedate.find('ram:description')
+    
+    doc_info = soup.find('rsm: exchangeddocument')
+    
+    invoice['terms'] = doc_info.find('ram:content')
+    
     
     try:        
-        date_str = soup.find('ram:duedatedatetime').string
+        date_str =  terms_and_duedate.find('udt:datetimestring').string
         #invoice['due_date'] = datetime.strtime(soup.find('ram:duedatedatetime').string, "%Y%m%d") 
-        invoice['due_date'] = datetime.datetime.strptime(date_str, '%Y%m%d').strftime('%d-%m-%Y')
+        invoice['due_date'] = datetime.datetime.strptime(date_str, '%Y%m%d').strftime('%d-%m-%Y') 
         frappe.msgprint("Added Due Date: " + invoice.due_date)
     except Exception as err:
         if debug:
             print("Read posting date failed: {err}".format(err=err))
             frappe.msgprint("No  Due date found")
         pass
-     
-    items = []
-    item_net_price = soup.find('ram:netpriceproducttradeprice')
-    for item in soup.find_all('ram:includedsupplychaintradelineitem'):
-        d = { 
-            'item_code': item.find('ram:sellerassignedid').string,
-            'item_name': item.find('ram:name').string,
-            'item_group': "All Item Groups",
-            'standard_rate': item_net_price.find('ram:chargeamount').string  
-        }
-        items.append(d)
-        
-        item_in = frappe.get_doc({
-            'doctype': 'Item',
-            'item_name': 'ultra boost',#item.find('ram:name').string,
-            'item_code': '69',#item.find('ram:sellerassignedid').string,
-            'item_group': "All Item Groups",
-            'standard_rate': item_net_price.find('ram:chargeamount').string
-        })
-        item_in.insert()
-        invoice['item'] = item_in.item_code
     
-        frappe.msgprint("<b>" + "Added new Item:" + "</b>" + "<br>" + "<br>" + "<b>" 
-        + "Item name: " + "</b>" + item_in.item_name + "<br>" + "<b>" + "Item code: " "</b>" + item_in.item_code + "<br>" + "<b>" + "Item group: " 
-        + "</b>" + item_in.item_group + "<br>" + "<b>" + "Standard rate: " + "</b>" + item_in.standard_rate + "<br>")
-        
+
+    #due_date = soup.find('ram:duedatedatetime')
+    #due_date_time = due_date.find('udt: datetimestring').string    
+    #invoice['due_date'] = datetime.strtime(due_date.find('udt: duedatedatetime').string, "%Y%m%d")
+    #frappe.msgprint("Added Due Date: " + due_date_time)
     
-    document_context = soup.find('rsm:exchangeddocument')
-    invoice['terms'] = document_context.find('ram:content').string
     
-    doc_id = document_context.find('ram:id').string
     
-    specified_payment_terms = soup.find('ram:specifiedtradepaymentterms') 
-    description =  specified_payment_terms.find('ram:description').string
-       
-    #INSERTION
-    payment_terms = frappe.get_doc({
-		'doctype': 'Payment Term',
-        'payment_term_name': doc_id + " payment template",
-        'invoice_portion': '100.00',
-        'credit_days': '30',
-        'description': description, 
-        
+
+    '''
+    exchanged_document = soup.find('rsm: exchangeddocument')
+    invoice['bill_no'] = exchanged_document.find('ram:id').string #check what is meant witth this
+    
+    invoice['currency'] = soup.find('ram:InvoiceCurrencyCode').string
+    
+    invoice['items'] = soup.find().string
+    
+    '''
+    '''
+    item = soup.find('ram:includedsupplychaintradelineitem')
+    invoice['item_code'] = item.find('ram:sellerassignedid').string
+    invoice['item_name'] = item.find('ram:name').string
+    '''
+    '''
+    item_doc = frappe.get_doc({
+		'doctype': 'Item',
+        'title': item_name,
+        'item_code': item_code,
+        'item_name': item_name,
+        'item_group': "All Item Groups"
     })
-    payment_terms.insert()
-    invoice['payment_terms'] = payment_terms.payment_term_name
     
-    frappe.msgprint("<b>" + "Added new payment terms:" + "</b>" 
-    + "<br>" + "<br>" + "<b>" + "Term name: " + "</b>" + payment_terms.payment_term_name + "<br>" + "<b>" + "Invoice portion: " "</b>" + payment_terms.invoice_portion + "<br>" + "<b>" + "Credit days: " 
-    + "</b>" + payment_terms.credit_days + "<br>" + "<b>" + "Description: " + "</b>" + payment_terms.description + "<br>")
+    item_doc.insert()
     
-    trade_settlement = soup.find('ram:applicableheadertradesettlement')
-    invoice['currency'] = trade_settlement.find('ram:invoicecurrencycode').string
-  
+    
+    frappe.msgprint("<b>" + "Added new Item to  Items:" + "</b>" 
+    + "<br>" + "<br>" + "<b>" + "Title: " + "</b>" + item_doc.title + "<br>" + "<b>" + "Item Code: " "</b>" + item_doc.item_code + "<br>" + "<b>" + "Item name: " 
+    + "</b>" + item_doc.item_name + "<br>" + "<b>" + "Item group: " + "</b>" + item_doc.item_group + "<br>")
+    
+    
+    '''
+    
+    # get article information (items)
+    #TODO invoice['items'] = soup.sellertradeparty.name.get_text()
+    
+    # dates (codes: UNCL 2379: 102=JJJJMMTT, 610=JJJJMM, 616=JJJJWW)
+    '''
+    try:
+        invoice['posting_date'] = datetime.strptime(
+            soup.issuedatetime.datetimestring.get_text(), "%Y%m%d")
+    except Exception as err:
+        if debug:
+            print("Read posting date failed: {err}".format(err=err))
+        pass
+    '''
+    '''
+     
     invoice['currency'] = soup.find('ram:invoicecurrencycode').string
     
-    applicable_tax = soup.find('ram:applicabletradetax')
-    tax_rate = applicable_tax.find('ram:rateapplicablepercent').string
-    
-    if (tax_rate == 8.00) or (tax_rate == 8) or (tax_rate == 08.00):
-        invoice['tax_rule'] = "Switzerland VAT 2.4% - L"
-    else:
-        invoice['tax_rule'] = "Switzerland VAT 8% - L"
-        
-   
     pinv_doc = frappe.get_doc({
-        'doctype': 'Purchase Invoice',
-        'supplier': 'LibraCore',
-        'title': invoice['supplier_name'],
-        'due_date': invoice['due_date'],
-        #'company': 'LibraCore',
+        "doctype": "Purchase Invoice",
+        "supplier": invoice['supplier_name'],
+        "title": invoice['supplier_name'],
+        #"transaction_date": str(invoice['date_invoice']),
+        "company": "LibraCore",
         'currency': invoice['currency'],
-        'payment_schedule[0].payment_term': invoice['payment_terms'],
-        'terms': invoice['terms'],
+        'conversion_rate': 1.0,
+        'price_list_currency': invoice['currency'],
+        'plc_conversion_rate': 1.0,
         'naming_series': 'PINV-',
         'status': 'Draft',
-        'taxes_and_charges': invoice['tax_rule'],
-        'items': [{
-            'item_code': '420',
-            'item_name': 'Nike Air',
-            #'schedule_date': '2019 - 03 - 30',
-            'description': 'Wafer Test',
-            'qty': 12,
-            'conversion_factor': 1,
-            'rate': 12,
-            'base_amount': 12,
-        }],
-        
+                
+        "items":[]
     })
      
     pinv_doc.insert()
-    frappe.msgprint("<b>" + "Successfully generated new Purchase Invoice from File:" + "</b>")
+    '''
      
     return invoice
 
+    #this works to add a new document into existing doctype    
+    #duplicate doctypes will not be added
 
 @frappe.whitelist()
 def gen():

@@ -115,7 +115,9 @@ def create_new_item(item, soup, item_group):
 			"item_name": item.Art_Txt_Kurz.get_text(),
 			"description": item.Art_Txt_Lang.get_text(),
 			"uom": item.BM_Einheit_Code.get('BM_Einheit'),
-			"item_group": item_group
+			"item_group": item_group,
+			"is_stock_item": 0,
+			"include_item_in_manufacturing": 0
 		})
 		new_item.insert()
 		frappe.db.commit()

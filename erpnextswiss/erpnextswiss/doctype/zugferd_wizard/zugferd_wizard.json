@@ -5,8 +5,10 @@
  "engine": "InnoDB",
  "field_order": [
   "file",
-  "section_break_2",
-  "supplier_name"
+  "section_preview",
+  "preview_html",
+  "content_dict",
+  "ready_for_import"
  ],
  "fields": [
   {
@@ -16,18 +18,30 @@
    "label": "File"
   },
   {
-   "fieldname": "section_break_2",
-   "fieldtype": "Section Break"
+   "fieldname": "section_preview",
+   "fieldtype": "Section Break",
+   "label": "Preview"
   },
   {
-   "fieldname": "supplier_name",
-   "fieldtype": "Data",
-   "label": "Supplier name",
-   "read_only": 1
+   "fieldname": "preview_html",
+   "fieldtype": "HTML",
+   "label": "Preview",
+   "options": "Please load a file..."
+  },
+  {
+   "fieldname": "content_dict",
+   "fieldtype": "Code",
+   "label": "Content dict"
+  },
+  {
+   "default": "0",
+   "fieldname": "ready_for_import",
+   "fieldtype": "Check",
+   "label": "Ready for import"
   }
  ],
  "issingle": 1,
- "modified": "2020-07-28 15:38:04.078888",
+ "modified": "2020-07-29 22:29:42.129096",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "ZUGFeRD Wizard",
@@ -40,6 +54,15 @@
    "print": 1,
    "read": 1,
    "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "Purchase Manager",
    "share": 1,
    "write": 1
   }

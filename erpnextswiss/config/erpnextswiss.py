@@ -123,6 +123,18 @@ def get_data():
             "items": [
                    {
                        "type": "doctype",
+                       "name": "ZUGFeRD Wizard",
+                       "label": _("ZUGFeRD Wizard"),
+                       "description": _("ZUGFeRD Wizard")                   
+                   },
+                   {
+                       "type": "doctype",
+                       "name": "ZUGFeRD Settings",
+                       "label": _("ZUGFeRD Settings"),
+                       "description": _("ZUGFeRD Settings")                   
+                   },
+                   {
+                       "type": "doctype",
                        "name": "Abacus Export File",
                        "label": _("Abacus Export File"),
                        "description": _("Abacus Export File")                   

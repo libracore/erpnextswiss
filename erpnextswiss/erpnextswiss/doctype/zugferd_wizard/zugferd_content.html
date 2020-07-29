@@ -1,0 +1,7 @@
+<table class="table">
+  <tr>
+    <td>{{ _("Supplier") }}</td>
+    <td>{{ supplier_name }} ({{ supplier_taxid }})</td>
+    <td>{% if not supplier %}{{ _("new") }}{% else %}[{{ supplier }}]{% endif %}</td>
+  </tr>
+</table>

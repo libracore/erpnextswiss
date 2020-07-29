@@ -4,16 +4,25 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
+  "section_items",
   "item_group"
  ],
  "fields": [
   {
+   "description": "New items will be created in this group",
    "fieldname": "item_group",
-   "fieldtype": "Data",
-   "label": "Item Group"
+   "fieldtype": "Link",
+   "label": "Item Group",
+   "options": "Item Group"
+  },
+  {
+   "fieldname": "section_items",
+   "fieldtype": "Section Break",
+   "label": "Items"
   }
  ],
- "modified": "2020-07-28 15:38:30.704033",
+ "issingle": 1,
+ "modified": "2020-07-29 19:37:36.327563",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "ZUGFeRD Settings",
@@ -23,10 +32,8 @@
    "create": 1,
    "delete": 1,
    "email": 1,
-   "export": 1,
    "print": 1,
    "read": 1,
-   "report": 1,
    "role": "System Manager",
    "share": 1,
    "write": 1

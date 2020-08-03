@@ -48,6 +48,11 @@ def create_zugferd_pdf(docname, verify=True, format=None, doc=None, doctype="Sal
         return pdf
 
 @frappe.whitelist()    
+def hello():
+    frappe.msgprint("hallo")
+    return 
+
+@frappe.whitelist()    
 def get_xml(path):
     xml_filename, xml_content = get_facturx_xml_from_pdf(path)
     return xml_content
@@ -83,6 +88,12 @@ def get_content_from_zugferd(zugferd_xml, debug=False):
         else:
             # need to insert new supplier
             invoice['supplier'] = None
+    
+    invoice['supplier_pincode'] = seller.find('ram:postcodecode').string or ""
+    invoice['supplier_al'] = seller.find('ram:lineone').string or ""
+    invoice['supplier_city'] = seller.find('ram:cityname').string or ""
+
+
     
     # find due date
     today = date.today()
@@ -147,6 +158,12 @@ def get_content_from_zugferd(zugferd_xml, debug=False):
         
         items.append(_item)
     invoice['items'] = items
+    
+    total_amounts = soup.find('ram:specifiedtradesettlementheadermonetarysummation')
+
+    invoice['line_total'] = total_amounts.find('ram:linetotalamount').string
+    invoice['total_taxes'] = total_amounts.find('ram:taxtotalamount').string
+    invoice['grand_total'] = total_amounts.find('ram:grandtotalamount').string
 
     return invoice
 

@@ -18,7 +18,8 @@ class ZUGFeRDWizard(Document):
         # return html and dict
         return { 'html': content, 'dict': invoice }
     
-    def create_supplier(self):
+    @frappe.whitelist()
+    def create_supplier():
         doc = frappe.get_doc({
             'doctype': 'Supplier',
             'title': seller.find('ram:name').string,

@@ -3,9 +3,12 @@
 
 frappe.ui.form.on('ZUGFeRD Wizard', {
 	refresh: function(frm) {
-        if (frm.doc.ready_for_import === 1) {
+        if (frm.doc.ready_for_import == 1) {
             frm.add_custom_button(__("Create invoice"), function() {
                 frappe.show_alert( __("doing it...!") );
+                frappe.call({
+				method:"erpnextswiss.erpnextswiss.doctype.zugferd_wizard.zugferd_wizard.create_supplier",
+				})
             });
         }
 	},

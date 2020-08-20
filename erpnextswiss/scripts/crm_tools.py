@@ -97,3 +97,18 @@ def update_contact_first_and_last_name(contact, firstname, lastname):
     contact.first_name = firstname
     contact.last_name = lastname
     contact.save()
+	
+@frappe.whitelist()
+def change_customer_without_impact_on_price(dt, record, customer, address=None, contact=None):
+    additional_updates = ''
+    if address:
+        additional_updates += ", `customer_address` = '{address}'".format(address=address)
+    if contact:
+        additional_updates += ", `contact_person` = '{contact}'".format(contact=contact)
+    if dt == 'Quotation':
+        update_query = """UPDATE `tab{dt}` SET `party_name` = '{customer}', `customer_name` = '{customer_name}'{additional_updates} WHERE `name` = '{record}'""".format(dt=dt, customer=customer, customer_name=frappe.get_doc("Customer", customer).customer_name, additional_updates=additional_updates, record=record)
+    else:
+        update_query = """UPDATE `tab{dt}` SET `customer` = '{customer}', `customer_name` = '{customer_name}'{additional_updates} WHERE `name` = '{record}'""".format(dt=dt, customer=customer, customer_name=frappe.get_doc("Customer", customer).customer_name, additional_updates=additional_updates, record=record)
+
+    frappe.db.sql(update_query, as_list=True)
+    return

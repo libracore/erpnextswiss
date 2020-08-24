@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018-2019, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2018-2020, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
 import frappe
+from frappe import _
 
 # try to get building number from address line
 def get_building_number(address_line):
@@ -57,3 +58,80 @@ def get_primary_address(target_name, target_type="Customer"):
         return frappe.db.sql(sql_query, as_dict=True)[0]
     except:
         return None
+
+"""
+	This function will compute a SCOR structured creditor reference from a regular reference of max. 21 alphanumeric characters
+"""
+@frappe.whitelist()
+def get_scor_reference(reference):
+	# length must not exceed 21 characters:
+	ref_str = "{0}".format(reference)
+	if len(ref_str) > 21:
+		frappe.throw( _("Please provide a reference with max. 21 characters") )
+	# compute reference code
+	ref_code = ""
+	for c in ref_str:
+		if c in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']:
+			ref_code += c
+		elif c in ['A', 'a']:
+			ref_code += "10"
+		elif c in ['B', 'b']:
+			ref_code += "11"
+		elif c in ['C', 'c']:
+			ref_code += "12"
+		elif c in ['D', 'd']:
+			ref_code += "13"
+		elif c in ['E', 'e']:
+			ref_code += "14"
+		elif c in ['F', 'F']:
+			ref_code += "15"
+		elif c in ['G', 'g']:
+			ref_code += "16"
+		elif c in ['H', 'h']:
+			ref_code += "17"
+		elif c in ['I', 'i']:
+			ref_code += "18"
+		elif c in ['J', 'j']:
+			ref_code += "19"
+		elif c in ['K', 'k']:
+			ref_code += "20"
+		elif c in ['L', 'l']:
+			ref_code += "21"
+		elif c in ['M', 'm']:
+			ref_code += "22"
+		elif c in ['N', 'n']:
+			ref_code += "23"
+		elif c in ['O', 'o']:
+			ref_code += "24"
+		elif c in ['P', 'p']:
+			ref_code += "25"
+		elif c in ['Q', 'q']:
+			ref_code += "26"
+		elif c in ['R', 'r']:
+			ref_code += "27"
+		elif c in ['S', 's']:
+			ref_code += "28"
+		elif c in ['T', 't']:
+			ref_code += "29"
+		elif c in ['U', 'u']:
+			ref_code += "30"
+		elif c in ['V', 'v']:
+			ref_code += "31"
+		elif c in ['W', 'w']:
+			ref_code += "32"
+		elif c in ['X', 'x']:
+			ref_code += "33"
+		elif c in ['Y', 'y']:
+			ref_code += "34"
+		elif c in ['Z', 'z']:
+			ref_code += "35"
+		else:
+			frappe.throw( _("Only valid alphanumeric characters are allowed: {0}").format(c))
+	# add RF00 (= 27 15 0 0)
+	ref_code += "271500"
+	# compute modulo 97
+	mod = int(ref_code) % 97
+	# difference of 98 (97 plus 1, result must be 1) of mod is check digit
+	check_digit = '{num:02d}'.format(num=(98 - mod))
+	# return full code
+	return "RF{check}{reference}".format(check=check_digit, reference=reference)

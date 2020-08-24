@@ -6,8 +6,12 @@ frappe.ui.form.on('ZUGFeRD Wizard', {
         if (frm.doc.ready_for_import == 1) {
             frm.add_custom_button(__("Create invoice"), function() {
                 frappe.show_alert( __("doing it...!") );
+                
+                
+                
                 frappe.call({
-				method:"erpnextswiss.erpnextswiss.doctype.zugferd_wizard.zugferd_wizard.create_supplier",
+				method: 'hello',
+				doc: frm.doc
 				})
             });
         }
@@ -26,10 +30,17 @@ frappe.ui.form.on('ZUGFeRD Wizard', {
                    cur_frm.set_value('ready_for_import', 1);
                 }
             });
+            
         } else {
             // no file --> clear
             cur_frm.set_df_property('preview_html', 'options', __("Please load a file...") );
             cur_frm.set_value('ready_for_import', 0);
         }
+        
     }
+    
+    
+    
+    
+    
 });

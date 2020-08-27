@@ -81,16 +81,18 @@ function esr_sales_invoice(frm, participant_number) {
 }  
 
 // this function resolves a pin code and fills the city into the target field of a form
-function get_city_from_pincode(pincode, target_field, state_field="") {
+function get_city_from_pincode(pincode, target_field, state_field="", country=null) {
+	var filters = [['pincode','=', pincode]];
+	if (country) {
+		filters.push(['country', '=', country]);
+	}
     // find cities
     if (pincode) {
         frappe.call({
             method: 'frappe.client.get_list',
             args: {
                 doctype: 'Pincode',
-                filters: [
-                    ['pincode','=', pincode]
-                ],
+                filters: filters,
                 fields: ['name', 'pincode', 'city', 'canton_code']
             },
             async: false,

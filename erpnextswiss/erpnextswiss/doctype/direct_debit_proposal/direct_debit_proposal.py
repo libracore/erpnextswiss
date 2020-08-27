@@ -72,7 +72,7 @@ class DirectDebitProposal(Document):
             'paid_to': self.intermediate_account,
             'received_amount': amount,
             'paid_amount': amount,
-            'reference_no': reference_name,
+            'reference_no': "{0} {1}".format(reference_name, self.name),
             'reference_date': date,
             'remarks': "From Direct Debit Proposal {0}".format(self.name),
             'references': [{ 
@@ -95,7 +95,7 @@ class DirectDebitProposal(Document):
                 'paid_to': self.intermediate_account,
                 'received_amount': amount,
                 'paid_amount': amount,
-                'reference_no': reference_name,
+                'reference_no': "{0} {1}".format(reference_name, self.name),
                 'reference_date': date,
                 'remarks': "From Direct Debit Proposal {0}".format(self.name),
                 'references': [{ 

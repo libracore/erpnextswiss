@@ -31,6 +31,12 @@ From the frappe-bench folder, execute
 
     $ bench get-app https://github.com/libracore/erpnextswiss.git
     $ bench install-app erpnextswiss
+    
+If you are using a multi-tenant environment, use the following for the installation
+
+    $ bench --site site_name install-app erpnextswiss
+    
+(where site_name is e.g. erp.example.com)
 
 ## Update
 Run updates with

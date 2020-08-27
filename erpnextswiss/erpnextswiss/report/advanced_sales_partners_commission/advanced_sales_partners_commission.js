@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2019, libracore (https://www.libracore.com) and contributors
+// Copyright (c) 2016-2020, libracore (https://www.libracore.com) and contributors
 // For license information, please see license.txt
 /* eslint-disable */
 
@@ -15,6 +15,11 @@ frappe.query_reports["Advanced Sales Partners Commission"] = {
             "label": __("End date"),
             "fieldtype": "Date",
             "default" : frappe.datetime.get_today()
+        },
+        {
+            "fieldname":"show_disabled",
+            "label": __("Show disabled"),
+            "fieldtype": "Check"
         }
 	]
 }

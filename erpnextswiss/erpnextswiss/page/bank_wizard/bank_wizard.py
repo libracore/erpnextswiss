@@ -311,12 +311,12 @@ def read_camt_transactions(transaction_entries, account):
                                 street = party_soup.strtnm.get_text()
                                 try:
                                     street_number = party_soup.bldgnb.get_text()
-                                    address_line = "{0} {1}".format(street, street_number)
+                                    address_line1 = "{0} {1}".format(street, street_number)
                                 except:
-                                    address_line = street
+                                    address_line1 = street
                                     
                             except:
-                                address_line = ""
+                                address_line1 = ""
                             try:
                                 plz = party_soup.pstcd.get_text()
                             except:

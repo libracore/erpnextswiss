@@ -30,7 +30,10 @@ app_include_js = [
 # include js in doctype views
 # doctype_js = {"doctype" : "public/js/doctype.js"}
 doctype_js = {
-    "Item" : "public/js/item.js"
+    "Item" : "public/js/item.js",
+	"Quotation" : "scripts/hlk_scripts/quotation.js",
+	"Sales Order" : "scripts/hlk_scripts/sales_order.js",
+	"Sales Invoice" : "scripts/hlk_scripts/sales_invoice.js"
 }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
@@ -140,3 +143,7 @@ scheduler_events = {
 # Fixtures (to import DocType customisations)
 # --------
 fixtures = ["Custom Field"]
+
+domains = {
+	'HLK': 'erpnextswiss.domains.hlk'
+}

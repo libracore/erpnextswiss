@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from . import __version__ as app_version
+from erpnextswiss.domains.check_domains import get_active_domains
 
 app_name = "erpnextswiss"
 app_title = "ERPNextSwiss"
@@ -29,12 +30,17 @@ app_include_js = [
 
 # include js in doctype views
 # doctype_js = {"doctype" : "public/js/doctype.js"}
-doctype_js = {
-    "Item" : "public/js/item.js",
-	"Quotation" : "scripts/hlk_scripts/quotation.js",
-	"Sales Order" : "scripts/hlk_scripts/sales_order.js",
-	"Sales Invoice" : "scripts/hlk_scripts/sales_invoice.js"
-}
+if get_active_domains('HLK'):
+	doctype_js = {
+		"Item" : "public/js/item.js",
+		"Quotation" : "scripts/hlk_scripts/quotation.js",
+		"Sales Order" : "scripts/hlk_scripts/sales_order.js",
+		"Sales Invoice" : "scripts/hlk_scripts/sales_invoice.js"
+	}
+else:
+	doctype_js = {
+		"Item" : "public/js/item.js"
+	}
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}

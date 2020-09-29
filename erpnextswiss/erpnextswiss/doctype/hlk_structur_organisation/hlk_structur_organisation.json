@@ -1,0 +1,117 @@
+{
+ "creation": "2020-07-08 09:15:35.875966",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "main_element",
+  "parent_element",
+  "total",
+  "net_total",
+  "charged",
+  "discounting",
+  "discount_in_percent",
+  "show_discount",
+  "page_break_before",
+  "page_break_after",
+  "show_total_after_this_position",
+  "show_main_total_after_this_position"
+ ],
+ "fields": [
+  {
+   "fieldname": "main_element",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Element",
+   "options": "Item",
+   "reqd": 1,
+   "search_index": 1
+  },
+  {
+   "fetch_from": "element.eltern_element",
+   "fetch_if_empty": 1,
+   "fieldname": "parent_element",
+   "fieldtype": "Link",
+   "label": "Parent Element",
+   "options": "Item"
+  },
+  {
+   "fieldname": "total",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Total",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "discounting",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Discounting"
+  },
+  {
+   "depends_on": "eval:doc.discounting",
+   "fieldname": "discount_in_percent",
+   "fieldtype": "Percent",
+   "in_list_view": 1,
+   "label": "Discount in Percent"
+  },
+  {
+   "default": "1",
+   "depends_on": "eval:doc.discounting",
+   "fieldname": "show_discount",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Show Discount"
+  },
+  {
+   "fieldname": "net_total",
+   "fieldtype": "Currency",
+   "label": "Net total",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "charged",
+   "fieldtype": "Percent",
+   "label": "Charged",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "show_total_after_this_position",
+   "fieldtype": "Check",
+   "label": "Show Total After This Position"
+  },
+  {
+   "default": "0",
+   "fieldname": "show_main_total_after_this_position",
+   "fieldtype": "Check",
+   "label": "Show Main Total After This Position"
+  },
+  {
+   "default": "0",
+   "fieldname": "page_break_before",
+   "fieldtype": "Check",
+   "label": "Page Breake Before Element"
+  },
+  {
+   "default": "0",
+   "fieldname": "page_break_after",
+   "fieldtype": "Check",
+   "label": "Page Breake After Element"
+  }
+ ],
+ "istable": 1,
+ "modified": "2020-09-23 12:53:42.464456",
+ "modified_by": "Administrator",
+ "module": "ERPNextSwiss",
+ "name": "HLK Structur Organisation",
+ "owner": "joel.mesmer@libracore.com",
+ "permissions": [],
+ "restrict_to_domain": "HLK",
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

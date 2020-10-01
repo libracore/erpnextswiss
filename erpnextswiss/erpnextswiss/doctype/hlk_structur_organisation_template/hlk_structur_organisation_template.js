@@ -4,7 +4,7 @@
 frappe.ui.form.on('HLK Structur Organisation Template', {
 	refresh: function(frm) {
 		frappe.call({
-			"method": "hlk.utils.get_item_group_for_structur_element_filter",
+			"method": "erpnextswiss.erpnextswiss.page.bkp_importer.utils.get_item_group_for_structur_element_filter",
 			"async": false,
 			"callback": function(response) {
 				var item_group_for_structur_element_filter = response.message;

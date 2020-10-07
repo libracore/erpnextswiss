@@ -29,17 +29,11 @@ app_include_js = [
 
 # include js in doctype views
 # doctype_js = {"doctype" : "public/js/doctype.js"}
-#if get_active_domains('HLK'):
-#    doctype_js = {
-#        "Item" : "public/js/item.js",
-#        "Quotation" : "scripts/hlk_scripts/quotation.js",
-#        "Sales Order" : "scripts/hlk_scripts/sales_order.js",
-#        "Sales Invoice" : "scripts/hlk_scripts/sales_invoice.js"
-#    }
-#else:
 doctype_js = {
-    "Item" :        "public/js/item.js",
-    "Quotation" :   "public/js/quotation.js"
+    "Item" :            "public/js/item.js",
+    "Quotation" :       "public/js/quotation.js",
+    "Sales Order" :     "public/js/sales_order.js",
+    "Sales Invoice" :   "public/js/sales Invoice.js"
 }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}

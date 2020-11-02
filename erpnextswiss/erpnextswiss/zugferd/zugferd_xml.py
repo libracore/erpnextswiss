@@ -13,7 +13,7 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 from facturx import check_facturx_xsd
 from erpnextswiss.erpnextswiss.zugferd.codelist import get_unit_code
-import cgi          # used to escape xml content
+import html          # used to escape xml content
 
 """
 Creates an XML file from a sales invoice
@@ -29,29 +29,29 @@ def create_zugferd_xml(sales_invoice, verify=True):
         notes = []
         if sinv.terms:
             notes.append({
-                'text': cgi.escape(BeautifulSoup(sinv.terms, "lxml").text or "")
+                'text': html.escape(BeautifulSoup(sinv.terms, "lxml").text or "")
             })
         if hasattr(sinv, 'eingangstext') and sinv.eingangstext:
             notes.append({
-                'text': cgi.escape(BeautifulSoup(sinv.eingangstext, "lxml").text or "")
+                'text': html.escape(BeautifulSoup(sinv.eingangstext, "lxml").text or "")
             })
         if len(notes) == 0:
             notes.append({
-                'text': cgi.escape("Sales Invoice {title} ({number}), {date}".format(
+                'text': html.escape("Sales Invoice {title} ({number}), {date}".format(
                     title=sinv.title, number=sinv.name, date=sinv.posting_date))
             })
         # compile xml content
         data = {
-            'name': cgi.escape(sinv.name),
+            'name': html.escape(sinv.name),
             'issue_date': "{year:04d}{month:02d}{day:02d}".format(
               year=sinv.posting_date.year, month=sinv.posting_date.month, day=sinv.posting_date.day),
             'notes': notes,
-            'company': cgi.escape(sinv.company),
-            'tax_id': cgi.escape(company.tax_id or ""),
-            'customer': cgi.escape(sinv.customer),
-            'customer_name': cgi.escape(sinv.customer_name),
+            'company': html.escape(sinv.company),
+            'tax_id': html.escape(company.tax_id or ""),
+            'customer': html.escape(sinv.customer),
+            'customer_name': html.escape(sinv.customer_name),
             'currency': sinv.currency,
-            'payment_terms': cgi.escape(sinv.payment_terms_template),
+            'payment_terms': html.escape(sinv.payment_terms_template or ""),
             'due_date': "{year:04d}{month:02d}{day:02d}".format(
               year=sinv.due_date.year, month=sinv.due_date.month, day=sinv.due_date.day),
             'total': sinv.total,
@@ -66,8 +66,8 @@ def create_zugferd_xml(sales_invoice, verify=True):
         for item in sinv.items:
             item_data = {
                 'idx': item.idx,
-                'item_code': cgi.escape(item.item_code),
-                'item_name': cgi.escape(item.item_name),
+                'item_code': html.escape(item.item_code),
+                'item_name': html.escape(item.item_name),
                 'barcode': item.barcode,
                 'price_list_rate': item.price_list_rate,
                 'rate': item.rate,
@@ -94,10 +94,10 @@ def create_zugferd_xml(sales_invoice, verify=True):
         company_address = get_primary_address(target_name=sinv.company, target_type="Company")
         if company_address:
             data['company_address'] = {
-                'address_line1': cgi.escape(company_address.address_line1 or ""),
-                'address_line2': cgi.escape(company_address.address_line2 or ""),
-                'pincode': cgi.escape(company_address.pincode or ""),
-                'city': cgi.escape(company_address.city or ""),
+                'address_line1': html.escape(company_address.address_line1 or ""),
+                'address_line2': html.escape(company_address.address_line2 or ""),
+                'pincode': html.escape(company_address.pincode or ""),
+                'city': html.escape(company_address.city or ""),
                 'country_code': company_address['country_code'] or "CH"
             }
         else:
@@ -112,10 +112,10 @@ def create_zugferd_xml(sales_invoice, verify=True):
         if customer_address:
             customer_country_code = frappe.get_value("Country", customer_address.country, "code").upper()
             data['customer_address'] = {
-                'address_line1': cgi.escape(customer_address.address_line1 or ""),
-                'address_line2': cgi.escape(customer_address.address_line2 or ""),
-                'pincode': cgi.escape(customer_address.pincode or ""),
-                'city': cgi.escape(customer_address.city or ""),
+                'address_line1': html.escape(customer_address.address_line1 or ""),
+                'address_line2': html.escape(customer_address.address_line2 or ""),
+                'pincode': html.escape(customer_address.pincode or ""),
+                'city': html.escape(customer_address.city or ""),
                 'country_code': customer_country_code or "CH"
             }
         else:

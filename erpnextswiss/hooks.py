@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from . import __version__ as app_version
-from erpnextswiss.domains.check_domains import get_active_domains
 
 app_name = "erpnextswiss"
 app_title = "ERPNextSwiss"
@@ -30,17 +29,12 @@ app_include_js = [
 
 # include js in doctype views
 # doctype_js = {"doctype" : "public/js/doctype.js"}
-if get_active_domains('HLK'):
-	doctype_js = {
-		"Item" : "public/js/item.js",
-		"Quotation" : "scripts/hlk_scripts/quotation.js",
-		"Sales Order" : "scripts/hlk_scripts/sales_order.js",
-		"Sales Invoice" : "scripts/hlk_scripts/sales_invoice.js"
-	}
-else:
-	doctype_js = {
-		"Item" : "public/js/item.js"
-	}
+doctype_js = {
+    "Item" :            "public/js/item.js",
+    "Quotation" :       "public/js/quotation.js",
+    "Sales Order" :     "public/js/sales_order.js",
+    "Sales Invoice" :   "public/js/sales Invoice.js"
+}
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
@@ -60,7 +54,7 @@ jenv = {
 
 # website user home page (by Role)
 # role_home_page = {
-#	"Role": "home_page"
+#    "Role": "home_page"
 # }
 
 # Website user home page (by function)
@@ -89,11 +83,11 @@ after_install = "erpnextswiss.setup.install.after_install"
 # Permissions evaluated in scripted ways
 
 # permission_query_conditions = {
-# 	"Event": "frappe.desk.doctype.event.event.get_permission_query_conditions",
+#     "Event": "frappe.desk.doctype.event.event.get_permission_query_conditions",
 # }
 #
 # has_permission = {
-# 	"Event": "frappe.desk.doctype.event.event.has_permission",
+#     "Event": "frappe.desk.doctype.event.event.has_permission",
 # }
 
 # Document Events
@@ -101,37 +95,37 @@ after_install = "erpnextswiss.setup.install.after_install"
 # Hook on document methods and events
 
 # doc_events = {
-# 	"*": {
-# 		"on_update": "method",
-# 		"on_cancel": "method",
-# 		"on_trash": "method"
-#	}
+#     "*": {
+#         "on_update": "method",
+#         "on_cancel": "method",
+#         "on_trash": "method"
+#    }
 # }
 
 # Scheduled Tasks
 # ---------------
 
 # scheduler_events = {
-# 	"all": [
-# 		"erpnextswiss.tasks.all"
-# 	],
-# 	"daily": [
-# 		"erpnextswiss.tasks.daily"
-# 	],
-# 	"hourly": [
-# 		"erpnextswiss.tasks.hourly"
-# 	],
-# 	"weekly": [
-# 		"erpnextswiss.tasks.weekly"
-# 	]
-# 	"monthly": [
-# 		"erpnextswiss.tasks.monthly"
-# 	]
+#     "all": [
+#         "erpnextswiss.tasks.all"
+#     ],
+#     "daily": [
+#         "erpnextswiss.tasks.daily"
+#     ],
+#     "hourly": [
+#         "erpnextswiss.tasks.hourly"
+#     ],
+#     "weekly": [
+#         "erpnextswiss.tasks.weekly"
+#     ]
+#     "monthly": [
+#         "erpnextswiss.tasks.monthly"
+#     ]
 # }
 scheduler_events = {
-	"daily": [
-		"erpnextswiss.erpnextswiss.doctype.inspection_equipment.inspection_equipment.check_calibration_status"
-	]
+    "daily": [
+        "erpnextswiss.erpnextswiss.doctype.inspection_equipment.inspection_equipment.check_calibration_status"
+    ]
 }
 
 # Testing
@@ -143,7 +137,7 @@ scheduler_events = {
 # ------------------------------
 #
 # override_whitelisted_methods = {
-# 	"frappe.desk.doctype.event.event.get_events": "erpnextswiss.event.get_events"
+#     "frappe.desk.doctype.event.event.get_events": "erpnextswiss.event.get_events"
 # }
 
 # Fixtures (to import DocType customisations)
@@ -151,5 +145,5 @@ scheduler_events = {
 fixtures = ["Custom Field"]
 
 domains = {
-	'HLK': 'erpnextswiss.domains.hlk'
+    'HLK': 'erpnextswiss.domains.hlk'
 }

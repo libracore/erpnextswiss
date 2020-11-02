@@ -51,6 +51,7 @@ class PaymentProposal(Document):
         # create the aggregated payment table
         # collect customers
         suppliers = []
+        total = 0
         for purchase_invoice in self.purchase_invoices:
             if purchase_invoice.supplier not in suppliers:
                 suppliers.append(purchase_invoice.supplier)
@@ -111,7 +112,7 @@ class PaymentProposal(Document):
                 self.add_payment(supl.supplier_name, supl.iban, payment_type,
                     addr.address_line1, "{0} {1}".format(addr.pincode, addr.city), addr.country,
                     amount, currency, " ".join(references), exec_date)
-
+                total += amount
         # collect employees
         employees = []
         account_currency = frappe.get_value("Account", self.pay_from_account, 'account_currency')
@@ -144,7 +145,9 @@ class PaymentProposal(Document):
             self.add_payment(emp.employee_name, emp.bank_ac_no, "IBAN",
                 address_lines[0], address_lines[1], cntry,
                 amount, currency, " ".join(references), self.date)
-
+                total += amount
+        # update total
+        self.total = total
         # save
         self.save()
 

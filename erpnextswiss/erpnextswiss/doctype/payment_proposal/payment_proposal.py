@@ -145,7 +145,7 @@ class PaymentProposal(Document):
             self.add_payment(emp.employee_name, emp.bank_ac_no, "IBAN",
                 address_lines[0], address_lines[1], cntry,
                 amount, currency, " ".join(references), self.date)
-                total += amount
+            total += amount
         # update total
         self.total = total
         # save

@@ -85,6 +85,9 @@ function set_payment_date(frm) {
 frappe.ui.form.on('Payment Proposal Purchase Invoice', {
     purchase_invoices_remove: function(frm) {
         recalculate_total(frm);
+    },
+    skonto_amount: function(frm) {
+        recalculate_total(frm);
     }
 });
 

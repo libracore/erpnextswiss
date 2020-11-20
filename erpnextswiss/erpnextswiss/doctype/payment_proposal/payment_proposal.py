@@ -273,11 +273,18 @@ class PaymentProposal(Document):
                 payment_record['iban'] = payment.iban.replace(" ", "")
                 payment_record['reference'] = payment.reference
             elif payment.payment_type == "ESR":
-                # proprietary (nothing or CH01 for ESR)            
-                payment_record['local_instrument'] = "CH01"
-                payment_record['service_level'] = "ESR"                    # only internal information
-                payment_record['esr_participation_number'] = payment.esr_participation_number
-                payment_record['esr_reference'] = payment.esr_reference.replace(" ", "")
+                # Decision whether ESR or QRR
+                if 'CH' in payment.esr_participation_number:
+                    # It is a QRR
+                    payment_record['service_level'] = "QRR"                    # only internal information
+                    payment_record['esr_participation_number'] = payment.esr_participation_number.replace(" ", "")                    # handle esr_participation_number as QR-IBAN
+                    payment_record['esr_reference'] = payment.esr_reference.replace(" ", "")                    # handle esr_reference as QR-Reference
+                else:
+                    # proprietary (nothing or CH01 for ESR)            
+                    payment_record['local_instrument'] = "CH01"
+                    payment_record['service_level'] = "ESR"                    # only internal information
+                    payment_record['esr_participation_number'] = payment.esr_participation_number
+                    payment_record['esr_reference'] = payment.esr_reference.replace(" ", "")
             else:
                 payment_record['service_level'] = "IBAN"
                 payment_record['iban'] = payment.iban.replace(" ", "")

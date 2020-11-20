@@ -98,6 +98,12 @@
         <Id><Othr><Id>{{ payment.esr_participation_number }}</Id></Othr></Id>
         </CdtrAcct>
         <RmtInf><Strd><CdtrRefInf><Ref>{{ payment.esr_reference }}</Ref></CdtrRefInf></Strd></RmtInf>
+        {%- elif payment.service_level == "QRR" %}
+        {#- QRR payment block #}
+        <CdtrAcct>
+        <Id><IBAN>{{ payment.esr_participation_number }}</IBAN></Id>
+        </CdtrAcct>
+        <RmtInf><Strd><CdtrRefInf><Tp><CdOrPrtry><Prtry>QRR</Prtry></CdOrPrtry></Tp><Ref>{{ payment.esr_reference }}</Ref></CdtrRefInf></Strd></RmtInf>
         {%- else %}
         {#- IBAN payment block #}
         <CdtrAcct>

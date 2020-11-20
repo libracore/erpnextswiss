@@ -31,3 +31,10 @@ def create_zugferd_pdf(docname, verify=True, format=None, doc=None, doctype="Sal
         frappe.log_error("Unable to create zugferdPDF for {2}: {0}\n{1}".format(err, xml, docname), "ZUGFeRD")
         # fallback to normal pdf
         return get_pdf(html)
+
+@frappe.whitelist()
+def download_zugferd_pdf(sales_invoice_name, format=None, doc=None, no_letterhead=0, verify=True):
+    frappe.local.response.filename = "{name}.pdf".format(name=sales_invoice_name.replace(" ", "-").replace("/", "-"))
+    frappe.local.response.filecontent = create_zugferd_pdf(sales_invoice_name, verify=verify, format=format, doc=doc, no_letterhead=no_letterhead)
+    frappe.local.response.type = "download"
+    return

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018-2019, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2018-2020, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
 
 from __future__ import unicode_literals
@@ -387,7 +387,7 @@ def create_payment_proposal(date=None, company=None):
             'esr_participation_number': invoice.esr_participation_number,
             'external_reference': reference
         }
-        total += invoice.outstanding_amount
+        total += invoice.skonto_amount
         invoices.append(new_invoice)
     # get all open expense claims
     sql_query = ("""SELECT `name`, 

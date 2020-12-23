@@ -9,18 +9,29 @@ frappe.ui.form.on('Purchase Invoice', {
 });
 
 function scan_invoice_code_line(frm) {
-	frappe.prompt([
-		{'fieldname': 'code_scan', 'fieldtype': 'Code', 'label': __('Code'), 'reqd': 1}  
-	],
-	function(values){
-		check_scan_input(frm, values.code_scan);
-	},
-	__('Scan Invoice Code Line'),
-	__('OK')
-	)
+	frappe.call({
+        "method": "erpnextswiss.scripts.esr_qr_tools.get_default_item",
+        "callback": function(response) {
+            if (response.message.error) {
+                frappe.msgprint(response.message.error);
+            } else {
+                var item = response.message.default_item;
+                frappe.prompt([
+                    {'fieldname': 'default_item', 'fieldtype': 'Link', 'label': __('Item'), 'reqd': 1, 'options': 'Item', 'default': item},
+                    {'fieldname': 'code_scan', 'fieldtype': 'Code', 'label': __('Code'), 'reqd': 1}  
+                ],
+                function(values){
+                    check_scan_input(frm, values.code_scan, values.default_item);
+                },
+                __('Scan Invoice Code Line'),
+                __('OK')
+                )
+            }
+        }
+    });
 }
 
-function check_scan_input(frm, code_scan) {
+function check_scan_input(frm, code_scan, default_item) {
 	// ESR Section
 	var regex = /[0-9]{13}[>][0-9]{27}[+][ ][0-9]{9}[>]/g; // 0100003949753>120000000000234478943216899+ 010001628>
 	if (regex.test(code_scan) === true){
@@ -30,14 +41,14 @@ function check_scan_input(frm, code_scan) {
 		var amount = String(amount_int) + "." + String(amount_dec); // Betrag in CHF; z.B. 3949.75
 		var reference = code_scan.split(">")[1].substring(0,27); // ESR-Referenznummer; z.B. 120000000000234478943216899
 		var participant = code_scan.split("+ ")[1].substring(0,9); // ESR-Teilnehmer; z.B. 010001628
-		get_data_based_on_esr(frm, participant, reference, amount);
+		get_data_based_on_esr(frm, participant, reference, amount, default_item);
 	} else {
 		// QR Section (tbd)
 		frappe.msgprint(__("Invalid ESR Code Line"));
 	}
 }
 
-function get_data_based_on_esr(frm, participant, reference, amount) {
+function get_data_based_on_esr(frm, participant, reference, amount, default_item) {
 	frappe.call({
         "method": "erpnextswiss.scripts.esr_qr_tools.get_data_based_on_esr",
         "args": {
@@ -47,7 +58,6 @@ function get_data_based_on_esr(frm, participant, reference, amount) {
             var error = response.message.error;
 			if (!error) {
 				var more_than_one_supplier = response.message.more_than_one_supplier;
-				var default_item = response.message.default_item;
 				if (!more_than_one_supplier) {
 					// exatly one supplier
 					var supplier = response.message.supplier;

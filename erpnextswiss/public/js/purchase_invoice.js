@@ -10,13 +10,13 @@ frappe.ui.form.on('Purchase Invoice', {
 
 function scan_invoice_code_line(frm) {
 	frappe.prompt([
-		{'fieldname': 'code_scan', 'fieldtype': 'Code', 'label': __('Code Scan'), 'reqd': 1}  
+		{'fieldname': 'code_scan', 'fieldtype': 'Code', 'label': __('Code'), 'reqd': 1}  
 	],
 	function(values){
 		check_scan_input(frm, values.code_scan);
 	},
 	__('Scan Invoice Code Line'),
-	__('Process')
+	__('OK')
 	)
 }
 

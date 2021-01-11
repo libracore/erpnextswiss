@@ -225,7 +225,7 @@ class PaymentProposal(Document):
         control_sum = 0.0
         # define company address
         data['company'] = {
-            'name': self.company
+            'name': cgi.escape(self.company)
         }
         company_address = get_primary_address(target_name=self.company, target_type="Company")
         if company_address:

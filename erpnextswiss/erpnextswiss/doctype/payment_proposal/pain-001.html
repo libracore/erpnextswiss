@@ -74,6 +74,11 @@
         <Amt>
           <InstdAmt Ccy="{{ payment.currency }}">{{ "{:.2f}".format(payment.amount) }}</InstdAmt>
         </Amt>
+        {%- if payment.service_level == "IBAN" and xml_region == "CH" and payment.iban[0:2] != "CH" and payment.currency != "EUR" %}{# type 6 payment for USD #}
+        <CdtrAgt>
+            <FinInstnId><BIC>{{ payment.bic }}</BIC></FinInstnId>
+        </CdtrAgt>
+        {%- endif %}
         <Cdtr>
           <Nm>{{ payment.creditor.name }}</Nm>
           <PstlAdr>

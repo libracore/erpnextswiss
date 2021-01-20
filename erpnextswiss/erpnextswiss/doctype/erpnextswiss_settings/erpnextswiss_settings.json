@@ -22,7 +22,12 @@
   "bank_import_section",
   "bankimport_table",
   "invoice_code_line_scanning_section",
-  "scanning_default_item"
+  "scanning_default_item",
+  "scanning_default_positive_deviation_item",
+  "scanning_default_supplier",
+  "scanning_default_positive_deviation",
+  "scanning_default_negative_deviation",
+  "scanning_default_tax_rate"
  ],
  "fields": [
   {
@@ -132,10 +137,39 @@
    "fieldtype": "Link",
    "label": "Default Item",
    "options": "Item"
+  },
+  {
+   "fieldname": "scanning_default_positive_deviation_item",
+   "fieldtype": "Link",
+   "label": "Default Positive Deviation Item",
+   "options": "Item"
+  },
+  {
+   "fieldname": "scanning_default_supplier",
+   "fieldtype": "Link",
+   "label": "Default Supplier",
+   "options": "Supplier"
+  },
+  {
+   "default": "0",
+   "fieldname": "scanning_default_positive_deviation",
+   "fieldtype": "Check",
+   "label": "Add positive deviation as additional item"
+  },
+  {
+   "default": "0",
+   "fieldname": "scanning_default_negative_deviation",
+   "fieldtype": "Check",
+   "label": "Add negative deviation as discount"
+  },
+  {
+   "fieldname": "scanning_default_tax_rate",
+   "fieldtype": "Float",
+   "label": "Default Tax Rate"
   }
  ],
  "issingle": 1,
- "modified": "2020-12-21 13:20:09.647438",
+ "modified": "2021-01-19 15:43:55.949737",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "ERPNextSwiss Settings",

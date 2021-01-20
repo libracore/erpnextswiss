@@ -13,10 +13,12 @@ class SalaryCertificate(Document):
             frappe.msgprint( _("Please select a valid employee.") )
             return
         
-        sql_query = """SELECT IFNULL(SUM(`gross_pay`), 0) AS `gross`, IFNULL(SUM(`net_pay`), 0) AS `net` FROM `tabSalary Slip` 
+        sql_query = """SELECT IFNULL(SUM(`gross_pay`), 0) AS `gross`, IFNULL(SUM(`net_pay`), 0) AS `net` 
+            FROM `tabSalary Slip` 
             WHERE `employee` = '{0}'
             AND `posting_date` >= '{1}'
-            AND `posting_date` <= '{2}'""".format(self.employee, self.start_date, self.end_date)
+            AND `posting_date` <= '{2}'
+            AND `docstatus` = 1;""".format(self.employee, self.start_date, self.end_date)
         values = frappe.db.sql(sql_query, as_dict=True)
         self.salary = get_component(self.employee, self.start_date, self.end_date, "B")
         self.gross_salary = values[0].gross
@@ -36,6 +38,7 @@ def get_component(employee, start_date, end_date, component):
         WHERE `employee` = '{0}'
         AND `posting_date` >= '{1}'
         AND `posting_date` <= '{2}'
+        AND `docstatus` = 1
         AND `abbr` = '{3}';""".format(employee, start_date, end_date, component)
     values = frappe.db.sql(sql_query, as_dict=True)
     return values[0].amount

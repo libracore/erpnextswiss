@@ -319,7 +319,23 @@ DocType: Non Conformity Report 8D,"Remedial Actions","Abstellmassnahmen"
 DocType: Non Conformity Report 8D,"Define and Implement the best corrective actions.","Die Abstellmassnahmen können sich auf Prozessparameter, Produktspezifikationen und andere Vorgabedokumente sowie auf Prüfmethoden und die Mitarbeiterqualifikation auswirken. Nach erfolgreicher Einführung der Abstellmassnahme(n) wird/werden die Sofortmassnahme(n) aufgehoben."
 DocType: Non Conformity Report 8D,"Modify the management systems, operation systems, practices, and procedures to prevent recurrence of this and similar problems.","Es muss durch Vorbeugemassnahmen sichergestellt werden, dass gleiche oder ähnliche Fehler zukünftig ausgeschlossen werden. Die Wirksamkeit der getroffenen Massnahmen wird – z. B. durch Erhöhen der Prüfschärfe – über einen angemessenen Zeitraum überwacht. Hersteller von Produkten für die Automobil- und Luftfahrtindustrie sind aufgefordert, die im Rahmen der Ursachenfindung neu erkannten Risiken im Entwicklungs- und Herstellprozess nach der FMEA-Methode – failure mode and effects analysis (Fehlermöglichkeits- und Einflussanalyse) – (Risikoanalyse) zu bewerten und zu minimieren. Auch das Qualitätsmanagementsystem mit seinen festgelegten Verfahren und Regelungen wird möglicherweise an neue Anforderungen angepasst werden müssen."
 DocType: Non Conformity Report 8D,"Recognize the collective efforts of the team. The team needs to be formally thanked by the organization.","Die gemeinsame Anstrengung wird gewürdigt und die Erfahrungen ausgetauscht."
-DocType: Purchase Invoice,Scan Invoice Code Line,Codierzeile scannen
-DocType: Purchase Invoice,Supplier with reference {0} not found. Please add a supplier with this participant ID.,Lieferant mit Teilnehmernummer {0} wurde nicht gefunden. Bitte im Lieferantenstamm eröffnen.
-DocType: Purchase Invoice,Default item not found. Please configure this in the <a href='/desk#Form/ERPNextSwiss Settings'>ERPNextSwiss settings</a>.,Der Scan-Standardartikel ist nicht konfiguriert. Bitte unter <a href='/desk#Form/ERPNextSwiss Settings'>ERPNextSwiss Einstellungen</a> setzen.
 DocType: Purchase Invoice,Invalid ESR Code Line,Ungültige ESR-Zeile
+DocType: Purchase Invoice,Scan Invoice,Rechnung scannen
+DocType: Purchase Invoice,ESR Amount,ESR Betrag
+DocType: Purchase Invoice,Amount Deviation,Betrags Abweichung
+DocType: Purchase Invoice,Add negative deviation as discount,Negative Abweichung als Rabatt hinzufügen
+DocType: Purchase Invoice,Add positive deviation as additional item,Positive Abweichung als Artikel hinzufügen
+DocType: Purchase Invoice,Positive Deviation Item,Artikel für positive Abweichung
+DocType: Purchase Invoice,Default Item,Standard-Artikel
+DocType: Purchase Invoice,Tax Rate in %,MWST in %
+DocType: Purchase Invoice,ESR Reference,ESR Referenz
+DocType: Purchase Invoice,ESR Participant,ESR Teilnehmer
+DocType: Purchase Invoice,Process,Verarbeiten
+DocType: Purchase Invoice,Supplier matched,Lieferant gefunden
+DocType: Purchase Invoice,"Supplier found, but does not match with Invoice Supplier!","Lieferant gefunden, er stimmt aber nicht mit dem Lieferant auf der Rechnung überein!"
+DocType: Purchase Invoice,"No Supplier found! Fetched default Supplier.","Kein Lieferant gefunden! Der Standard-Lieferant wurde geladen."
+DocType: Purchase Invoice,"Multiple Supplier found, please choose one!","Mehere Lieferanten gefunden, bitte Auswahl treffen!"
+DocType: Purchase Invoice,"ESR / Invoice amount matched","ESR- / Rechnungs-Betrag stimmt überein"
+DocType: ERPNextSwiss Settings,Default Positive Deviation Item,Standard-Artikel für positive Abweichung
+DocType: ERPNextSwiss Settings,Default Tax Rate,Standard MWST-Satz
+apps/erpnextswiss/erpnextswiss/scripts/esr_qr_tools.py,"{missing_values} not found. Please configure this in the <a href='/desk#Form/ERPNextSwiss Settings'>ERPNextSwiss settings</a>.","{missing_values} nicht gefunden. Bitte konfigurieren Sie dies in den <a href='/desk#Form/ERPNextSwiss Settings'>ERPNextSwiss Einstellungen</a>."

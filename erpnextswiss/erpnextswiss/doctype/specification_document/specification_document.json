@@ -1,5 +1,5 @@
 {
- "autoname": "naming_series",
+ "autoname": "naming_series:",
  "creation": "2021-01-26 07:04:42.839708",
  "doctype": "DocType",
  "editable_grid": 1,
@@ -70,7 +70,7 @@
   }
  ],
  "is_submittable": 1,
- "modified": "2021-01-26 07:04:42.839708",
+ "modified": "2021-01-26 21:16:08.435776",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "Specification Document",

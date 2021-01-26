@@ -1,5 +1,5 @@
 {
- "autoname": "naming_series",
+ "autoname": "naming_series:",
  "creation": "2021-01-26 06:46:20.742012",
  "doctype": "DocType",
  "editable_grid": 1,
@@ -33,7 +33,7 @@
    "reqd": 1
   }
  ],
- "modified": "2021-01-26 07:10:43.870200",
+ "modified": "2021-01-26 21:15:49.006288",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "Software Requirement",

@@ -67,7 +67,6 @@ function get_data_based_on_esr(frm, participant, reference, amount, default_sett
 				if (!more_than_one_supplier) {
 					// exatly one supplier
 					var supplier = response.message.supplier;
-                    console.log(response.message.supplier);
                     show_esr_detail_dialog(frm, participant, reference, amount, default_settings, supplier, []);
 				} else {
 					// more than one supplier
@@ -152,7 +151,9 @@ function fetch_esr_details_to_new_sinv(frm, values) {
     var i = tbl.length;
     while (i--)
     {
-        cur_frm.get_field("items").grid.grid_rows[i].remove();
+        if (!cur_frm.get_field("items").grid.grid_rows[i].doc.item_code) {
+            cur_frm.get_field("items").grid.grid_rows[i].remove();
+        }
     }
     cur_frm.refresh_field('items');
     

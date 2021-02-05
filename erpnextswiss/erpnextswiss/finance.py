@@ -25,15 +25,15 @@ def get_account_sheets(fiscal_year, company=None):
         order_by='posting_date')
         if transactions:
             # calculate opening for balance sheet accounts
+            # reset counters
+            _opening_debit = 0
+            _opening_credit = 0 
             if account.report_type == "Balance Sheet":
                 # compute opening balance
                 opening_transactions = frappe.get_all("GL Entry", filters=[
                   ['account', '=', account.name],
                   ['posting_date', '<', fy.year_start_date]
-                ], fields=['debit', 'credit'])    
-                # reset counters
-                _opening_debit = 0
-                _opening_credit = 0  
+                ], fields=['debit', 'credit'])     
                 # compute debit and credit at opening
                 for opening_txn in opening_transactions:
                     _opening_debit += opening_txn.debit

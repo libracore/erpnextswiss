@@ -68,15 +68,7 @@ def get_account_sheets(fiscal_year, company=None):
                     'voucher_no': transaction.voucher_no,
                     'remarks': transaction.remarks
                 })
-            # compute closing balance
-            if _opening_debit > _opening_credit:
-                _delta = _opening_debit - _opening_credit
-                _opening_debit = _delta
-                _opening_credit = 0
-            else:
-                _delta = _opening_credit - _opening_debit
-                _opening_debit = 0
-                _opening_credit = _delta
+            # compute closing balance, debit and credit ar sums of transactions
             _data['closing_debit'] = _opening_debit
             _data['closing_credit'] = _opening_credit
             _data['closing_balance'] = _balance

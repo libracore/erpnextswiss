@@ -49,6 +49,10 @@ def get_account_sheets(fiscal_year, company=None):
                     _opening_credit = _delta
                 _data['opening_debit'] = _opening_debit
                 _data['opening_credit'] = _opening_credit
+                _balance = (_opening_debit - _opening_credit)
+            # reset counters for period sum
+            _opening_debit = 0
+            _opening_credit = 0 
             # loop through transactions
             for transaction in transactions:
                 # update current debit/credit

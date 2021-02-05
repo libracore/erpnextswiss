@@ -1,16 +1,19 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018-2020, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2018-2021, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
 import frappe
 from frappe import _
 
 """ Jinja hook to create account sheets """
-def get_account_sheets(fiscal_year):
+def get_account_sheets(fiscal_year, company=None):
     fy = frappe.get_doc("Fiscal Year", fiscal_year)
     _opening_debit = 0
     _opening_credit = 0
     account_data = []
-    accounts = frappe.get_all("Account", filters={'disabled': 0}, fields=['name', 'report_type'], order_by='name')
+    if company:
+        accounts = frappe.get_all("Account", filters={'disabled': 0, 'company': company}, fields=['name', 'report_type'], order_by='name')
+    else:
+        accounts = frappe.get_all("Account", filters={'disabled': 0}, fields=['name', 'report_type'], order_by='name')
     for account in accounts:
         _balance = 0
         _data = {'account': account.name, 'transactions': [], 'report_type': account.report_type}

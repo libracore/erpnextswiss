@@ -56,9 +56,8 @@ def get_account_sheets(fiscal_year, company=None):
             # loop through transactions
             for transaction in transactions:
                 # update current debit/credit
-                if account.report_type == "Balance Sheet":
-                    _opening_debit += transaction.debit
-                    _opening_credit += transaction.credit
+                _opening_debit += transaction.debit
+                _opening_credit += transaction.credit
                 _balance += (transaction.debit - transaction.credit)
                 _data['transactions'].append({
                     'posting_date': transaction.posting_date,

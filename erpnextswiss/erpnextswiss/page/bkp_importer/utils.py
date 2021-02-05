@@ -8,6 +8,8 @@ from frappe.utils import cstr, flt, getdate, cint, nowdate, add_days, get_link_t
 from frappe.model.mapper import get_mapped_doc
 from frappe.contacts.doctype.address.address import get_company_address
 from frappe.model.utils import get_fetch_values
+from erpnext.stock.doctype.item.item import get_item_defaults
+from erpnext.setup.doctype.item_group.item_group import get_item_group_defaults
 
 @frappe.whitelist()
 def calc_structur_organisation_totals(dt, dn):

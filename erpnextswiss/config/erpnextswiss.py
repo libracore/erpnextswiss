@@ -91,7 +91,25 @@ def get_data():
                        "name": "Contract",
                        "label": _("Contract"),
                        "description": _("Contract")                   
-                   }                   
+                   },
+                   {
+                       "type": "doctype",
+                       "name": "Specification Document",
+                       "label": _("Specification Document"),
+                       "description": _("Specification Document")                   
+                   },
+                   {
+                       "type": "doctype",
+                       "name": "Software Requirement",
+                       "label": _("Software Requirement"),
+                       "description": _("Software Requirement")                   
+                   },
+                   {
+                       "type": "doctype",
+                       "name": "Software Specification",
+                       "label": _("Software Specification"),
+                       "description": _("Software Specification")                   
+                   } 
             ]
         },
         {

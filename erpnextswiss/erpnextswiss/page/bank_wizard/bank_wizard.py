@@ -185,6 +185,8 @@ def get_first_company():
 
 @frappe.whitelist()
 def read_camt053(content, account):
+    settings = frappe.get_doc("ERPNextSwiss Settings", "ERPNextSwiss Settings")
+    
     #read_camt_transactions_re(content)
     soup = BeautifulSoup(content, 'lxml')
     
@@ -205,11 +207,11 @@ def read_camt053(content, account):
     # transactions
     #new_payment_entries = read_camt_transactions(doc['Document']['BkToCstmrStmt']['Stmt']['Ntry'], bank, account, auto_submit)
     entries = soup.find_all('ntry')
-    transactions = read_camt_transactions(entries, account)
+    transactions = read_camt_transactions(entries, account, settings)
     
     return { 'transactions': transactions } 
     
-def read_camt_transactions(transaction_entries, account):
+def read_camt_transactions(transaction_entries, account, settings):
     txns = []
     for entry in transaction_entries:
         if six.PY2:
@@ -235,11 +237,14 @@ def read_camt_transactions(transaction_entries, account):
                 else:
                     transaction_soup = BeautifulSoup(str(transaction), 'lxml')
                 # --- find transaction type: paid or received: (DBIT: paid, CRDT: received)
-                try:
-                    credit_debit = transaction_soup.cdtdbtind.get_text()
-                except:
-                    # fallback to entry indicator
+                if settings.always_use_entry_transaction_type:
                     credit_debit = entry_soup.cdtdbtind.get_text()
+                else:
+                    try:
+                        credit_debit = transaction_soup.cdtdbtind.get_text()
+                    except:
+                        # fallback to entry indicator
+                        credit_debit = entry_soup.cdtdbtind.get_text()
                 
                 #try:
                 # --- find unique reference

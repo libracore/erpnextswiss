@@ -19,6 +19,8 @@
   "xml_version",
   "section_bank_wizard",
   "intermediate_account",
+  "column_bank_wizard",
+  "always_use_entry_transaction_type",
   "bank_import_section",
   "bankimport_table",
   "invoice_code_line_scanning_section",
@@ -166,10 +168,20 @@
    "fieldname": "scanning_default_tax_rate",
    "fieldtype": "Float",
    "label": "Default Tax Rate"
+  },
+  {
+   "fieldname": "column_bank_wizard",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "always_use_entry_transaction_type",
+   "fieldtype": "Check",
+   "label": "Always use entry transaction type"
   }
  ],
  "issingle": 1,
- "modified": "2021-01-19 15:43:55.949737",
+ "modified": "2021-02-17 19:34:36.836196",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "ERPNextSwiss Settings",

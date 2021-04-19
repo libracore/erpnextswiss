@@ -100,6 +100,17 @@ class GPSConverter(object):
         second = (((dms - degree) * 100) - minute) * 100
         return degree + (minute / 60) + (second / 3600)
     
+    # Convert Decimal Degrees to Seconds of Arc (seconds only of D°M'S").
+    def DegToSec(self, angle):
+        # Extract D°M'S".
+        degree = int(angle)
+        minute = int((angle - degree) * 100)
+        second = (((angle - degree) * 100) - minute) * 100
+
+        # Result in degrees sec (dd.mmss).
+        return second + (minute * 60) + (degree * 3600)
+    }
+    
     # Convert WGS lat/long (° dec) and height to CH h
     def WGStoCHh(self, lat, lng, h):
         lat = self.DecToSexAngle(lat)
@@ -164,3 +175,78 @@ class GPSConverter(object):
         d.append(self.WGStoCHx(latitude, longitude))
         d.append(self.WGStoCHh(latitude, longitude, ellHeight))
         return d
+
+    def WGStoLV95North(self, lat, lng):
+        # Converts Decimal Degrees to Sexagesimal Degree.
+        lat = self.DecToSexAngle(lat)
+        lng = self.DecToSexAngle(lng)
+        # Convert Decimal Degrees to Seconds of Arc.
+        phi = self.DegToSec(lat)
+        lda = self.DegToSec(lng)
+
+        # Calculate the auxiliary values (differences of latitude and longitude
+        # relative to Bern in the unit[10000"]).
+        phi_aux = (phi - 169028.66) / 10000
+        lda_aux = (lda - 26782.5) / 10000
+
+        # Process Swiss (MN95) North calculation.
+        north = (1200147.07 + (308807.95 * phi_aux)) + \
+          + (3745.25 * pow(lda_aux, 2)) + \
+          + (76.63 * pow(phi_aux, 2)) + \
+          - (194.56 * pow(lda_aux, 2) * phi_aux) + \
+          + (119.79 * pow(phi_aux, 3))
+        return north
+    }
+    
+    def WGSToLV95East(self, lat, lng): 
+        # Converts Decimal Degrees to Sexagesimal Degree.
+        lat = self.DecToSexAngle(lat)
+        lng = self.DecToSexAngle(lng)
+        # Convert Decimal Degrees to Seconds of Arc.
+        phi = self.DegToSec(lat)
+        lda = self.DegToSec(lng)
+
+        # Calculate the auxiliary values (differences of latitude and longitude
+        # relative to Bern in the unit[10000"]).
+        phi_aux = (phi - 169028.66) / 10000
+        lda_aux = (lda - 26782.5) / 10000
+
+        # Process Swiss (MN95) East calculation.
+        east = (2600072.37 + (211455.93 * lda_aux)) + \
+          - (10938.51 * lda_aux * phi_aux) + \
+          - (0.36 * lda_aux * pow(phi_aux, 2)) + \
+          - (44.54 * pow(lda_aux, 3))
+        return east
+    
+    def LV95ToWGSLatitude(self, east, north):
+        # Convert the projection coordinates E (easting) and N (northing) in MN95
+        # into the civilian system (Bern = 0 / 0) and express in the unit 1000 km.
+        y_aux = (east - 2600000) / 1000000
+        x_aux = (north - 1200000) / 1000000
+
+        # Process latitude calculation.
+        lat = (16.9023892 + (3.238272 * x_aux)) + \
+          - (0.270978 * pow(y_aux, 2)) + \
+          - (0.002528 * pow(x_aux, 2)) + \
+          - (0.0447 * pow(y_aux, 2) * x_aux) + \
+          - (0.0140 * pow(x_aux, 3))
+
+        # Unit 10000" to 1" and converts seconds to degrees notation.
+        lat = lat * 100 / 36
+        return lat
+        
+    def LV95ToWGSLongitude(self, east, north): 
+        # Convert the projection coordinates E (easting) and N (northing) in MN95
+        # into the civilian system (Bern = 0 / 0) and express in the unit 1000 km.
+        y_aux = (east - 2600000) / 1000000
+        x_aux = (north - 1200000) / 1000000
+
+        # Process longitude calculation.
+        lng = (2.6779094 + (4.728982 * y_aux)) + \
+          + (0.791484 * y_aux * x_aux) + \
+          + (0.1306 * y_aux * pow(x_aux, 2)) + \
+          - (0.0436 * pow(y_aux, 3))
+
+        # Unit 10000" to 1" and converts seconds to degrees notation.
+        lng = lng * 100 / 36
+        return lng

@@ -1,0 +1,23 @@
+{
+ "content": null,
+ "creation": "2021-04-20 10:54:51.550740",
+ "docstatus": 0,
+ "doctype": "Page",
+ "idx": 0,
+ "modified": "2021-04-20 10:54:51.550740",
+ "modified_by": "Administrator",
+ "module": "ERPNextSwiss",
+ "name": "worktime-overview",
+ "owner": "Administrator",
+ "page_name": "worktime-overview",
+ "roles": [
+  {
+   "role": "System Manager"
+  }
+ ],
+ "script": null,
+ "standard": "Yes",
+ "style": null,
+ "system_page": 0,
+ "title": "Worktime Overview"
+}

@@ -109,7 +109,6 @@ class GPSConverter(object):
 
         # Result in degrees sec (dd.mmss).
         return second + (minute * 60) + (degree * 3600)
-    }
     
     # Convert WGS lat/long (° dec) and height to CH h
     def WGStoCHh(self, lat, lng, h):
@@ -196,7 +195,6 @@ class GPSConverter(object):
           - (194.56 * pow(lda_aux, 2) * phi_aux) + \
           + (119.79 * pow(phi_aux, 3))
         return north
-    }
     
     def WGSToLV95East(self, lat, lng): 
         # Converts Decimal Degrees to Sexagesimal Degree.

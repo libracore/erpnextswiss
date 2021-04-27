@@ -1,0 +1,20 @@
+<table id="time_overview_table" style="width: 100%;">
+    <thead>
+        <tr>
+            <th>{{ __("Target Time") }}</th>
+            <th>{{ __("Actual Time") }}</th>
+            <th>{{ __("Difference") }}</th>
+            <th>{{ __("Holiday Balance") }}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% if data %}
+            <tr>
+                <td>{{ data.target }}</td>
+                <td>{{ data.actual }}</td>
+                <td>{{ (data.actual - data.target) }}</td>
+                <td>{{ data.holiday_balance }}</td>
+            </tr>
+        {% endif %}
+    </tbody>
+</table>

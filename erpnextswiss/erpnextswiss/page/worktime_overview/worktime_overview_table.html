@@ -1,3 +1,4 @@
+{% if view_type == "single" %}
 <table id="time_overview_table" style="width: 100%;">
     <thead>
         <tr>
@@ -18,3 +19,30 @@
         {% endif %}
     </tbody>
 </table>
+{% endif %}
+{% if view_type == "all" %}
+<table id="time_overview_table" style="width: 100%;">
+    <thead>
+        <tr>
+            <th>{{ __("Employee") }}</th>
+            <th>{{ __("Target Time") }}</th>
+            <th>{{ __("Actual Time") }}</th>
+            <th>{{ __("Difference") }}</th>
+            <th>{{ __("Holiday Balance") }}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% if dataset %}
+            {% for data in dataset %}
+                <tr>
+                    <td>{{ data.employee }}</td>
+                    <td>{{ data.target }}</td>
+                    <td>{{ data.actual }}</td>
+                    <td>{{ (data.actual - data.target) }}</td>
+                    <td>{{ data.holiday_balance }}</td>
+                </tr>
+            {% endfor %}
+        {% endif %}
+    </tbody>
+</table>
+{% endif %}

@@ -5,6 +5,13 @@
             <input class="form-control" type="date" id="from">
             <label for="to">{{ __("To Date") }}</label>
             <input class="form-control" type="date" id="to">
+            {% if allowed %}
+            <label for="view_type">View Type</label>
+            <select class="form-control" id="view_type">
+                <option>{{ __("My Time") }}</option>
+                <option>{{ __("All Employees") }}</option>
+            </select>
+            {% endif %}
         </div>
     </div>
     <div class="col-xs-8" id="time_overview"></div>

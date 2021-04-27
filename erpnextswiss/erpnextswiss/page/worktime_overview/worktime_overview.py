@@ -9,16 +9,34 @@ from datetime import date, timedelta
 from erpnext.hr.doctype.leave_application.leave_application import get_leave_details
 
 @frappe.whitelist()
-def get_data(from_date, to_date):
-    data = {}
-    data["data"] = {}
-    data["data"]["target"] = get_target_time(from_date, to_date)
-    data["data"]["actual"] = get_actual_time(from_date, to_date, frappe.session.user)
-    data["data"]["holiday_balance"] = get_holiday_balance(frappe.session.user, to_date)
-    return data
+def get_data(from_date, to_date, view_type):
+    if view_type == 'single':
+        data = {}
+        data["data"] = {}
+        data["data"]["target"] = get_target_time(from_date, to_date, frappe.session.user)
+        data["data"]["actual"] = get_actual_time(from_date, to_date, frappe.session.user)
+        data["data"]["holiday_balance"] = get_holiday_balance(frappe.session.user, to_date)
+        data["view_type"] = 'single'
+        return data
+        
+    if view_type == 'all':
+        dataset = []
+        employees = frappe.db.sql("""SELECT `name`, `user_id` FROM `tabEmployee` WHERE `user_id` IS NOT NULL""", as_dict=True)
+        for employee in employees:
+            data = {}
+            data["employee"] = employee.name
+            data["target"] = get_target_time(from_date, to_date, employee.user_id)
+            data["actual"] = get_actual_time(from_date, to_date, employee.user_id)
+            data["holiday_balance"] = get_holiday_balance(employee.user_id, to_date)
+            dataset.append(data)
+            
+        return {
+            'dataset': dataset,
+            'view_type': 'all'
+        }
     
-def get_target_time(from_date, to_date):
-    degrees = get_degrees(frappe.session.user)
+def get_target_time(from_date, to_date, user):
+    degrees = get_degrees(user)
     
     # if more than one degree
     if len(degrees) > 1:

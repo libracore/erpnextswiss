@@ -17,7 +17,10 @@ frappe.worktime_overview = {
 		var me = frappe.worktime_overview;
 		me.page = page;
 		me.body = $('<div></div>').appendTo(me.page.main);
-		var data = "";
+		var data = {'allowed': 0};
+        if (frappe.user.has_role('HR Manager')) {
+            data = {'allowed': 1};
+        }
 		$(frappe.render_template('worktime_overview', data)).appendTo(me.body);
 
         // attach button handlers
@@ -27,10 +30,17 @@ frappe.worktime_overview = {
         this.page.main.find("#to").on('change', function() {                   
             frappe.worktime_overview.get_data(page);
 		});
+        this.page.main.find("#view_type").on('change', function() {                   
+            frappe.worktime_overview.get_data(page);
+		});
 	},
 	get_data: function(page) {
         var _from_date = $("#from").val();
         var _to_date = $("#to").val();
+        var view_type = 'single';
+        if ($("#view_type").val() == 'All Employees') {
+            view_type = 'all';
+        }
         
         if (_from_date && _to_date) {
         
@@ -55,7 +65,8 @@ frappe.worktime_overview = {
                     method: 'erpnextswiss.erpnextswiss.page.worktime_overview.worktime_overview.get_data',
                     args: {
                             'from_date': _from_date,
-                            'to_date': _to_date
+                            'to_date': _to_date,
+                            'view_type': view_type
                         },
                     callback: function(r) {
                         if (r.message) {

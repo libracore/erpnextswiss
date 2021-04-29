@@ -73,6 +73,23 @@ frappe.worktime_overview = {
                             var data = r.message;
                             // create new table
                             $(frappe.render_template('worktime_overview_table', data)).appendTo(me.time_overview);
+                            if (view_type == 'single') {
+                                var tt = []
+                                var at = []
+                                tt.push(parseFloat(data.data.target))
+                                at.push(parseFloat(data.data.actual))
+                                frappe.worktime_overview.make_single_chart(tt, at);
+                            } else {
+                                var labels = [];
+                                var tt = [];
+                                var at = [];
+                                for (var i = 0; i < data.dataset.length; i++) {
+                                    labels.push(data.dataset[i].employee_name);
+                                    tt.push(parseFloat(data.dataset[i].target));
+                                    at.push(parseFloat(data.dataset[i].actual));
+                                }
+                                frappe.worktime_overview.make_multi_chart(labels, tt, at);
+                            }
                         } 
                     }
                 });
@@ -81,5 +98,56 @@ frappe.worktime_overview = {
         } else {
             $("#time_overview_table").remove();
         }
+    },
+    make_single_chart: function(tt, at) {
+        console.log(tt);
+        console.log(at);
+        const data = {
+            labels: ["My Times"
+            ],
+            datasets: [
+                {
+                    name: "Target Time", type: "bar",
+                    values: tt
+                },
+                {
+                    name: "Actual Time", type: "bar",
+                    values: at
+                }
+            ]
+        }
+
+        const chart = new frappe.Chart("#chart", {  // or a DOM element,
+                                                    // new Chart() in case of ES6 module with above usage
+            title: "",
+            data: data,
+            type: 'bar', // or 'axis-mixed', 'bar', 'line', 'scatter', 'pie', 'percentage'
+            height: 250,
+            colors: ['#7cd6fd', '#743ee2']
+        })
+    },
+    make_multi_chart: function(labels, tt, at) {
+        const data = {
+            labels: labels,
+            datasets: [
+                {
+                    name: "Target Time", type: "bar",
+                    values: tt
+                },
+                {
+                    name: "Actual Time", type: "bar",
+                    values: at
+                }
+            ]
+        }
+
+        const chart = new frappe.Chart("#chart", {  // or a DOM element,
+                                                    // new Chart() in case of ES6 module with above usage
+            title: "",
+            data: data,
+            type: 'bar', // or 'axis-mixed', 'bar', 'line', 'scatter', 'pie', 'percentage'
+            height: 250,
+            colors: ['#7cd6fd', '#743ee2']
+        })
     }
 }

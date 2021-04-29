@@ -2,19 +2,19 @@
 <table id="time_overview_table" style="width: 100%;">
     <thead>
         <tr>
-            <th>{{ __("Target Time") }}</th>
-            <th>{{ __("Actual Time") }}</th>
-            <th>{{ __("Difference") }}</th>
-            <th>{{ __("Holiday Balance") }}</th>
+            <th style="text-align: center;">{{ __("Target Time") }}</th>
+            <th style="text-align: center;">{{ __("Actual Time") }}</th>
+            <th style="text-align: center;">{{ __("Difference") }}</th>
+            <th style="text-align: center;">{{ __("Holiday Balance") }}</th>
         </tr>
     </thead>
     <tbody>
         {% if data %}
             <tr>
-                <td>{{ data.target }}</td>
-                <td>{{ data.actual }}</td>
-                <td>{{ (data.actual - data.target) }}</td>
-                <td>{{ data.holiday_balance }}</td>
+                <td style="text-align: center;">{{ data.target }}</td>
+                <td style="text-align: center;">{{ data.actual }}</td>
+                <td style="text-align: center;">{{ (data.actual - data.target) }}</td>
+                <td style="text-align: center;">{{ data.holiday_balance }}</td>
             </tr>
         {% endif %}
     </tbody>
@@ -25,21 +25,21 @@
     <thead>
         <tr>
             <th>{{ __("Employee") }}</th>
-            <th>{{ __("Target Time") }}</th>
-            <th>{{ __("Actual Time") }}</th>
-            <th>{{ __("Difference") }}</th>
-            <th>{{ __("Holiday Balance") }}</th>
+            <th style="text-align: center;">{{ __("Target Time") }}</th>
+            <th style="text-align: center;">{{ __("Actual Time") }}</th>
+            <th style="text-align: center;">{{ __("Difference") }}</th>
+            <th style="text-align: center;">{{ __("Holiday Balance") }}</th>
         </tr>
     </thead>
     <tbody>
         {% if dataset %}
             {% for data in dataset %}
                 <tr>
-                    <td>{{ data.employee }}</td>
-                    <td>{{ data.target }}</td>
-                    <td>{{ data.actual }}</td>
-                    <td>{{ (data.actual - data.target) }}</td>
-                    <td>{{ data.holiday_balance }}</td>
+                    <td><a href="/desk#Form/Employee/{{ data.employee }}" target="_blank">{{ data.employee_name }} ({{ data.employee }})</a></td>
+                    <td style="text-align: center;">{{ data.target }}</td>
+                    <td style="text-align: center;">{{ data.actual }}</td>
+                    <td style="text-align: center;">{{ (data.actual - data.target) }}</td>
+                    <td style="text-align: center;">{{ data.holiday_balance }}</td>
                 </tr>
             {% endfor %}
         {% endif %}

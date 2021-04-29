@@ -4,6 +4,7 @@
 
 from __future__ import unicode_literals
 import frappe
+from frappe import _
 from frappe.utils.data import date_diff, getdate, add_days
 from datetime import date, timedelta
 from erpnext.hr.doctype.leave_application.leave_application import get_leave_details
@@ -11,23 +12,25 @@ from erpnext.hr.doctype.leave_application.leave_application import get_leave_det
 @frappe.whitelist()
 def get_data(from_date, to_date, view_type):
     if view_type == 'single':
+        employee = get_employee_name(frappe.session.user)
         data = {}
         data["data"] = {}
-        data["data"]["target"] = get_target_time(from_date, to_date, frappe.session.user)
-        data["data"]["actual"] = get_actual_time(from_date, to_date, frappe.session.user)
-        data["data"]["holiday_balance"] = get_holiday_balance(frappe.session.user, to_date)
+        data["data"]["target"] = get_target_time(from_date, to_date, employee)
+        data["data"]["actual"] = get_actual_time(from_date, to_date, employee)
+        data["data"]["holiday_balance"] = get_holiday_balance(employee, to_date)
         data["view_type"] = 'single'
         return data
         
     if view_type == 'all':
         dataset = []
-        employees = frappe.db.sql("""SELECT `name`, `user_id` FROM `tabEmployee` WHERE `user_id` IS NOT NULL""", as_dict=True)
+        employees = frappe.db.sql("""SELECT `name`, `employee_name` FROM `tabEmployee`""", as_dict=True)
         for employee in employees:
             data = {}
             data["employee"] = employee.name
-            data["target"] = get_target_time(from_date, to_date, employee.user_id)
-            data["actual"] = get_actual_time(from_date, to_date, employee.user_id)
-            data["holiday_balance"] = get_holiday_balance(employee.user_id, to_date)
+            data["employee_name"] = employee.employee_name
+            data["target"] = get_target_time(from_date, to_date, employee.name)
+            data["actual"] = get_actual_time(from_date, to_date, employee.name)
+            data["holiday_balance"] = get_holiday_balance(employee.name, to_date)
             dataset.append(data)
             
         return {
@@ -35,8 +38,16 @@ def get_data(from_date, to_date, view_type):
             'view_type': 'all'
         }
     
-def get_target_time(from_date, to_date, user):
-    degrees = get_degrees(user)
+def get_employee_name(user):
+    employee = frappe.db.sql("""SELECT `name` FROM `tabEmployee` WHERE `user_id` = '{user}'""".format(user=user), as_dict=True)
+    try:
+        employee = employee[0].name
+    except:
+        frappe.throw(_("No Employee found."))
+    return employee
+    
+def get_target_time(from_date, to_date, employee):
+    degrees = get_degrees(employee)
     
     # if more than one degree
     if len(degrees) > 1:
@@ -76,21 +87,20 @@ def get_target_time(from_date, to_date, user):
         target_time = (days - off_days) * target_per_day
     return target_time
     
-def get_actual_time(from_date, to_date, user):
-    employee = frappe.db.sql("""SELECT `name` FROM `tabEmployee` WHERE `user_id` = '{user}'""".format(user=user), as_dict=True)
+def get_actual_time(from_date, to_date, employee):
     try:
         actual_time = frappe.db.sql("""SELECT SUM(`hours`) FROM `tabTimesheet Detail`
                                         WHERE DATE(`from_time`) >= '{from_date}' AND DATE(`from_time`) <= '{to_date}'
                                         AND `docstatus` = 1 AND `parent` IN (
                                             SELECT `name` FROM `tabTimesheet` WHERE `employee` = '{employee}'
-                                        )""".format(from_date=from_date, to_date=to_date, employee=employee[0].name), as_list=True)[0][0]
+                                        )""".format(from_date=from_date, to_date=to_date, employee=employee), as_list=True)[0][0]
         if not actual_time:
             actual_time = 0
     except:
         actual_time = 0
         
     # handle carryover and payouts
-    employee = frappe.get_doc("Employee", employee[0].name)
+    employee = frappe.get_doc("Employee", employee)
     if employee.carryover_and_payouts:
         year = getdate(from_date).strftime("%Y")
         for cp in employee.carryover_and_payouts:
@@ -99,9 +109,8 @@ def get_actual_time(from_date, to_date, user):
                 
     return actual_time
 
-def get_holiday_balance(user, to_date):
-    employee = frappe.db.sql("""SELECT `name` FROM `tabEmployee` WHERE `user_id` = '{user}'""".format(user=user), as_dict=True)
-    leave_details = get_leave_details(employee[0].name, to_date)
+def get_holiday_balance(employee, to_date):
+    leave_details = get_leave_details(employee, to_date)
     remaining_days = 0
     
     for key in leave_details["leave_allocation"]:
@@ -131,7 +140,6 @@ def get_off_days(from_date, to_date):
             
     return off_days
 
-def get_degrees(user):
-    employee = frappe.db.sql("""SELECT `name` FROM `tabEmployee` WHERE `user_id` = '{user}'""".format(user=user), as_dict=True)
-    degrees = frappe.db.sql("""SELECT `degree`, `date` FROM `tabEmployment Degree` WHERE `parent` = '{employee}' ORDER BY `date` ASC""".format(employee=employee[0].name), as_dict=True)
+def get_degrees(employee):
+    degrees = frappe.db.sql("""SELECT `degree`, `date` FROM `tabEmployment Degree` WHERE `parent` = '{employee}' ORDER BY `date` ASC""".format(employee=employee), as_dict=True)
     return degrees

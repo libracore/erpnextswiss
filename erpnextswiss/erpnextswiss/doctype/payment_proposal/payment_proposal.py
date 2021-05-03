@@ -55,7 +55,7 @@ class PaymentProposal(Document):
         for purchase_invoice in self.purchase_invoices:
             if purchase_invoice.supplier not in suppliers:
                 suppliers.append(purchase_invoice.supplier)
-        # aggregate sales invoices
+        # aggregate purchase invoices
         for supplier in suppliers:
             amount = 0
             references = []
@@ -140,6 +140,8 @@ class PaymentProposal(Document):
                             expense_claim.amount)
             # add new payment record
             emp = frappe.get_doc("Employee", employee)
+            if not emp.permanent_address:
+                frappe.throw( _("Employee <a href=\"/desk#Form/Employee/{0}\">{0}</a> has no address.").format(emp.name) )
             address_lines = emp.permanent_address.split("\n")
             cntry = frappe.get_value("Company", emp.company, "country")
             self.add_payment(emp.employee_name, emp.bank_ac_no, "IBAN",
@@ -330,7 +332,7 @@ def create_payment_proposal(date=None, company=None):
         planning_days = int(frappe.get_value("ERPNextSwiss Settings", "ERPNextSwiss Settings", 'planning_days'))
         date = datetime.now() + timedelta(days=planning_days) 
         if not planning_days:
-            frappe.throw( "Please configure the planning period in ERPNextSwiss Settings.")
+            frappe.throw( _("Please configure the planning period in ERPNextSwiss Settings.") )
     # check companies (take first created if none specififed)
     if company == None:
         companies = frappe.get_all("Company", filters={}, fields=['name'], order_by='creation')

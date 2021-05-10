@@ -298,27 +298,27 @@ DocType: Inspection Equipment,Blocked,Bloqué
 DocType: Inspection Equipment,in months,en mois
 DocType: Inspection Equipment,Taken by,Pris par
 DocType: VAT query,VAT query,Requête TVA
-DocType: Non Conformity Report 8D,Non Conformity Report 8D,Rapport de non-conformité 8D
-DocType: Non Conformity Report 8D,D1 Use a Team,D1 Utiliser une équipe
-DocType: Non Conformity Report 8D,D2 Describe the Problem,D2 Décrivez le problème
-DocType: Non Conformity Report 8D,D3 Develop Interim Containment Plan,D3 Élaborer un plan de confinement provisoire
-DocType: Non Conformity Report 8D,D4 Determine and Verify Root Causes and Escape Points,D4 Déterminer et vérifier les causes profondes et les points d'échappement
-DocType: Non Conformity Report 8D,D5 Verify Permanent Corrections (PCs) for Problem will resolve problem for the customer,D5 Vérifier que les corrections permanentes (PC) pour le problème résoudra le problème pour le client
-DocType: Non Conformity Report 8D,D6 Define and Implement Corrective Actions,D6 Définir et mettre en œuvre des actions correctives
-DocType: Non Conformity Report 8D,D7 Prevent Recurrence / System Problems,D7 Empêcher la récurrence / les problèmes système
-DocType: Non Conformity Report 8D,D8 Congratulate the Main Contributors to your Team,D8 Félicitez les principaux contributeurs de votre équipe
-DocType: Non Conformity Report 8D,Establish a team of people with product/process knowledge.,Mettre en place une équipe de personnes ayant une connaissance des produits / processus.
+DocType: Non Conformity Report 8D,"Non Conformity Report 8D","Rapport de non-conformité 8D"
+DocType: Non Conformity Report 8D,"D1 Use a Team","D1 Utiliser une équipe"
+DocType: Non Conformity Report 8D,"D2 Describe the Problem","D2 Décrivez le problème"
+DocType: Non Conformity Report 8D,"D3 Develop Interim Containment Plan","D3 Élaborer un plan de confinement provisoire"
+DocType: Non Conformity Report 8D,"D4 Determine and Verify Root Causes and Escape Points","D4 Déterminer et vérifier les causes profondes et les points d'échappement"
+DocType: Non Conformity Report 8D,"D5 Verify Permanent Corrections (PCs) for Problem will resolve problem for the customer","D5 Vérifier que les corrections permanentes (PC) pour le problème résoudra le problème pour le client"
+DocType: Non Conformity Report 8D,"D6 Define and Implement Corrective Actions","D6 Définir et mettre en œuvre des actions correctives"
+DocType: Non Conformity Report 8D,"D7 Prevent Recurrence / System Problems","D7 Empêcher la récurrence / les problèmes système"
+DocType: Non Conformity Report 8D,"D8 Congratulate the Main Contributors to your Team","D8 Félicitez les principaux contributeurs de votre équipe"
+DocType: Non Conformity Report 8D,"Establish a team of people with product/process knowledge.","Mettre en place une équipe de personnes ayant une connaissance des produits / processus."
 DocType: Non Conformity Report 8D,"Specify the problem by identifying in quantifiable terms the who, what, where, when, why, how, and how many (5W2H) for the problem.","Spécifiez le problème en identifiant en termes quantifiables le qui, quoi, où, quand, pourquoi, comment et combien (5W2H) pour le problème."
-DocType: Non Conformity Report 8D,Problem Description,Description du problème
-DocType: Non Conformity Report 8D,Define and implement containment actions to isolate the problem from any customer.,Définissez et mettez en œuvre des actions de confinement pour isoler le problème de n'importe quel client.
-DocType: Non Conformity Report 8D,Interim Containment Plan,Plan de confinement provisoire
-DocType: Non Conformity Report 8D,Identify all applicable causes that could explain why the problem has occurred. Also identify why the problem was not noticed at the time it occurred. All causes shall be verified or proved. One can use five whys or Ishikawa diagrams to map causes against the effect or problem identified.,Identifiez toutes les causes applicables qui pourraient expliquer pourquoi le problème s'est produit. Identifiez également pourquoi le problème n'a pas été remarqué au moment où il s'est produit. Toutes les causes doivent être vérifiées ou prouvées. On peut utiliser cinq pourquoi ou diagrammes d'Ishikawa pour cartographier les causes par rapport à l'effet ou au problème identifié.
-DocType: Non Conformity Report 8D,Root Cause Analysis,Analyse de la cause originelle
+DocType: Non Conformity Report 8D,"Problem Description","Description du problème"
+DocType: Non Conformity Report 8D,"Define and implement containment actions to isolate the problem from any customer.","Définissez et mettez en œuvre des actions de confinement pour isoler le problème de n'importe quel client."
+DocType: Non Conformity Report 8D,"Interim Containment Plan","Plan de confinement provisoire"
+DocType: Non Conformity Report 8D,"Identify all applicable causes that could explain why the problem has occurred. Also identify why the problem was not noticed at the time it occurred. All causes shall be verified or proved. One can use five whys or Ishikawa diagrams to map causes against the effect or problem identified.","Identifiez toutes les causes applicables qui pourraient expliquer pourquoi le problème s'est produit. Identifiez également pourquoi le problème n'a pas été remarqué au moment où il s'est produit. Toutes les causes doivent être vérifiées ou prouvées. On peut utiliser cinq pourquoi ou diagrammes d'Ishikawa pour cartographier les causes par rapport à l'effet ou au problème identifié."
+DocType: Non Conformity Report 8D,"Root Cause Analysis","Analyse de la cause originelle"
 DocType: Non Conformity Report 8D,"Using pre-production programs, quantitatively confirm that the selected correction will resolve the problem. (Verify that the correction will actually solve the problem.)","À l'aide de programmes de pré-production, confirmez quantitativement que la correction sélectionnée résoudra le problème. (Vérifiez que la correction résoudra réellement le problème.)"
-DocType: Non Conformity Report 8D,Remedial Actions,Des mesures correctives
-DocType: Non Conformity Report 8D,Define and Implement the best corrective actions.,Définir et mettre en œuvre les meilleures actions correctives.
+DocType: Non Conformity Report 8D,"Remedial Actions","Des mesures correctives"
+DocType: Non Conformity Report 8D,"Define and Implement the best corrective actions.","Définir et mettre en œuvre les meilleures actions correctives."
 DocType: Non Conformity Report 8D,"Modify the management systems, operation systems, practices, and procedures to prevent recurrence of this and similar problems.","Modifiez les systèmes de gestion, les systèmes d'exploitation, les pratiques et les procédures pour éviter la récurrence de ce problème et d'autres problèmes similaires"
-DocType: Non Conformity Report 8D,Recognize the collective efforts of the team. The team needs to be formally thanked by the organization.,Reconnaissez les efforts collectifs de l'équipe. L'équipe doit être officiellement remerciée par l'organisation.
+DocType: Non Conformity Report 8D,"Recognize the collective efforts of the team. The team needs to be formally thanked by the organization.","Reconnaissez les efforts collectifs de l'équipe. L'équipe doit être officiellement remerciée par l'organisation."
 DocType: Purchase Invoice,Invalid ESR Code Line,Ligne de code ESR non valide
 DocType: Purchase Invoice,Scan Invoice,Scanner la facture
 DocType: Purchase Invoice,ESR Amount,Montant ESR

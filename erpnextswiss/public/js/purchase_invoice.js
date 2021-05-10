@@ -135,7 +135,11 @@ function show_esr_detail_dialog(frm, participant, reference, amount, default_set
             values.supplier = values.supplier.split(" // (")[1].replace(")", "");
         }
         if (frm.doc.__islocal) {
-            fetch_esr_details_to_new_sinv(frm, values);
+            if (!cur_frm.doc.items[0].item_code) {
+                fetch_esr_details_to_new_sinv(frm, values);
+            } else {
+                fetch_esr_details_to_existing_sinv(frm, values);
+            }
         } else {
             fetch_esr_details_to_existing_sinv(frm, values);
         }

@@ -97,7 +97,7 @@ def build_long_fiscal_year_print(fiscal_year):
     for c in fiscal_year.companies:
         # create html
         if not c.print_format:
-            frappe.log_error( _("Please specify a print format for company {0}", _("Print Fiscal Year") )
+            frappe.log_error( _("Please specify a print format for company {0}", _("Print Fiscal Year") ) )
         html = frappe.get_print("Fiscal Year", fiscal_year.name, print_format=c.print_format)
         # create pdf
         pdf = frappe.utils.pdf.get_pdf(html)

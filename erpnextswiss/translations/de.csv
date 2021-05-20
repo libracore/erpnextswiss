@@ -173,6 +173,7 @@ DocType: Pincode,Set,Setzen
 DocType: Pincode,Import Pincodes,Postleitzahlen einlesen
 DocType: Pincode,Import started...,Import gestartet...
 DocType: Pincode,Successfully imported,Erfolgreich importiert
+DocType: Pincode,Open Map,Karte öffnen
 Page: abacus_export,Abacus Export,Abacus Transferdatei
 Page: abacus_export,Export General Ledger to an Abacus transfer file,Exportiert Transaktionen in eine Abacus Transferdatei
 Page: abacus_export,to,bis

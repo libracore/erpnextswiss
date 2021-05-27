@@ -18,7 +18,8 @@ frappe.ui.form.on('Payment Proposal', {
         cur_frm.fields_dict['pay_from_account'].get_query = function(doc) {
             return {
                 filters: {
-                    "account_type": "Bank"
+                    "account_type": "Bank",
+                    "company": frm.doc.company
                 }
             }
         }

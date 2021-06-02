@@ -215,6 +215,7 @@ class PaymentProposal(Document):
         frappe.db.commit()
         return inserted_payment_entry
         
+    @frappe.whitelist()
     def create_bank_file(self):
         data = {}
         data['xml_version'] = frappe.get_value("ERPNextSwiss Settings", "ERPNextSwiss Settings", "xml_version")

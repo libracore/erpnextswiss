@@ -87,11 +87,12 @@ def get_data():
                        "description": _("Worktime Settings")
                    },
                    {
-                       "type": "page",
-                       "name": "worktime-overview",
-                       "label": _("Worktime Overview"),
-                       "description": _("Worktime Overview")                   
-                   }
+                        "type": "report",
+                        "name": "Worktime Overview",
+                        "label": _("Worktime Overview"),
+                        "doctype": "Timesheet",
+                        "is_query_report": True
+                    }
             ]
         },
         {

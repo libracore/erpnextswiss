@@ -5,7 +5,8 @@
  "engine": "InnoDB",
  "field_order": [
   "daily_hours",
-  "public_holidays"
+  "public_holidays",
+  "activity_type_determination"
  ],
  "fields": [
   {
@@ -20,10 +21,16 @@
    "fieldtype": "Table",
    "label": "Public Holidays",
    "options": "Public Holiday List"
+  },
+  {
+   "fieldname": "activity_type_determination",
+   "fieldtype": "Table",
+   "label": "Activity Type Determination",
+   "options": "Activity Type Determination"
   }
  ],
  "issingle": 1,
- "modified": "2021-04-20 10:51:05.516232",
+ "modified": "2021-06-09 18:34:06.176973",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "Worktime Settings",

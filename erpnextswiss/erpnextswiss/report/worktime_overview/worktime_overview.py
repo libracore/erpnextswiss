@@ -105,7 +105,7 @@ def get_target_time(filters, employee):
     # if more than one degree
     if len(degrees) > 1:
         working_hours = 0
-        target_per_day = frappe.db.get_single_value('Worktime Settings', 'daily_hours')
+        target_per_day = get_daily_hours(filters)
         degree_list = []
         i = 0
         i_max = len(degrees) - 1
@@ -136,7 +136,7 @@ def get_target_time(filters, employee):
     else:
         days = date_diff(filters.to_date, filters.from_date) + 1
         off_days = get_off_days(filters.from_date, filters.to_date, filters.company)
-        target_per_day = (frappe.db.get_single_value('Worktime Settings', 'daily_hours') / 100) * degrees[0].degree
+        target_per_day = (get_daily_hours(filters) / 100) * degrees[0].degree
         target_time = (days - off_days) * target_per_day
     return target_time
     
@@ -228,4 +228,13 @@ def get_activity_type_determinations(filters, employee):
         times.append(actual_time)
         
     return times
+    
+def get_daily_hours(filters):
+    try:
+        daily_hours = frappe.db.sql("""SELECT `daily_hours` FROM `tabDaily Hours` WHERE `company` = '{company}' LIMIT 1""".format(company=filters.company), as_list=True)[0][0]
+    except:
+        # fallback
+        daily_hours = 8
+    return daily_hours
+    
     

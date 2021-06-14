@@ -117,7 +117,7 @@ def get_target_time(filters, employee):
                 data["degree"] = degrees[i].degree
             else:
                 data["start"] = degrees[i].date.strftime("%Y-%m-%d")
-                data["end"] = to_date
+                data["end"] = filters.to_date
                 data["degree"] = degrees[i].degree
             degree_list.append(data)
             i += 1
@@ -136,7 +136,11 @@ def get_target_time(filters, employee):
     else:
         days = date_diff(filters.to_date, filters.from_date) + 1
         off_days = get_off_days(filters.from_date, filters.to_date, filters.company)
-        target_per_day = (get_daily_hours(filters) / 100) * degrees[0].degree
+        try:
+            target_per_day = (get_daily_hours(filters) / 100) * degrees[0].degree
+        except:
+            # 100% fallback
+            target_per_day = get_daily_hours(filters)
         target_time = (days - off_days) * target_per_day
     return target_time
     

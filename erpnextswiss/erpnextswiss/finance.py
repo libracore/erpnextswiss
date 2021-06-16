@@ -3,6 +3,8 @@
 # For license information, please see license.txt
 import frappe
 from frappe import _
+from frappe.utils.background_jobs import enqueue
+from frappe.utils.file_manager import save_file, remove_all
 
 """ Jinja hook to create account sheets """
 def get_account_sheets(fiscal_year, company=None):
@@ -74,3 +76,32 @@ def get_account_sheets(fiscal_year, company=None):
             # append data to storage
             account_data.append(_data)
     return account_data
+
+# background job to create long pdf for fiscal year
+@frappe.whitelist()
+def enqueue_build_long_fiscal_year_print(fiscal_year):
+    kwargs={
+        'fiscal_year': fiscal_year
+    }
+
+    enqueue("erpnextswiss.erpnextswiss.finance.build_long_fiscal_year_print",
+        queue='long',
+        timeout=15000,
+        **kwargs)
+    return
+
+def build_long_fiscal_year_print(fiscal_year):
+    fiscal_year = frappe.get_doc("Fiscal Year", fiscal_year)
+    # clear attached files
+    remove_all("Fiscal Year", fiscal_year.name)
+    for c in fiscal_year.companies:
+        # create html
+        if not c.print_format:
+            frappe.log_error( _("Please specify a print format for company {0}", _("Print Fiscal Year") ) )
+        html = frappe.get_print("Fiscal Year", fiscal_year.name, print_format=c.print_format)
+        # create pdf
+        pdf = frappe.utils.pdf.get_pdf(html)
+        # save and attach pdf
+        file_name = ("{0}_{1}.pdf".format(fiscal_year.name, c.company)).replace(" ", "_").replace("/", "_")
+        save_file(file_name, pdf, "Fiscal Year", fiscal_year.name, is_private=1)
+    return

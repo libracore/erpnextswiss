@@ -79,7 +79,20 @@ def get_data():
                        "name": "Salary Certificate",
                        "label": _("Salary Certificate"),
                        "description": _("Salary Certificate")
-                   }
+                   },
+                   {
+                       "type": "doctype",
+                       "name": "Worktime Settings",
+                       "label": _("Worktime Settings"),
+                       "description": _("Worktime Settings")
+                   },
+                   {
+                        "type": "report",
+                        "name": "Worktime Overview",
+                        "label": _("Worktime Overview"),
+                        "doctype": "Timesheet",
+                        "is_query_report": True
+                    }
             ]
         },
         {

@@ -1,0 +1,37 @@
+{
+ "creation": "2021-04-20 10:59:37.493341",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "date",
+  "degree"
+ ],
+ "fields": [
+  {
+   "fieldname": "date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "degree",
+   "fieldtype": "Percent",
+   "in_list_view": 1,
+   "label": "Degree in %",
+   "reqd": 1
+  }
+ ],
+ "istable": 1,
+ "modified": "2021-04-20 10:59:37.493341",
+ "modified_by": "Administrator",
+ "module": "ERPNextSwiss",
+ "name": "Employment Degree",
+ "owner": "Administrator",
+ "permissions": [],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

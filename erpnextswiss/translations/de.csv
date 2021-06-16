@@ -173,6 +173,7 @@ DocType: Pincode,Set,Setzen
 DocType: Pincode,Import Pincodes,Postleitzahlen einlesen
 DocType: Pincode,Import started...,Import gestartet...
 DocType: Pincode,Successfully imported,Erfolgreich importiert
+DocType: Pincode,Open Map,Karte öffnen
 Page: abacus_export,Abacus Export,Abacus Transferdatei
 Page: abacus_export,Export General Ledger to an Abacus transfer file,Exportiert Transaktionen in eine Abacus Transferdatei
 Page: abacus_export,to,bis
@@ -238,6 +239,14 @@ DocType: Payment Proposal,External Reference,Externe Referenz
 DocType: Payment Proposal,Skonto Date,Skonto-Datum
 DocType: Payment Proposal,Skonto Amount,Betrag mit Skonto
 DocType: Payment Proposal,Individual payments,Jede Rechnung einzeln bezahlen
+DocType: Payment Proposal,"Employee <a href=\"/desk#Form/Employee/{0}\">{0}</a> has no address.","Für den Mitarbeiter <a href=\"/desk#Form/Employee/{0}\">{0}</a> ist keine Adresse hinterlegt."
+DocType: Payment Proposal,"Company address missing or incomplete.","Unternehmensadresse fehlt oder ist unvollständig."
+DocType: Payment Proposal,"IBAN missing in pay from account.","Die IBAN des Zahlungskontos ist nicht hinterlegt."
+DocType: Payment Proposal,"Address missing for purchase invoice <a href=\"/desk#Form/Purchase Invoice/{0}\">{0}</a>","Für Eingangsrechnung <a href=\"/desk#Form/Purchase Invoice/{0}\">{0}</a> fehlt die Adresse."
+DocType: Payment Proposal,"ESR: missing transaction information (participant number or reference) in <a href=\"/desk#Form/Purchase Invoice/{0}\">{0}</a>","ESR: Transaktionsdetails fehlen (Teilnehmernummer oder Referenznummer) für <a href=\"/desk#Form/Purchase Invoice/{0}\">{0}</a>"
+DocType: Payment Proposal,"Missing IBAN for purchase invoice <a href=\"/desk#Form/Purchase Invoice/{0}\">{0}</a>","Bei Eingangsrechnung <a href=\"/desk#Form/Purchase Invoice/{0}\">{0}</a> fehlt die IBAN"
+DocType: Payment Proposal,"Employee <a href=\"/desk#Form/Employee/{0}\">{0}</a> has no bank account number.","Für Mitarbeiter <a href=\"/desk#Form/Employee/{0}\">{0}</a> ist kein Bankkonto hinterlegt."
+DocType: Payment Proposal,"Please configure the planning period in ERPNextSwiss Settings.","Bitte das Planungsintervall in den ERPNextSwiss-Einstellungen einstellen."
 Page: Bank Wizard,Bank Wizard,Bankassistent
 Page: Bank Wizard,Transaction matched,Zahlung zugewiesen
 Page: Bank Wizard, transactions found, Zahlungen gefunden

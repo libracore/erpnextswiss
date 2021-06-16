@@ -13,6 +13,7 @@ import cgi                              # (used to escape utf-8 to html)
 #from erpnextswiss.erpnextswiss.page.bankimport.bankimport import create_reference
 # unicode compatiility for both Python 2 (unicode) and Python 3 (str)
 import six
+from frappe.utils import cint
 
 # this function tries to match the amount to an open sales invoice
 #
@@ -149,7 +150,14 @@ def get_default_accounts(bank_account):
     receivable_account = frappe.get_value('Company', company, 'default_receivable_account')
     payable_account = frappe.get_value('Company', company, 'default_payable_account')
     expense_payable_account = frappe.get_value('Company', company, 'default_expense_claim_payable_account') or payable_account
-    return { 'company': company, 'receivable_account': receivable_account, 'payable_account': payable_account, 'expense_payable_account': expense_payable_account}
+    auto_process_matches = frappe.get_value('ERPNextSwiss Settings', 'ERPNextSwiss Settings', 'auto_process_matches')
+    return { 
+        'company': company, 
+        'receivable_account': receivable_account, 
+        'payable_account': payable_account, 
+        'expense_payable_account': expense_payable_account,
+        'auto_process_matches': auto_process_matches
+    }
 
 @frappe.whitelist()
 def get_intermediate_account():
@@ -602,6 +610,7 @@ def read_camt_transactions(transaction_entries, account, settings):
                         'matched_amount': None
                     }
                     txns.append(new_txn)
+
     return txns
 
 @frappe.whitelist()

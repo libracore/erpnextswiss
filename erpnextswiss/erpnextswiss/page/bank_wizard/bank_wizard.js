@@ -170,6 +170,8 @@ frappe.bank_wizard = {
                     document.getElementById("company").value = r.message.company;
                     document.getElementById("payable_account").value = r.message.payable_account;
                     document.getElementById("receivable_account").value = r.message.receivable_account;
+                    document.getElementById("expense_payable_account").value = r.message.expense_payable_account;
+                    document.getElementById("auto_process_matches").value = r.message.auto_process_matches;
                 } else {
                     frappe.msgprint( __("Please set the <b>default accounts</b> in <a href=\"/desk#Form/Company/{0}\">{0}</a>.").replace("{0}", r.message.company) );
                 }
@@ -198,7 +200,9 @@ frappe.bank_wizard = {
         var company = document.getElementById("company").value;
         var intermediate_account = document.getElementById("intermediate_account").value;
         var payable_account = document.getElementById("payable_account").value;
+        var expense_payable_account = document.getElementById("payable_account").value;
         var receivable_account = document.getElementById("receivable_account").value;
+        var auto_process_matches = parseInt(document.getElementById("auto_process_matches").value);
         var default_customer = document.getElementById("default_customer").value;
         var default_supplier = document.getElementById("default_supplier").value;
         message.transactions.forEach(function (transaction) {
@@ -224,6 +228,9 @@ frappe.bank_wizard = {
                     }
                     frappe.bank_wizard.quick_payment_entry(payment, transaction.txid);
                 });
+                if (auto_process_matches === 1) {
+                    button.click();
+                }
             }
             // quick match (purchase invoice)
             var button = document.getElementById("btn-quick-exp-" + transaction.txid);
@@ -245,6 +252,9 @@ frappe.bank_wizard = {
                     }
                     frappe.bank_wizard.quick_payment_entry(payment, transaction.txid);
                 });
+                if (auto_process_matches === 1) {
+                    button.click();
+                }
             }
             // purchase invoice match
             var button = document.getElementById("btn-close-pinv-" + transaction.txid);
@@ -274,7 +284,7 @@ frappe.bank_wizard = {
                         'amount': transaction.amount,
                         'date': transaction.date,
                         'paid_from': bank_account,
-                        'paid_to': payable_account,
+                        'paid_to': expense_payable_account,
                         'reference_no': transaction.unique_reference,
                         'type': "Pay",
                         'party_type': "Employee",
@@ -313,7 +323,7 @@ frappe.bank_wizard = {
                         'amount': transaction.amount,
                         'date': transaction.date,
                         'paid_from': bank_account,
-                        'paid_to': payable_account,
+                        'paid_to': expense_payable_account,
                         'reference_no': transaction.unique_reference,
                         'type': "Pay",
                         'party_type': "Employee",
@@ -364,6 +374,9 @@ frappe.bank_wizard = {
                     }
                     frappe.bank_wizard.quick_payment_entry(payment, transaction.txid);
                 });
+                if (auto_process_matches === 1) {
+                    button.click();
+                }
             }
             // sales invoice match
             var button = document.getElementById("btn-close-sinv-" + transaction.txid);

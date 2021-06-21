@@ -21,6 +21,7 @@
   "intermediate_account",
   "column_bank_wizard",
   "always_use_entry_transaction_type",
+  "auto_process_matches",
   "bank_import_section",
   "bankimport_table",
   "invoice_code_line_scanning_section",
@@ -178,10 +179,16 @@
    "fieldname": "always_use_entry_transaction_type",
    "fieldtype": "Check",
    "label": "Always use entry transaction type"
+  },
+  {
+   "default": "0",
+   "fieldname": "auto_process_matches",
+   "fieldtype": "Check",
+   "label": "Automatically process full matches"
   }
  ],
  "issingle": 1,
- "modified": "2021-02-17 19:34:36.836196",
+ "modified": "2021-06-16 22:04:41.032104",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "ERPNextSwiss Settings",

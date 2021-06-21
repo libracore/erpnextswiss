@@ -10,13 +10,26 @@ class WorktimeSettings(Document):
     pass
 
 @frappe.whitelist()
-def get_daily_working_hours(company=None):
+def get_daily_working_hours(company=None, employee=None):
     if not company:
         company = frappe.defaults.get_global_default('company')
+    # get base hours
     hours = frappe.db.sql("""SELECT `daily_hours`
                      FROM `tabDaily Hours` 
                      WHERE `company` = "{c}";""".format(c=company), as_dict=True)
+    # get part-time
+    if employee:
+        degrees = frappe.db.sql("""SELECT `degree`, `date` 
+                                   FROM `tabEmployment Degree` 
+                                   WHERE `parent` = '{employee}' 
+                                     AND `date` <= CURDATE()
+                                   ORDER BY `date` DESC
+                                   LIMIT 1;""".format(employee=employee), as_dict=True)
+    if degrees and len(degrees) > 0:
+        percent = degrees[0]['degree']
+    else:
+        percent = 100
     if hours and len(hours) > 0:
-        return hours[0]['daily_hours']
+        return (percent / 100) * hours[0]['daily_hours']
     else:
         return 8

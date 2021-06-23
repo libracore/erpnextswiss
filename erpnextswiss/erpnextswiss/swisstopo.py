@@ -32,6 +32,7 @@
 # Please validate your results with NAVREF on-line service: http://www.swisstopo.admin.ch/internet/swisstopo/en/home/apps/calc/navref.html (difference ~ 1-2m)
 
 import math
+import frappe
 
 class GPSConverter(object):
     '''
@@ -248,3 +249,25 @@ class GPSConverter(object):
         # Unit 10000" to 1" and converts seconds to degrees notation.
         lng = lng * 100 / 36
         return lng
+
+@frappe.whitelist()
+def get_swisstopo_url_from_gps(lat, lng, zoom=12, language="de"):
+    converter = GPSConverter()
+    y = int(converter.WGStoLV95North(lat, lng))
+    x = int(converter.WGSToLV95East(lat, lng))
+    url = get_swisstopo_url_from_ch(x, y, zoom, language)
+    return url
+
+@frappe.whitelist()
+def get_swisstopo_url_from_ch(x, y, zoom=12, language="de"):
+    url = "https://map.geo.admin.ch/?lang={language}&topic=ech&bgLayer=ch.swisstopo.swissimage&layers=ch.swisstopo.zeitreihen,ch.bfs.gebaeude_wohnungs_register,ch.bav.haltestellen-oev,ch.swisstopo.swisstlm3d-wanderwege&layers_opacity=1,1,1,0.8&layers_visibility=false,false,false,false&layers_timestamp=18641231,,,&E={x}&N={y}&zoom={zoom}".format(language=language, zoom=zoom, x=x, y=y)
+    return url
+
+@frappe.whitelist()
+def get_swisstopo_url_from_pincode(pincode, zoom=12, language="de"):
+    pins = frappe.get_all("Pincode", filters={'pincode': pincode}, fields=['name', 'latitude', 'longitude'])
+    if pins and len(pins) > 0:
+        url = get_swisstopo_url_from_gps(float(pins[0]['latitude'] or 0), float(pins[0]['longitude'] or 0), zoom, language)
+    else:
+        url = get_swisstopo_url_from_gps(47.4967528982669, 8.73430829109435, zoom, language)
+    return url

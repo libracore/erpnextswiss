@@ -3,6 +3,8 @@ Module: ERPNextSwiss,Fullsize View,Ganzer Bildschirm
 Module: ERPNextSwiss,Normal View,Normale Ansicht
 Module: ERPNextSwiss,Customer name,Kundenname
 Module: ERPNextSwiss,Item name,Artikelname
+Module: ERPNextSwiss,Always use entry transaction type,Immer Transaktionstyp des Eintrags verwenden
+Module: ERPNextSwiss,Automatically process full macthes,Eindeutige Treffer automatisch verarbeiten
 Page: bankimport,Bank import,Bankdaten importieren
 DocType: VAT Declaration,VAT Declaration,Mehrwertsteuerdeklaration
 Page: payment_export,Payment export,Zahlungsdatei erstellen
@@ -173,6 +175,7 @@ DocType: Pincode,Set,Setzen
 DocType: Pincode,Import Pincodes,Postleitzahlen einlesen
 DocType: Pincode,Import started...,Import gestartet...
 DocType: Pincode,Successfully imported,Erfolgreich importiert
+DocType: Pincode,Open Map,Karte öffnen
 Page: abacus_export,Abacus Export,Abacus Transferdatei
 Page: abacus_export,Export General Ledger to an Abacus transfer file,Exportiert Transaktionen in eine Abacus Transferdatei
 Page: abacus_export,to,bis

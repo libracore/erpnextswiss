@@ -1,7 +1,7 @@
 #
 # swiss_exchange_rates.py
 #
-# Copyright (C) libracore, 2017
+# Copyright (C) libracore, 2017-2021
 # https://www.libracore.com or https://github.com/libracore
 #
 # For information on ERPNext, refer to https://erpnext.org/
@@ -38,11 +38,11 @@ def parse_estv_xml(url, currencies):
     return
     
 def read_rates(currencies=["EUR"]):
-    parse_estv_xml('http://www.pwebapps.ezv.admin.ch/apps/rates/estv/getavgxml', currencies)
+    parse_estv_xml('https://www.backend-rates.ezv.admin.ch/api/xmlavgmonth', currencies)
     return
 
 def read_daily_rates(currencies=["EUR"]):
-    parse_estv_xml('http://www.pwebapps.ezv.admin.ch/apps/rates/rate/getxml?activeSearchType=today', currencies)
+    parse_estv_xml('https://www.backend-rates.ezv.admin.ch/api/xmldaily', currencies)
     return
 
 def create_exchange_rate(from_currency, rate, to_currency="CHF"):

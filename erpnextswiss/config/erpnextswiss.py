@@ -79,7 +79,14 @@ def get_data():
                        "name": "Salary Certificate",
                        "label": _("Salary Certificate"),
                        "description": _("Salary Certificate")
-                   }
+                   },
+                   {
+                        "type": "report",
+                        "name": "Worktime Overview",
+                        "label": _("Worktime Overview"),
+                        "doctype": "Timesheet",
+                        "is_query_report": True
+                    }
             ]
         },
         {
@@ -133,6 +140,12 @@ def get_data():
                        "name": "ERPNextSwiss Settings",
                        "label": _("ERPNextSwiss Settings"),
                        "description": _("ERPNextSwiss Settings")                   
+                   },
+                   {
+                       "type": "doctype",
+                       "name": "Worktime Settings",
+                       "label": _("Worktime Settings"),
+                       "description": _("Worktime Settings")
                    },
                    {
                        "type": "doctype",

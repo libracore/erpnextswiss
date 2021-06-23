@@ -1,0 +1,38 @@
+{
+ "creation": "2021-06-10 16:46:29.733692",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "company",
+  "daily_hours"
+ ],
+ "fields": [
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "fieldname": "daily_hours",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Daily Hours",
+   "reqd": 1
+  }
+ ],
+ "istable": 1,
+ "modified": "2021-06-10 16:46:29.733692",
+ "modified_by": "Administrator",
+ "module": "ERPNextSwiss",
+ "name": "Daily Hours",
+ "owner": "Administrator",
+ "permissions": [],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

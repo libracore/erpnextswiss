@@ -91,6 +91,7 @@ class PaymentProposal(Document):
                             addr.address_line1, "{0} {1}".format(addr.pincode, addr.city), addr.country,
                             this_amount, currency, purchase_invoice.external_reference, skonto_date or due_date, 
                             purchase_invoice.esr_reference, purchase_invoice.esr_participation_number)
+                        total += this_amount
                     else:
                         amount += this_amount
                     # mark sales invoices as proposed
@@ -427,7 +428,7 @@ def create_payment_proposal(date=None, company=None):
         'company': company,
         'total': total
     })
-    proposal_record = new_proposal.insert()
+    proposal_record = new_proposal.insert(ignore_permissions=True)      # ignore permissions, as noone has create permission to prevent the new button
     new_record = proposal_record.name
     frappe.db.commit()
     return new_record

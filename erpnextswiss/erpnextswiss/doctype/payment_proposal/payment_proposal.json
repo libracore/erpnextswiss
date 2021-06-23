@@ -140,8 +140,9 @@
    "label": "Individual payments"
   }
  ],
+ "in_create": 1,
  "is_submittable": 1,
- "modified": "2020-11-20 20:49:09.693485",
+ "modified": "2021-06-23 11:20:16.994295",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "Payment Proposal",
@@ -150,7 +151,6 @@
   {
    "amend": 1,
    "cancel": 1,
-   "create": 1,
    "delete": 1,
    "email": 1,
    "export": 1,
@@ -165,7 +165,6 @@
   {
    "amend": 1,
    "cancel": 1,
-   "create": 1,
    "delete": 1,
    "email": 1,
    "export": 1,
@@ -180,7 +179,6 @@
   {
    "amend": 1,
    "cancel": 1,
-   "create": 1,
    "delete": 1,
    "email": 1,
    "export": 1,

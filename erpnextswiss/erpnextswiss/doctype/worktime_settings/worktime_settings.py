@@ -14,9 +14,7 @@ def get_daily_working_hours(company=None, employee=None):
     if not company:
         company = frappe.defaults.get_global_default('company')
     # get base hours
-    hours = frappe.db.sql("""SELECT `daily_hours`
-                     FROM `tabDaily Hours` 
-                     WHERE `company` = "{c}";""".format(c=company), as_dict=True)
+    hours = get_default_working_hours(company)
     # get part-time
     if employee:
         degrees = frappe.db.sql("""SELECT `degree`, `date` 
@@ -33,3 +31,11 @@ def get_daily_working_hours(company=None, employee=None):
         return (percent / 100) * hours[0]['daily_hours']
     else:
         return 8
+
+def get_default_working_hours(company=None):
+    if not company:
+        company = frappe.defaults.get_global_default('company')
+    hours = frappe.db.sql("""SELECT `daily_hours`
+                     FROM `tabDaily Hours` 
+                     WHERE `company` = "{c}";""".format(c=company), as_dict=True)
+    return hours

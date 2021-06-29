@@ -90,7 +90,7 @@ class PaymentProposal(Document):
                         self.add_payment(supl.supplier_name, supl.iban, payment_type,
                             addr.address_line1, "{0} {1}".format(addr.pincode, addr.city), addr.country,
                             this_amount, currency, purchase_invoice.external_reference, skonto_date or due_date, 
-                            purchase_invoice.esr_reference, purchase_invoice.esr_participation_number)
+                            purchase_invoice.esr_reference, purchase_invoice.esr_participation_number, supl.bic)
                         total += this_amount
                     else:
                         amount += this_amount
@@ -170,10 +170,11 @@ class PaymentProposal(Document):
     
     def add_payment(self, receiver_name, iban, payment_type, address_line1, 
         address_line2, country, amount, currency, reference, execution_date, 
-        esr_reference=None, esr_participation_number=None):
+        esr_reference=None, esr_participation_number=None, bic=None):
             new_payment = self.append('payments', {})
             new_payment.receiver = receiver_name
             new_payment.iban = iban
+            new_payment.bic = bic
             new_payment.payment_type = payment_type
             new_payment.receiver_address_line1 = address_line1
             new_payment.receiver_address_line2 = address_line2
@@ -293,6 +294,7 @@ class PaymentProposal(Document):
                 payment_record['service_level'] = "IBAN"
                 payment_record['iban'] = payment.iban.replace(" ", "")
                 payment_record['reference'] = payment.reference
+                payment_record['bic'] = (payment.bic or "").replace(" ", "")
             # once the payment is extracted for payment, submit the record
             transaction_count += 1
             control_sum += round(payment.amount, 2)

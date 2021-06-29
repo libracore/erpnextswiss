@@ -112,7 +112,7 @@ class PaymentProposal(Document):
                 addr = frappe.get_doc("Address", address)
                 self.add_payment(supl.supplier_name, supl.iban, payment_type,
                     addr.address_line1, "{0} {1}".format(addr.pincode, addr.city), addr.country,
-                    amount, currency, " ".join(references), exec_date)
+                    amount, currency, " ".join(references), exec_date, bic=supl.bic)
                 total += amount
         # collect employees
         employees = []

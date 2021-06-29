@@ -90,7 +90,7 @@ class PaymentProposal(Document):
                         self.add_payment(supl.supplier_name, supl.iban, payment_type,
                             addr.address_line1, "{0} {1}".format(addr.pincode, addr.city), addr.country,
                             this_amount, currency, purchase_invoice.external_reference, skonto_date or due_date, 
-                            purchase_invoice.esr_reference, purchase_invoice.esr_participation_number, supl.bic)
+                            purchase_invoice.esr_reference, purchase_invoice.esr_participation_number)
                         total += this_amount
                     else:
                         amount += this_amount
@@ -102,7 +102,7 @@ class PaymentProposal(Document):
                     if self.use_intermediate == 1:
                         self.create_payment("Supplier", supplier, 
                             "Purchase Invoice", purchase_invoice.purchase_invoice, exec_date,
-                            purchase_invoice.amount)
+                            purchase_invoice.amount, bic=supl.bic)
             # make sure execution date is valid
             if exec_date < datetime.now():
                 exec_date = datetime.now()      # + timedelta(days=1)

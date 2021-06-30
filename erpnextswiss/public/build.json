@@ -1,5 +1,6 @@
 {
     "js/swiss_common.js": [
-        "public/js/swiss_common.js"
+        "public/js/swiss_common.js",
+        "public/js/iban.js"
     ]
 }

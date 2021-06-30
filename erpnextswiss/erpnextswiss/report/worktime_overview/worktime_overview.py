@@ -175,7 +175,7 @@ def get_holiday_balance(employee, to_date):
     remaining_days = 0
     
     for key in leave_details["leave_allocation"]:
-        remaining_days += int(leave_details["leave_allocation"][key]["remaining_leaves"])
+        remaining_days += float(leave_details["leave_allocation"][key]["remaining_leaves"])
     
     return float(remaining_days)
     

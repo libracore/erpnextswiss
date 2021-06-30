@@ -32,13 +32,13 @@ def get_employee_name(user):
 
 def get_columns(filters):
     columns = [
-		{"label": _("Employee"), "fieldname": "employee", "fieldtype": "Link", "options": "Employee", "width": 150},
-		{"label": _("Employee Name"), "fieldname": "employee_name", "fieldtype": "Data", "width": 150},
-		{"label": _("Target time in hours"), "fieldname": "target_time", "fieldtype": "Float", "width": 150},
-		{"label": _("Actual time in hours"), "fieldname": "actual_time", "fieldtype": "Float", "width": 150},
-		{"label": _("Difference in hours"), "fieldname": "difference", "fieldtype": "Float", "width": 150},
-		{"label": _("Current holiday balance in days"), "fieldname": "holiday_balance", "fieldtype": "Float", "width": 202}
-	]
+        {"label": _("Employee"), "fieldname": "employee", "fieldtype": "Link", "options": "Employee", "width": 150},
+        {"label": _("Employee Name"), "fieldname": "employee_name", "fieldtype": "Data", "width": 150},
+        {"label": _("Target time in hours"), "fieldname": "target_time", "fieldtype": "Float", "width": 150},
+        {"label": _("Actual time in hours"), "fieldname": "actual_time", "fieldtype": "Float", "width": 150},
+        {"label": _("Difference in hours"), "fieldname": "difference", "fieldtype": "Float", "width": 150},
+        {"label": _("Current holiday balance in days"), "fieldname": "holiday_balance", "fieldtype": "Float", "width": 202}
+    ]
     columns = add_activity_type_determination(filters, columns)
     return columns
     
@@ -132,14 +132,13 @@ def get_target_time(filters, employee):
             start_date += delta
         return working_hours
         
-    # if only one degree
+    # if only one degree or no degrees
     else:
         days = date_diff(filters.to_date, filters.from_date) + 1
         off_days = get_off_days(filters.from_date, filters.to_date, filters.company)
-        try:
+        if len(degrees) > 0:
             target_per_day = (get_daily_hours(filters) / 100) * degrees[0].degree
-        except:
-            # 100% fallback
+        else:
             target_per_day = get_daily_hours(filters)
         target_time = (days - off_days) * target_per_day
     return target_time
@@ -176,7 +175,7 @@ def get_holiday_balance(employee, to_date):
     remaining_days = 0
     
     for key in leave_details["leave_allocation"]:
-        remaining_days += int(leave_details["leave_allocation"][key]["remaining_leaves"])
+        remaining_days += float(leave_details["leave_allocation"][key]["remaining_leaves"])
     
     return float(remaining_days)
     

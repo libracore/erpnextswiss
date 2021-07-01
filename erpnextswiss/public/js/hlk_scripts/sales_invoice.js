@@ -160,7 +160,8 @@ function calc_structur_organisation_totals(frm) {
 				"dt": "Sales Invoice",
 				"dn": frm.doc.name
 			},
-			"async": false,
+			"freeze": true,
+			"freeze_message": __("Calc HLK Totals..."),
 			"callback": function(response) {
 				cur_frm.reload_doc();
 			}

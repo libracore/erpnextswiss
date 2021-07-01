@@ -122,7 +122,12 @@ def get_target_time(filters, employee):
             degree_list.append(data)
             i += 1
             
-        start_date = getdate(filters.from_date)
+        employee_joining_date = frappe.get_doc("Employee", employee).date_of_joining
+        if getdate(employee_joining_date) < getdate(filters.from_date):
+            start_date = getdate(filters.from_date)
+        else:
+            start_date = getdate(employee_joining_date)
+            
         end_date = getdate(filters.to_date)
         delta = timedelta(days=1)
         while start_date <= end_date:
@@ -134,8 +139,14 @@ def get_target_time(filters, employee):
         
     # if only one degree or no degrees
     else:
-        days = date_diff(filters.to_date, filters.from_date) + 1
-        off_days = get_off_days(filters.from_date, filters.to_date, filters.company)
+        employee_joining_date = frappe.get_doc("Employee", employee).date_of_joining
+        if getdate(employee_joining_date) < getdate(filters.from_date):
+            start_date = filters.from_date
+        else:
+            start_date = employee_joining_date
+            
+        days = date_diff(filters.to_date, start_date) + 1
+        off_days = get_off_days(start_date, filters.to_date, filters.company)
         if len(degrees) > 0:
             target_per_day = (get_daily_hours(filters) / 100) * degrees[0].degree
         else:

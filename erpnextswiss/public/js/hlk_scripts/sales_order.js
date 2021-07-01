@@ -3,7 +3,11 @@ frappe.ui.form.on('Sales Order', {
 		validate_hlk_element_allocation(frm);
 	},
 	refresh(frm) {
-		frappe.call({
+		// remove update items button
+		$('[data-label="Update%20Items"]').remove();
+        $('[data-label="Artikel%20aktualisieren"]').remove();
+        
+        frappe.call({
 			"method": "erpnextswiss.erpnextswiss.page.bkp_importer.utils.get_item_group_for_structur_element_filter",
 			"async": false,
 			"callback": function(response) {
@@ -63,7 +67,6 @@ frappe.ui.form.on('Sales Order', {
 					if (cur_frm.is_dirty()) {
 						frappe.msgprint(__("Please save Document first"));
 					} else {
-						frappe.msgprint(__("Please wait"));
 						transfer_structur_organisation_discounts(frm);
 					}
 				}, __("HLK Tools"));
@@ -73,7 +76,6 @@ frappe.ui.form.on('Sales Order', {
 					if (cur_frm.is_dirty()) {
 						frappe.msgprint(__("Please save Document first"));
 					} else {
-						frappe.msgprint(__("Please wait"));
 						calc_structur_organisation_totals(frm);
 					}
 				}, __("HLK Tools"));

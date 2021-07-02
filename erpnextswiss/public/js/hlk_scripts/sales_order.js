@@ -168,18 +168,21 @@ function erstelle_teilrechnung_pop_up(frm) {
 		frappe.prompt(
 		fields,
 		function(values){
-			for (const [key, value] of Object.entries(values)) {
-				frappe.call({
-					"method": "erpnextswiss.erpnextswiss.page.bkp_importer.utils.set_amount_to_bill",
-					"args": {
-						"record": frm.doc.name,
-						'element': key,
-						'value': value
-					},
-					"async": false
-				});
-			}
-			erstelle_teilrechnung(frm);
+			frappe.msgprint("Die Teilrechnung wird erstellt, bitte haben Sie einwenig Gedult.", "Bitte warten");
+            setTimeout(function(){ 
+                for (const [key, value] of Object.entries(values)) {
+                    frappe.call({
+                        "method": "erpnextswiss.erpnextswiss.page.bkp_importer.utils.set_amount_to_bill",
+                        "args": {
+                            "record": frm.doc.name,
+                            'element': key,
+                            'value': value
+                        },
+                        "async": false
+                    });
+                }
+                erstelle_teilrechnung(frm);
+            }, 1000);
 		},
 		'Erstellung Teilrechnung',
 		'Erstellen'
@@ -232,7 +235,7 @@ function calc_structur_organisation_totals(frm) {
 				"dn": frm.doc.name
 			},
 			"freeze": true,
-			"freeze_message": __("Calc HLK Totals..."),
+			"freeze_message": __("Calc HLK Totals") + "...",
 			"callback": function(response) {
 				cur_frm.reload_doc();
 			}

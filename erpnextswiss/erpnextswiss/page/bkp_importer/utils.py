@@ -13,56 +13,6 @@ from erpnext.setup.doctype.item_group.item_group import get_item_group_defaults
 
 @frappe.whitelist()
 def calc_structur_organisation_totals(dt, dn):
-    # document = frappe.get_doc(dt, dn)
-    # parent_elements = []
-    # sub_parent_elements = []
-    
-    # for structur_element in document.hlk_structur_organisation:
-        # if not structur_element.parent_element:
-            # parent_elements.append(structur_element.main_element)
-            
-    # for structur_element in document.hlk_structur_organisation:
-        # if structur_element.parent_element in parent_elements:
-            # sub_parent_elements.append(structur_element.main_element)
-            
-    # for structur_element in document.hlk_structur_organisation:
-        # if not structur_element.parent_element in parent_elements:
-            # if not structur_element.main_element in sub_parent_elements:
-                # structur_element.total = flt(frappe.db.sql("""SELECT SUM(`amount`) FROM `tab{dt} Item` WHERE `hlk_element` = '{hlk_element}' AND `parent` = '{dn}'""".format(dt=dt, hlk_element=structur_element.main_element, dn=dn), as_list=True)[0][0])
-                # if dt != 'Sales Invoice':
-                    # structur_element.net_total = structur_element.total
-                # if dt in ['Quotation', 'Sales Order']:
-                    # structur_element.charged = 0
-                
-    # for structur_element in document.hlk_structur_organisation:
-        # if structur_element.main_element in sub_parent_elements:
-            # amount = 0
-            # for _structur_element in document.hlk_structur_organisation:
-                # if _structur_element.parent_element == structur_element.main_element:
-                    # amount += _structur_element.total
-            # structur_element.total = amount
-            # if dt != 'Sales Invoice':
-                # structur_element.net_total = structur_element.total
-            # if dt in ['Quotation', 'Sales Order']:
-                # structur_element.charged = 0
-            
-    # for structur_element in document.hlk_structur_organisation:
-        # if structur_element.main_element in parent_elements:
-            # amount = 0
-            # for _structur_element in document.hlk_structur_organisation:
-                # if _structur_element.parent_element == structur_element.main_element:
-                    # amount += _structur_element.total
-            # structur_element.total = amount
-            # if dt != 'Sales Invoice':
-                # structur_element.net_total = structur_element.total
-            # if dt in ['Quotation', 'Sales Order']:
-                # structur_element.charged = 0
-            
-    # document.save()
-    
-    ###########################################
-    # NEW Workflow:
-    #document = frappe.get_doc(dt, dn)
     parent_list = []
     last_elements = frappe.db.sql("""
         SELECT
@@ -87,10 +37,11 @@ def calc_structur_organisation_totals(dt, dn):
                 direct_parent = structur_element.parent_element
                 if direct_parent not in parent_list:
                     parent_list.append(direct_parent)
+            else:
+                if structur_element.main_element not in last_elements:
+                    structur_element.total = 0
         document.save()
                     
-    # step 1
-    #frappe.throw(str(parent_list))
     while parent_list:
         parent_list = calc_and_create_new_parent_list(parent_list, dt, dn)
             
@@ -106,8 +57,7 @@ def calc_and_create_new_parent_list(parent_list, dt, dn):
                 `parent` = '{dn}'
                 AND `parent_element` = '{parent}';
         """.format(dn=dn, parent=parent), as_list=True)[0][0]
-        # if parent != '243 Wärmeverteilung':
-            # frappe.throw("parent: {parent} / sum: {get_sum}".format(parent=parent, get_sum=get_sum))
+        
         document = frappe.get_doc(dt, dn)
         for structur_element in document.hlk_structur_organisation:
             if structur_element.main_element == parent:
@@ -121,8 +71,6 @@ def calc_and_create_new_parent_list(parent_list, dt, dn):
                 parent_list.remove(parent)
         document.save()
     return parent_list
-    
-    ###########################################
     
 @frappe.whitelist()
 def transfer_structur_organisation_discounts(dt, dn):

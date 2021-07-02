@@ -81,6 +81,12 @@ frappe.ui.form.on('Sales Invoice', {
 				}, __("HLK Tools"));
 			}
 		}
+        
+        if (frm.doc.__islocal) {
+			frm.add_custom_button(__("Remove Zero Positions"), function() {
+				remove_zero_positions(frm);
+			}, __("HLK Tools"));
+		}
 	},
 	onload(frm) {
 		if (frm.doc.__islocal) {

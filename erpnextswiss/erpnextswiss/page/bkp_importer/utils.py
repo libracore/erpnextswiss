@@ -24,6 +24,12 @@ def calc_structur_organisation_totals(dt, dn):
         GROUP BY `hlk_element`;
     """.format(dt=dt, dn=dn), as_dict=True)
     
+    last_element_names = []
+    for last_element in last_elements:
+        if last_element.hlk_element not in last_element_names:
+            last_element_names.append(last_element.hlk_element)
+            
+            
     for last_element in last_elements:
         document = frappe.get_doc(dt, dn)
         for structur_element in document.hlk_structur_organisation:
@@ -38,7 +44,7 @@ def calc_structur_organisation_totals(dt, dn):
                 if direct_parent not in parent_list:
                     parent_list.append(direct_parent)
             else:
-                if structur_element.main_element not in last_elements:
+                if structur_element.main_element not in last_element_names:
                     structur_element.total = 0
         document.save()
                     

@@ -35,7 +35,7 @@ def parse_estv_xml(url, currencies):
                 # get devisor in case of non-equal currencies (e.g. 100 JPY = .. CHF)
                 try:
                     divisor = float(name.split(" ")[0])
-                except::
+                except:
                     divisor = 1
                 rate = entry.kurs.get_text()
                 equal_rate = float(rate) / divisor

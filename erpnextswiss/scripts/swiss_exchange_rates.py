@@ -32,9 +32,15 @@ def parse_estv_xml(url, currencies):
         name = entry.waehrung.get_text()
         for selected_currency in currencies:
             if selected_currency in name:
+                # get devisor in case of non-equal currencies (e.g. 100 JPY = .. CHF)
+                try:
+                    divisor = float(name.split(" ")[0])
+                except::
+                    divisor = 1
                 rate = entry.kurs.get_text()
-                print(name + " = " + rate + " CHF")
-                create_exchange_rate(selected_currency, float(rate), "CHF")
+                equal_rate = float(rate) / divisor
+                print("{0} = {1} CHF ({2})".format(name, rate, equal_rate))
+                create_exchange_rate(selected_currency, float(equal_rate), "CHF")
     return
     
 def read_rates(currencies=["EUR"]):

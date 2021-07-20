@@ -3,7 +3,9 @@
 
 frappe.ui.form.on('Payment Reminder', {
     refresh: function(frm) {
-
+        if (!frm.doc.company) {
+            cur_frm.set_value("company", frappe.defaults.get_user_default("company"));
+        }
     },
     reminder_charge: function(frm) {
         update_total(frm);

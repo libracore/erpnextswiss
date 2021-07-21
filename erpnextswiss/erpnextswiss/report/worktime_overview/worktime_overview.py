@@ -263,3 +263,25 @@ def get_company():
         # fallback
         company = frappe.get_single("Global Defaults").default_company
     return company
+    
+@frappe.whitelist()
+def get_employee_overview_html(employee, company, from_date, to_date):
+    filters = frappe._dict()
+    filters.employee = employee
+    filters.from_date = from_date
+    filters.to_date = to_date
+    filters.company = company
+    
+    data = get_data_of_employee(filters)
+    
+    if len(data) > 0:
+        data = data[0]
+        html = '<table style="width: 100%;"><thead><tr><th>'
+        html += '</th><th>'.join([_("Target time in hours"), _("Actual time in hours"), _("Difference in hours"), _("Current holiday balance in days")])
+        html += '</th></tr></thead><tbody><tr><td>'
+        html += '</td><td>'.join([str(data[2]), str(data[3]), str(data[4]), str(data[5])])
+        html += '</td><td></tr></tbody></table>'
+    else:
+        html = _('<div>No data found</div>')
+    
+    return html

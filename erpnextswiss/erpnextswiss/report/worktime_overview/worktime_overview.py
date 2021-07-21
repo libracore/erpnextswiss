@@ -251,4 +251,15 @@ def get_daily_hours(filters):
         daily_hours = 8
     return daily_hours
     
-    
+@frappe.whitelist()
+def get_company():
+    user = frappe.session.user
+    employee = frappe.db.sql("""SELECT `name` FROM `tabEmployee` WHERE `user_id` = '{user}'""".format(user=user), as_dict=True)
+    try:
+        employee_name = employee[0].name
+        employee = frappe.get_doc("Employee", employee_name)
+        company = employee.company
+    except:
+        # fallback
+        company = frappe.get_single("Global Defaults").default_company
+    return company

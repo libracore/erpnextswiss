@@ -279,7 +279,7 @@ def get_employee_overview_html(employee, company, from_date, to_date):
         html = '<table style="width: 100%;"><thead><tr><th>'
         html += '</th><th>'.join([_("Target time in hours"), _("Actual time in hours"), _("Difference in hours"), _("Current holiday balance in days")])
         html += '</th></tr></thead><tbody><tr><td>'
-        html += '</td><td>'.join([str(data[2]), str(data[3]), str(data[4]), str(data[5])])
+        html += '</td><td>'.join([str(round(data[2], 3)), str(round(data[3], 3)), str(round(data[4], 3)), str(data[5])])
         html += '</td><td></tr></tbody></table>'
     else:
         html = _('<div>No data found</div>')

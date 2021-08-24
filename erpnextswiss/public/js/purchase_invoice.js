@@ -5,6 +5,9 @@ frappe.ui.form.on('Purchase Invoice', {
                 check_defaults(frm);
             });
         }
+        if ((frm.doc.docstatus === 1) && (frm.doc.is_proposed === 1)) {
+            cur_frm.dashboard.add_comment(__('This document has been transmitted to the bank for payment'), 'blue', true);
+        }
     },
     validate: function(frm) {
         if (frm.doc.payment_type == "ESR") {

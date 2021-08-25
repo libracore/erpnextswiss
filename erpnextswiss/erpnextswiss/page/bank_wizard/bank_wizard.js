@@ -211,7 +211,8 @@ frappe.bank_wizard = {
             // quick match (purchase invoice)
             var button = document.getElementById("btn-quick-pinv-" + transaction.txid);
             if (button) {
-                button.addEventListener("click", function() {
+                button.addEventListener("click", function(e) {
+		    e.target.disabled = true;
                     var payment = {
                         'amount': transaction.amount,
                         'date': transaction.date,
@@ -235,7 +236,8 @@ frappe.bank_wizard = {
             // quick match (purchase invoice)
             var button = document.getElementById("btn-quick-exp-" + transaction.txid);
             if (button) {
-                button.addEventListener("click", function() {
+                button.addEventListener("click", function(e) {
+		    e.target.disabled = true;
                     var payment = {
                         'amount': transaction.amount,
                         'date': transaction.date,
@@ -259,7 +261,8 @@ frappe.bank_wizard = {
             // purchase invoice match
             var button = document.getElementById("btn-close-pinv-" + transaction.txid);
             if (button) {
-                button.addEventListener("click", function() {
+                button.addEventListener("click", function(e) {
+		    e.target.disabled = true;
                     var payment = {
                         'amount': transaction.amount,
                         'date': transaction.date,
@@ -279,7 +282,8 @@ frappe.bank_wizard = {
             // expense claim match
             var button = document.getElementById("btn-close-exp-" + transaction.txid);
             if (button) {
-                button.addEventListener("click", function() {
+                button.addEventListener("click", function(e) {
+		    e.target.disabled = true;
                     var payment = {
                         'amount': transaction.amount,
                         'date': transaction.date,
@@ -299,7 +303,8 @@ frappe.bank_wizard = {
             // supplier match
             var button = document.getElementById("btn-close-supplier-" + transaction.txid);
             if (button) {
-                button.addEventListener("click", function() {
+                button.addEventListener("click", function(e) {
+		    e.target.disabled = true;
                     var payment = {
                         'amount': transaction.amount,
                         'date': transaction.date,
@@ -318,7 +323,8 @@ frappe.bank_wizard = {
             // employee match
             var button = document.getElementById("btn-close-employee-" + transaction.txid);
             if (button) {
-                button.addEventListener("click", function() {
+                button.addEventListener("click", function(e) {
+		    e.target.disabled = true;
                     var payment = {
                         'amount': transaction.amount,
                         'date': transaction.date,
@@ -337,7 +343,8 @@ frappe.bank_wizard = {
             // payables
             var button = document.getElementById("btn-close-payable-" + transaction.txid);
             if (button) {
-                button.addEventListener("click", function() {
+                button.addEventListener("click", function(e) {
+		    e.target.disabled = true;
                     var payment = {
                         'amount': transaction.amount,
                         'date': transaction.date,
@@ -357,7 +364,8 @@ frappe.bank_wizard = {
             // quick match (sales invoice)
             var button = document.getElementById("btn-quick-sinv-" + transaction.txid);
             if (button) {
-                button.addEventListener("click", function() {
+                button.addEventListener("click", function(e) {
+		    e.target.disabled = true;
                     var payment = {
                         'amount': transaction.amount,
                         'date': transaction.date,
@@ -381,7 +389,8 @@ frappe.bank_wizard = {
             // sales invoice match
             var button = document.getElementById("btn-close-sinv-" + transaction.txid);
             if (button) {
-                button.addEventListener("click", function() {
+                button.addEventListener("click", function(e) {
+		    e.target.disabled = true;
                     var payment = {
                         'amount': transaction.amount,
                         'date': transaction.date,
@@ -401,7 +410,8 @@ frappe.bank_wizard = {
             // customer match
             var button = document.getElementById("btn-close-customer-" + transaction.txid);
             if (button) {
-                button.addEventListener("click", function() {
+                button.addEventListener("click", function(e) {
+		    e.target.disabled = true;
                     var payment = {
                         'amount': transaction.amount,
                         'date': transaction.date,
@@ -420,7 +430,8 @@ frappe.bank_wizard = {
             // receivables
             var button = document.getElementById("btn-close-receivable-" + transaction.txid);
             if (button) {
-                button.addEventListener("click", function() {
+                button.addEventListener("click", function(e) {
+		    e.target.disabled = true;
                     var payment = {
                         'amount': transaction.amount,
                         'date': transaction.date,
@@ -440,7 +451,8 @@ frappe.bank_wizard = {
 	    // add intermediate account handler
         var button = document.getElementById("btn-close-intermediate-" + transaction.txid);
 	    if (button) {
-            button.addEventListener("click", function() {
+            button.addEventListener("click", function(e) {
+		e.target.disabled = true;
                 var paid_to = bank_account;
                 var paid_from = intermediate_account;
                 if (transaction.credit_debit == "DBIT") {

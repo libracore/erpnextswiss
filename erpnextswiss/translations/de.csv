@@ -369,3 +369,4 @@ DocType: Worktime Settings,Current holiday balance in days,Urlaubssaldo (Tage)
 DocType: Worktime Settings,Worktime Details,Arbeitszeitdetails
 DocType: Worktime Settings,Employment Degrees,Anstellungsgrade
 DocType: Worktime Settings,Carryover and Payouts,Überträge und Auszahlungen
+Report: Monthly Worktime,Monthly Worktime,Arbeitszeit im Monat

@@ -1,18 +1,57 @@
 frappe.ui.form.on('Purchase Invoice', {
     refresh(frm) {
         if (frm.doc.__islocal||cur_frm.doc.docstatus == '0') {
-            var scan_invoice_txt = __("Scan Invoice");
-            frm.add_custom_button(scan_invoice_txt, function() {
+            frm.add_custom_button(__("Scan Invoice"), function() {
                 check_defaults(frm);
             });
+        }
+        if ((frm.doc.docstatus === 1) && (frm.doc.is_proposed === 1)) {
+            cur_frm.dashboard.add_comment(__('This document has been transmitted to the bank for payment'), 'blue', true);
+        }
+    },
+    validate: function(frm) {
+        if (frm.doc.payment_type == "ESR") {
+            if (frm.doc.esr_reference_number) {
+                if (!check_esr(frm.doc.esr_reference_number)) {
+                    frappe.msgprint( __("ESR code not valid") ); 
+                    frappe.validated=false;
+                } 
+            } else {
+                frappe.msgprint( __("ESR code missing") ); 
+                frappe.validated=false;
+            }
+        }
+
+        if ((frm.doc.supplier) && (frm.doc.bill_no)) {
+            frappe.call({
+                'method': "frappe.client.get_list",
+                'args': {
+                    'doctype': "Purchase Invoice",
+                    'filters': [
+                        ['supplier', '=', frm.doc.supplier],
+                        ['bill_no', '=', frm.doc.bill_no],
+                        ['docstatus', '<', 2]
+                    ],
+                    'fields': ['name'],
+                    'async': false
+                },
+                'callback': function(r) {
+                    r.message.forEach(function(pinv) { 
+                        if (pinv.name != frm.doc.name) {
+                            frappe.msgprint(  __("This invoice is already recorded in") + " " + pinv.name );
+                            frappe.validated=false;
+                        }
+                    });
+                }
+            });     
         }
     }
 });
 
 function check_defaults(frm) {
     frappe.call({
-        "method": "erpnextswiss.scripts.esr_qr_tools.check_defaults",
-        "callback": function(response) {
+        'method': "erpnextswiss.scripts.esr_qr_tools.check_defaults",
+        'callback': function(response) {
             if (response.message.error) {
                 frappe.msgprint(response.message.error);
             } else {
@@ -209,8 +248,4 @@ function fetch_esr_details_to_existing_sinv(frm, values) {
             cur_frm.refresh_field('items');
         }, 1000);
     }
-}
-
-function get_data_based_on_qr(frm) {
-    // tbd
 }

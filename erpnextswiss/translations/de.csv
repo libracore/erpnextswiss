@@ -341,12 +341,17 @@ DocType: Purchase Invoice,Default Item,Standard-Artikel
 DocType: Purchase Invoice,Tax Rate in %,MWST in %
 DocType: Purchase Invoice,ESR Reference,ESR Referenz
 DocType: Purchase Invoice,ESR Participant,ESR Teilnehmer
+DocType: Purchase Invoice,ESR code not valid,ESR-Referenznummer ist ungültig
+DocType: Purchase Invoice,ESR code missing,ESR-Referenznummer fehlt
+DocType: Pruchase Invoice,This invoice is already recorded in,Diese Rechnung wurde bereits erfasst in
 DocType: Purchase Invoice,Process,Verarbeiten
 DocType: Purchase Invoice,Supplier matched,Lieferant gefunden
 DocType: Purchase Invoice,"Supplier found, but does not match with Invoice Supplier!","Lieferant gefunden, er stimmt aber nicht mit dem Lieferant auf der Rechnung überein!"
 DocType: Purchase Invoice,"No Supplier found! Fetched default Supplier.","Kein Lieferant gefunden! Der Standard-Lieferant wurde geladen."
 DocType: Purchase Invoice,"Multiple Supplier found, please choose one!","Mehere Lieferanten gefunden, bitte Auswahl treffen!"
 DocType: Purchase Invoice,"ESR / Invoice amount matched","ESR- / Rechnungs-Betrag stimmt überein"
+DocType: Purchase Invoice,"Invalid ESR Code Line or QR-Code","Ungültige ESR-Zeile oder ungültiger ESR-Code"
+DocType: Purchase Invoice,This document has been transmitted to the bank for payment,Dieses Dokument wurde zur Zahlung an die Bank übermittelt
 DocType: ERPNextSwiss Settings,Default Positive Deviation Item,Standard-Artikel für positive Abweichung
 DocType: ERPNextSwiss Settings,Default Tax Rate,Standard MWST-Satz
 apps/erpnextswiss/erpnextswiss/scripts/esr_qr_tools.py,"{missing_values} not found. Please configure this in the <a href='/desk#Form/ERPNextSwiss Settings'>ERPNextSwiss settings</a>.","{missing_values} nicht gefunden. Bitte konfigurieren Sie dies in den <a href='/desk#Form/ERPNextSwiss Settings'>ERPNextSwiss Einstellungen</a>."
@@ -364,3 +369,4 @@ DocType: Worktime Settings,Current holiday balance in days,Urlaubssaldo (Tage)
 DocType: Worktime Settings,Worktime Details,Arbeitszeitdetails
 DocType: Worktime Settings,Employment Degrees,Anstellungsgrade
 DocType: Worktime Settings,Carryover and Payouts,Überträge und Auszahlungen
+Report: Monthly Worktime,Monthly Worktime,Arbeitszeit im Monat

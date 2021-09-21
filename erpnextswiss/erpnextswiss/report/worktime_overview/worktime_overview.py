@@ -251,4 +251,37 @@ def get_daily_hours(filters):
         daily_hours = 8
     return daily_hours
     
+@frappe.whitelist()
+def get_company():
+    user = frappe.session.user
+    employee = frappe.db.sql("""SELECT `name` FROM `tabEmployee` WHERE `user_id` = '{user}'""".format(user=user), as_dict=True)
+    try:
+        employee_name = employee[0].name
+        employee = frappe.get_doc("Employee", employee_name)
+        company = employee.company
+    except:
+        # fallback
+        company = frappe.get_single("Global Defaults").default_company
+    return company
     
+@frappe.whitelist()
+def get_employee_overview_html(employee, company, from_date, to_date):
+    filters = frappe._dict()
+    filters.employee = employee
+    filters.from_date = from_date
+    filters.to_date = to_date
+    filters.company = company
+    
+    data = get_data_of_employee(filters)
+    
+    if len(data) > 0:
+        data = data[0]
+        html = '<table style="width: 100%;"><thead><tr><th>'
+        html += '</th><th>'.join([_("Target time in hours"), _("Actual time in hours"), _("Difference in hours"), _("Current holiday balance in days")])
+        html += '</th></tr></thead><tbody><tr><td>'
+        html += '</td><td>'.join([str(round(data[2], 3)), str(round(data[3], 3)), str(round(data[4], 3)), str(data[5])])
+        html += '</td><td></tr></tbody></table>'
+    else:
+        html = _('<div>No data found</div>')
+    
+    return html

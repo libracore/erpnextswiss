@@ -21,7 +21,7 @@ frappe.query_reports["Worktime Overview"] = {
                     "fieldtype": "Link",
                     "options": "Employee",
                     "hidden": frappe.user.has_role('HR Manager') ? 0 : 1,
-                    get_query: () => {
+                    "get_query": () => {
                         var company = frappe.query_report.get_filter_value('company');
                         return {
                             filters: {
@@ -35,13 +35,26 @@ frappe.query_reports["Worktime Overview"] = {
                     "label": __("Company"),
                     "fieldtype": "Link",
                     "options": "Company",
-                    "default": frappe.defaults.get_user_default("Company"),
                     "reqd": 1,
                     "hidden": frappe.user.has_role('HR Manager') ? 0 : 1,
-                    on_change: () => {
+                    "on_change": () => {
                         frappe.query_report.set_filter_value('employee', "");
                         frappe.query_report.refresh();
                     }
                 }
-            ]
+            ],
+	"onload": function() {
+		return frappe.call({
+            "method": "erpnextswiss.erpnextswiss.report.worktime_overview.worktime_overview.get_company",
+            "args": {},
+            "async": true,
+            "callback": function(response) {
+                var company = response.message;
+                var company_filter = frappe.query_report.get_filter('company');
+                company_filter.df.default = company;
+                company_filter.refresh();
+                company_filter.set_input(company_filter.df.default);
+            }
+        });
+	}
 }

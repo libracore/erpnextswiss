@@ -262,7 +262,7 @@ class PaymentProposal(Document):
                     'bic': "{0}".format(payment_account.bic)
                 },
                 'instruction_id': "INSTRID-{0}-{1}".format(self.name, transaction_count),          # instruction identification
-                'end_to_end_id': "{0}".format((payment.reference[:33] + '..') if len(payment.reference) > 35 else payment.reference),   # end-to-end identification (should be used and unique within B-level; payment entry name)
+                'end_to_end_id': "{0}".format((payment.reference[:33] + '..') if len(payment.reference) > 35 else payment.reference.strip()),   # end-to-end identification (should be used and unique within B-level; payment entry name)
                 'currency': payment.currency,
                 'amount': round(payment.amount, 2),
                 'creditor': {

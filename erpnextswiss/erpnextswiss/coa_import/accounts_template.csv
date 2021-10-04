@@ -24,7 +24,7 @@
 "Bruttoerlöse aus Handel Inland","32 - Handelserlöse","3200","0","Income","Profit and Loss","CHF","Income Account","0.0","No",,,,"default_income_account"
 "Bruttoerlöse aus Handel Ausland","32 - Handelserlöse","3201","0","Income","Profit and Loss","CHF","Income Account","0.0","No",,,,
 "Bruttoerlöse aus Nebenleistg. (Porto und Verpackung)","32 - Handelserlöse","3207","0","Income","Profit and Loss","CHF","Income Account","0.0","No",,,,
-"Bestandesänderungen Forderungen","32 - Handelserlöse","3208","0","Income","Profit and Loss","CHF","Stock Adjustment","0.0","No",,,,
+"Bestandesänderungen Forderungen","32 - Handelserlöse","3208","0","Income","Profit and Loss","CHF",,"0.0","No",,,,
 "Rabatte und Preisnachlässe","32 - Handelserlöse","3291","0","Income","Profit and Loss","CHF","Expense Account","0.0","No",,,,"discount_allowed_account"
 "Erlöse aus Lizenzen, Patente usw.","3 - Betriebsertr. aus Lief./Leist.","36","1","Income","Profit and Loss","CHF",,"0.0","No",,,,
 "Eigenleistungen und Eigenverbrauch","3 - Betriebsertr. aus Lief./Leist.","37","1","Income","Profit and Loss","CHF",,"0.0","No",,,,
@@ -48,8 +48,8 @@
 "Forderungen Kreditkarten","110 - Forderungen aus Lieferung und Leistung","1102","0","Asset","Balance Sheet","CHF","Receivable","0.0","No",,,,
 "Wertb. Ford. (Delkredere)","110 - Forderungen aus Lieferung und Leistung","1109","0","Asset","Balance Sheet","CHF",,"0.0","No",,,,
 "Übrige kurzfristige Forderungen","10 - Umlaufvermögen","114","1","Asset","Balance Sheet","CHF",,"0.0","No",,,,
-"Vorsteuer Mat./Dienstleist.","114 - Übrige kurzfristige Forderungen","1170","0","Asset","Balance Sheet","CHF",,"0.0","No",,,,
-"Vorsteuer Inv./Betriebsaufwand","114 - Übrige kurzfristige Forderungen","1171","0","Asset","Balance Sheet","CHF",,"0.0","No",,,,
+"Vorsteuer Mat./Dienstleist.","114 - Übrige kurzfristige Forderungen","1170","0","Asset","Balance Sheet","CHF","Tax","0.0","No",,,,
+"Vorsteuer Inv./Betriebsaufwand","114 - Übrige kurzfristige Forderungen","1171","0","Asset","Balance Sheet","CHF","Tax","0.0","No",,,,
 "Verrechnungssteuer","114 - Übrige kurzfristige Forderungen","1176","0","Asset","Balance Sheet","CHF",,"0.0","No",,,,
 "Vorräte und nicht fakturierte Dienstleistungen","10 - Umlaufvermögen","120","1","Asset","Balance Sheet","CHF",,"0.0","No",,,,
 "Handelswaren","120 - Vorräte und nicht fakturierte Dienstleistungen","1200","0","Asset","Balance Sheet","CHF","Stock","0.0","No",,,,"default_inventory_account"

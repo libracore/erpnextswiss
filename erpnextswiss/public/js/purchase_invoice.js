@@ -77,14 +77,53 @@ function scan_invoice_code(frm, default_settings) {
 
 function check_scan_input(frm, default_settings, code_scan) {
     // ESR section
-    var regex = /[0-9]{13}[>][0-9]{27}[+][ ][0-9]{9}[>]/g; // 0100003949753>120000000000234478943216899+ 010001628>
-    if (regex.test(code_scan) === true){
+    var regex_9_27 = /[0-9]{13}[>][0-9]{27}[+][ ][0-9]{9}[>]/g; // 0100003949753>120000000000234478943216899+ 010001628>
+    var regex_9_27p = /[0-9]{3}[>][0-9]{27}[+][ ][0-9]{9}[>]/g; // 042>120000000000234478943216899+ 010001628>
+    var regex_9_16 = /[0-9]{13}[>][0-9]{16}[+][ ][0-9]{9}[>]/g; // 0100003949753>3804137405061016+ 010001628>
+    var regex_9_16p = /[0-9]{3}[>][0-9]{16}[+][ ][0-9]{9}[>]/g; // 042>3804137405061016+ 010001628>
+    var regex_5_15 = /[<][0-9]{15}[>][0-9]{15}[+][ ][0-9]{5}[>]/g; // <010001000017720>000013230243627+ 73723>
+    var regex_5_15p = /[0-9]{15}[+][ ][0-9]{5}[>]/g; // 000013230243627+ 73723>
+    if (regex_9_27.test(code_scan) === true){
         var occupancy = code_scan.split(">")[0].substring(0,2); // Belegart; z.B. 01
         var amount_int = parseInt(code_scan.split(">")[0].substring(2,10));
         var amount_dec = parseInt(code_scan.split(">")[0].substring(10,12));
-        var amount = String(amount_int) + "." + String(amount_dec); // Betrag in CHF; z.B. 3949.75
+        var amount = String(amount_int) + "." + String(amount_dec).padStart(2,'0'); // Betrag in CHF; z.B. 3949.75
         var reference = code_scan.split(">")[1].substring(0,27); // ESR-Referenznummer; z.B. 120000000000234478943216899
         var participant = code_scan.split("+ ")[1].substring(0,9); // ESR-Teilnehmer; z.B. 010001628
+        get_data_based_on_esr(frm, participant, reference, amount, default_settings);
+    } else if (regex_9_27p.test(code_scan) === true){
+        var occupancy = code_scan.split(">")[0].substring(0,2); // Belegart; z.B. 01
+        var amount = "0.0";
+        var reference = code_scan.split(">")[1].substring(0,27); // ESR-Referenznummer; z.B. 120000000000234478943216899
+        var participant = code_scan.split("+ ")[1].substring(0,9); // ESR-Teilnehmer; z.B. 010001628
+        get_data_based_on_esr(frm, participant, reference, amount, default_settings);
+    } else if (regex_9_16.test(code_scan) === true){
+        var occupancy = code_scan.split(">")[0].substring(0,2); // Belegart; z.B. 01
+        var amount_int = parseInt(code_scan.split(">")[0].substring(2,10));
+        var amount_dec = parseInt(code_scan.split(">")[0].substring(10,12));
+        var amount = String(amount_int) + "." + String(amount_dec).padStart(2,'0'); // Betrag in CHF; z.B. 3949.75
+        var reference = code_scan.split(">")[1].substring(0,16); // ESR-Referenznummer; z.B. 3804137405061016
+        var participant = code_scan.split("+ ")[1].substring(0,9); // ESR-Teilnehmer; z.B. 010001628
+        get_data_based_on_esr(frm, participant, reference, amount, default_settings);
+    } else if (regex_9_16p.test(code_scan) === true){
+        var occupancy = code_scan.split(">")[0].substring(0,2); // Belegart; z.B. 01
+        var amount = "0.0";
+        var reference = code_scan.split(">")[1].substring(0,16); // ESR-Referenznummer; z.B. 3804137405061016
+        var participant = code_scan.split("+ ")[1].substring(0,9); // ESR-Teilnehmer; z.B. 010001628
+        get_data_based_on_esr(frm, participant, reference, amount, default_settings);
+    } else if (regex_5_15.test(code_scan) === true){
+        var occupancy = code_scan.split(">")[0].substring(1,3); // Belegart; z.B. 01
+        var amount_int = parseInt(code_scan.split(">")[0].substring(7,13));
+        var amount_dec = parseInt(code_scan.split(">")[0].substring(14,16));
+        var amount = String(amount_int) + "." + String(amount_dec).padStart(2,'0'); // Betrag in CHF; z.B. 3949.75
+        var reference = code_scan.split(">")[1].substring(0,15); // ESR-Referenznummer; z.B. 3804137405061016
+        var participant = code_scan.split("+ ")[1].substring(0,5); // ESR-Teilnehmer; z.B. 010001628
+        get_data_based_on_esr(frm, participant, reference, amount, default_settings);
+    } else if (regex_5_15p.test(code_scan) === true){
+        var occupancy = "00";
+        var amount = "0.0";
+        var reference = code_scan.split(">")[0].substring(0,15); // ESR-Referenznummer; z.B. 3804137405061016
+        var participant = code_scan.split("+ ")[1].substring(0,5); // ESR-Teilnehmer; z.B. 010001628
         get_data_based_on_esr(frm, participant, reference, amount, default_settings);
     } else {
         // QR Section 

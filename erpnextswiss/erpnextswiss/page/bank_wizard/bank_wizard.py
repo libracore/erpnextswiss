@@ -302,9 +302,9 @@ def read_camt_transactions(transaction_entries, account, settings):
                     if credit_debit == "DBIT":
                         # use RltdPties:Cdtr
                         if six.PY2:
-                            party_soup = BeautifulSoup(unicode(transaction_soup.txdtls.rltdpties.cdtr)) 
+                            party_soup = BeautifulSoup(unicode(transaction_soup.txdtls.rltdpties.cdtr), 'lxml') 
                         else:
-                            party_soup = BeautifulSoup(str(transaction_soup.txdtls.rltdpties.cdtr)) 
+                            party_soup = BeautifulSoup(str(transaction_soup.txdtls.rltdpties.cdtr), 'lxml') 
                         try:
                             party_iban = transaction_soup.cdtracct.id.iban.get_text()
                         except:
@@ -312,9 +312,9 @@ def read_camt_transactions(transaction_entries, account, settings):
                     else:
                         # CRDT: use RltdPties:Dbtr
                         if six.PY2:
-                            party_soup = BeautifulSoup(unicode(transaction_soup.txdtls.rltdpties.dbtr))
+                            party_soup = BeautifulSoup(unicode(transaction_soup.txdtls.rltdpties.dbtr), 'lxml')
                         else:
-                            party_soup = BeautifulSoup(str(transaction_soup.txdtls.rltdpties.dbtr))
+                            party_soup = BeautifulSoup(str(transaction_soup.txdtls.rltdpties.dbtr), 'lxml')
                         try:
                             party_iban = transaction_soup.dbtracct.id.iban.get_text()
                         except:

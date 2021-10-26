@@ -133,8 +133,8 @@ function check_scan_input(frm, default_settings, code_scan) {
             frappe.msgprint(invalid_esr_code_line);
         } else {
             var amount = parseFloat(lines[18]);
-            var reference = lines[28];
-            var participant = lines[3];
+            var reference = lines[28].replace("\r","").replace("\n","");
+            var participant = lines[3].replace("\r","").replace("\n","");
             get_data_based_on_esr(frm, participant, reference, amount, default_settings);
         }
     }

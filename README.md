@@ -61,6 +61,7 @@ In case you update from the sources and observe an error, make sure to update de
 * Tax
     * Import monthly average exchange rates, daily exchange rates (ESTV)
     * VAT declaration
+    * Zefix integration
 * Human resources
     * Salary certificate ("Lohnausweis")
     * Seco overtime reporting (based on timesheet)

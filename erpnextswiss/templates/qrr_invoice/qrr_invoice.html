@@ -1,0 +1,356 @@
+<!-- template for "qrr dict" -->
+<!--{#
+    {% set qrr = {
+        'iban': 'CH00 0000 0000 0000 0000 0',
+        'reference': '21 00000 00003 13947 14300 09017',
+        'reference_type': 'QRR',
+        'currency': 'CHF',
+        'amount': '100.00',
+        'message': 'Optionale Nachricht',
+        'additional_information': 'Optionale Zusatzinformationen',
+        'receiver_name': 'Max Muster',
+        'receiver_street': 'Musterstrasse',
+        'receiver_number': '15',
+        'receiver_country': 'CH',
+        'receiver_pincode': '8330',
+        'receiver_town': 'Pfäffikon ZH',
+        'payer_name': 'Manuel Meier',
+        'payer_street': 'Teststrasse',
+        'payer_number': '55',
+        'payer_country': 'CH',
+        'payer_pincode': '8636',
+        'payer_town': 'Wald ZH'
+    } %}
+#}-->
+
+<!-- Example to embedd this template -->
+<!--{#
+    {{ frappe.render_template('templates/qrr_invoice/qrr_invoice.html', {'qrr': qrr}) }}
+#}-->
+
+<!-- CSS -->
+<style>
+    /* Grid Style */
+    /* ---------- */
+    
+    #qrr_platzhalter {
+        position: absolute;
+        top: 565px;
+    }
+    
+    #empfangsschein {
+        width: 62mm;
+        height: 105mm;
+        max-width: 62mm;
+        max-height: 105mm;
+        float: left;
+        padding: 5mm;
+        border-top: 1px solid silver;
+        border-right: 1px solid silver;
+    }
+    
+    #empfangsschein_titel {
+        width: 52mm;
+        height: 7mm;
+        max-width: 52mm;
+        max-height: 7mm;
+    }
+    
+    #empfangsschein_angaben {
+        width: 52mm;
+        height: 56mm;
+        max-width: 52mm;
+        max-height: 56mm;
+    }
+    
+    #empfangsschein_betrag {
+        width: 52mm;
+        height: 14mm;
+        max-width: 52mm;
+        max-height: 14mm;
+    }
+    
+    #empfangsschein_annahmestelle {
+        width: 52mm;
+        height: 18mm;
+        max-width: 52mm;
+        max-height: 18mm;
+        text-align: right;
+        font-size: 6pt;
+        font-weight: bold;
+    }
+    
+    #zahlteil {
+        width: 148mm;
+        height: 105mm;
+        max-width: 148mm;
+        max-height: 105mm;
+        float: left;
+        padding: 5mm;
+        border-top: 1px solid silver;
+    }
+    
+    #zahlteil_links {
+        float: left;
+    }
+    
+    #zahlteil_titel {
+        width: 46mm;
+        height: 7mm;
+        max-width: 46mm;
+        max-height: 7mm;
+    }
+    
+    #zahlteil_qr_platzhalter {
+        width: 51mm;
+        height: 56mm;
+        max-width: 51mm;
+        max-height: 56mm;
+        padding-top: 5mm;
+        padding-bottom: 5mm;
+        padding-right: 5mm;
+    }
+    
+    #qr_code {
+        width: 46mm;
+        height: 46mm;
+        max-width: 46mm;
+        max-height: 46mm;
+    }
+    
+    #zahlteil_betrag {
+        width: 51mm;
+        height: 22mm;
+        max-width: 51mm;
+        max-height: 22mm;
+    }
+    
+    #zahlteil_rechts {
+        float: left;
+    }
+    
+    #zahlteil_angaben {
+        width: 87mm;
+        height: 85mm;
+        max-width: 87mm;
+        max-height: 85mm;
+    }
+    
+    #zahlteil_unten {
+        clear: both;
+    }
+    
+    #zahlteil_weitere_informationen {
+        width: 138mm;
+        height: 10mm;
+        max-width: 138mm;
+        max-height: 10mm;
+    }
+    
+    #empfangsschein_betrag_1 {
+        width: 50%;
+        float: left;
+    }
+    
+    #empfangsschein_betrag_2 {
+        width: 50%;
+        float: left;
+    }
+    
+    #zahlteil_betrag_1 {
+        width: 50%;
+        float: left;
+    }
+    
+    #zahlteil_betrag_2 {
+        width: 50%;
+        float: left;
+    }
+    
+    /* ---------- */
+    /* Font Style */
+    /* ---------- */
+    
+    @font-face {
+        font-family: 'Frutiger';
+        font-style: normal;
+        font-weight: normal;
+        src: url('/assets/erpnextswiss/fonts/frutiger/Frutiger.woff');
+    }
+    @font-face {
+        font-family: 'Frutiger Bold';
+        font-style: normal;
+        font-weight: normal;
+        src: url('/assets/erpnextswiss/fonts/frutiger/Frutiger_bold.woff');
+    }
+
+    .titel-e-z {
+        font-family: 'Frutiger Bold';
+        font-weight: bold;
+        font-size: 11pt;
+    }
+    
+    .wert-e {
+        font-family: 'Frutiger';
+        font-weight: normal;
+        font-size: 8pt;
+        line-height: 1.125;
+    }
+    
+    .ueberschrift-e {
+        font-family: 'Frutiger Bold';
+        font-weight: bold;
+        font-size: 6pt;
+        line-height: 1.5;
+    }
+    
+    .betrag-e {
+        font-family: 'Frutiger';
+        font-weight: normal;
+        font-size: 8pt;
+        line-height: 1.125;
+    }
+    
+    .ueberschrift-z {
+        font-family: 'Frutiger Bold';
+        font-weight: bold;
+        font-size: 8pt;
+        line-height: 1.375;
+    }
+    
+    .betrag-z {
+        font-family: 'Frutiger';
+        font-weight: normal;
+        font-size: 10pt;
+        line-height: 1.3;
+    }
+    
+    .wert-z {
+        font-family: 'Frutiger';
+        font-weight: normal;
+        font-size: 10pt;
+        line-height: 1.1;
+    }
+</style>
+
+<!-- prepare warnings -->
+{% set warning = False %}
+<!-- check mandatory values -->
+{% if not qrr.iban %}{% set warning = 'QR-IBAN Missing!' %}{% endif %}
+{% if not qrr.reference_type %}{% set warning = 'reference_type Missing! Should be QRR.' %}{% endif %}
+{% if not qrr.receiver_name %}{% set warning = 'receiver_name Missing!' %}{% endif %}
+{% if not qrr.receiver_street %}{% set warning = 'receiver_street Missing!' %}{% endif %}
+{% if not qrr.receiver_number %}{% set warning = 'receiver_number Missing!' %}{% endif %}
+{% if not qrr.receiver_country %}{% set warning = 'receiver_country Missing!' %}{% endif %}
+{% if not qrr.receiver_pincode %}{% set warning = 'receiver_pincode Missing!' %}{% endif %}
+{% if not qrr.receiver_town %}{% set warning = 'receiver_town Missing!' %}{% endif %}
+{% if not qrr.reference %}{% set warning = 'reference Missing!' %}{% endif %}
+{% if not qrr.payer_name %}{% set warning = 'payer_name Missing!' %}{% endif %}
+{% if not qrr.payer_street %}{% set warning = 'payer_street Missing!' %}{% endif %}
+{% if not qrr.payer_number %}{% set warning = 'payer_number Missing!' %}{% endif %}
+{% if not qrr.payer_country %}{% set warning = 'payer_country Missing!' %}{% endif %}
+{% if not qrr.payer_pincode %}{% set warning = 'payer_pincode Missing!' %}{% endif %}
+{% if not qrr.payer_town %}{% set warning = 'payer_town Missing!' %}{% endif %}
+{% if not qrr.currency %}{% set warning = 'currency Missing!' %}{% endif %}
+{% if not qrr.amount %}{% set warning = 'amount Missing!' %}{% endif %}
+{% if not qrr.message %}{% set warning = 'message Missing!' %}{% endif %}
+{% if not qrr.additional_information %}{% set warning = 'additional_information Missing!' %}{% endif %}
+
+<!-- QRR -->
+{% if warning %}
+    <div style="border: 1px solid red;">
+        <p style="color: red;">{{ warning }}</p>
+    </div>
+{% else %}
+<div id="qrr_platzhalter" class="visible-pdf">
+    <div id="qrr">
+        <div id="empfangsschein">
+            <div id="empfangsschein_titel">
+                <p class="titel-e-z">Empfangsschein</p>
+            </div>
+            <div id="empfangsschein_angaben">
+                <p class="wert-e">
+                    <span class="ueberschrift-e">Konto / Zahlbar an</span><br>
+                    {{ qrr.iban }}<br>
+                    {{ qrr.receiver_name }}<br>
+                    {{ qrr.receiver_street | trim }} {{ qrr.receiver_number }}<br>
+                    {{ qrr.receiver_country }}-{{ qrr.receiver_pincode }} {{ qrr.receiver_town }}<br><br>
+                    <span class="ueberschrift-e">Referenz</span><br>
+                    {{ qrr.reference }}<br><br>
+                    <span class="ueberschrift-e">Zahlbar durch</span><br>
+                    {{ qrr.payer_name }}<br>
+                    {{ qrr.payer_street | trim }} {{ qrr.payer_number }}<br>
+                    {{ qrr.payer_country }}-{{ qrr.payer_pincode }} {{ qrr.payer_town }}
+                </p>
+            </div>
+            <div id="empfangsschein_betrag">
+                <div id="empfangsschein_betrag_1">
+                    <p class="betrag-e">
+                        <span class="ueberschrift-e">Währung</span><br>
+                        {{ qrr.currency }}
+                    </p>
+                </div>
+                <div id="empfangsschein_betrag_2">
+                    <p class="betrag-e">
+                        <span class="ueberschrift-e">Betrag</span><br>
+                        {{ qrr.amount }}
+                    </p>
+                </div>
+            </div>
+            <div id="empfangsschein_annahmestelle">
+                Annahmestelle
+            </div>
+        </div>
+        <div id="zahlteil">
+            <div id="zahlteil_links">
+                <div id="zahlteil_titel">
+                    <p class="titel-e-z">Zahlteil</p>
+                </div>
+                <div id="zahlteil_qr_platzhalter">
+                    <div id="qr_code">
+                        <img src="https://data.libracore.ch/phpqrcode/api/iso20022.php?iban={{ qrr.iban | trim }}&receiver_name={{ qrr.receiver_name }}&receiver_street={{ qrr.receiver_street | trim }}&receiver_number={{ qrr.receiver_number }}&receiver_pincode={{ qrr.receiver_pincode }}&receiver_town={{ qrr.receiver_town }}&receiver_country={{ qrr.receiver_country }}&amount={{ qrr.amount }}&currency={{ qrr.currency }}&payer_name={{ qrr.payer_name }}&payer_street={{ qrr.payer_street | trim }}&payer_number={{ qrr.payer_number }}&payer_pincode={{ qrr.payer_pincode }}&payer_town={{ qrr.payer_town }}&payer_country={{ qrr.payer_country }}&reference_type={{ qrr.reference_type }}&reference={{ qrr.reference | replace(" ", "") }}&message={{ qrr.message }}" style="width: 46mm !important; height: 46mm !important;" />
+                    </div>
+                </div>
+                <div id="zahlteil_betrag">
+                    <div id="zahlteil_betrag_1">
+                        <p>
+                            <span class="ueberschrift-z">Währung</span><br>
+                            <span class="betrag-z">{{ qrr.currency }}</span>
+                        </p>
+                    </div>
+                    <div id="zahlteil_betrag_2">
+                        <p>
+                            <span class="ueberschrift-z">Betrag</span><br>
+                            <span class="betrag-z">{{ qrr.amount }}</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div id="zahlteil_rechts">
+                <div id="zahlteil_angaben">
+                    <p class="wert-z">
+                        <span class="ueberschrift-z">Konto / Zahlbar an</span><br>
+                        {{ qrr.iban }}<br>
+                        {{ qrr.receiver_name }}<br>
+                        {{ qrr.receiver_street | trim }} {{ qrr.receiver_number }}<br>
+                        {{ qrr.receiver_country }}-{{ qrr.receiver_pincode }} {{ qrr.receiver_town }}<br><br>
+                        <span class="ueberschrift-z">Referenz</span><br>
+                        {{ qrr.reference }}<br><br>
+                        <span class="ueberschrift-z">Zusätzliche Informationen</span><br>
+                        {{ qrr.message }}<br><br>
+                        <span class="ueberschrift-z">Zahlbar durch</span><br>
+                        {{ qrr.payer_name }}<br>
+                        {{ qrr.payer_street | trim }} {{ qrr.payer_number }}<br>
+                        {{ qrr.payer_country }}-{{ qrr.payer_pincode }} {{ qrr.payer_town }}
+                    </p>
+                </div>
+            </div>
+            <div id="zahlteil_unten">
+                <div id="zahlteil_weitere_informationen">
+                    {{ qrr.additional_information }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}

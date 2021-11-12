@@ -1,6 +1,7 @@
 <!-- template for "qrr dict" -->
 <!--{#
     {% set qrr = {
+        'top_position': '192mm',
         'iban': 'CH00 0000 0000 0000 0000 0',
         'reference': '21 00000 00003 13947 14300 09017',
         'reference_type': 'QRR',
@@ -35,7 +36,7 @@
     
     #qrr_platzhalter {
         position: absolute;
-        top: 565px;
+        top: {{ qrr.top_position }};
     }
     
     #empfangsschein {

@@ -249,6 +249,11 @@ DocType: Payment Proposal,"ESR: missing transaction information (participant num
 DocType: Payment Proposal,"Missing IBAN for purchase invoice <a href=\"/desk#Form/Purchase Invoice/{0}\">{0}</a>","Bei Eingangsrechnung <a href=\"/desk#Form/Purchase Invoice/{0}\">{0}</a> fehlt die IBAN"
 DocType: Payment Proposal,"Employee <a href=\"/desk#Form/Employee/{0}\">{0}</a> has no bank account number.","Für Mitarbeiter <a href=\"/desk#Form/Employee/{0}\">{0}</a> ist kein Bankkonto hinterlegt."
 DocType: Payment Proposal,"Please configure the planning period in ERPNextSwiss Settings.","Bitte das Planungsintervall in den ERPNextSwiss-Einstellungen einstellen."
+DocType: Payment Proposal,Purchase Invoices,Eingangsrechnungen
+DocType: Payment Proposal,Salaries,Löhne
+DocType: Payment Proposal,Overview,Übersicht
+DocType: Payment Proposal,Target date,Zieldatum
+DocType: Payment Proposal,Employee name,Mitarbeitername
 Page: Bank Wizard,Bank Wizard,Bankassistent
 Page: Bank Wizard,Transaction matched,Zahlung zugewiesen
 Page: Bank Wizard, transactions found, Zahlungen gefunden

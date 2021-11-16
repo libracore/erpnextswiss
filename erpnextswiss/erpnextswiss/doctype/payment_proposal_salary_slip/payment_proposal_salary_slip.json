@@ -1,22 +1,24 @@
 {
- "creation": "2018-08-30 22:06:51.092169",
+ "creation": "2021-11-16 11:24:02.145279",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
-  "expense_claim",
+  "salary_slip",
   "employee",
   "employee_name",
-  "amount",
-  "payable_account"
+  "column_main",
+  "payable_account",
+  "target_date",
+  "amount"
  ],
  "fields": [
   {
-   "fieldname": "expense_claim",
+   "fieldname": "salary_slip",
    "fieldtype": "Link",
    "in_list_view": 1,
-   "label": "Expense Claim",
-   "options": "Expense Claim"
+   "label": "Salary Slip",
+   "options": "Salary Slip"
   },
   {
    "fieldname": "employee",
@@ -25,6 +27,13 @@
    "label": "Employee",
    "options": "Employee",
    "reqd": 1
+  },
+  {
+   "fetch_from": "employee.employee_name",
+   "fieldname": "employee_name",
+   "fieldtype": "Data",
+   "label": "Employee name",
+   "read_only": 1
   },
   {
    "fieldname": "amount",
@@ -40,18 +49,20 @@
    "options": "Account"
   },
   {
-   "fetch_from": "employee.employee_name",
-   "fieldname": "employee_name",
-   "fieldtype": "Data",
-   "label": "Employee name",
-   "read_only": 1
+   "fieldname": "target_date",
+   "fieldtype": "Date",
+   "label": "Target date"
+  },
+  {
+   "fieldname": "column_main",
+   "fieldtype": "Column Break"
   }
  ],
  "istable": 1,
- "modified": "2021-11-16 11:32:51.462603",
+ "modified": "2021-11-16 13:31:09.885611",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
- "name": "Payment Proposal Expense",
+ "name": "Payment Proposal Salary Slip",
  "owner": "Administrator",
  "permissions": [],
  "quick_entry": 1,

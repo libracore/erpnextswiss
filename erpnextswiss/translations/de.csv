@@ -190,6 +190,7 @@ DocType: ERPNextSwiss Settings,Default Customer,Standardkunde
 DocType: ERPNextSwiss Settings,Use this to define a default customer,Setzt einen Standardkunden
 DocType: ERPNextSwiss Settings,Invoice Code Line Scanning,Rechnungsscanner
 DocType: ERPNextSwiss Settings,Default Item,Standardartikel
+DocType: ERPNextSwiss Settings,Enable salary payment,Lohnzahlungen ausführen
 DocType: Contract,Contract,Vertrag
 DocType: Contract,Contracts,Verträge
 DocType: ERPNextSwiss Settings,Automated Payments,Automatische Zahlungsabwicklung

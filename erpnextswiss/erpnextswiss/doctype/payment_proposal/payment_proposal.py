@@ -10,6 +10,7 @@ from datetime import datetime, timedelta
 import time
 from erpnextswiss.erpnextswiss.common_functions import get_building_number, get_street_name, get_pincode, get_city, get_primary_address
 import cgi          # used to escape xml content
+from frappe.utils import cint
 
 class PaymentProposal(Document):
     def validate(self):
@@ -447,29 +448,30 @@ def create_payment_proposal(date=None, company=None):
         total += expense.amount
         expenses.append(new_expense)
     # get all open salary slips
-    sql_query = ("""SELECT `tabSalary Slip`.`name`, 
-                  `tabSalary Slip`.`employee`, 
-                  `tabSalary Slip`.`net_pay` AS `amount`,
-                  `tabCompany`.`default_payroll_payable_account` AS `payable_account`,
-                  `tabSalary Slip`.`posting_date` AS `posting_date`
-                FROM `tabSalary Slip`
-                LEFT JOIN `tabCompany` ON `tabSalary Slip`.`company` = `tabCompany`.`name`
-                WHERE `tabSalary Slip`.`docstatus` = 1 
-                  AND `tabSalary Slip`.`is_proposed` = 0
-                  AND `tabSalary Slip`.`company` = '{company}';""".format(company=company))
-    salary_slips = frappe.db.sql(sql_query, as_dict=True)          
-    # append salary slips
     salaries = []
-    for salary_slip in salary_slips:
-        new_salary = { 
-            'salary_slip': salary_slip.name,
-            'employee': salary_slip.employee,
-            'amount': salary_slip.amount,
-            'payable_account': salary_slip.payable_account,
-            'target_date': salary_slip.posting_date
-        }
-        total += salary_slip.amount
-        salaries.append(new_salary)
+    if cint(frappe.get_value("ERPNextSwiss Settings", "ERPNextSwiss Settings", "enable_salary_payment")) == 1:
+        sql_query = ("""SELECT `tabSalary Slip`.`name`, 
+                      `tabSalary Slip`.`employee`, 
+                      `tabSalary Slip`.`net_pay` AS `amount`,
+                      `tabCompany`.`default_payroll_payable_account` AS `payable_account`,
+                      `tabSalary Slip`.`posting_date` AS `posting_date`
+                    FROM `tabSalary Slip`
+                    LEFT JOIN `tabCompany` ON `tabSalary Slip`.`company` = `tabCompany`.`name`
+                    WHERE `tabSalary Slip`.`docstatus` = 1 
+                      AND `tabSalary Slip`.`is_proposed` = 0
+                      AND `tabSalary Slip`.`company` = '{company}';""".format(company=company))
+        salary_slips = frappe.db.sql(sql_query, as_dict=True)          
+        # append salary slips
+        for salary_slip in salary_slips:
+            new_salary = { 
+                'salary_slip': salary_slip.name,
+                'employee': salary_slip.employee,
+                'amount': salary_slip.amount,
+                'payable_account': salary_slip.payable_account,
+                'target_date': salary_slip.posting_date
+            }
+            total += salary_slip.amount
+            salaries.append(new_salary)
     # create new record
     new_record = None
     now = datetime.now()

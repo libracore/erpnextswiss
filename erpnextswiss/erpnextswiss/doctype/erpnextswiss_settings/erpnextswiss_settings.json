@@ -17,6 +17,7 @@
   "column_automated_payments",
   "banking_region",
   "xml_version",
+  "enable_salary_payment",
   "section_bank_wizard",
   "intermediate_account",
   "column_bank_wizard",
@@ -220,10 +221,16 @@
    "fieldname": "enable_zefix",
    "fieldtype": "Check",
    "label": "Enable Zefix"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_salary_payment",
+   "fieldtype": "Check",
+   "label": "Enable salary payment"
   }
  ],
  "issingle": 1,
- "modified": "2021-10-26 10:16:57.083497",
+ "modified": "2021-11-16 15:02:53.244767",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "ERPNextSwiss Settings",

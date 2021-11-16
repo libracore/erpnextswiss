@@ -50,7 +50,7 @@ In case you update from the sources and observe an error, make sure to update de
 ## Features 
 * Banking / Accounting
     * Bank wizard: processes camt.053 and camt.054 files to payment entries (including linking to related documents)
-    * Payment proposal: create payment files based on open purchase invoices (pain.001)
+    * Payment proposal: create payment files based on open purchase invoices, expenses and salaries (pain.001)
     * Direct debit proposal: create payment files from direct debit enabled sales invoices (pain.008)
     * Payment reminder: create payment reminders for overdue sales invoices
     * Bank import: allows to import bank account statements to update local payment entries (receiving; csv or camt)
@@ -66,6 +66,7 @@ In case you update from the sources and observe an error, make sure to update de
     * Salary certificate ("Lohnausweis")
     * Seco overtime reporting (based on timesheet)
     * Seco monthly worktime (working hours and breaks) (based on timesheet)
+    * Automatic settling of expenses and salary payments
 * General tools
     * Postal code lookup
     * Script-based data import
@@ -76,6 +77,7 @@ In case you update from the sources and observe an error, make sure to update de
     * Interface to abacus (export transaction data)
     * ISO 20022
     * ZUGFeRD
+    * Interface to Zefix
 
 ## Release notes
 Refer to [https://github.com/libracore/erpnextswiss/wiki/Release-Notes](https://github.com/libracore/erpnextswiss/wiki/Release-Notes)

@@ -2,8 +2,14 @@
 // For license information, please see license.txt
 /* eslint-disable */
 
-frappe.query_reports["Advanced Sales Partners Commission"] = {
+frappe.query_reports["Advanced Sales Partners Commission Detail"] = {
     "filters": [
+        {
+            "fieldname":"sales_partner",
+            "label": __("Sales Partner"),
+            "fieldtype": "Link",
+            "options": "Sales Partner"
+        },
         {
             "fieldname":"from_date",
             "label": __("From date"),
@@ -15,11 +21,6 @@ frappe.query_reports["Advanced Sales Partners Commission"] = {
             "label": __("End date"),
             "fieldtype": "Date",
             "default" : frappe.datetime.get_today()
-        },
-        {
-            "fieldname":"show_disabled",
-            "label": __("Show disabled"),
-            "fieldtype": "Check"
         }
     ]
-}
+};

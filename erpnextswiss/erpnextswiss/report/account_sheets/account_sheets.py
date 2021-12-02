@@ -86,7 +86,7 @@ def get_data(filters):
             opening_debit += position['debit']
             opening_credit += position['credit']
             opening_balance = opening_balance - position['credit'] + position['debit']
-            if "," in position['against']:
+            if "," in (position['against'] or ""):
                 against = "{0} (...)".format((position['against'] or "").split(" ")[0])
             else:
                 against = (position['against'] or "").split(" ")[0]

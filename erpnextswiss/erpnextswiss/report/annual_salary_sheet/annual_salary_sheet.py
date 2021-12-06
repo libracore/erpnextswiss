@@ -39,7 +39,7 @@ def get_data(filters):
         WHERE `docstatus` = 1
           AND `employee` = "{employee}"
           AND `posting_date` >= "{from_date}"
-          AND `posting_date` >= "{to_date}"
+          AND `posting_date` <= "{to_date}"
         ORDER BY `posting_date` ASC;""".format(employee=filters.employee, 
         from_date=from_date, to_date=to_date), as_dict=True)
     

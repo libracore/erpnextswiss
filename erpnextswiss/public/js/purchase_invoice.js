@@ -1,18 +1,57 @@
 frappe.ui.form.on('Purchase Invoice', {
     refresh(frm) {
         if (frm.doc.__islocal||cur_frm.doc.docstatus == '0') {
-            var scan_invoice_txt = __("Scan Invoice");
-            frm.add_custom_button(scan_invoice_txt, function() {
+            frm.add_custom_button(__("Scan Invoice"), function() {
                 check_defaults(frm);
             });
+        }
+        if ((frm.doc.docstatus === 1) && (frm.doc.is_proposed === 1)) {
+            cur_frm.dashboard.add_comment(__('This document has been transmitted to the bank for payment'), 'blue', true);
+        }
+    },
+    validate: function(frm) {
+        if (frm.doc.payment_type == "ESR") {
+            if (frm.doc.esr_reference_number) {
+                if (!check_esr(frm.doc.esr_reference_number)) {
+                    frappe.msgprint( __("ESR code not valid") ); 
+                    frappe.validated=false;
+                } 
+            } else {
+                frappe.msgprint( __("ESR code missing") ); 
+                frappe.validated=false;
+            }
+        }
+
+        if ((frm.doc.supplier) && (frm.doc.bill_no)) {
+            frappe.call({
+                'method': "frappe.client.get_list",
+                'args': {
+                    'doctype': "Purchase Invoice",
+                    'filters': [
+                        ['supplier', '=', frm.doc.supplier],
+                        ['bill_no', '=', frm.doc.bill_no],
+                        ['docstatus', '<', 2]
+                    ],
+                    'fields': ['name'],
+                    'async': false
+                },
+                'callback': function(r) {
+                    r.message.forEach(function(pinv) { 
+                        if (pinv.name != frm.doc.name) {
+                            frappe.msgprint(  __("This invoice is already recorded in") + " " + pinv.name );
+                            frappe.validated=false;
+                        }
+                    });
+                }
+            });     
         }
     }
 });
 
 function check_defaults(frm) {
     frappe.call({
-        "method": "erpnextswiss.scripts.esr_qr_tools.check_defaults",
-        "callback": function(response) {
+        'method': "erpnextswiss.scripts.esr_qr_tools.check_defaults",
+        'callback': function(response) {
             if (response.message.error) {
                 frappe.msgprint(response.message.error);
             } else {
@@ -26,7 +65,7 @@ function check_defaults(frm) {
 function scan_invoice_code(frm, default_settings) {
     var scan_invoice_txt = __("Scan Invoice");
     frappe.prompt([
-        {'fieldname': 'code_scan', 'fieldtype': 'Code', 'label': __('Code'), 'reqd': 1}  
+        {'fieldname': 'code_scan', 'fieldtype': 'Small Text', 'label': __('Code'), 'reqd': 1}  
     ],
     function(values){
         check_scan_input(frm, default_settings, values.code_scan);
@@ -38,14 +77,53 @@ function scan_invoice_code(frm, default_settings) {
 
 function check_scan_input(frm, default_settings, code_scan) {
     // ESR section
-    var regex = /[0-9]{13}[>][0-9]{27}[+][ ][0-9]{9}[>]/g; // 0100003949753>120000000000234478943216899+ 010001628>
-    if (regex.test(code_scan) === true){
+    var regex_9_27 = /[0-9]{13}[>][0-9]{27}[+][ ][0-9]{9}[>]/g; // 0100003949753>120000000000234478943216899+ 010001628>
+    var regex_9_27p = /[0-9]{3}[>][0-9]{27}[+][ ][0-9]{9}[>]/g; // 042>120000000000234478943216899+ 010001628>
+    var regex_9_16 = /[0-9]{13}[>][0-9]{16}[+][ ][0-9]{9}[>]/g; // 0100003949753>3804137405061016+ 010001628>
+    var regex_9_16p = /[0-9]{3}[>][0-9]{16}[+][ ][0-9]{9}[>]/g; // 042>3804137405061016+ 010001628>
+    var regex_5_15 = /[<][0-9]{15}[>][0-9]{15}[+][ ][0-9]{5}[>]/g; // <010001000017720>000013230243627+ 73723>
+    var regex_5_15p = /[0-9]{15}[+][ ][0-9]{5}[>]/g; // 000013230243627+ 73723>
+    if (regex_9_27.test(code_scan) === true){
         var occupancy = code_scan.split(">")[0].substring(0,2); // Belegart; z.B. 01
         var amount_int = parseInt(code_scan.split(">")[0].substring(2,10));
         var amount_dec = parseInt(code_scan.split(">")[0].substring(10,12));
-        var amount = String(amount_int) + "." + String(amount_dec); // Betrag in CHF; z.B. 3949.75
+        var amount = String(amount_int) + "." + String(amount_dec).padStart(2,'0'); // Betrag in CHF; z.B. 3949.75
         var reference = code_scan.split(">")[1].substring(0,27); // ESR-Referenznummer; z.B. 120000000000234478943216899
         var participant = code_scan.split("+ ")[1].substring(0,9); // ESR-Teilnehmer; z.B. 010001628
+        get_data_based_on_esr(frm, participant, reference, amount, default_settings);
+    } else if (regex_9_27p.test(code_scan) === true){
+        var occupancy = code_scan.split(">")[0].substring(0,2); // Belegart; z.B. 01
+        var amount = "0.0";
+        var reference = code_scan.split(">")[1].substring(0,27); // ESR-Referenznummer; z.B. 120000000000234478943216899
+        var participant = code_scan.split("+ ")[1].substring(0,9); // ESR-Teilnehmer; z.B. 010001628
+        get_data_based_on_esr(frm, participant, reference, amount, default_settings);
+    } else if (regex_9_16.test(code_scan) === true){
+        var occupancy = code_scan.split(">")[0].substring(0,2); // Belegart; z.B. 01
+        var amount_int = parseInt(code_scan.split(">")[0].substring(2,10));
+        var amount_dec = parseInt(code_scan.split(">")[0].substring(10,12));
+        var amount = String(amount_int) + "." + String(amount_dec).padStart(2,'0'); // Betrag in CHF; z.B. 3949.75
+        var reference = code_scan.split(">")[1].substring(0,16); // ESR-Referenznummer; z.B. 3804137405061016
+        var participant = code_scan.split("+ ")[1].substring(0,9); // ESR-Teilnehmer; z.B. 010001628
+        get_data_based_on_esr(frm, participant, reference, amount, default_settings);
+    } else if (regex_9_16p.test(code_scan) === true){
+        var occupancy = code_scan.split(">")[0].substring(0,2); // Belegart; z.B. 01
+        var amount = "0.0";
+        var reference = code_scan.split(">")[1].substring(0,16); // ESR-Referenznummer; z.B. 3804137405061016
+        var participant = code_scan.split("+ ")[1].substring(0,9); // ESR-Teilnehmer; z.B. 010001628
+        get_data_based_on_esr(frm, participant, reference, amount, default_settings);
+    } else if (regex_5_15.test(code_scan) === true){
+        var occupancy = code_scan.split(">")[0].substring(1,3); // Belegart; z.B. 01
+        var amount_int = parseInt(code_scan.split(">")[0].substring(7,13));
+        var amount_dec = parseInt(code_scan.split(">")[0].substring(14,16));
+        var amount = String(amount_int) + "." + String(amount_dec).padStart(2,'0'); // Betrag in CHF; z.B. 3949.75
+        var reference = code_scan.split(">")[1].substring(0,15); // ESR-Referenznummer; z.B. 3804137405061016
+        var participant = code_scan.split("+ ")[1].substring(0,5); // ESR-Teilnehmer; z.B. 010001628
+        get_data_based_on_esr(frm, participant, reference, amount, default_settings);
+    } else if (regex_5_15p.test(code_scan) === true){
+        var occupancy = "00";
+        var amount = "0.0";
+        var reference = code_scan.split(">")[0].substring(0,15); // ESR-Referenznummer; z.B. 3804137405061016
+        var participant = code_scan.split("+ ")[1].substring(0,5); // ESR-Teilnehmer; z.B. 010001628
         get_data_based_on_esr(frm, participant, reference, amount, default_settings);
     } else {
         // QR Section 
@@ -55,8 +133,8 @@ function check_scan_input(frm, default_settings, code_scan) {
             frappe.msgprint(invalid_esr_code_line);
         } else {
             var amount = parseFloat(lines[18]);
-            var reference = lines[28];
-            var participant = lines[3];
+            var reference = lines[28].replace("\r","").replace("\n","");
+            var participant = lines[3].replace("\r","").replace("\n","");
             get_data_based_on_esr(frm, participant, reference, amount, default_settings);
         }
     }
@@ -143,7 +221,7 @@ function show_esr_detail_dialog(frm, participant, reference, amount, default_set
             values.supplier = values.supplier.split(" // (")[1].replace(")", "");
         }
         if (frm.doc.__islocal) {
-            if (!cur_frm.doc.items[0].item_code) {
+            if ((cur_frm.doc.items.length === 0) || (!cur_frm.doc.items[0].item_code)) {
                 fetch_esr_details_to_new_sinv(frm, values);
             } else {
                 fetch_esr_details_to_existing_sinv(frm, values);
@@ -209,8 +287,4 @@ function fetch_esr_details_to_existing_sinv(frm, values) {
             cur_frm.refresh_field('items');
         }, 1000);
     }
-}
-
-function get_data_based_on_qr(frm) {
-    // tbd
 }

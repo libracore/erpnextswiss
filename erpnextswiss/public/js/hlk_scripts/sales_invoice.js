@@ -81,6 +81,12 @@ frappe.ui.form.on('Sales Invoice', {
 				}, __("HLK Tools"));
 			}
 		}
+        
+        if (frm.doc.__islocal) {
+			frm.add_custom_button(__("Remove Zero Positions"), function() {
+				remove_zero_positions(frm);
+			}, __("HLK Tools"));
+		}
 	},
 	onload(frm) {
 		if (frm.doc.__islocal) {
@@ -160,7 +166,8 @@ function calc_structur_organisation_totals(frm) {
 				"dt": "Sales Invoice",
 				"dn": frm.doc.name
 			},
-			"async": false,
+			"freeze": true,
+			"freeze_message": __("Calc HLK Totals..."),
 			"callback": function(response) {
 				cur_frm.reload_doc();
 			}
@@ -176,7 +183,8 @@ function transfer_structur_organisation_discounts(frm) {
 				"dt": "Sales Invoice",
 				"dn": frm.doc.name
 			},
-			"async": false,
+			"freeze": true,
+			"freeze_message": __("Transfer HLK Discounts..."),
 			"callback": function(response) {
 				calc_structur_organisation_totals(frm);
 			}

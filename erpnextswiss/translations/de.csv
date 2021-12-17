@@ -190,6 +190,7 @@ DocType: ERPNextSwiss Settings,Default Customer,Standardkunde
 DocType: ERPNextSwiss Settings,Use this to define a default customer,Setzt einen Standardkunden
 DocType: ERPNextSwiss Settings,Invoice Code Line Scanning,Rechnungsscanner
 DocType: ERPNextSwiss Settings,Default Item,Standardartikel
+DocType: ERPNextSwiss Settings,Enable salary payment,Lohnzahlungen ausführen
 DocType: Contract,Contract,Vertrag
 DocType: Contract,Contracts,Verträge
 DocType: ERPNextSwiss Settings,Automated Payments,Automatische Zahlungsabwicklung
@@ -249,6 +250,11 @@ DocType: Payment Proposal,"ESR: missing transaction information (participant num
 DocType: Payment Proposal,"Missing IBAN for purchase invoice <a href=\"/desk#Form/Purchase Invoice/{0}\">{0}</a>","Bei Eingangsrechnung <a href=\"/desk#Form/Purchase Invoice/{0}\">{0}</a> fehlt die IBAN"
 DocType: Payment Proposal,"Employee <a href=\"/desk#Form/Employee/{0}\">{0}</a> has no bank account number.","Für Mitarbeiter <a href=\"/desk#Form/Employee/{0}\">{0}</a> ist kein Bankkonto hinterlegt."
 DocType: Payment Proposal,"Please configure the planning period in ERPNextSwiss Settings.","Bitte das Planungsintervall in den ERPNextSwiss-Einstellungen einstellen."
+DocType: Payment Proposal,Purchase Invoices,Eingangsrechnungen
+DocType: Payment Proposal,Salaries,Löhne
+DocType: Payment Proposal,Overview,Übersicht
+DocType: Payment Proposal,Target date,Zieldatum
+DocType: Payment Proposal,Employee name,Mitarbeitername
 Page: Bank Wizard,Bank Wizard,Bankassistent
 Page: Bank Wizard,Transaction matched,Zahlung zugewiesen
 Page: Bank Wizard, transactions found, Zahlungen gefunden
@@ -341,12 +347,39 @@ DocType: Purchase Invoice,Default Item,Standard-Artikel
 DocType: Purchase Invoice,Tax Rate in %,MWST in %
 DocType: Purchase Invoice,ESR Reference,ESR Referenz
 DocType: Purchase Invoice,ESR Participant,ESR Teilnehmer
+DocType: Purchase Invoice,ESR code not valid,ESR-Referenznummer ist ungültig
+DocType: Purchase Invoice,ESR code missing,ESR-Referenznummer fehlt
+DocType: Pruchase Invoice,This invoice is already recorded in,Diese Rechnung wurde bereits erfasst in
 DocType: Purchase Invoice,Process,Verarbeiten
 DocType: Purchase Invoice,Supplier matched,Lieferant gefunden
 DocType: Purchase Invoice,"Supplier found, but does not match with Invoice Supplier!","Lieferant gefunden, er stimmt aber nicht mit dem Lieferant auf der Rechnung überein!"
 DocType: Purchase Invoice,"No Supplier found! Fetched default Supplier.","Kein Lieferant gefunden! Der Standard-Lieferant wurde geladen."
 DocType: Purchase Invoice,"Multiple Supplier found, please choose one!","Mehere Lieferanten gefunden, bitte Auswahl treffen!"
 DocType: Purchase Invoice,"ESR / Invoice amount matched","ESR- / Rechnungs-Betrag stimmt überein"
+DocType: Purchase Invoice,"Invalid ESR Code Line or QR-Code","Ungültige ESR-Zeile oder ungültiger ESR-Code"
+DocType: Purchase Invoice,This document has been transmitted to the bank for payment,Dieses Dokument wurde zur Zahlung an die Bank übermittelt
 DocType: ERPNextSwiss Settings,Default Positive Deviation Item,Standard-Artikel für positive Abweichung
 DocType: ERPNextSwiss Settings,Default Tax Rate,Standard MWST-Satz
+DocType: ERPNextSwiss Settings,From Zefix,Von Zefix
+DocType: ERPNextSwiss Settings,Enable Zefix,Zefix aktivieren
+DocType: ERPNextSwiss Settings,Bank Settings,Bankeinstellungen
+DocType: ERPNextSwiss Settings,User name,Benutzername
+DocType: ERPNextSwiss Settings,Use this to define a default supplier,Diesen Lieferanten als Standardlieferanten evrwenden
+DocType: ERPNextSwiss Settings,Participant Number,Teilnehmernummer
+DocType: ERPNextSwiss Settings,"Number of days the payment rpoposal will look ahead. Payments with due date further ahead will not be proposed.","Anzahl Tage in der Zukunft, die für den Zahlugnsvorschlag einbezogen werden."
 apps/erpnextswiss/erpnextswiss/scripts/esr_qr_tools.py,"{missing_values} not found. Please configure this in the <a href='/desk#Form/ERPNextSwiss Settings'>ERPNextSwiss settings</a>.","{missing_values} nicht gefunden. Bitte konfigurieren Sie dies in den <a href='/desk#Form/ERPNextSwiss Settings'>ERPNextSwiss Einstellungen</a>."
+Report: Worktime Overview,Worktime Overview,Arbeitszeitübersicht
+DocType: Worktime Settings,Worktime Settings,Arbeitszeiteinstellungen
+DocType: Worktime Settings,Daily Hours,Tägliche Stunden
+DocType: Worktime Settings,Degree,Anstellungsgrad
+DocType: Worktime Settings,Public Holidays,Öffentliche Ferientage
+DocType: Worktime Settings,Activity Type Determination,Aktivitätsartzuweisung
+DocType: Worktime Settings,Column Label,Spaltenbeschriftung
+DocType: Worktime Settings,Target time in hours,Sollzeit (Stunden)
+DocType: Worktime Settings,Actual time in hours,Istzeit (Stunden)
+DocType: Worktime Settings,Difference in hours,Zeitabweichung (Stunden)
+DocType: Worktime Settings,Current holiday balance in days,Urlaubssaldo (Tage)
+DocType: Worktime Settings,Worktime Details,Arbeitszeitdetails
+DocType: Worktime Settings,Employment Degrees,Anstellungsgrade
+DocType: Worktime Settings,Carryover and Payouts,Überträge und Auszahlungen
+Report: Monthly Worktime,Monthly Worktime,Arbeitszeit im Monat

@@ -48,20 +48,25 @@ In case you update from the sources and observe an error, make sure to update de
     $ bench update --requirements
 
 ## Features 
-* Banking
+* Banking / Accounting
     * Bank wizard: processes camt.053 and camt.054 files to payment entries (including linking to related documents)
-    * Payment proposal: create payment files based on open purchase invoices (pain.001)
+    * Payment proposal: create payment files based on open purchase invoices, expenses and salaries (pain.001)
     * Direct debit proposal: create payment files from direct debit enabled sales invoices (pain.008)
     * Payment reminder: create payment reminders for overdue sales invoices
     * Bank import: allows to import bank account statements to update local payment entries (receiving; csv or camt)
     * Match payments: match unpaid sales invoices with the corresponding payments
     * Payment export: allows to create payment files for banks (pain.001) from payment entries (paying)
-    * support for QR and ESR invoices
+    * QR invoices and ESR invoices: outgoing (sales invoices) as well as incoming (scan purchase invoices); QR invoice supports ESR/NON/SCOR
+    * ZUGFeRD: fully electronic invoices.
 * Tax
     * Import monthly average exchange rates, daily exchange rates (ESTV)
     * VAT declaration
+    * Zefix integration
 * Human resources
     * Salary certificate ("Lohnausweis")
+    * Seco overtime reporting (based on timesheet)
+    * Seco monthly worktime (working hours and breaks) (based on timesheet)
+    * Automatic settling of expenses and salary payments
 * General tools
     * Postal code lookup
     * Script-based data import
@@ -70,6 +75,9 @@ In case you update from the sources and observe an error, make sure to update de
  * Interfaces
     * Interface to ESTV
     * Interface to abacus (export transaction data)
+    * ISO 20022
+    * ZUGFeRD
+    * Interface to Zefix
 
 ## Release notes
 Refer to [https://github.com/libracore/erpnextswiss/wiki/Release-Notes](https://github.com/libracore/erpnextswiss/wiki/Release-Notes)

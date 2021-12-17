@@ -34,6 +34,13 @@
       {%- else %}
       <BtchBookg>{{ payment.batch }}</BtchBookg>
       {%- endif %}
+      {%- if xml_region == "CH" and payment.is_salary and not payment.service_level == "SEPA" %}{# CH only: salary information #}
+      <PmtTpInf>
+        <CtgyPurp>
+          <Cd>SALA</Cd>
+        </CtgyPurp>
+      </PmtTpInf>
+      {%- endif %}
       <ReqdExctnDt>{{ payment.required_execution_date }}</ReqdExctnDt>
       <Dbtr>
         <Nm>{{ company.name }}</Nm>
@@ -49,6 +56,9 @@
         <Id>
           <IBAN>{{ company.iban }}</IBAN>
         </Id>
+        {%- if xml_region == "CH" and payment.is_salary %}{# CH only: salary information: confidential #}
+        <Tp><Prtry>NOA</Prtry></Tp>
+        {%- endif %}
       </DbtrAcct>
       <DbtrAgt>
           <FinInstnId>

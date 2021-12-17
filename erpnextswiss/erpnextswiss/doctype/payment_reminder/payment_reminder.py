@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018-2020, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2018-2021, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
 
 from __future__ import unicode_literals
@@ -23,7 +23,7 @@ class PaymentReminder(Document):
 
 # this function will create new payment reminders
 @frappe.whitelist()
-def create_payment_reminders():
+def create_payment_reminders(company):
     # check auto submit
     auto_submit = frappe.get_value("ERPNextSwiss Settings", "ERPNextSwiss Settings", "payment_reminder_auto_submit")
     # get all customers with open sales invoices
@@ -34,7 +34,8 @@ def create_payment_reminders():
               AND (`due_date` < CURDATE())
               AND `enable_lsv` = 0
               AND ((`exclude_from_payment_reminder_until` IS NULL) OR (`exclude_from_payment_reminder_until` < CURDATE()))
-            GROUP BY `customer`;""")
+              AND `company` = "{company}"
+            GROUP BY `customer`;""".format(company=company))
     customers = frappe.db.sql(sql_query, as_dict=True)
     # get all sales invoices that are overdue
     if customers:
@@ -49,11 +50,13 @@ def create_payment_reminders():
         for customer in customers:
             sql_query = ("""SELECT `name`, `due_date`, `posting_date`, `payment_reminder_level`, `grand_total`, `outstanding_amount` 
                     FROM `tabSales Invoice` 
-                    WHERE `outstanding_amount` > 0 AND `customer` = '{0}'
+                    WHERE `outstanding_amount` > 0 AND `customer` = '{customer}'
                       AND `docstatus` = 1
                       AND `enable_lsv` = 0
                       AND (`due_date` < CURDATE())
-                      AND ((`exclude_from_payment_reminder_until` IS NULL) OR (`exclude_from_payment_reminder_until` < CURDATE()));""".format(customer.customer))
+                      AND `company` = "{company}"
+                      AND ((`exclude_from_payment_reminder_until` IS NULL) OR (`exclude_from_payment_reminder_until` < CURDATE()));
+                    """.format(customer=customer.customer, company=company))
             open_invoices = frappe.db.sql(sql_query, as_dict=True)
             if open_invoices:
                 now = datetime.now()
@@ -94,7 +97,8 @@ def create_payment_reminders():
                     'highest_level': highest_level,
                     'total_before_charge': total_before_charges,
                     'reminder_charge': reminder_charge,
-                    'total_with_charge': (total_before_charges + reminder_charge)
+                    'total_with_charge': (total_before_charges + reminder_charge),
+                    'company': company
                 })
                 reminder_record = new_reminder.insert()
                 if int(auto_submit) == 1:

@@ -32,13 +32,13 @@ def get_employee_name(user):
 
 def get_columns(filters):
     columns = [
-		{"label": _("Employee"), "fieldname": "employee", "fieldtype": "Link", "options": "Employee", "width": 150},
-		{"label": _("Employee Name"), "fieldname": "employee_name", "fieldtype": "Data", "width": 150},
-		{"label": _("Target time in hours"), "fieldname": "target_time", "fieldtype": "Float", "width": 150},
-		{"label": _("Actual time in hours"), "fieldname": "actual_time", "fieldtype": "Float", "width": 150},
-		{"label": _("Difference in hours"), "fieldname": "difference", "fieldtype": "Float", "width": 150},
-		{"label": _("Current holiday balance in days"), "fieldname": "holiday_balance", "fieldtype": "Float", "width": 202}
-	]
+        {"label": _("Employee"), "fieldname": "employee", "fieldtype": "Link", "options": "Employee", "width": 150},
+        {"label": _("Employee Name"), "fieldname": "employee_name", "fieldtype": "Data", "width": 150},
+        {"label": _("Target time in hours"), "fieldname": "target_time", "fieldtype": "Float", "width": 150},
+        {"label": _("Actual time in hours"), "fieldname": "actual_time", "fieldtype": "Float", "width": 150},
+        {"label": _("Difference in hours"), "fieldname": "difference", "fieldtype": "Float", "width": 150},
+        {"label": _("Current holiday balance in days"), "fieldname": "holiday_balance", "fieldtype": "Float", "width": 202}
+    ]
     columns = add_activity_type_determination(filters, columns)
     return columns
     
@@ -122,7 +122,12 @@ def get_target_time(filters, employee):
             degree_list.append(data)
             i += 1
             
-        start_date = getdate(filters.from_date)
+        employee_joining_date = frappe.get_doc("Employee", employee).date_of_joining
+        if getdate(employee_joining_date) < getdate(filters.from_date):
+            start_date = getdate(filters.from_date)
+        else:
+            start_date = getdate(employee_joining_date)
+            
         end_date = getdate(filters.to_date)
         delta = timedelta(days=1)
         while start_date <= end_date:
@@ -132,14 +137,19 @@ def get_target_time(filters, employee):
             start_date += delta
         return working_hours
         
-    # if only one degree
+    # if only one degree or no degrees
     else:
-        days = date_diff(filters.to_date, filters.from_date) + 1
-        off_days = get_off_days(filters.from_date, filters.to_date, filters.company)
-        try:
+        employee_joining_date = frappe.get_doc("Employee", employee).date_of_joining
+        if getdate(employee_joining_date) < getdate(filters.from_date):
+            start_date = filters.from_date
+        else:
+            start_date = employee_joining_date
+            
+        days = date_diff(filters.to_date, start_date) + 1
+        off_days = get_off_days(start_date, filters.to_date, filters.company)
+        if len(degrees) > 0:
             target_per_day = (get_daily_hours(filters) / 100) * degrees[0].degree
-        except:
-            # 100% fallback
+        else:
             target_per_day = get_daily_hours(filters)
         target_time = (days - off_days) * target_per_day
     return target_time
@@ -176,7 +186,7 @@ def get_holiday_balance(employee, to_date):
     remaining_days = 0
     
     for key in leave_details["leave_allocation"]:
-        remaining_days += int(leave_details["leave_allocation"][key]["remaining_leaves"])
+        remaining_days += float(leave_details["leave_allocation"][key]["remaining_leaves"])
     
     return float(remaining_days)
     
@@ -241,4 +251,37 @@ def get_daily_hours(filters):
         daily_hours = 8
     return daily_hours
     
+@frappe.whitelist()
+def get_company():
+    user = frappe.session.user
+    employee = frappe.db.sql("""SELECT `name` FROM `tabEmployee` WHERE `user_id` = '{user}'""".format(user=user), as_dict=True)
+    try:
+        employee_name = employee[0].name
+        employee = frappe.get_doc("Employee", employee_name)
+        company = employee.company
+    except:
+        # fallback
+        company = frappe.get_single("Global Defaults").default_company
+    return company
     
+@frappe.whitelist()
+def get_employee_overview_html(employee, company, from_date, to_date):
+    filters = frappe._dict()
+    filters.employee = employee
+    filters.from_date = from_date
+    filters.to_date = to_date
+    filters.company = company
+    
+    data = get_data_of_employee(filters)
+    
+    if len(data) > 0:
+        data = data[0]
+        html = '<table style="width: 100%;"><thead><tr><th>'
+        html += '</th><th>'.join([_("Target time in hours"), _("Actual time in hours"), _("Difference in hours"), _("Current holiday balance in days")])
+        html += '</th></tr></thead><tbody><tr><td>'
+        html += '</td><td>'.join([str(round(data[2], 3)), str(round(data[3], 3)), str(round(data[4], 3)), str(data[5])])
+        html += '</td><td></tr></tbody></table>'
+    else:
+        html = _('<div>No data found</div>')
+    
+    return html

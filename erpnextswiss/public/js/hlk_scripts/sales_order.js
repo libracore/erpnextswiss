@@ -3,7 +3,11 @@ frappe.ui.form.on('Sales Order', {
 		validate_hlk_element_allocation(frm);
 	},
 	refresh(frm) {
-		frappe.call({
+		// remove update items button
+		$('[data-label="Update%20Items"]').remove();
+        $('[data-label="Artikel%20aktualisieren"]').remove();
+        
+        frappe.call({
 			"method": "erpnextswiss.erpnextswiss.page.bkp_importer.utils.get_item_group_for_structur_element_filter",
 			"async": false,
 			"callback": function(response) {
@@ -63,7 +67,6 @@ frappe.ui.form.on('Sales Order', {
 					if (cur_frm.is_dirty()) {
 						frappe.msgprint(__("Please save Document first"));
 					} else {
-						frappe.msgprint(__("Please wait"));
 						transfer_structur_organisation_discounts(frm);
 					}
 				}, __("HLK Tools"));
@@ -73,7 +76,6 @@ frappe.ui.form.on('Sales Order', {
 					if (cur_frm.is_dirty()) {
 						frappe.msgprint(__("Please save Document first"));
 					} else {
-						frappe.msgprint(__("Please wait"));
 						calc_structur_organisation_totals(frm);
 					}
 				}, __("HLK Tools"));
@@ -166,18 +168,21 @@ function erstelle_teilrechnung_pop_up(frm) {
 		frappe.prompt(
 		fields,
 		function(values){
-			for (const [key, value] of Object.entries(values)) {
-				frappe.call({
-					"method": "erpnextswiss.erpnextswiss.page.bkp_importer.utils.set_amount_to_bill",
-					"args": {
-						"record": frm.doc.name,
-						'element': key,
-						'value': value
-					},
-					"async": false
-				});
-			}
-			erstelle_teilrechnung(frm);
+			frappe.msgprint("Die Teilrechnung wird erstellt, bitte haben Sie einwenig Gedult.", "Bitte warten");
+            setTimeout(function(){ 
+                for (const [key, value] of Object.entries(values)) {
+                    frappe.call({
+                        "method": "erpnextswiss.erpnextswiss.page.bkp_importer.utils.set_amount_to_bill",
+                        "args": {
+                            "record": frm.doc.name,
+                            'element': key,
+                            'value': value
+                        },
+                        "async": false
+                    });
+                }
+                erstelle_teilrechnung(frm);
+            }, 1000);
 		},
 		'Erstellung Teilrechnung',
 		'Erstellen'
@@ -229,10 +234,10 @@ function calc_structur_organisation_totals(frm) {
 				"dt": "Sales Order",
 				"dn": frm.doc.name
 			},
-			"async": false,
+			"freeze": true,
+			"freeze_message": __("Calc HLK Totals") + "...",
 			"callback": function(response) {
 				cur_frm.reload_doc();
-				frappe.msgprint(__("Process complete"));
 			}
 		});
 	}

@@ -8,13 +8,14 @@ from frappe.core.doctype.file.file import create_new_folder
 from frappe.utils.file_manager import save_file
 
 @frappe.whitelist()
-def attach_pdf(doc, event=None):
+def attach_pdf(doc, event=None, print_format=None):
     fallback_language = frappe.db.get_single_value("System Settings", "language") or "en"
     args = {
         "doctype": doc.doctype,
         "name": doc.name,
         "title": doc.get_title(),
-        "lang": getattr(doc, "language", fallback_language)
+        "lang": getattr(doc, "language", fallback_language),
+        "print_fomrat": print_format
     }
 
     enqueue(args)
@@ -26,14 +27,14 @@ def enqueue(args):
                    timeout=30, is_async=True, **args)
     return
 
-def execute(doctype, name, title, lang=None):
+def execute(doctype, name, title, lang=None, print_format=None):
     if lang:
         frappe.local.lang = lang
 
     doctype_folder = create_folder(_(doctype), "Home")
     title_folder = create_folder(title, doctype_folder)
 
-    pdf_data = get_pdf_data(doctype, name)
+    pdf_data = get_pdf_data(doctype, name, print_format)
 
     save_and_attach(pdf_data, doctype, name, title_folder)
     return
@@ -49,9 +50,9 @@ def create_folder(folder, parent):
     return new_folder_name
 
 
-def get_pdf_data(doctype, name):
+def get_pdf_data(doctype, name, print_format=None):
     """Document -> HTML -> PDF."""
-    html = frappe.get_print(doctype, name)
+    html = frappe.get_print(doctype, name, print_format)
     return frappe.utils.pdf.get_pdf(html)
 
 

@@ -65,7 +65,7 @@ function check_defaults(frm) {
 function scan_invoice_code(frm, default_settings) {
     var scan_invoice_txt = __("Scan Invoice");
     frappe.prompt([
-        {'fieldname': 'code_scan', 'fieldtype': 'Code', 'label': __('Code'), 'reqd': 1}  
+        {'fieldname': 'code_scan', 'fieldtype': 'Small Text', 'label': __('Code'), 'reqd': 1}  
     ],
     function(values){
         check_scan_input(frm, default_settings, values.code_scan);
@@ -221,7 +221,7 @@ function show_esr_detail_dialog(frm, participant, reference, amount, default_set
             values.supplier = values.supplier.split(" // (")[1].replace(")", "");
         }
         if (frm.doc.__islocal) {
-            if (!cur_frm.doc.items[0].item_code) {
+            if ((cur_frm.doc.items.length === 0) || (!cur_frm.doc.items[0].item_code)) {
                 fetch_esr_details_to_new_sinv(frm, values);
             } else {
                 fetch_esr_details_to_existing_sinv(frm, values);

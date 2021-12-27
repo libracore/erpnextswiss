@@ -4,6 +4,7 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
+  "receiver_id",
   "receiver",
   "receiver_address_line1",
   "receiver_address_line2",
@@ -116,10 +117,16 @@
    "fieldname": "is_salary",
    "fieldtype": "Check",
    "label": "Is Salary"
+  },
+  {
+   "fieldname": "receiver_id",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Receiver ID"
   }
  ],
  "istable": 1,
- "modified": "2021-11-16 12:09:25.513973",
+ "modified": "2021-12-27 08:51:27.725771",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "Payment Proposal Payment",

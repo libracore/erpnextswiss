@@ -423,30 +423,34 @@ def read_camt_transactions(transaction_entries, account, settings):
                     if credit_debit == "DBIT":
                         # match by payment instruction id
                         if payment_instruction_id:
-                            payment_instruction_fields = payment_instruction_id.split("-")
-                            payment_instruction_row = int(payment_instruction_fields[-1]) + 1
-                            payment_proposal_id = payment_instruction_fields[1]
-                            # find original instruction record
-                            payment_proposal_payments = frappe.get_all("Payment Proposal Payment", 
-                                filters={'parent': payment_proposal_id, 'idx': payment_instruction_row},
-                                fields=['receiver', 'receiver_address_line1', 'receiver_address_line2', 'iban', 'reference', 'receiver_id'])
-                            # supplier
-                            if payment_proposal_payments:
-                                if payment_proposal_payments[0]['receiver_id'] and frappe.db.exists("Supplier", payment_proposal_payments[0]['receiver_id']):
-                                    party_match = payment_proposal_payments[0]['receiver_id']
-                                else:
-                                    # fallback to supplier name
-                                    match_suppliers = frappe.get_all("Supplier", filters={'supplier_name': payment_proposal_payments[0]['receiver']}, 
-                                        fields=['name'])
-                                    if match_suppliers:
-                                        party_match = match_suppliers[0]['name']
-                                # purchase invoice reference match
-                                match_invoices = frappe.get_all("Purchase Invoice", 
-                                    filters=[['name', '=', payment_proposal_payments[0]['reference']], ['outstanding_amount', '>', 0]], 
-                                    fields=['name', 'grand_total'])
-                                if match_invoices:
-                                    invoice_match = [match_invoices[0]['name']]
-                                    matched_amount = match_invoices[0]['grand_total']
+                            try:
+                                payment_instruction_fields = payment_instruction_id.split("-")
+                                payment_instruction_row = int(payment_instruction_fields[-1]) + 1
+                                payment_proposal_id = payment_instruction_fields[1]
+                                # find original instruction record
+                                payment_proposal_payments = frappe.get_all("Payment Proposal Payment", 
+                                    filters={'parent': payment_proposal_id, 'idx': payment_instruction_row},
+                                    fields=['receiver', 'receiver_address_line1', 'receiver_address_line2', 'iban', 'reference', 'receiver_id'])
+                                # supplier
+                                if payment_proposal_payments:
+                                    if payment_proposal_payments[0]['receiver_id'] and frappe.db.exists("Supplier", payment_proposal_payments[0]['receiver_id']):
+                                        party_match = payment_proposal_payments[0]['receiver_id']
+                                    else:
+                                        # fallback to supplier name
+                                        match_suppliers = frappe.get_all("Supplier", filters={'supplier_name': payment_proposal_payments[0]['receiver']}, 
+                                            fields=['name'])
+                                        if match_suppliers:
+                                            party_match = match_suppliers[0]['name']
+                                    # purchase invoice reference match
+                                    match_invoices = frappe.get_all("Purchase Invoice", 
+                                        filters=[['name', '=', payment_proposal_payments[0]['reference']], ['outstanding_amount', '>', 0]], 
+                                        fields=['name', 'grand_total'])
+                                    if match_invoices:
+                                        invoice_match = [match_invoices[0]['name']]
+                                        matched_amount = match_invoices[0]['grand_total']
+                            except:
+                                # this can be the case for malformed instruction ids
+                                pass
                         # suppliers 
                         if not party_match:
                             # find suplier from name

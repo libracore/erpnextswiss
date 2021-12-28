@@ -8,14 +8,14 @@ from frappe.core.doctype.file.file import create_new_folder
 from frappe.utils.file_manager import save_file
 
 @frappe.whitelist()
-def attach_pdf(doc, event=None, print_format=None):
+def attach_pdf(doctype, docname, event=None, print_format=None):
     fallback_language = frappe.db.get_single_value("System Settings", "language") or "en"
     args = {
-        "doctype": doc.doctype,
-        "name": doc.name,
-        "title": doc.get_title(),
-        "lang": getattr(doc, "language", fallback_language),
-        "print_fomrat": print_format
+        "doctype": doctype,
+        "name": docname,
+        "title": (frappe.get_value(doctype, docname, "title") or doc.name),
+        "lang": (frappe.get_value(doctype, docname, "language") or fallback_language),
+        "print_format": print_format
     }
 
     enqueue(args)

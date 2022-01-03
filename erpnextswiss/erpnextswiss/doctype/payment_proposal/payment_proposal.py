@@ -205,8 +205,7 @@ class PaymentProposal(Document):
             else:
                 pay_date = datetime.strptime(execution_date, "%Y-%m-%d")
             if pay_date.date() < datetime.now().date():
-                pay_d
-                ate = datetime.now().date()
+                pay_date = datetime.now().date()
 
             new_payment = self.append('payments', {})
             new_payment.receiver = receiver_name

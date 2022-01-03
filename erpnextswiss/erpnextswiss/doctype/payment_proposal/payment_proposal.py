@@ -10,6 +10,8 @@ from datetime import datetime, timedelta
 import time
 from erpnextswiss.erpnextswiss.common_functions import get_building_number, get_street_name, get_pincode, get_city, get_primary_address
 import cgi          # used to escape xml content
+from frappe.utils import cint
+from unidecode import unidecode     # used to remove German/French-type special characters from bank identifieres
 
 class PaymentProposal(Document):
     def validate(self):
@@ -149,6 +151,28 @@ class PaymentProposal(Document):
                 address_lines[0], address_lines[1], cntry,
                 amount, currency, " ".join(references), self.date)
             total += amount
+        # add salaries
+        for salary in self.salaries:
+            # mark expense claim as proposed
+            salary_slip = frappe.get_doc("Salary Slip", salary.salary_slip)
+            salary_slip.is_proposed = 1
+            salary_slip.save()
+            # create payment on intermediate
+            if self.use_intermediate == 1:
+                self.create_payment("Employee", employee, 
+                    "Salary Slip", salary.salary_slip, exec_date,
+                    salary.amount)
+            # add new payment record
+            emp = frappe.get_doc("Employee", salary.employee)
+            if not emp.permanent_address:
+                frappe.throw( _("Employee <a href=\"/desk#Form/Employee/{0}\">{0}</a> has no address.").format(emp.name) )
+            address_lines = emp.permanent_address.split("\n")
+            cntry = frappe.get_value("Company", emp.company, "country")
+            self.add_payment(emp.employee_name, emp.bank_ac_no, "IBAN",
+                address_lines[0], address_lines[1], cntry,
+                salary.amount, account_currency, (unidecode(salary.salary_slip))[-35:], salary.target_date,
+                is_salary=1)
+            total += salary.amount
         # update total
         self.total = total
         # save
@@ -165,12 +189,17 @@ class PaymentProposal(Document):
             # un-mark expense claim as proposed
             invoice = frappe.get_doc("Expense Claim", expense_claim.expense_claim)
             invoice.is_proposed = 0
-            invoice.save()               
+            invoice.save()   
+        for salary_slip in self.salaries:
+            # un-mark salary slip as proposed
+            invoice = frappe.get_doc("Salary Slip", salary_slip.salary_slip)
+            invoice.is_proposed = 0
+            invoice.save()
         return
     
     def add_payment(self, receiver_name, iban, payment_type, address_line1, 
         address_line2, country, amount, currency, reference, execution_date, 
-        esr_reference=None, esr_participation_number=None, bic=None):
+        esr_reference=None, esr_participation_number=None, bic=None, is_salary=0):
             new_payment = self.append('payments', {})
             new_payment.receiver = receiver_name
             new_payment.iban = iban
@@ -184,7 +213,8 @@ class PaymentProposal(Document):
             new_payment.reference = reference
             new_payment.execution_date = execution_date
             new_payment.esr_reference = esr_reference
-            new_payment.esr_participation_number = esr_participation_number      
+            new_payment.esr_participation_number = esr_participation_number   
+            new_payment.is_salary = is_salary   
             return
     
     def create_payment(self, party_type, party_name, 
@@ -262,7 +292,7 @@ class PaymentProposal(Document):
                     'bic': "{0}".format(payment_account.bic)
                 },
                 'instruction_id': "INSTRID-{0}-{1}".format(self.name, transaction_count),          # instruction identification
-                'end_to_end_id': "{0}".format((payment.reference[:33] + '..') if len(payment.reference) > 35 else payment.reference),   # end-to-end identification (should be used and unique within B-level; payment entry name)
+                'end_to_end_id': "{0}".format((payment.reference[:33] + '..') if len(payment.reference) > 35 else payment.reference.strip()),   # end-to-end identification (should be used and unique within B-level; payment entry name)
                 'currency': payment.currency,
                 'amount': round(payment.amount, 2),
                 'creditor': {
@@ -270,7 +300,8 @@ class PaymentProposal(Document):
                     'address_line1': cgi.escape(payment.receiver_address_line1[:35]),
                     'address_line2': cgi.escape(payment.receiver_address_line2[:35]),
                     'country_code': frappe.get_value("Country", payment.receiver_country, "code").upper()
-                }
+                },
+                'is_salary': payment.is_salary
             }
             if payment.payment_type == "SEPA":
                 # service level code (e.g. SEPA)
@@ -417,6 +448,31 @@ def create_payment_proposal(date=None, company=None):
         }
         total += expense.amount
         expenses.append(new_expense)
+    # get all open salary slips
+    salaries = []
+    if cint(frappe.get_value("ERPNextSwiss Settings", "ERPNextSwiss Settings", "enable_salary_payment")) == 1:
+        sql_query = ("""SELECT `tabSalary Slip`.`name`, 
+                      `tabSalary Slip`.`employee`, 
+                      `tabSalary Slip`.`net_pay` AS `amount`,
+                      `tabCompany`.`default_payroll_payable_account` AS `payable_account`,
+                      `tabSalary Slip`.`posting_date` AS `posting_date`
+                    FROM `tabSalary Slip`
+                    LEFT JOIN `tabCompany` ON `tabSalary Slip`.`company` = `tabCompany`.`name`
+                    WHERE `tabSalary Slip`.`docstatus` = 1 
+                      AND `tabSalary Slip`.`is_proposed` = 0
+                      AND `tabSalary Slip`.`company` = '{company}';""".format(company=company))
+        salary_slips = frappe.db.sql(sql_query, as_dict=True)          
+        # append salary slips
+        for salary_slip in salary_slips:
+            new_salary = { 
+                'salary_slip': salary_slip.name,
+                'employee': salary_slip.employee,
+                'amount': salary_slip.amount,
+                'payable_account': salary_slip.payable_account,
+                'target_date': salary_slip.posting_date
+            }
+            total += salary_slip.amount
+            salaries.append(new_salary)
     # create new record
     new_record = None
     now = datetime.now()
@@ -427,6 +483,7 @@ def create_payment_proposal(date=None, company=None):
         'date': "{year:04d}-{month:02d}-{day:02d}".format(year=date.year, month=date.month, day=date.day),
         'purchase_invoices': invoices,
         'expenses': expenses,
+        'salaries': salaries,
         'company': company,
         'total': total
     })

@@ -17,6 +17,7 @@
   "column_automated_payments",
   "banking_region",
   "xml_version",
+  "enable_salary_payment",
   "section_bank_wizard",
   "intermediate_account",
   "column_bank_wizard",
@@ -28,9 +29,15 @@
   "scanning_default_item",
   "scanning_default_positive_deviation_item",
   "scanning_default_supplier",
+  "column_invoice_scanning",
   "scanning_default_positive_deviation",
   "scanning_default_negative_deviation",
-  "scanning_default_tax_rate"
+  "scanning_default_tax_rate",
+  "section_zefix",
+  "enable_zefix",
+  "column_zefix",
+  "zefix_user",
+  "zefix_pw"
  ],
  "fields": [
   {
@@ -185,10 +192,45 @@
    "fieldname": "auto_process_matches",
    "fieldtype": "Check",
    "label": "Automatically process full matches"
+  },
+  {
+   "fieldname": "column_invoice_scanning",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_zefix",
+   "fieldtype": "Section Break",
+   "label": "Zefix"
+  },
+  {
+   "fieldname": "zefix_user",
+   "fieldtype": "Data",
+   "label": "User name"
+  },
+  {
+   "fieldname": "column_zefix",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "zefix_pw",
+   "fieldtype": "Password",
+   "label": "Password"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_zefix",
+   "fieldtype": "Check",
+   "label": "Enable Zefix"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_salary_payment",
+   "fieldtype": "Check",
+   "label": "Enable salary payment"
   }
  ],
  "issingle": 1,
- "modified": "2021-06-16 22:04:41.032104",
+ "modified": "2021-11-16 15:02:53.244767",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "ERPNextSwiss Settings",

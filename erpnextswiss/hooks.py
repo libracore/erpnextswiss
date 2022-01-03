@@ -35,7 +35,10 @@ doctype_js = {
     "Sales Order" :     "public/js/sales_order.js",
     "Sales Invoice" :   "public/js/sales_invoice.js",
     "Purchase Invoice" :   "public/js/purchase_invoice.js",
-    "Fiscal Year":      "public/js/fiscal_year.js"
+    "Fiscal Year":      "public/js/fiscal_year.js",
+    "Supplier":         "public/js/supplier.js",
+    "Customer":         "public/js/customer.js",
+    "Address":         "public/js/address.js"
 }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
@@ -45,7 +48,8 @@ doctype_js = {
 jenv = {
     "methods": [
         "get_tax_details:erpnextswiss.erpnextswiss.report.kontrolle_mwst.kontrolle_mwst.get_data",
-        "get_account_sheets:erpnextswiss.erpnextswiss.finance.get_account_sheets"
+        "get_account_sheets:erpnextswiss.erpnextswiss.finance.get_account_sheets",
+        "get_week_from_date:erpnextswiss.erpnextswiss.common_functions.get_week_from_date"
     ]
 }
 

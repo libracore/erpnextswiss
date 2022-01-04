@@ -200,6 +200,13 @@ class PaymentProposal(Document):
     def add_payment(self, receiver_name, iban, payment_type, address_line1, 
         address_line2, country, amount, currency, reference, execution_date, 
         esr_reference=None, esr_participation_number=None, bic=None, is_salary=0):
+            if isinstance(execution_date,datetime):
+                pay_date = execution_date
+            else:
+                pay_date = datetime.strptime(execution_date, "%Y-%m-%d")
+            if pay_date.date() < datetime.now().date():
+                pay_date = datetime.now().date()
+
             new_payment = self.append('payments', {})
             new_payment.receiver = receiver_name
             new_payment.iban = iban
@@ -211,7 +218,7 @@ class PaymentProposal(Document):
             new_payment.amount = amount
             new_payment.currency = currency
             new_payment.reference = reference
-            new_payment.execution_date = execution_date
+            new_payment.execution_date = pay_date
             new_payment.esr_reference = esr_reference
             new_payment.esr_participation_number = esr_participation_number   
             new_payment.is_salary = is_salary   

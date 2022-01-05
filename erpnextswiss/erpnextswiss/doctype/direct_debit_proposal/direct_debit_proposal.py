@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018-2019, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2018-2020, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
 
 from __future__ import unicode_literals
@@ -8,8 +8,19 @@ from frappe.model.document import Document
 from datetime import datetime
 import time
 import cgi          # used to escape xml content
+from frappe import _
 
 class DirectDebitProposal(Document):
+    def validate(self):
+        # check if closing on intermediate account that fields are set
+        if self.use_intermediate == 1:
+            if not self.intermediate_account:
+                frappe.throw( _("Please provide an intermediate account.") )
+            # if skonto applies, skonto fields are required
+            for sinv in self.sales_invoices:
+                if sinv.amount != sinv.outstanding_amount:
+                    if not self.skonto_account or not self.skonto_cost_center:
+                        frappe.throw( _("Please provide a skonto account and cost center.") )
     def on_submit(self):
         # clean payments (to prevent accumulation on re-submit)
         self.payments = {}
@@ -37,7 +48,7 @@ class DirectDebitProposal(Document):
                     if self.use_intermediate == 1:
                         self.create_payment("Customer", customer, 
                             "Sales Invoice", sales_invoice.sales_invoice, datetime.now(),
-                            sales_invoice.amount)
+                            sales_invoice.amount, sales_invoice.outstanding_amount)
             # add new payment record
             new_payment = self.append('payments', {})
             new_payment.customer = customer
@@ -50,7 +61,7 @@ class DirectDebitProposal(Document):
 
     def create_payment(self, party_type, party_name, 
                             reference_type, reference_name, date,
-                            amount):
+                            amount, outstanding_amount):
         # create new payment entry
         new_payment_entry = frappe.get_doc({
             'doctype': 'Payment Entry',
@@ -61,7 +72,7 @@ class DirectDebitProposal(Document):
             'paid_to': self.intermediate_account,
             'received_amount': amount,
             'paid_amount': amount,
-            'reference_no': reference_name,
+            'reference_no': "{0} {1}".format(reference_name, self.name),
             'reference_date': date,
             'remarks': "From Direct Debit Proposal {0}".format(self.name),
             'references': [{ 
@@ -73,6 +84,35 @@ class DirectDebitProposal(Document):
                 'outstanding_amount': amount
             }]
         })
+        # in case of skonto deduction: consider deduction in payment entry
+        if outstanding_amount != amount:
+            new_payment_entry = frappe.get_doc({
+                'doctype': 'Payment Entry',
+                'payment_type': "Receive",
+                'party_type': party_type,
+                'party': party_name,
+                'posting_date': date,
+                'paid_to': self.intermediate_account,
+                'received_amount': amount,
+                'paid_amount': amount,
+                'reference_no': "{0} {1}".format(reference_name, self.name),
+                'reference_date': date,
+                'remarks': "From Direct Debit Proposal {0}".format(self.name),
+                'references': [{ 
+                    'reference_doctype': reference_type,
+                    'reference_name': reference_name,
+                    'allocated_amount': outstanding_amount,
+                    'due_date': date,
+                    'total_amount': outstanding_amount,
+                    'outstanding_amount': outstanding_amount
+                }],
+                'total_allocated_amount': outstanding_amount,
+                'deductions': [{ 
+                    'account': self.skonto_account,
+                    'cost_center': self.skonto_cost_center,
+                    'amount': (outstanding_amount - amount),
+                }]
+            })
         inserted_payment_entry = new_payment_entry.insert()
         inserted_payment_entry.submit()
         frappe.db.commit()
@@ -240,6 +280,7 @@ def create_direct_debit_proposal(company=None):
                 'customer': invoice.customer,
                 'sales_invoice': invoice.name,
                 'amount': invoice.skonto_amount, # formerly invoice.outstanding_amount, include skonto if applicable
+                'outstanding_amount': invoice.outstanding_amount,
                 'due_date': invoice.due_date,
                 'currency': invoice.currency
             }

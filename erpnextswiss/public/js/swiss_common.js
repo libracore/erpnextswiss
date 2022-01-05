@@ -1,26 +1,26 @@
 // this function checks if an ESR code is valid
 function check_esr(esr_raw) {
-  esr_code = esr_raw.replace(/ /g, '');
-  // define algo
-  alg = new Array (0,9,4,6,8,2,7,1,3,5);
-  // convert esr code into array form
-  esr_array = esr_code.split("");
-  // preset remainder R2
-  R2 = 0;
-  // loop through digites except check digit
-  for ( i = 0; i < (esr_code.length - 1); i++ ) {
-    // get remainder plus next digit
-    Rpr = parseInt(R2) + parseInt(esr_array[i]);
-    // modulo 10 from algo
-    R2 = alg[Rpr % 10];
-  }
-  // check digit
-  P2 = (10 - R2) % 10;
-  if (parseInt(esr_array[esr_array.length - 1]) == P2) {
-    return true;
-  } else {
-    return false;
-  }
+    esr_code = esr_raw.replace(/ /g, '');
+    // define algo
+    alg = new Array (0,9,4,6,8,2,7,1,3,5);
+    // convert esr code into array form
+    esr_array = esr_code.split("");
+    // preset remainder R2
+    R2 = 0;
+    // loop through digites except check digit
+    for ( i = 0; i < (esr_code.length - 1); i++ ) {
+        // get remainder plus next digit
+        Rpr = parseInt(R2) + parseInt(esr_array[i]);
+        // modulo 10 from algo
+        R2 = alg[Rpr % 10];
+    }
+    // check digit
+    P2 = (10 - R2) % 10;
+    if (parseInt(esr_array[esr_array.length - 1]) == P2) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
 // this function computes the ESR reference and code for a sales invoice
@@ -47,7 +47,7 @@ function esr_sales_invoice(frm, participant_number) {
         
         BBT = bb + P1;		// ESR-Code-Zeile - Beleg, Betrag und Pruefziffer
     }
-    // Referneznummer (Teil 2)
+    // Referenznummer (Teil 2)
     referenz = frm.doc.name;
     referenzteil = referenz.split('-')[1];      // Use the main number block from SINV-00001(-1)
     rg = referenzteil;	// Referenznummer ohne Pruefziffer
@@ -80,17 +80,43 @@ function esr_sales_invoice(frm, participant_number) {
     frm.doc.esr_code = BBT + ">" + RNE + "+ " + TN + ">";
 }  
 
+// this function computes a 27-digit ESR reference (input is a 26-digit code)
+function get_esr_code(esr_base) {
+    alg = new Array (0,9,4,6,8,2,7,1,3,5);	// vorgebener Algorithmus in Tabellenform
+    rg = esr_base.replace(/ /g, '');;
+    rl = rg.length;			// neue Anzahl Ziffern
+    ro = rg.split("");			// Array (bereiniget) fuer das Zuordnen in der Tabelle erstellen
+    R2 = 0;
+    for ( j = 0; j < rl; j++ ) {			// Schleife entsprechend der Anzahl Ziffern
+        Rpr = parseInt(R2) + parseInt(ro[j]);	// Rest plus entspr. Ziffer - Ganzzahlen
+        R2 = alg[Rpr % 10];			// Modulo10 Algorithmus abarbeiten
+    }
+    P2 = (10 - R2) % 10;	// Pruefziffer (Referenznummer)
+
+    // RNK Referenznummer, oberhalb der Adresse
+    if (rl == 26) { 	// entweder 26 Stellen erforderlich
+        RNK = ro[0] + ro[1] + " " + ro[2] + ro[3] + ro[4] + ro[5] + ro[6] + " " + ro[7] + ro[8] + ro[9] + ro[10] + ro[11] + " " + ro[12] + ro[13] + ro[14] + ro[15] + ro[16] + " " + ro[17] + ro[18] + ro[19] + ro[20] + ro[21] + " " + ro[22] + ro[23] + ro[24] + ro[25] + P2;
+    }
+    else if (rl == 15) { 	// oder 15 Stellen
+        RNK = ro[0] + " " + ro[1]+ ro[2] + ro[3] + ro[4] + ro[5] + " " + ro[6] + ro[7] + ro[8] + ro[9] + ro[10] + " " + ro[11] + ro[12] + ro[13] + ro[14] + P2;	
+    }
+    RNE = rg + P2;			// Referenznummer in der ESR-Code-Zeile
+    return RNE;
+}  
+
 // this function resolves a pin code and fills the city into the target field of a form
-function get_city_from_pincode(pincode, target_field, state_field="") {
+function get_city_from_pincode(pincode, target_field, state_field="", country=null) {
+	var filters = [['pincode','=', pincode]];
+	if (country) {
+		filters.push(['country', '=', country]);
+	}
     // find cities
     if (pincode) {
         frappe.call({
             method: 'frappe.client.get_list',
             args: {
                 doctype: 'Pincode',
-                filters: [
-                    ['pincode','=', pincode]
-                ],
+                filters: filters,
                 fields: ['name', 'pincode', 'city', 'canton_code']
             },
             async: false,

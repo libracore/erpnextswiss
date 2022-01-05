@@ -18,9 +18,15 @@ frappe.ui.form.on('Payment Proposal', {
         cur_frm.fields_dict['pay_from_account'].get_query = function(doc) {
             return {
                 filters: {
-                    "account_type": "Bank"
+                    "account_type": "Bank",
+                    "company": frm.doc.company
                 }
             }
+        }
+        // remove add grid buttons
+        var grid_add_btns = document.getElementsByClassName("grid-add-row") || [];
+        for (var b = 0; b < grid_add_btns.length; b++) {
+            grid_add_btns[b].style.visibility = "Hidden";
         }
      },
      validate: function(frm) {
@@ -84,6 +90,9 @@ function set_payment_date(frm) {
 
 frappe.ui.form.on('Payment Proposal Purchase Invoice', {
     purchase_invoices_remove: function(frm) {
+        recalculate_total(frm);
+    },
+    skonto_amount: function(frm) {
         recalculate_total(frm);
     }
 });

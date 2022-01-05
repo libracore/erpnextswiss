@@ -1,0 +1,107 @@
+{
+ "allow_rename": 1,
+ "autoname": "field:title",
+ "creation": "2020-08-27 13:27:27.216502",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "title",
+  "section_applicable",
+  "quotation",
+  "introduction",
+  "cb_1",
+  "sales_order",
+  "closing_text",
+  "cb_2",
+  "sales_invoice",
+  "section_content",
+  "content"
+ ],
+ "fields": [
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Title",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "section_applicable",
+   "fieldtype": "Section Break",
+   "label": "Applicable on"
+  },
+  {
+   "default": "0",
+   "fieldname": "quotation",
+   "fieldtype": "Check",
+   "label": "Quotation"
+  },
+  {
+   "default": "0",
+   "fieldname": "introduction",
+   "fieldtype": "Check",
+   "label": "Introduction"
+  },
+  {
+   "fieldname": "cb_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "sales_order",
+   "fieldtype": "Check",
+   "label": "Sales Order"
+  },
+  {
+   "default": "0",
+   "fieldname": "closing_text",
+   "fieldtype": "Check",
+   "label": "Closing Text"
+  },
+  {
+   "fieldname": "cb_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_content",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "content",
+   "fieldtype": "Text Editor",
+   "label": "Content"
+  },
+  {
+   "default": "0",
+   "fieldname": "sales_invoice",
+   "fieldtype": "Check",
+   "label": "Sales Invoice"
+  }
+ ],
+ "modified": "2020-09-23 14:57:55.648754",
+ "modified_by": "Administrator",
+ "module": "ERPNextSwiss",
+ "name": "HLK Text Template",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "restrict_to_domain": "HLK",
+ "track_changes": 1
+}

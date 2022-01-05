@@ -1,0 +1,35 @@
+<div class="row">
+	<div class="col-xs-12" id="data_place_holder">
+		<p>Hier werden die BKP-File Hauptdaten angezeigt, sobald Sie ein oder mehrere File(s) via "Menü > Upload Files" hinzugefügt haben.<br>
+		<strong>Wichtig:</strong> .xml-Files > 40MB müssen zwingend als ZIP-Komprimiertes File hochgeladen werden!</p>
+	</div>
+	<div class="col-xs-12 hidden" id="extracted_data">
+		<table class="table table-striped">
+			<thead>
+				<tr>
+					<th>File</th>
+					<th>Katalog (ID)</th>
+					<th>Version (Jahr - Nummer)</th>
+					<th>Preisbuch Nummer</th>
+					<th>Gültig ab</th>
+					<th>Sprache</th>
+				</tr>
+			</thead>
+			<tbody id="table_body">
+			
+			</tbody>
+		</table>
+		<div>
+			Sobald Sie alle Daten zur Verarbeitung hochgeladen haben, können Sie via "Menü > Import / Update BKP Items from uploaded Files" den Import/das Updaten der Artikel starten
+		</div>
+	</div>
+	<div class="col-xs-12 hidden" id="bitte_warten">
+		<p><b>Der Auftrag wurde dem System erfolgreich übergeben.<br><a href="/desk#bkp-importer">Laden Sie diese Seite neu</a>, sobald das System Ihnen mitteilt, dass der Auftrag erfolgreich abgeschlossen ist.</b></p>
+	</div>
+</div>
+
+<!-- The overlay -->
+<div id="myNav" class="overlay">
+	<!-- Overlay content -->
+	<div class="overlay-content" id="overlay"></div>
+</div>

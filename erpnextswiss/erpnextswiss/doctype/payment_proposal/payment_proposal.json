@@ -14,11 +14,14 @@
   "purchase_invoices",
   "section_expenses",
   "expenses",
+  "section_salaries",
+  "salaries",
   "section_overview",
   "total",
   "section_payments",
   "payments",
-  "section_intermediate_account",
+  "section_options",
+  "individual_payments",
   "use_intermediate",
   "column_intermdiate_account",
   "intermediate_account"
@@ -98,11 +101,6 @@
    "read_only": 1
   },
   {
-   "fieldname": "section_intermediate_account",
-   "fieldtype": "Section Break",
-   "label": "Intermediate Account"
-  },
-  {
    "default": "0",
    "fieldname": "use_intermediate",
    "fieldtype": "Check",
@@ -125,14 +123,39 @@
    "label": "Overview"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "total",
-   "fieldtype": "Currency",
+   "fieldtype": "Float",
    "label": "Total",
+   "precision": "2",
    "read_only": 1
+  },
+  {
+   "fieldname": "section_options",
+   "fieldtype": "Section Break",
+   "label": "Options"
+  },
+  {
+   "default": "0",
+   "fieldname": "individual_payments",
+   "fieldtype": "Check",
+   "label": "Individual payments"
+  },
+  {
+   "fieldname": "section_salaries",
+   "fieldtype": "Section Break",
+   "label": "Salaries"
+  },
+  {
+   "fieldname": "salaries",
+   "fieldtype": "Table",
+   "label": "Salaries",
+   "options": "Payment Proposal Salary Slip"
   }
  ],
+ "in_create": 1,
  "is_submittable": 1,
- "modified": "2020-01-19 21:20:31.423543",
+ "modified": "2021-11-16 12:29:40.652470",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "Payment Proposal",
@@ -141,7 +164,6 @@
   {
    "amend": 1,
    "cancel": 1,
-   "create": 1,
    "delete": 1,
    "email": 1,
    "export": 1,
@@ -156,7 +178,6 @@
   {
    "amend": 1,
    "cancel": 1,
-   "create": 1,
    "delete": 1,
    "email": 1,
    "export": 1,
@@ -171,7 +192,6 @@
   {
    "amend": 1,
    "cancel": 1,
-   "create": 1,
    "delete": 1,
    "email": 1,
    "export": 1,

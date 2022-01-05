@@ -1,0 +1,47 @@
+{
+ "creation": "2021-06-09 18:33:26.436481",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "company",
+  "activity_type",
+  "column_label"
+ ],
+ "fields": [
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "fieldname": "activity_type",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Activity Type",
+   "options": "Activity Type",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_label",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Column Label",
+   "reqd": 1
+  }
+ ],
+ "istable": 1,
+ "modified": "2021-06-09 18:33:26.436481",
+ "modified_by": "Administrator",
+ "module": "ERPNextSwiss",
+ "name": "Activity Type Determination",
+ "owner": "Administrator",
+ "permissions": [],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

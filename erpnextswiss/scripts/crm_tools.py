@@ -93,7 +93,7 @@ def get_supplier_address(supplier):
 
 # fetch the primary available address from a supplier
 @frappe.whitelist()
-def get_primary_customer_address(supplier):
+def get_primary_supplier_address(supplier):
     sql_query = u"""SELECT `tabDynamic Link`.`parent`, `tabAddress`.`is_primary_address`
             FROM `tabDynamic Link` 
             LEFT JOIN `tabAddress` ON `tabAddress`.`name` = `tabDynamic Link`.`parent`

@@ -12,10 +12,11 @@
   "company",
   "title",
   "date",
+  "amended_from",
   "section_sales_invoices",
   "sales_invoices",
-  "amended_from",
   "section_values",
+  "currency",
   "highest_level",
   "reminder_charge",
   "column_values",
@@ -95,7 +96,8 @@
   {
    "fieldname": "reminder_charge",
    "fieldtype": "Currency",
-   "label": "Reminder Charge"
+   "label": "Reminder Charge",
+   "options": "currency"
   },
   {
    "fieldname": "column_values",
@@ -104,12 +106,14 @@
   {
    "fieldname": "total_before_charge",
    "fieldtype": "Currency",
-   "label": "Total before Charge"
+   "label": "Total before Charge",
+   "options": "currency"
   },
   {
    "fieldname": "total_with_charge",
    "fieldtype": "Currency",
-   "label": "Total with Charge"
+   "label": "Total with Charge",
+   "options": "currency"
   },
   {
    "fieldname": "company",
@@ -120,10 +124,17 @@
    "print_hide": 1,
    "remember_last_selected_value": 1,
    "reqd": 1
+  },
+  {
+   "fieldname": "currency",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "Currency",
+   "options": "Currency"
   }
  ],
  "is_submittable": 1,
- "modified": "2021-07-20 07:08:34.655367",
+ "modified": "2022-01-10 22:32:06.805342",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "Payment Reminder",

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018-2021, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2018-2022, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
 
 from __future__ import unicode_literals
@@ -16,7 +16,7 @@ class PaymentReminder(Document):
             sales_invoice.payment_reminder_level = invoice.reminder_level
             sales_invoice.save()
         return
-	# apply payment reminder levels on submit (server based)
+    # apply payment reminder levels on submit (server based)
     def on_submit(self):
         self.update_reminder_levels()
     pass
@@ -48,7 +48,7 @@ def create_payment_reminders(company):
         except:
             max_level = 3
         for customer in customers:
-            sql_query = ("""SELECT `name`, `due_date`, `posting_date`, `payment_reminder_level`, `grand_total`, `outstanding_amount` 
+            sql_query = ("""SELECT `name`, `due_date`, `posting_date`, `payment_reminder_level`, `grand_total`, `outstanding_amount` , `currency`
                     FROM `tabSales Invoice` 
                     WHERE `outstanding_amount` > 0 AND `customer` = '{customer}'
                       AND `docstatus` = 1
@@ -63,6 +63,7 @@ def create_payment_reminders(company):
                 invoices = []
                 highest_level = 0
                 total_before_charges = 0
+                currency = None
                 for invoice in open_invoices:
                     level = invoice.payment_reminder_level + 1
                     if level > max_level:
@@ -79,6 +80,7 @@ def create_payment_reminders(company):
                         highest_level = level
                     total_before_charges += invoice.outstanding_amount
                     invoices.append(new_invoice)
+                    currency = invoice.currency
                 # find reminder charge
                 charge_matches = frappe.get_all("ERPNextSwiss Settings Payment Reminder Charge", 
                     filters={ 'reminder_level': highest_level },
@@ -98,7 +100,8 @@ def create_payment_reminders(company):
                     'total_before_charge': total_before_charges,
                     'reminder_charge': reminder_charge,
                     'total_with_charge': (total_before_charges + reminder_charge),
-                    'company': company
+                    'company': company,
+                    'currency': currency
                 })
                 reminder_record = new_reminder.insert()
                 if int(auto_submit) == 1:

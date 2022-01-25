@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018-2020, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2018-2022, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
 import frappe
 from frappe import _
-import datetime
+from erpnextswiss.erpnextswiss.jinja import get_week_from_date
 
 # try to get building number from address line
 def get_building_number(address_line):
@@ -136,8 +136,3 @@ def get_scor_reference(reference):
     check_digit = '{num:02d}'.format(num=(98 - mod))
     # return full code
     return "RF{check}{reference}".format(check=check_digit, reference=reference)
-    
-def get_week_from_date(date):
-    if not isinstance(date, datetime.datetime):
-        date = datetime.datetime.strptime(date, "%Y-%m-%d")
-    return date.isocalendar()[1]

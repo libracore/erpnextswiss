@@ -1,10 +1,11 @@
-# Copyright (c) 2021, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2021-2022, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
 
 from __future__ import unicode_literals
 import frappe
 from frappe import _
 import datetime, calendar
+from erpnextswiss.erpnextswiss.report.worktime_overview.worktime_overview import get_employee_overtime, get_target_time
 
 def execute(filters=None):
     columns = get_columns()
@@ -15,8 +16,8 @@ def get_columns():
     return [
         {"label": _("Day"), "fieldname": "day", "fieldtype": "Date", "width": 80},
         {"label": _("Working Hours"), "fieldname": "working_hours", "fieldtype": "Float", "precision": 2, "width": 120},
-        {"label": _("Work Start"), "fieldname": "work_start", "fieldtype": "Datetime", "width": 170},
-        {"label": _("Work End"), "fieldname": "work_end", "fieldtype": "Datetime", "width": 170},
+        {"label": _("Work Start"), "fieldname": "work_start", "fieldtype": "Data", "width": 170},
+        {"label": _("Work End"), "fieldname": "work_end", "fieldtype": "Data", "width": 170},
         {"label": _("Breaks"), "fieldname": "breaks", "fieldtype": "Data", "width": 150},
         {"label": _("Remarks"), "fieldname": "remarks", "fieldtype": "Data", "width": 150},
         {"label": _(" "), "fieldname": "blank", "width": 20}
@@ -91,8 +92,30 @@ def get_data(filters):
             'breaks': ", ".join(breaks)
         })
     
+    # totals
+    lookup_filters = frappe._dict()
+    lookup_filters.employee = filters.employee
+    lookup_filters.from_date = datetime.date(filters.year, filters.month, 1)
+    lookup_filters.to_date = datetime.date(filters.year, filters.month, num_days)
+    lookup_filters.company = filters.company
+    
+    target_hours = get_target_time(lookup_filters, filters.employee)
+    monthly_overtime = get_employee_overtime(lookup_filters)
+    
+    # set full year
+    lookup_filters.from_date = datetime.date(filters.year, 1, 1)
+    annual_overtime = get_employee_overtime(lookup_filters)
+        
     data.append({
         'working_hours': total_working_hours,
-        'remarks': _('Total')
+        'work_start': _("Totel"),
+        'work_end': _("Target: {0} h").format(target_hours)
+    })
+    
+    data.append({
+        'work_start': _("Overtime"),
+        'work_end': _("Annual: {0} h").format(annual_overtime),
+        'breaks': _("Monthly: {0} h").format(monthly_overtime),
+        'remarks': frappe.get_value("Employee", filters.employee, "employee_name")
     })
     return data

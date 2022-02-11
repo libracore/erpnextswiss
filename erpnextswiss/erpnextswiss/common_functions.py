@@ -39,6 +39,7 @@ def get_city(address_line):
 
 # get primary address
 # target types: Customer, Supplier, Company
+@frappe.whitelist()
 def get_primary_address(target_name, target_type="Customer"):
     sql_query = """SELECT 
             `tabAddress`.`address_line1`, 

@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2020, libracore and contributors
+# Copyright (c) 2016-2022, libracore and contributors
 # For license information, please see license.txt
 
 from __future__ import unicode_literals
@@ -17,7 +17,8 @@ def execute(filters=None):
 
     # define columns
     columns = [
-        {"label": _("Document"), "fieldname": "name", "fieldtype": "Data", "width": 120},
+        {"label": _("Doctype"), "fieldname": "doctype", "fieldtype": "Link", "options": "DocType", "width": 10},
+        {"label": _("Document"), "fieldname": "name", "fieldtype": "Dynamic Link", "options": "doctype", "width": 120},
         {"label": _("Date"), "fieldname": "posting_date", "fieldtype": "Date", "width": 100},
         {"label": _("Total"), "fieldname": "base_grand_total", "fieldtype": "Currency", "width": 100},
         {"label": _("Taxes and Charges"), "fieldname": "taxes_and_charges", "fieldtype": "Data", "width": 150},

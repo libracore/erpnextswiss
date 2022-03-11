@@ -221,7 +221,10 @@ class PaymentProposal(Document):
             new_payment.receiver_country = country           
             new_payment.amount = amount
             new_payment.currency = currency
-            new_payment.reference = reference
+            if len(reference) > 140:
+                new_payment.reference = "{0}...".format(reference[:136])
+            else:
+                new_payment.reference = reference
             new_payment.execution_date = pay_date
             new_payment.esr_reference = esr_reference
             new_payment.esr_participation_number = esr_participation_number   

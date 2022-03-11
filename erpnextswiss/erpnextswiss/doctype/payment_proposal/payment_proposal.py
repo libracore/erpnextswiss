@@ -112,6 +112,8 @@ class PaymentProposal(Document):
             if amount > 0:
                 supl = frappe.get_doc("Supplier", supplier)
                 addr = frappe.get_doc("Address", address)
+                if payment_type == "ESR":           # prevent if last invoice was by ESR, but others are also present -> pay as IBAN
+                    payment_type = "IBAN"
                 self.add_payment(supl.supplier_name, supl.iban, payment_type,
                     addr.address_line1, "{0} {1}".format(addr.pincode, addr.city), addr.country,
                     amount, currency, " ".join(references), exec_date, bic=supl.bic)

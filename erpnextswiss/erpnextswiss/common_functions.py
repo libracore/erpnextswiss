@@ -4,6 +4,7 @@
 import frappe
 from frappe import _
 from erpnextswiss.erpnextswiss.jinja import get_week_from_date
+from frappe.utils import cint
 
 # try to get building number from address line
 def get_building_number(address_line):
@@ -137,3 +138,16 @@ def get_scor_reference(reference):
     check_digit = '{num:02d}'.format(num=(98 - mod))
     # return full code
     return "RF{check}{reference}".format(check=check_digit, reference=reference)
+
+def get_recursive_item_groups(item_group):
+    children = frappe.get_list("Item Group", filters={'parent_item_group': item_group}, fields=['name', 'is_group'])
+    item_groups = [item_group]
+    for c in children:
+        if cint(c['is_group']) == 1:
+            sub_groups = get_recursive_item_groups(c['name'])
+            for s in sub_groups:
+                if s not in item_groups:
+                    item_groups.append(s)
+        if c['name'] not in item_groups:
+            item_groups.append(c['name'])
+    return item_groups

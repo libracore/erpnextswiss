@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018-2020, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2018-2022, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
 
 from __future__ import unicode_literals
@@ -9,7 +9,7 @@ from frappe import _
 from datetime import datetime, timedelta
 import time
 from erpnextswiss.erpnextswiss.common_functions import get_building_number, get_street_name, get_pincode, get_city, get_primary_address
-import cgi          # used to escape xml content
+import html          # used to escape xml content
 from frappe.utils import cint
 from unidecode import unidecode     # used to remove German/French-type special characters from bank identifieres
 
@@ -112,6 +112,8 @@ class PaymentProposal(Document):
             if amount > 0:
                 supl = frappe.get_doc("Supplier", supplier)
                 addr = frappe.get_doc("Address", address)
+                if payment_type == "ESR":           # prevent if last invoice was by ESR, but others are also present -> pay as IBAN
+                    payment_type = "IBAN"
                 self.add_payment(supl.supplier_name, supl.iban, payment_type,
                     addr.address_line1, "{0} {1}".format(addr.pincode, addr.city), addr.country,
                     amount, currency, " ".join(references), exec_date, bic=supl.bic)
@@ -200,6 +202,15 @@ class PaymentProposal(Document):
     def add_payment(self, receiver_name, iban, payment_type, address_line1, 
         address_line2, country, amount, currency, reference, execution_date, 
         esr_reference=None, esr_participation_number=None, bic=None, is_salary=0):
+            # prepare payment date
+            if isinstance(execution_date,datetime):
+                pay_date = execution_date
+            else:
+                pay_date = datetime.strptime(execution_date, "%Y-%m-%d")
+            # assure that payment date is not in th past
+            if pay_date.date() < datetime.now().date():
+                pay_date = datetime.now().date()
+            # append payment record
             new_payment = self.append('payments', {})
             new_payment.receiver = receiver_name
             new_payment.iban = iban
@@ -210,8 +221,11 @@ class PaymentProposal(Document):
             new_payment.receiver_country = country           
             new_payment.amount = amount
             new_payment.currency = currency
-            new_payment.reference = reference
-            new_payment.execution_date = execution_date
+            if len(reference) > 140:
+                new_payment.reference = "{0}...".format(reference[:136])
+            else:
+                new_payment.reference = reference
+            new_payment.execution_date = pay_date
             new_payment.esr_reference = esr_reference
             new_payment.esr_participation_number = esr_participation_number   
             new_payment.is_salary = is_salary   
@@ -260,12 +274,12 @@ class PaymentProposal(Document):
         control_sum = 0.0
         # define company address
         data['company'] = {
-            'name': cgi.escape(self.company)
+            'name': html.escape(self.company)
         }
         company_address = get_primary_address(target_name=self.company, target_type="Company")
         if company_address:
-            data['company']['address_line1'] = cgi.escape(company_address.address_line1)
-            data['company']['address_line2'] = "{0} {1}".format(cgi.escape(company_address.pincode), cgi.escape(company_address.city))
+            data['company']['address_line1'] = html.escape(company_address.address_line1)
+            data['company']['address_line2'] = "{0} {1}".format(html.escape(company_address.pincode), html.escape(company_address.city))
             data['company']['country_code'] = company_address['country_code']
             # crop lines if required (length limitation)
             data['company']['address_line1'] = data['company']['address_line1'][:35]
@@ -287,7 +301,7 @@ class PaymentProposal(Document):
                 'batch': "true",             # batch booking (true or false; recommended true)
                 'required_execution_date': "{0}".format(payment.execution_date.split(" ")[0]),         # Requested Execution Date (e.g. 2010-02-22, remove time element)
                 'debtor': {                    # debitor (technically ignored, but recommended)  
-                    'name': cgi.escape(self.company),
+                    'name': html.escape(self.company),
                     'account': "{0}".format(payment_account.iban.replace(" ", "")),
                     'bic': "{0}".format(payment_account.bic)
                 },
@@ -296,9 +310,9 @@ class PaymentProposal(Document):
                 'currency': payment.currency,
                 'amount': round(payment.amount, 2),
                 'creditor': {
-                    'name': cgi.escape(payment.receiver),
-                    'address_line1': cgi.escape(payment.receiver_address_line1[:35]),
-                    'address_line2': cgi.escape(payment.receiver_address_line2[:35]),
+                    'name': html.escape(payment.receiver),
+                    'address_line1': html.escape(payment.receiver_address_line1[:35]),
+                    'address_line2': html.escape(payment.receiver_address_line2[:35]),
                     'country_code': frappe.get_value("Country", payment.receiver_country, "code").upper()
                 },
                 'is_salary': payment.is_salary
@@ -342,17 +356,17 @@ class PaymentProposal(Document):
         # creditor information
         payment_content += make_line("        <Cdtr>") 
         # name of the creditor/supplier
-        payment_content += make_line("          <Nm>" + cgi.escape(payment.receiver)  + "</Nm>")
+        payment_content += make_line("          <Nm>" + html.escape(payment.receiver)  + "</Nm>")
         # address of creditor/supplier (should contain at least country and first address line
         payment_content += make_line("          <PstlAdr>")
         # street name
-        payment_content += make_line("            <StrtNm>{0}</StrtNm>".format(cgi.escape(get_street_name(payment.receiver_address_line1))))
+        payment_content += make_line("            <StrtNm>{0}</StrtNm>".format(html.escape(get_street_name(payment.receiver_address_line1))))
         # building number
-        payment_content += make_line("            <BldgNb>{0}</BldgNb>".format(cgi.escape(get_building_number(payment.receiver_address_line1))))
+        payment_content += make_line("            <BldgNb>{0}</BldgNb>".format(html.escape(get_building_number(payment.receiver_address_line1))))
         # postal code
-        payment_content += make_line("            <PstCd>{0}</PstCd>".format(cgi.escape(get_pincode(payment.receiver_address_line2))))
+        payment_content += make_line("            <PstCd>{0}</PstCd>".format(html.escape(get_pincode(payment.receiver_address_line2))))
         # town name
-        payment_content += make_line("            <TwnNm>{0}</TwnNm>".format(cgi.escape(get_city(payment.receiver_address_line2))))
+        payment_content += make_line("            <TwnNm>{0}</TwnNm>".format(html.escape(get_city(payment.receiver_address_line2))))
         country = frappe.get_doc("Country", payment.receiver_country)
         payment_content += make_line("            <Ctry>" + country.code.upper() + "</Ctry>")
         payment_content += make_line("          </PstlAdr>")

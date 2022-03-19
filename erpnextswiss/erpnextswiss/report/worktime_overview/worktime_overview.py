@@ -285,3 +285,7 @@ def get_employee_overview_html(employee, company, from_date, to_date):
         html = _('<div>No data found</div>')
     
     return html
+
+def get_employee_overtime(filters):   
+    data = get_data_of_employee(filters)
+    return round(data[0][4], 3)

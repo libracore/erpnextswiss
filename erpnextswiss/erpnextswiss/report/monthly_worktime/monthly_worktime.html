@@ -1,0 +1,41 @@
+<meta name="pdfkit-orientation" content="Portrait" />
+
+<h2>{%= __("Monthly worktime") %}</h2>
+<h3>{%= data[data.length - 2].remarks %} ({%= filters.employee %}), {%= filters.year %}-{%= filters.month %}</h3>
+
+<table>
+    <thead>
+        <tr>
+            <td style="border: 1px solid silver; ">{%= __("Day") %}</td>
+            <td style="border: 1px solid silver; ">{%= __("Working Hours") %}</td>
+            <td style="border: 1px solid silver; ">{%= __("Work Start") %}</td>
+            <td style="border: 1px solid silver; ">{%= __("Work End") %}</td>
+            <td style="border: 1px solid silver; ">{%= __("Breaks") %}</td>
+            <td style="border: 1px solid silver; ">{%= __("Remarks") %}</td>
+        </tr>
+    </thead>
+    <tbody>
+    {% for (var i = 0; i < (data.length - 1); i++ ) { %}
+        <tr>
+            <td style="border: 1px solid gainsboro; padding-top: 3px !important; padding-bottom: 3px !important; ">
+                {%= frappe.datetime.str_to_user(data[i].day) %}
+            </td>
+            <td style="border: 1px solid gainsboro; padding-top: 3px !important; padding-bottom: 3px !important; ">
+                {%= data[i].working_hours %}
+            </td>
+            <td style="border: 1px solid gainsboro; padding-top: 3px !important; padding-bottom: 3px !important; ">
+                {%= data[i].work_start %}
+            </td>
+            <td style="border: 1px solid gainsboro; padding-top: 3px !important; padding-bottom: 3px !important; ">
+                {%= data[i].work_end %}
+            </td>
+            <td style="border: 1px solid gainsboro; padding-top: 3px !important; padding-bottom: 3px !important; ">
+                {%= data[i].breaks %}
+            </td>
+            <td style="border: 1px solid gainsboro; padding-top: 3px !important; padding-bottom: 3px !important; ">
+                {%= data[i].remarks %}
+            </td>
+        </tr>
+    {% } %}
+    </tbody>
+</table>

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018-2020, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2018-2021, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
 #
 #
@@ -18,7 +18,12 @@ Creates an XML file from a sales invoice
 def create_zugferd_pdf(docname, verify=True, format=None, doc=None, doctype="Sales Invoice", no_letterhead=0):
     try:       
         html = frappe.get_print(doctype, docname, format, doc=doc, no_letterhead=no_letterhead)
-        pdf = get_pdf(html)
+        try:
+            pdf = get_pdf(html, print_format=format)
+        except:
+            # this is a fallback to Frappe ERPNext that does not support dynamic print format options (such as smart shrinking)
+            pdf = get_pdf(html)
+            
         xml = create_zugferd_xml(docname)
         
         if xml: 

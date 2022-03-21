@@ -7,14 +7,19 @@ from bs4 import BeautifulSoup
 from frappe.utils.data import getdate
 
 @frappe.whitelist()
-def deactiviate_pricing_rule(sinv):
+def deactiviate_pricing_rule(sinv, short=0, long=0):
     sinv = frappe.get_doc("Sales Invoice", sinv)
     sinv.ignore_pricing_rule = 1
+    sinv.f1 = 1
     sinv.save()
-    return
+    frappe.db.commit()
+    if int(short) + int(long) > 0:
+        clear_free_pos(sinv.name, short, long)
+    else:
+        return
 
 @frappe.whitelist()
-def clear_free_pos(sinv):
+def clear_free_pos(sinv, short=0, long=0):
     sinv = frappe.get_doc("Sales Invoice", sinv)
     
     items_to_remove = []
@@ -28,11 +33,16 @@ def clear_free_pos(sinv):
     for item in items_to_remove:
         sinv.items.remove(item)
     
+    sinv.f2 = 1
     sinv.save()
-    return
+    frappe.db.commit()
+    if int(short) + int(long) > 0:
+        round_qty_to_quarter(sinv.name, short, long)
+    else:
+        return
 
 @frappe.whitelist()
-def round_qty_to_quarter(sinv):
+def round_qty_to_quarter(sinv, short=0, long=0):
     sinv = frappe.get_doc("Sales Invoice", sinv)
     
     for item in sinv.items:
@@ -40,8 +50,13 @@ def round_qty_to_quarter(sinv):
             new_qty = float(math.ceil(item.qty * 4)) / 4
             item.qty = new_qty
     
+    sinv.f3 = 1
     sinv.save()
-    return
+    frappe.db.commit()
+    if int(short) + int(long) > 0:
+        contract_items_based_on_date(sinv.name, long)
+    else:
+        return
 
 @frappe.whitelist()
 def set_customer_price_list(sinv):
@@ -53,11 +68,13 @@ def set_customer_price_list(sinv):
         if frappe.db.exists("Item Price", {"price_list": sinv.customer, "item_code": item.item_code}):
             item.rate = frappe.db.get_value("Item Price", {"price_list": sinv.customer, "item_code": item.item_code}, ["price_list_rate"])
     
+    sinv.f5 = 1
     sinv.save()
+    frappe.db.commit()
     return
 
 @frappe.whitelist()
-def contract_items_based_on_date(sinv):
+def contract_items_based_on_date(sinv, long=0):
     sinv = frappe.get_doc("Sales Invoice", sinv)
     
     # ergänzen mit fallback Datum wenn Datum fehlt
@@ -116,5 +133,10 @@ def contract_items_based_on_date(sinv):
     for i, item in enumerate(sorted(sinv.items, key=lambda item: item.datum), start=1):
         item.idx = i
     
+    sinv.f4 = 1
     sinv.save()
-    return
+    frappe.db.commit()
+    if int(long) > 0:
+        set_customer_price_list(sinv.name)
+    else:
+        return

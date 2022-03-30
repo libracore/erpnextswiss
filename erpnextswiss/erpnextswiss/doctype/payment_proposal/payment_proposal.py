@@ -390,8 +390,8 @@ def create_payment_proposal(date=None, company=None):
     sql_query = ("""SELECT 
                   `tabPurchase Invoice`.`supplier` AS `supplier`, 
                   `tabPurchase Invoice`.`name` AS `name`,
-                  /* if company currency, use outstanding amount, otherwise grand total (in currency) */
-                  (IF (`tabPurchase Invoice`.`base_grand_total` = `tabPurchase Invoice`.`grand_total`,
+                  /* if creditor currency = document currency, use outstanding amount, otherwise grand total (in currency) */
+                  (IF (`tabPurchase Invoice`.`currency` = `tabAccount`.`account_currency`,
                    `tabPurchase Invoice`.`outstanding_amount`,
                    `tabPurchase Invoice`.`grand_total`
                    )) AS `outstanding_amount`,
@@ -413,6 +413,7 @@ def create_payment_proposal(date=None, company=None):
                 FROM `tabPurchase Invoice` 
                 LEFT JOIN `tabPayment Terms Template` ON `tabPurchase Invoice`.`payment_terms_template` = `tabPayment Terms Template`.`name`
                 LEFT JOIN `tabSupplier` ON `tabPurchase Invoice`.`supplier` = `tabSupplier`.`name`
+                LEFT JOIN `tabAccount` ON `tabAccount`.`name` = `tabPurchase Invoice`.`credit_to`
                 WHERE `tabPurchase Invoice`.`docstatus` = 1 
                   AND `tabPurchase Invoice`.`outstanding_amount` > 0
                   AND ((`tabPurchase Invoice`.`due_date` <= '{date}') 

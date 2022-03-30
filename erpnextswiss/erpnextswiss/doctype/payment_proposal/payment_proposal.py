@@ -402,8 +402,8 @@ def create_payment_proposal(date=None, company=None):
                      `tabPurchase Invoice`.`due_date`, 
                      (DATE_ADD(`tabPurchase Invoice`.`posting_date`, INTERVAL `tabPayment Terms Template`.`skonto_days` DAY))
                      )) AS `skonto_date`,
-                  /* if company currency, use outstanding amount, otherwise grand total (in currency) */
-                  (IF (`tabPurchase Invoice`.`base_grand_total` = `tabPurchase Invoice`.`grand_total`,
+                  /* if creditor currency = document currency, use outstanding amount, otherwise grand total (in currency) */
+                  (IF (`tabPurchase Invoice`.`currency` = `tabAccount`.`account_currency`,
                     (((100 - IFNULL(`tabPayment Terms Template`.`skonto_percent`, 0))/100) * `tabPurchase Invoice`.`outstanding_amount`),
                     (((100 - IFNULL(`tabPayment Terms Template`.`skonto_percent`, 0))/100) * `tabPurchase Invoice`.`grand_total`)
                     )) AS `skonto_amount`,

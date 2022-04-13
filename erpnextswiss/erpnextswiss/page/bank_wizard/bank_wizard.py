@@ -213,14 +213,20 @@ def read_camt053(content, account):
             iban = "n/a"
             frappe.log_error("Unable to read structure. Please make sure that you have selected the correct format.", "BankWizard read_camt053")
             
+    # verify iban
+    account_iban = frappe.get_value("Account", account, "iban")
+    if account_iban and account_iban.replace(" ", "") != iban.replace(" ", ""):
+        frappe.log_error( _("IBAN mismatch {0} (account) vs. {1} (file)").format(account_iban, iban), _("Bank Import IBAN validation") )
+        frappe.msgprint( _("IBAN mismatch {0} (account) vs. {1} (file)").format(account_iban, iban), _("Bank Import IBAN validation") )
+
     # transactions
-    #new_payment_entries = read_camt_transactions(doc['Document']['BkToCstmrStmt']['Stmt']['Ntry'], bank, account, auto_submit)
     entries = soup.find_all('ntry')
     transactions = read_camt_transactions(entries, account, settings)
     
     return { 'transactions': transactions } 
     
 def read_camt_transactions(transaction_entries, account, settings):
+    company = frappe.get_value("Account", account, "company")
     txns = []
     for entry in transaction_entries:
         if six.PY2:
@@ -410,7 +416,9 @@ def read_camt_transactions(transaction_entries, account, settings):
                 #    type=credit_debit, date=date, currency=currency, amount=amount, unique=unique_reference, party=party_name, address=party_address, iban=party_iban, remarks=transaction_reference))
                 
                 # check if this transaction is already recorded
-                match_payment_entry = frappe.get_all('Payment Entry', filters={'reference_no': unique_reference}, fields=['name'])
+                match_payment_entry = frappe.get_all('Payment Entry', 
+                    filters={'reference_no': unique_reference, 'company': company}, 
+                    fields=['name'])
                 if match_payment_entry:
                     frappe.log_error("Transaction {0} is already imported in {1}.".format(unique_reference, match_payment_entry[0]['name']))
                 else:

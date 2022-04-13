@@ -112,6 +112,8 @@ class PaymentProposal(Document):
             if amount > 0:
                 supl = frappe.get_doc("Supplier", supplier)
                 addr = frappe.get_doc("Address", address)
+                if payment_type == "ESR":           # prevent if last invoice was by ESR, but others are also present -> pay as IBAN
+                    payment_type = "IBAN"
                 self.add_payment(supl.supplier_name, supl.iban, payment_type,
                     addr.address_line1, "{0} {1}".format(addr.pincode, addr.city), addr.country,
                     amount, currency, " ".join(references), exec_date, bic=supl.bic)
@@ -219,7 +221,10 @@ class PaymentProposal(Document):
             new_payment.receiver_country = country           
             new_payment.amount = amount
             new_payment.currency = currency
-            new_payment.reference = reference
+            if len(reference) > 140:
+                new_payment.reference = "{0}...".format(reference[:136])
+            else:
+                new_payment.reference = reference
             new_payment.execution_date = pay_date
             new_payment.esr_reference = esr_reference
             new_payment.esr_participation_number = esr_participation_number   
@@ -385,8 +390,8 @@ def create_payment_proposal(date=None, company=None):
     sql_query = ("""SELECT 
                   `tabPurchase Invoice`.`supplier` AS `supplier`, 
                   `tabPurchase Invoice`.`name` AS `name`,
-                  /* if company currency, use outstanding amount, otherwise grand total (in currency) */
-                  (IF (`tabPurchase Invoice`.`base_grand_total` = `tabPurchase Invoice`.`grand_total`,
+                  /* if creditor currency = document currency, use outstanding amount, otherwise grand total (in currency) */
+                  (IF (`tabPurchase Invoice`.`currency` = `tabAccount`.`account_currency`,
                    `tabPurchase Invoice`.`outstanding_amount`,
                    `tabPurchase Invoice`.`grand_total`
                    )) AS `outstanding_amount`,
@@ -397,8 +402,8 @@ def create_payment_proposal(date=None, company=None):
                      `tabPurchase Invoice`.`due_date`, 
                      (DATE_ADD(`tabPurchase Invoice`.`posting_date`, INTERVAL `tabPayment Terms Template`.`skonto_days` DAY))
                      )) AS `skonto_date`,
-                  /* if company currency, use outstanding amount, otherwise grand total (in currency) */
-                  (IF (`tabPurchase Invoice`.`base_grand_total` = `tabPurchase Invoice`.`grand_total`,
+                  /* if creditor currency = document currency, use outstanding amount, otherwise grand total (in currency) */
+                  (IF (`tabPurchase Invoice`.`currency` = `tabAccount`.`account_currency`,
                     (((100 - IFNULL(`tabPayment Terms Template`.`skonto_percent`, 0))/100) * `tabPurchase Invoice`.`outstanding_amount`),
                     (((100 - IFNULL(`tabPayment Terms Template`.`skonto_percent`, 0))/100) * `tabPurchase Invoice`.`grand_total`)
                     )) AS `skonto_amount`,
@@ -408,6 +413,7 @@ def create_payment_proposal(date=None, company=None):
                 FROM `tabPurchase Invoice` 
                 LEFT JOIN `tabPayment Terms Template` ON `tabPurchase Invoice`.`payment_terms_template` = `tabPayment Terms Template`.`name`
                 LEFT JOIN `tabSupplier` ON `tabPurchase Invoice`.`supplier` = `tabSupplier`.`name`
+                LEFT JOIN `tabAccount` ON `tabAccount`.`name` = `tabPurchase Invoice`.`credit_to`
                 WHERE `tabPurchase Invoice`.`docstatus` = 1 
                   AND `tabPurchase Invoice`.`outstanding_amount` > 0
                   AND ((`tabPurchase Invoice`.`due_date` <= '{date}') 

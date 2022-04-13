@@ -13,7 +13,7 @@ def attach_pdf(doctype, docname, event=None, print_format=None):
     args = {
         "doctype": doctype,
         "name": docname,
-        "title": (frappe.get_value(doctype, docname, "title") or doc.name),
+        "title": (frappe.get_value(doctype, docname, "title") or docname),
         "lang": (frappe.get_value(doctype, docname, "language") or fallback_language),
         "print_format": print_format
     }

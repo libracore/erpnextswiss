@@ -412,12 +412,12 @@ def read_camt_transactions(transaction_entries, account, settings):
                             except:
                                 transaction_reference = unique_reference
                 # debug: show collected record in error log
-                frappe.log_error("""type:{type}\ndate:{date}\namount:{currency} {amount}\nunique ref:{unique}
-                    party:{party}\nparty address:{address}\nparty iban:{iban}\nremarks:{remarks}
-                    payment_instruction_id:{payment_instruction_id}""".format(
-                    type=credit_debit, date=date, currency=currency, amount=amount, unique=unique_reference, 
-                    party=party_name, address=party_address, iban=party_iban, remarks=transaction_reference,
-                    payment_instruction_id=payment_instruction_id))
+                #frappe.log_error("""type:{type}\ndate:{date}\namount:{currency} {amount}\nunique ref:{unique}
+                #    party:{party}\nparty address:{address}\nparty iban:{iban}\nremarks:{remarks}
+                #    payment_instruction_id:{payment_instruction_id}""".format(
+                #    type=credit_debit, date=date, currency=currency, amount=amount, unique=unique_reference, 
+                #    party=party_name, address=party_address, iban=party_iban, remarks=transaction_reference,
+                #    payment_instruction_id=payment_instruction_id))
                 
                 # check if this transaction is already recorded
                 match_payment_entry = frappe.get_all('Payment Entry', 

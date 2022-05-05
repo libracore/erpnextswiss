@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018-2021, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2018-2022, libracore (https://www.libracore.com) and contributors
 # Part of this work is derived from pdf_on_submit, Copyright (C) 2019  Raffael Meyer <raffael@alyf.de>
 # For license information, please see license.txt
 import frappe
@@ -13,7 +13,7 @@ def attach_pdf(doctype, docname, event=None, print_format=None):
     args = {
         "doctype": doctype,
         "name": docname,
-        "title": (frappe.get_value(doctype, docname, "title") or doc.name),
+        "title": (frappe.get_value(doctype, docname, "title") or docname),
         "lang": (frappe.get_value(doctype, docname, "language") or fallback_language),
         "print_format": print_format
     }
@@ -24,7 +24,7 @@ def attach_pdf(doctype, docname, event=None, print_format=None):
 def enqueue(args):
     """Add method `execute` with given args to the queue."""
     frappe.enqueue(method=execute, queue='long',
-                   timeout=30, is_async=True, **args)
+                   timeout=90, is_async=True, **args)
     return
 
 def execute(doctype, name, title, lang=None, print_format=None):

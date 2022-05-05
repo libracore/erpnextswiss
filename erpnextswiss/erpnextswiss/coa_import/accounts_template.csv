@@ -77,8 +77,9 @@
 "Kurzfristiges Fremdkapital","2 - Passiven","20","1","Liability","Balance Sheet","CHF",,"0.0","No",,,,
 "Verbindlichkeiten aus Lieferungen und Leistungen","20 - Kurzfristiges Fremdkapital","200","1","Liability","Balance Sheet","CHF",,"0.0","No",,,,
 "Verbindlichkeiten aus Lief./Leist. CHF","200 - Verbindlichkeiten aus Lieferungen und Leistungen","2000","0","Liability","Balance Sheet","CHF","Payable","0.0","No",,,,"default_payable_account"
-"Verbindlichkeiten aus Lief./Leistg. EURO","200 - Verbindlichkeiten aus Lieferungen und Leistungen","2001","0","Liability","Balance Sheet","EUR","Payable","0.0","No",,,,"default_expense_claim_payable_account"
+"Verbindlichkeiten aus Lief./Leistg. EURO","200 - Verbindlichkeiten aus Lieferungen und Leistungen","2001","0","Liability","Balance Sheet","EUR","Payable","0.0","No",,,,
 "Lohndurchlaufskonto","200 - Verbindlichkeiten aus Lieferungen und Leistungen","2002","0","Liability","Balance Sheet","CHF","Payable","0.0","No",,,,"default_payroll_payable_account"
+"Verbindlichkeiten Spesen","200 - Verbindlichkeiten aus Lieferungen und Leistungen","2003","0","Liability","Balance Sheet","CHF","Payable","0.0","No",,,,"default_expense_claim_payable_account"
 "Erhaltene Anzahlungen von Dritten","200 - Verbindlichkeiten aus Lieferungen und Leistungen","2030","0","Liability","Balance Sheet","CHF",,"0.0","No",,,,
 "Empfangener nicht verrechneter Lagerbestand","200 - Verbindlichkeiten aus Lieferungen und Leistungen","2050","0","Liability","Balance Sheet","CHF","Stock Received But Not Billed","0.0","No",,,,"stock_received_but_not_billed"
 "Kuzfristige verzinsliche Verbindlichkeiten","20 - Kurzfristiges Fremdkapital","210","1","Liability","Balance Sheet","CHF",,"0.0","No",,,,

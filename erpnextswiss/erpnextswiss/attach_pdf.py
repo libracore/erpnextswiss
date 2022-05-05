@@ -15,7 +15,7 @@ def attach_pdf(doctype, docname, event=None, print_format=None, hashname=None, i
     args = {
         "doctype": doctype,
         "name": docname,
-        "title": (frappe.get_value(doctype, docname, "title") or doc.name),
+        "title": (frappe.get_value(doctype, docname, "title") or docname),
         "lang": (frappe.get_value(doctype, docname, "language") or fallback_language),
         "print_format": print_format,
         "hashname": hashname,
@@ -31,7 +31,7 @@ def attach_pdf(doctype, docname, event=None, print_format=None, hashname=None, i
 def enqueue(args):
     """Add method `execute` with given args to the queue."""
     frappe.enqueue(method=execute, queue='long',
-                   timeout=30, is_async=True, **args)
+                   timeout=90, is_async=True, **args)
     return
 
 def execute(doctype, name, title, lang=None, print_format=None, hashname=None, is_private=1):

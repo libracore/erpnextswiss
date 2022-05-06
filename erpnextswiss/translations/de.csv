@@ -122,7 +122,7 @@ Page: match_payments,No matches found.,Keine Treffer gefunden
 Page: match_payments,Auto match by ID,Abgleich per ID
 Page: match_payments,Auto match by ESR,Abgleich per ESR
 Page: payment_export,Some payments were skipped due to errors (check the payment file for details):,Einige Zahlungen wurden wegen Fehlern übersprungen (Zahlungsdatei enthält Details):
-DocType: Supplier,ESR Participation Number,ESR Teilnehmernummer
+DocType: Supplier,ESR Participation Number / QR-IBAN,ESR Teilnehmernummer/QR-IBAN
 DocType: Purchase Invoice,ESR Reference Number,ESR Referenznummer
 DocType: Salary Certificate,Salary Certificate,Lohnausweis
 DocType: Salary Certificate,Please save the record before populating it with data,Bitte speichern Sie den Datensatz bevor Daten eingelesen werden

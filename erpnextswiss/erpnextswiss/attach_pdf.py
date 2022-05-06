@@ -10,7 +10,7 @@ import hashlib
 import time
 
 @frappe.whitelist()
-def attach_pdf(doctype, docname, event=None, print_format=None, hashname=None, is_private=1, async=1):
+def attach_pdf(doctype, docname, event=None, print_format=None, hashname=None, is_private=1, background=1):
     fallback_language = frappe.db.get_single_value("System Settings", "language") or "en"
     args = {
         "doctype": doctype,
@@ -22,7 +22,7 @@ def attach_pdf(doctype, docname, event=None, print_format=None, hashname=None, i
         "is_private": is_private
     }
 
-    if async == 1:
+    if background == 1:
         enqueue(args)
     else:
         execute(**args)

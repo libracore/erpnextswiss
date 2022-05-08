@@ -1,0 +1,47 @@
+{
+ "creation": "2022-05-08 20:33:33.615799",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "edi_connection",
+  "date"
+ ],
+ "fields": [
+  {
+   "fieldname": "edi_connection",
+   "fieldtype": "Link",
+   "label": "EDI Connection",
+   "options": "EDI Connection",
+   "read_only": 1
+  },
+  {
+   "fieldname": "date",
+   "fieldtype": "Datetime",
+   "label": "Date"
+  }
+ ],
+ "modified": "2022-05-08 20:33:54.842153",
+ "modified_by": "Administrator",
+ "module": "ERPNextSwiss",
+ "name": "EDI File",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

@@ -12,5 +12,11 @@ frappe.ui.form.on('Supplier', {
                 }
             });
         }
+    },
+    before_save(frm) {
+        if ((frm.doc.default_payment_method === "IBAN") && (!frm.doc.iban) && (frm.doc.esr_participation_number)) {
+            // default to ESR if ESR number is available but IBAN is not
+            cur_frm.set_value("default_payment_method", "ESR");
+        }
     }
 });

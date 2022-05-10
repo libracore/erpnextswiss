@@ -45,6 +45,21 @@ frappe.ui.form.on('Purchase Invoice', {
                 }
             });     
         }
+    },
+    supplier: function(frm) {
+        if (frm.doc.supplier) {
+            frappe.call({
+                'method': "frappe.client.get",
+                'args': {
+                    'doctype': "Supplier",
+                    "name": frm.doc.supplier
+                },
+                "callback": function(response) {
+                    var supplier = response.message;
+                    cur_frm.set_value("payment_type", supplier.default_payment_method);
+                }
+            });
+        }
     }
 });
 

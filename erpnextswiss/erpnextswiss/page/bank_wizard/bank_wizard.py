@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2017-2020, libracore and contributors
+# Copyright (c) 2017-2022, libracore and contributors
 # License: AGPL v3. See LICENCE
 
 from __future__ import unicode_literals
@@ -412,8 +412,12 @@ def read_camt_transactions(transaction_entries, account, settings):
                             except:
                                 transaction_reference = unique_reference
                 # debug: show collected record in error log
-                #frappe.log_error("type:{type}\ndate:{date}\namount:{currency} {amount}\nunique ref:{unique}\nparty:{party}\nparty address:{address}\nparty iban:{iban}\nremarks:{remarks}".format(
-                #    type=credit_debit, date=date, currency=currency, amount=amount, unique=unique_reference, party=party_name, address=party_address, iban=party_iban, remarks=transaction_reference))
+                #frappe.log_error("""type:{type}\ndate:{date}\namount:{currency} {amount}\nunique ref:{unique}
+                #    party:{party}\nparty address:{address}\nparty iban:{iban}\nremarks:{remarks}
+                #    payment_instruction_id:{payment_instruction_id}""".format(
+                #    type=credit_debit, date=date, currency=currency, amount=amount, unique=unique_reference, 
+                #    party=party_name, address=party_address, iban=party_iban, remarks=transaction_reference,
+                #    payment_instruction_id=payment_instruction_id))
                 
                 # check if this transaction is already recorded
                 match_payment_entry = frappe.get_all('Payment Entry', 
@@ -434,7 +438,11 @@ def read_camt_transactions(transaction_entries, account, settings):
                             try:
                                 payment_instruction_fields = payment_instruction_id.split("-")
                                 payment_instruction_row = int(payment_instruction_fields[-1]) + 1
-                                payment_proposal_id = payment_instruction_fields[1]
+                                if len(payment_instruction_fields) > 3:
+                                    # revision in payment proposal
+                                    payment_proposal_id = "{0}-{1}".format(payment_instruction_fields[1], payment_instruction_fields[2])
+                                else:
+                                    payment_proposal_id = payment_instruction_fields[1]
                                 # find original instruction record
                                 payment_proposal_payments = frappe.get_all("Payment Proposal Payment", 
                                     filters={'parent': payment_proposal_id, 'idx': payment_instruction_row},
@@ -744,6 +752,7 @@ def make_payment_entry(amount, date, reference_no, paid_from=None, paid_to=None,
     if auto_submit:
         matched_entry = frappe.get_doc("Payment Entry", new_entry.name)
         matched_entry.submit()
+        frappe.db.commit()
     return new_entry.name
 
 # creates the reference record in a payment entry

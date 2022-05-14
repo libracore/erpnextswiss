@@ -25,19 +25,19 @@ frappe.ui.form.on('VAT Declaration', {
             // define title as Qn YYYY of the last complete quarter
             var title = " / " + d.getFullYear();
             if ((n > (-1)) && (n < 3)) {
-                title = "Q04 / " + (d.getFullYear() - 1);
+                title = "Q4 / " + (d.getFullYear() - 1);
                 frm.set_value('start_date', (d.getFullYear() - 1) + "-10-01");
                 frm.set_value('end_date', (d.getFullYear() - 1) + "-12-31");
             } else if ((n > (2)) && (n < 6)) {
-                title = "Q01" + title;
+                title = "Q1" + title;
                 frm.set_value('start_date', d.getFullYear() + "-01-01");
                 frm.set_value('end_date', d.getFullYear() + "-03-31");
             } else if ((n > (5)) && (n < 9)) {
-                title = "Q02" + title;
+                title = "Q2" + title;
                 frm.set_value('start_date', d.getFullYear() + "-04-01");
                 frm.set_value('end_date', d.getFullYear() + "-06-30");
             } else {
-                title = "Q03" + title;
+                title = "Q3" + title;
                 frm.set_value('start_date', d.getFullYear() + "-07-01");
                 frm.set_value('end_date', d.getFullYear() + "-09-30");
             } 

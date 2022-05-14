@@ -65,6 +65,9 @@ def expense_pretax_various(expense_claim):
                 'debit_in_account_currency': expense.vorsteuer,
                 'cost_center': exp.cost_center
             })
+    # only create journal entry if there are accounts
+    if len(accounts) == 0:
+        return None
     # create new journal entry
     jv = frappe.get_doc({
         'doctype': 'Journal Entry',

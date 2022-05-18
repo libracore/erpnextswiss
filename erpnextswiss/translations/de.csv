@@ -383,3 +383,5 @@ DocType: Worktime Settings,Worktime Details,Arbeitszeitdetails
 DocType: Worktime Settings,Employment Degrees,Anstellungsgrade
 DocType: Worktime Settings,Carryover and Payouts,Überträge und Auszahlungen
 Report: Monthly Worktime,Monthly Worktime,Arbeitszeit im Monat
+Report: Annual Salary Sheet,Annual Salary Sheet,Jahreslohnzettel
+Report: Account Sheets,Account Sheets,Kontenblätter

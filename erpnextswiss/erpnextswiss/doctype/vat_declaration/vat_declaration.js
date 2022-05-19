@@ -1,21 +1,21 @@
-// Copyright (c) 2018, libracore (https://www.libracore.com) and contributors
+// Copyright (c) 2018-2022, libracore (https://www.libracore.com) and contributors
 // For license information, please see license.txt
 
 frappe.ui.form.on('VAT Declaration', {
-	refresh: function(frm) {
+    refresh: function(frm) {
         frm.add_custom_button(__("Get values"), function() 
-		{
-			get_values(frm);
-		});
+        {
+            get_values(frm);
+        });
         frm.add_custom_button(__("Recalculate"), function() 
-		{
-			recalculate(frm);
-		});
+        {
+            recalculate(frm);
+        });
         
         update_taxable_revenue(frm);
         update_tax_amounts(frm);
         update_payable_tax(frm);
-	},
+    },
     onload: function(frm) {
         if (frm.doc.__islocal) {
             // this function is called when a new VAT declaration is created
@@ -25,26 +25,44 @@ frappe.ui.form.on('VAT Declaration', {
             // define title as Qn YYYY of the last complete quarter
             var title = " / " + d.getFullYear();
             if ((n > (-1)) && (n < 3)) {
-                title = "Q04 / " + (d.getFullYear() - 1);
+                title = "Q4 / " + (d.getFullYear() - 1);
                 frm.set_value('start_date', (d.getFullYear() - 1) + "-10-01");
                 frm.set_value('end_date', (d.getFullYear() - 1) + "-12-31");
             } else if ((n > (2)) && (n < 6)) {
-                title = "Q01" + title;
+                title = "Q1" + title;
                 frm.set_value('start_date', d.getFullYear() + "-01-01");
                 frm.set_value('end_date', d.getFullYear() + "-03-31");
             } else if ((n > (5)) && (n < 9)) {
-                title = "Q02" + title;
+                title = "Q2" + title;
                 frm.set_value('start_date', d.getFullYear() + "-04-01");
                 frm.set_value('end_date', d.getFullYear() + "-06-30");
             } else {
-                title = "Q03" + title;
+                title = "Q3" + title;
                 frm.set_value('start_date', d.getFullYear() + "-07-01");
                 frm.set_value('end_date', d.getFullYear() + "-09-30");
             } 
 
-            frm.set_value('title', title);
+            cur_frm.set_value('title', title + " - " + (frm.doc.cmp_abbr || ""));
         }
-  }
+    },
+    company: function(frm) {
+        if ((frm.doc.__islocal) && (frm.doc.company)) {
+            // replace company key
+            var parts = frm.doc.title.split(" - ");
+            if (parts.length > 1) {
+                var new_title = [];
+                for (var i = 0; i < (parts.length - 1); i++) {
+                    new_title.push(parts[i]);
+                }
+                new_title.push(frm.doc.cmp_abbr);
+                cur_frm.set_value("title", new_title.join(" - "));
+            } else if (parts.length === 0) {
+                // key missing
+                cur_frm.set_value("title", frm.doc.title + " - " + frm.doc.cmp_abbr);
+            }
+            
+        }
+    }
 });
 
 // retrieve values from database

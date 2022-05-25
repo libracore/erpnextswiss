@@ -3,13 +3,8 @@
 # For license information, please see license.txt
 
 from __future__ import unicode_literals
-import frappe
+# import frappe
 from frappe.model.document import Document
-from erpnextswiss.erpnextswiss.edi import create_pricat
 
-class EDIConnection(Document):
-    def create_file(self):
-        if self.edi_type == "PRICAT":
-            create_pricat(self.name)
-        return
-        
+class EDIFilePricatItem(Document):
+	pass

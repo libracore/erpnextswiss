@@ -1,11 +1,21 @@
 {
+ "autoname": "naming_series:",
  "creation": "2022-05-08 20:33:33.615799",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
   "edi_connection",
-  "date"
+  "edi_type",
+  "naming_series",
+  "column_head",
+  "date",
+  "title",
+  "section_pricat",
+  "button_add_item",
+  "pricat_items",
+  "section_develop",
+  "test"
  ],
  "fields": [
   {
@@ -19,9 +29,61 @@
    "fieldname": "date",
    "fieldtype": "Datetime",
    "label": "Date"
+  },
+  {
+   "fetch_from": "edi_connection.edi_type",
+   "fieldname": "edi_type",
+   "fieldtype": "Data",
+   "label": "EDI Type",
+   "read_only": 1
+  },
+  {
+   "default": "ME.######",
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Naming Series",
+   "options": "ME.######"
+  },
+  {
+   "fieldname": "column_head",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "label": "Title"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "section_develop",
+   "fieldtype": "Section Break",
+   "label": "Develop"
+  },
+  {
+   "default": "0",
+   "fieldname": "test",
+   "fieldtype": "Check",
+   "label": "Test"
+  },
+  {
+   "depends_on": "eval:doc.edi_type==\"PRICAT\"",
+   "fieldname": "section_pricat",
+   "fieldtype": "Section Break",
+   "label": "PRICAT"
+  },
+  {
+   "fieldname": "button_add_item",
+   "fieldtype": "Button",
+   "label": "Add item"
+  },
+  {
+   "fieldname": "pricat_items",
+   "fieldtype": "Table",
+   "label": "Items",
+   "options": "EDI File Pricat Item"
   }
  ],
- "modified": "2022-05-08 20:33:54.842153",
+ "modified": "2022-05-25 23:24:40.342132",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "EDI File",
@@ -38,10 +100,35 @@
    "role": "System Manager",
    "share": 1,
    "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Item Manager",
+   "share": 1,
+   "write": 1
   }
  ],
  "quick_entry": 1,
  "sort_field": "modified",
  "sort_order": "DESC",
+ "title_field": "title",
  "track_changes": 1
 }

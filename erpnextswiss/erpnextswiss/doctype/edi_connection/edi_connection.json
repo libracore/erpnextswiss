@@ -6,7 +6,13 @@
  "engine": "InnoDB",
  "field_order": [
   "title",
-  "edi_type"
+  "edi_type",
+  "charset",
+  "column_main",
+  "gln_sender",
+  "gln_recipient",
+  "section_pricat",
+  "price_list"
  ],
  "fields": [
   {
@@ -23,9 +29,42 @@
    "fieldtype": "Select",
    "label": "EDI Type",
    "options": "PRICAT"
+  },
+  {
+   "depends_on": "eval:doc.edi_type==\"PRICAT\"",
+   "fieldname": "section_pricat",
+   "fieldtype": "Section Break",
+   "label": "PRICAT"
+  },
+  {
+   "fieldname": "price_list",
+   "fieldtype": "Link",
+   "label": "Price List",
+   "options": "Price List"
+  },
+  {
+   "fieldname": "column_main",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "gln_sender",
+   "fieldtype": "Data",
+   "label": "GLN Sender"
+  },
+  {
+   "fieldname": "gln_recipient",
+   "fieldtype": "Data",
+   "label": "GLN Recipient"
+  },
+  {
+   "default": "UNOA",
+   "fieldname": "charset",
+   "fieldtype": "Select",
+   "label": "Charset",
+   "options": "UNOA\nUNOB\nUNOC\nUNOD\nUNOE\nUNOF"
   }
  ],
- "modified": "2022-05-08 20:25:11.026915",
+ "modified": "2022-05-25 22:51:55.706430",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "EDI Connection",

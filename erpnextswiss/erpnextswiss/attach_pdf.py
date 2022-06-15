@@ -8,6 +8,7 @@ from frappe.core.doctype.file.file import create_new_folder
 from frappe.utils.file_manager import save_file
 import hashlib
 import time
+from frappe.utils import cint
 
 @frappe.whitelist()
 def attach_pdf(doctype, docname, event=None, print_format=None, hashname=None, is_private=1, background=1):
@@ -18,11 +19,11 @@ def attach_pdf(doctype, docname, event=None, print_format=None, hashname=None, i
         "title": (frappe.get_value(doctype, docname, "title") or docname),
         "lang": (frappe.get_value(doctype, docname, "language") or fallback_language),
         "print_format": print_format,
-        "hashname": hashname,
-        "is_private": is_private
+        "hashname": cint(hashname),
+        "is_private": cint(is_private)
     }
 
-    if background == 1:
+    if cint(background) == 1:
         enqueue(args)
     else:
         execute(**args)
@@ -73,6 +74,7 @@ def save_and_attach(content, to_doctype, to_name, folder, hashname=None, is_priv
     else:
         # use a hased file name
         file_name = "{0}.pdf".format(hashlib.md5("{0}{1}".format(to_name, time.time()).encode('utf-8')).hexdigest())
+
     save_file(file_name, content, to_doctype,
               to_name, folder=folder, is_private=is_private)
     return

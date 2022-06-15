@@ -8,6 +8,7 @@
  "field_order": [
   "title",
   "company",
+  "cmp_abbr",
   "column_break_1",
   "vat_type",
   "section_break_period",
@@ -429,10 +430,17 @@
    "label": "Company",
    "options": "Company",
    "reqd": 1
+  },
+  {
+   "fetch_from": "company.abbr",
+   "fieldname": "cmp_abbr",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Company abbreviation"
   }
  ],
  "is_submittable": 1,
- "modified": "2022-05-09 22:13:44.810877",
+ "modified": "2022-05-14 07:09:58.804507",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "VAT Declaration",

@@ -4,6 +4,7 @@
 import frappe
 from frappe import _
 import pandas as pd
+from frappe.utils import get_bench_path
 
 '''
     execute with: sudo bench execute erpnextswiss.erpnextswiss.coa_import.coa_importer.import_coa --kwargs "{'company': '<company name>'}"
@@ -38,7 +39,7 @@ def import_coa(company=False, file_path=False):
     # Create new chart of accounts incl. company account defaults (based on csv template)
     # read accounts template csv
     if not file_path:
-        file_path = '/home/frappe/frappe-bench/apps/erpnextswiss/erpnextswiss/erpnextswiss/coa_import/accounts_template.csv'
+        file_path = "{0}/apps/erpnextswiss/erpnextswiss/erpnextswiss/coa_import/accounts_template.csv".format(get_bench_path())
     df = pd.read_csv(file_path)
     qty = len(df.index)
     print("found {qty} entries in template csv".format(qty=qty))

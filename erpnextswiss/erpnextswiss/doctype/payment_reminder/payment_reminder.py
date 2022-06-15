@@ -103,7 +103,7 @@ def create_payment_reminders(company):
                     'company': company,
                     'currency': currency
                 })
-                reminder_record = new_reminder.insert()
+                reminder_record = new_reminder.insert(ignore_permissions=True)
                 if int(auto_submit) == 1:
                     reminder_record.update_reminder_levels()
                     reminder_record.submit()

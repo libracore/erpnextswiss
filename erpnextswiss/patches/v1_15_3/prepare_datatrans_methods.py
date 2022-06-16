@@ -22,6 +22,7 @@ def execute():
             settings.append("payment_methods", {"method": "Samsung Pay", "code": "SAM"})
             settings.append("payment_methods", {"method": "Sofort", "code": "DIB"})
             settings.append("payment_methods", {"method": "TWINT", "code": "TWI"})
+            settings.flags.ignore_mandatory = True
             settings.save()
             frappe.db.commit()
     except Exception as err:

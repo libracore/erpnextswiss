@@ -1,3 +1,4 @@
 execute:import unidecode # new requirement
 erpnextswiss.patches.v1_1_1.add_bankimport_bank_child_settings
 erpnextswiss.patches.v1_14_0.mark_existing_salary_slips
+erpnextswiss.patches.v1_15_3.prepare_datatrans_methods

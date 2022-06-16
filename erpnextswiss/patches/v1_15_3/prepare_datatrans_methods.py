@@ -5,6 +5,7 @@ def execute():
     # this will create some standard datatrans payment methods
     try:
         frappe.reload_doc("erpnextswiss", "doctype", "datatrans_settings")
+        frappe.reload_doc("erpnextswiss", "doctype", "datatrans_payment_method")
         settings = frappe.get_doc("Datatrans Settings", "Datatrans Settings")
         if len(settings.payment_methods) == 0:
             settings.append("payment_methods", {"method": "Mastercard", "code": "ECA"})
@@ -21,7 +22,8 @@ def execute():
             settings.append("payment_methods", {"method": "Samsung Pay", "code": "SAM"})
             settings.append("payment_methods", {"method": "Sofort", "code": "DIB"})
             settings.append("payment_methods", {"method": "TWINT", "code": "TWI"})
-            
+            settings.save()
+            frappe.db.commit()
     except Exception as err:
         print("Unable to create datatrans payment methods")
     return

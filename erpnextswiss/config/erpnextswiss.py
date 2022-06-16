@@ -174,6 +174,12 @@ def get_data():
             "items": [
                    {
                        "type": "doctype",
+                       "name": "Datatrans Settings",
+                       "label": _("Datatrans Settings"),
+                       "description": _("Datatrans Settings")                   
+                   },
+                   {
+                       "type": "doctype",
                        "name": "Abacus Export File",
                        "label": _("Abacus Export File"),
                        "description": _("Abacus Export File")                   

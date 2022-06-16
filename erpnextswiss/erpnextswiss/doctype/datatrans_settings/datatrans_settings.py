@@ -3,8 +3,13 @@
 # For license information, please see license.txt
 
 from __future__ import unicode_literals
-# import frappe
+import frappe
 from frappe.model.document import Document
 
 class DatatransSettings(Document):
-	pass
+    def get_payment_method_list(self):
+        payment_methods = []
+        for p in self.payment_methods:
+            payment_methods.append(p.code)
+        return payment_methods
+

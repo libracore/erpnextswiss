@@ -11,7 +11,7 @@ from frappe.utils.background_jobs import enqueue
 from math import sin, cos, sqrt, atan2, radians
 
 class Pincode(Document):
-	pass
+    pass
 
 def import_pincodes_from_file(filename):
     f = open(filename, "r")
@@ -65,6 +65,7 @@ def import_pincodes(content):
                 'city': element[field_index['city']] or "",
                 'canton': element[field_index['canton']] or "",
                 'canton_code': element[field_index['canton_code']] or "",
+                'bfsnr': element[field_index['bfsnr']] or "",
                 'country': country,
                 'country_code': country_code,
                 'title': "{0}-{1}".format(element[field_index['pincode']] or 0, element[field_index['city']] or ""),
@@ -78,6 +79,7 @@ def import_pincodes(content):
             pincode = frappe.get_doc('Pincode', db_pincodes[0]['name'])
             pincode.longitude = element[field_index['longitude']] or ""
             pincode.latitude = element[field_index['latitude']] or ""
+            pincode.bfsnr = element[field_index['bfsnr']] or ""
             pincode.save()
             frappe.db.commit()
     

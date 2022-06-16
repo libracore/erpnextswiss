@@ -510,3 +510,21 @@ def create_payment_proposal(date=None, company=None):
 # adds Windows-compatible line endings (to make the xml look nice)    
 def make_line(line):
     return line + "\r\n"
+
+
+"""
+Allow to release purchase invoices (switch to next revision, before that exists, so it can be cancelled)
+"""
+@frappe.whitelist()
+def release_from_payment_proposal(purchase_invoice):
+    pinv = frappe.get_doc("Purchase Invoice", purchase_invoice)
+    if pinv.amended_from:
+        parts = pinv.name.split("-")
+        new_name = "{0}-{1}".format("-".join(parts[:-1]), (cint(parts[-1]) + 1))
+    else:
+        new_name = "{0}-1".format(pinv.name)
+    frappe.db.sql("""UPDATE `tabPayment Proposal Purchase Invoice` 
+        SET `purchase_invoice` = "{new_name}" 
+        WHERE `purchase_invoice` = "{old_name}";""".format(new_name=new_name, old_name=pinv.name))
+    frappe.db.commit()
+    return

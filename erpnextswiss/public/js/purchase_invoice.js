@@ -5,6 +5,9 @@ frappe.ui.form.on('Purchase Invoice', {
                 check_defaults(frm);
             });
         }
+        if (frm.doc.__islocal) {
+            pull_supplier_defaults(frm);
+        }
         if ((frm.doc.docstatus === 1) && (frm.doc.is_proposed === 1)) {
             cur_frm.dashboard.add_comment(__('This document has been transmitted to the bank for payment'), 'blue', true);
         }
@@ -47,19 +50,7 @@ frappe.ui.form.on('Purchase Invoice', {
         }
     },
     supplier: function(frm) {
-        if (frm.doc.supplier) {
-            frappe.call({
-                'method': "frappe.client.get",
-                'args': {
-                    'doctype': "Supplier",
-                    "name": frm.doc.supplier
-                },
-                "callback": function(response) {
-                    var supplier = response.message;
-                    cur_frm.set_value("payment_type", supplier.default_payment_method);
-                }
-            });
-        }
+        pull_supplier_defaults(frm);
     }
 });
 
@@ -301,5 +292,21 @@ function fetch_esr_details_to_existing_sinv(frm, values) {
             frappe.model.set_value(child.doctype, child.name, 'rate', rate);
             cur_frm.refresh_field('items');
         }, 1000);
+    }
+}
+
+function pull_supplier_defaults(frm) {
+    if (frm.doc.supplier) {
+        frappe.call({
+            'method': "frappe.client.get",
+            'args': {
+                'doctype': "Supplier",
+                "name": frm.doc.supplier
+            },
+            "callback": function(response) {
+                var supplier = response.message;
+                cur_frm.set_value("payment_type", supplier.default_payment_method);
+            }
+        });
     }
 }

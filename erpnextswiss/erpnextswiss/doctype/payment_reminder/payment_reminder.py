@@ -7,16 +7,30 @@ import frappe
 from frappe.model.document import Document
 from datetime import datetime
 import json
+from frappe.utils.data import add_days
 
 class PaymentReminder(Document):
-    # this will apply all payment reminder levels in the sales invoices
+    # this will apply all payment reminder levels and blocking days (as exclude_from_payment_reminder_until) in the sales invoices
     def update_reminder_levels(self):
+        blocking_days = get_blocking_days()
         for invoice in self.sales_invoices:
             sales_invoice = frappe.get_doc("Sales Invoice", invoice.sales_invoice)
+            
+            # apply reminder_level
             sales_invoice.payment_reminder_level = invoice.reminder_level
+            
+            # apply exclude_from_payment_reminder_until based on blocking days
+            if len(get_blocking_days()) >= invoice.reminder_level:
+                if blocking_days[str(invoice.reminder_level)] > 0:
+                    exclude_from_payment_reminder_until = add_days(self.date, blocking_days[str(invoice.reminder_level)])
+                    sales_invoice.exclude_from_payment_reminder_until = exclude_from_payment_reminder_until
+            else:
+                # e.g. if the reminder level is higher than 3 and no blocking days are recorded (default max reminder level is 3)
+                sales_invoice.exclude_from_payment_reminder_until = None
+            
             sales_invoice.save()
         return
-    # apply payment reminder levels on submit (server based)
+    # apply payment reminder levels and blocking days on submit (server based)
     def on_submit(self):
         self.update_reminder_levels()
     pass
@@ -103,7 +117,7 @@ def create_payment_reminders(company):
                     'company': company,
                     'currency': currency
                 })
-                reminder_record = new_reminder.insert()
+                reminder_record = new_reminder.insert(ignore_permissions=True)
                 if int(auto_submit) == 1:
                     reminder_record.update_reminder_levels()
                     reminder_record.submit()
@@ -119,3 +133,21 @@ def bulk_submit(names):
         payment_reminder.update_reminder_levels()
         payment_reminder.submit()
     return
+
+# returns an object of reminder_level vs blocking_days
+def get_blocking_days():
+    # find maximum reminder level
+    sql_query = ("""SELECT MAX(`reminder_level`) AS `max` FROM `tabERPNextSwiss Settings Payment Reminder Level Blocking Period`""")
+    try:
+        max_level = frappe.db.sql(sql_query, as_dict=True)[0]['max']
+        if not max_level:
+            max_level = 3
+    except:
+        max_level = 3
+    
+    # create blocking_days dict
+    blocking_days = {}
+    for reminder_level in range(1, max_level + 1):
+        blocking_days[str(reminder_level)] = frappe.db.get_value('ERPNextSwiss Settings Payment Reminder Level Blocking Period', {'reminder_level': reminder_level}, ['blocking_days']) or 0
+    
+    return blocking_days

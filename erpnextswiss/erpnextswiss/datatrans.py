@@ -13,7 +13,7 @@ def get_payment_link(currency, refno, amount, verify=True):
     payload = {
         "currency": currency, 
         "refno": refno, 
-        "amount": amount, 
+        "amount": float(amount), 
         "paymentMethods": settings.get_payment_method_list(),
         "redirect": {
             "successUrl": settings.success_url or get_url(),
@@ -21,7 +21,7 @@ def get_payment_link(currency, refno, amount, verify=True):
             "cancelUrl": settings.cancel_url or get_url()
         }
     }
-    
+
     auth = HTTPBasicAuth(settings.username, get_decrypted_password("Datatrans Settings", "Datatrans Settings", "password", False))
     
     r = requests.post("{0}/transactions".format(settings.endpoint), verify=verify, auth=auth, json=payload)

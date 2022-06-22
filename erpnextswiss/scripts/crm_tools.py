@@ -108,6 +108,24 @@ def get_primary_supplier_address(supplier):
         return address
     else:
         return None
+
+# fetch the primary available contact from a supplier
+@frappe.whitelist()
+def get_primary_supplier_contact(supplier):
+    sql_query = u"""SELECT `tabDynamic Link`.`parent`, `tabContact`.`is_primary_contact`
+            FROM `tabDynamic Link` 
+            LEFT JOIN `tabContact` ON `tabContact`.`name` = `tabDynamic Link`.`parent`
+            WHERE  `tabDynamic Link`.`link_doctype` = "Supplier"
+                   AND `tabDynamic Link`.`link_name` = "{supplier}"
+                   AND `tabDynamic Link`.`parenttype` = "Contact"
+            ORDER BY `tabContact`.`is_primary_contact` DESC;
+        """.format(supplier=supplier)
+    contact_name = frappe.db.sql(sql_query, as_dict=True)
+    if contact_name:
+        contact = frappe.get_doc("Contact", contact_name[0]['parent'])
+        return contact
+    else:
+        return None
         
 @frappe.whitelist()
 def update_contact_first_and_last_name(contact, firstname, lastname):

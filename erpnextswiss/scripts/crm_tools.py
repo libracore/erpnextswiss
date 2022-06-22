@@ -43,9 +43,9 @@ def get_primary_customer_address(customer):
     else:
         return None
         
-# fetch the first available contact from a customer
+# fetch the primary available contact from a customer
 @frappe.whitelist()
-def get_customer_contact(customer):
+def get_primary_customer_contact(customer):
     sql_query = u"""SELECT `tabDynamic Link`.`parent`, `tabContact`.`is_primary_contact`
             FROM `tabDynamic Link` 
             LEFT JOIN `tabContact` ON `tabContact`.`name` = `tabDynamic Link`.`parent`
@@ -61,9 +61,9 @@ def get_customer_contact(customer):
     else:
         return None
 
-# fetch the primary available contact from a customer
+# fetch the first available contact from a customer
 @frappe.whitelist()
-def get_primary_customer_contact(customer):
+def get_customer_contact(customer):
     sql_query = u"""SELECT `parent` FROM `tabDynamic Link` WHERE
         `link_doctype` = "Customer"
         AND `link_name` = "{customer}"

@@ -8,7 +8,10 @@
   "item_name",
   "action",
   "rate",
-  "gtin"
+  "gtin",
+  "sec_details",
+  "min_qty",
+  "qty_per_pack"
  ],
  "fields": [
   {
@@ -48,10 +51,27 @@
    "fieldtype": "Data",
    "label": "Item name",
    "read_only": 1
+  },
+  {
+   "fieldname": "sec_details",
+   "fieldtype": "Section Break",
+   "label": "Details"
+  },
+  {
+   "default": "1",
+   "fieldname": "min_qty",
+   "fieldtype": "Float",
+   "label": "Min Qty"
+  },
+  {
+   "default": "1",
+   "fieldname": "qty_per_pack",
+   "fieldtype": "Float",
+   "label": "Qty per Pack"
   }
  ],
  "istable": 1,
- "modified": "2022-05-25 23:40:12.927984",
+ "modified": "2022-07-05 22:56:35.978939",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "EDI File Pricat Item",

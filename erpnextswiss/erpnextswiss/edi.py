@@ -48,8 +48,9 @@ def download_pricat(edi_file):
         test=cint(edi.test)
     ))
     # message header
-    content_segments.append("UNH+{name}+PRICAT:D:01B:UN:EAN008'".format(
-        name=edi.name
+    content_segments.append("UNH+{name}+PRICAT:D:{edi_format}:UN:EAN008'".format(
+        name=edi.name,
+        edi_format=edi_con.edi_format
     ))
     # beginning: price/sales catalogue number (hashed price list name, max. length 17)
     content_segments.append("BGM+9+{price_list}+9'".format(
@@ -113,8 +114,15 @@ def download_pricat(edi_file):
             item_name=item.item_name
         ))
         # fabric (132, formerly U01)
-        content_segments.append("IMD+F+132+:::{fabric}:'".format(
-            fabric=item_doc.get("fabric") or ""
+        if edi_con.edi_format == "96A":
+            code = "U01"
+            fabric = (item_doc.get("fabric") or "")[:35]
+        else:
+            code = "132"
+            fabric = item_doc.get("fabric") or ""
+        content_segments.append("IMD+F+{code}+:::{fabric}:'".format(
+            code=code,
+            fabric=fabric
         ))
         # brand
         content_segments.append("IMD+F+BRN+:::{brand}:'".format(

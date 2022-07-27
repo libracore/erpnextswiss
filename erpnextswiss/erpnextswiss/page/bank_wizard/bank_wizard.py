@@ -519,7 +519,9 @@ def read_camt_transactions(transaction_entries, account, settings):
                         if match_customers:
                             party_match = match_customers[0]['name']
                         # sales invoices
-                        possible_sinvs = frappe.get_all("Sales Invoice", filters=[['outstanding_amount', '>', 0]], fields=['name', 'customer', 'outstanding_amount'])
+                        possible_sinvs = frappe.get_all("Sales Invoice", 
+                            filters=[['outstanding_amount', '>', 0], ['docstatus', '=', 1]], 
+                            fields=['name', 'customer', 'outstanding_amount'])
                         if possible_sinvs:
                             invoice_matches = []
                             for sinv in possible_sinvs:

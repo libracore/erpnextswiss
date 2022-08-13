@@ -77,7 +77,7 @@ def download_pricat(edi_file):
     ))
 
     # supplier location number
-    content_segments.append("NAD+BY+{gln_sender}::9'".format(
+    content_segments.append("NAD+SU+{gln_sender}::9'".format(
         gln_sender=edi_con.gln_sender or ""
     ))
     
@@ -113,6 +113,10 @@ def download_pricat(edi_file):
         content_segments.append("IMD+F+ANM+:::{item_name}:'".format(
             item_name=item.item_name
         ))
+        # item group ~ article type
+        content_segments.append("IMD+F+TPE+:::{item_group}:'".format(
+            item_group=(item.item_group or "")[:35]
+        ))
         # fabric (132, formerly U01)
         if edi_con.edi_format == "96A":
             code = "U01"
@@ -129,11 +133,16 @@ def download_pricat(edi_file):
             brand=item_doc.get("brand") or ""
         ))
         # colour
-        for attr in item_doc.attributes:
-            if attr.attribute in ["Colour", "Color", "Farbe"]:
-                content_segments.append("IMD+F+35+:::{colour}:'".format(
-                    colour=attr.attribute_value or ""
-                ))
+        if item.colour:
+            content_segments.append("IMD+F+35+:::{colour}:'".format(
+                colour=item.colour or ""
+            ))
+        # size
+        if item.size:
+            content_segments.append("IMD+F+98+:::{size}:'".format(
+                size=item.size or ""
+            ))
+        
         # quantity: minimum order
         content_segments.append("QTY+53:{min_qty}:{uom}'".format(
             min_qty=item.min_qty,
@@ -150,6 +159,10 @@ def download_pricat(edi_file):
         # price
         content_segments.append("PRI+AAA:{rate}:CA'".format(
             rate=item.rate
+        ))
+        # recommended retail price
+        content_segments.append("PRI+INF:{retail_rate}:CA'".format(
+            retail_rate=item.retail_rate
         ))
         
         # currency

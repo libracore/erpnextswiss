@@ -14,6 +14,9 @@
   "section_pricat",
   "button_add_item",
   "pricat_items",
+  "sec_taxes",
+  "taxes_template",
+  "taxes",
   "section_develop",
   "test"
  ],
@@ -81,9 +84,27 @@
    "fieldtype": "Table",
    "label": "Items",
    "options": "EDI File Pricat Item"
+  },
+  {
+   "depends_on": "eval:doc.edi_type==\"PRICAT\"",
+   "fieldname": "sec_taxes",
+   "fieldtype": "Section Break",
+   "label": "Taxes and Charges"
+  },
+  {
+   "fieldname": "taxes_template",
+   "fieldtype": "Link",
+   "label": "Taxes and Charges Template",
+   "options": "Sales Taxes and Charges Template"
+  },
+  {
+   "fieldname": "taxes",
+   "fieldtype": "Table",
+   "label": "Taxes and Charges",
+   "options": "Sales Taxes and Charges"
   }
  ],
- "modified": "2022-05-25 23:24:40.342132",
+ "modified": "2022-08-13 07:51:15.504053",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "EDI File",

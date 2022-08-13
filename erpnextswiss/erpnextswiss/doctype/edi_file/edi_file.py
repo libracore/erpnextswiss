@@ -18,7 +18,8 @@ class EDIFile(Document):
         price_list = frappe.get_value("EDI Connection", self.edi_connection, "price_list")
         details = {
             'item_code': item_code,
-            'item_name': item.item_name
+            'item_name': item.item_name,
+            'attributes': item.attributes
         }
         # check action
         previous_occurrences = frappe.db.sql("""

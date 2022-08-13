@@ -5,13 +5,22 @@
  "engine": "InnoDB",
  "field_order": [
   "item_code",
+  "col_item",
   "item_name",
+  "item_group",
+  "sec_action",
   "action",
+  "sec_pricing",
   "rate",
+  "col_pricing",
+  "retail_rate",
   "gtin",
   "sec_details",
   "min_qty",
-  "qty_per_pack"
+  "qty_per_pack",
+  "col_details",
+  "size",
+  "colour"
  ],
  "fields": [
   {
@@ -68,10 +77,58 @@
    "fieldname": "qty_per_pack",
    "fieldtype": "Float",
    "label": "Qty per Pack"
+  },
+  {
+   "fieldname": "col_item",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "item_code.item_group",
+   "fieldname": "item_group",
+   "fieldtype": "Link",
+   "label": "Item Group",
+   "options": "Item Group",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sec_action",
+   "fieldtype": "Section Break",
+   "label": "Action"
+  },
+  {
+   "fieldname": "sec_pricing",
+   "fieldtype": "Section Break",
+   "label": "Pricing"
+  },
+  {
+   "fieldname": "col_pricing",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "retail_rate",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Retail Rate",
+   "precision": "2",
+   "reqd": 1
+  },
+  {
+   "fieldname": "col_details",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "size",
+   "fieldtype": "Data",
+   "label": "Size"
+  },
+  {
+   "fieldname": "colour",
+   "fieldtype": "Data",
+   "label": "Colour"
   }
  ],
  "istable": 1,
- "modified": "2022-07-05 22:56:35.978939",
+ "modified": "2022-08-13 08:50:36.555583",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "EDI File Pricat Item",

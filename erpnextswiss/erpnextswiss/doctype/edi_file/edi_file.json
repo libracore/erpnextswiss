@@ -18,7 +18,8 @@
   "taxes_template",
   "taxes",
   "section_develop",
-  "test"
+  "test",
+  "amended_from"
  ],
  "fields": [
   {
@@ -102,15 +103,27 @@
    "fieldtype": "Table",
    "label": "Taxes and Charges",
    "options": "Sales Taxes and Charges"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "EDI File",
+   "print_hide": 1,
+   "read_only": 1
   }
  ],
- "modified": "2022-08-13 07:51:15.504053",
+ "is_submittable": 1,
+ "modified": "2022-08-14 20:37:16.290571",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "EDI File",
  "owner": "Administrator",
  "permissions": [
   {
+   "amend": 1,
+   "cancel": 1,
    "create": 1,
    "delete": 1,
    "email": 1,
@@ -120,9 +133,12 @@
    "report": 1,
    "role": "System Manager",
    "share": 1,
+   "submit": 1,
    "write": 1
   },
   {
+   "amend": 1,
+   "cancel": 1,
    "create": 1,
    "delete": 1,
    "email": 1,
@@ -132,9 +148,12 @@
    "report": 1,
    "role": "Sales Manager",
    "share": 1,
+   "submit": 1,
    "write": 1
   },
   {
+   "amend": 1,
+   "cancel": 1,
    "create": 1,
    "delete": 1,
    "email": 1,
@@ -144,6 +163,7 @@
    "report": 1,
    "role": "Item Manager",
    "share": 1,
+   "submit": 1,
    "write": 1
   }
  ],

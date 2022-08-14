@@ -6,11 +6,22 @@ from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
 from erpnextswiss.erpnextswiss.edi import download_pricat
+from erpnextswiss.erpnextswiss.attach_pdf import create_folder
 from frappe.utils import cint
+from frappe.utils.file_manager import save_file
+from frappe.email.queue import send
 
 class EDIFile(Document):
+    def on_submit(self):
+        # create and transmit file
+        self.transmit_file()
+        
+        return
+        
     def download_file(self):
-        content = download_pricat(self.name)
+        content = None
+        if self.edi_type == "PRICAT":
+            content = download_pricat(self.name)
         return { 'content': content }
         
     def get_item_details(self, item_code):
@@ -63,3 +74,36 @@ class EDIFile(Document):
                 details['gtin'] = barcode.barcode
                 
         return details
+
+    """
+    Create and attach the file
+    """
+    def transmit_file(self):
+        content = self.download_file()
+        # check if file was created
+        if 'content' in content:
+            # create EDI file attachment folder
+            folder = create_folder("edi_file", "Home")
+            # store EDI File
+            f = save_file(
+                "{0}.edi".format(self.name), 
+                content['content'], 
+                "EDI File", 
+                self.name, 
+                folder=folder, 
+                is_private=True
+            )
+            # send mail
+            if frappe.get_value("EDI Connection", self.edi_connection, "transmission_mode") == "Email":
+                send(
+                    recipients=frappe.get_value("EDI Connection", self.edi_connection, "email_recipient"), 
+                    subject=self.name, 
+                    message=self.name, 
+                    reference_doctype="EDI File", 
+                    reference_name=self.name,
+                    attachments=[{'fid': f.name}]
+                )
+            
+        else:
+            frappe.log_error("No content found: {0}".format(self.name), "Transmit EDI File")
+        return

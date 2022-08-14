@@ -14,7 +14,11 @@
   "gln_sender",
   "gln_recipient",
   "section_pricat",
-  "price_list"
+  "price_list",
+  "sec_transmission",
+  "transmission_mode",
+  "col_transmission",
+  "email_recipient"
  ],
  "fields": [
   {
@@ -77,9 +81,31 @@
    "fieldtype": "Select",
    "label": "Format",
    "options": "01B\n96A"
+  },
+  {
+   "fieldname": "sec_transmission",
+   "fieldtype": "Section Break",
+   "label": "Transmission"
+  },
+  {
+   "default": "Email",
+   "fieldname": "transmission_mode",
+   "fieldtype": "Select",
+   "label": "Mode",
+   "options": "None\nEmail"
+  },
+  {
+   "fieldname": "col_transmission",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "eval:doc.transmission_mode==\"Email\"",
+   "fieldname": "email_recipient",
+   "fieldtype": "Data",
+   "label": "Email Recipient"
   }
  ],
- "modified": "2022-07-06 08:34:32.167001",
+ "modified": "2022-08-14 20:32:57.869415",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "EDI Connection",

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, libracore (https://www.libracore.com) and contributors
+// Copyright (c) 2017-2022, libracore (https://www.libracore.com) and contributors
 // For license information, please see license.txt
 /* eslint-disable */
 
@@ -35,6 +35,12 @@ frappe.query_reports["Account Sheets"] = {
             "fieldname":"to_account",
             "label": __("To Account"),
             "fieldtype": "Int"
+        },
+        {
+            "fieldname":"cost_center",
+            "label": __("Cost Center"),
+            "fieldtype": "Link",
+            "options": "Cost Center"
         }
     ]
 };

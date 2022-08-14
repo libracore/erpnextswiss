@@ -525,7 +525,7 @@ def read_camt_transactions(transaction_entries, account, settings):
                         if possible_sinvs:
                             invoice_matches = []
                             for sinv in possible_sinvs:
-                                if sinv['name'] in transaction_reference:
+                                if sinv['name'] in transaction_reference or ('esr_reference' in sinv and sinv['esr_reference'] and sinv['esr_reference'] == transaction_reference):
                                     invoice_matches.append(sinv['name'])
                                     # override party match in case there is one from the sales invoice
                                     party_match = sinv['customer']

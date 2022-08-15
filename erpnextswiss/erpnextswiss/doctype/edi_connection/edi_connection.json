@@ -9,6 +9,7 @@
   "edi_type",
   "charset",
   "edi_format",
+  "ean_version",
   "column_main",
   "company",
   "gln_sender",
@@ -103,9 +104,16 @@
    "fieldname": "email_recipient",
    "fieldtype": "Data",
    "label": "Email Recipient"
+  },
+  {
+   "default": "EAN008",
+   "fieldname": "ean_version",
+   "fieldtype": "Select",
+   "label": "EAN version",
+   "options": "EAN001\nEAN002\nEAN003\nEAN004\nEAN005\nEAN006\nEAN007\nEAN008\nEAN009\nEAN010"
   }
  ],
- "modified": "2022-08-14 20:32:57.869415",
+ "modified": "2022-08-15 21:20:56.405940",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "EDI Connection",

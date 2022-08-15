@@ -48,9 +48,10 @@ def download_pricat(edi_file):
         test=cint(edi.test)
     ))
     # message header
-    content_segments.append("UNH+{name}+PRICAT:D:{edi_format}:UN:EAN008'".format(
+    content_segments.append("UNH+{name}+PRICAT:D:{edi_format}:UN:{ean_version}'".format(
         name=edi.name,
-        edi_format=edi_con.edi_format
+        edi_format=edi_con.edi_format,
+        ean_version=edi_con.ean_version
     ))
     # beginning: price/sales catalogue number (hashed price list name, max. length 17)
     content_segments.append("BGM+9+{price_list}+9'".format(
@@ -149,7 +150,7 @@ def download_pricat(edi_file):
             uom=get_uom_code(item_doc.get("stock_uom") or "PCE")
         ))
         # quantity: qty per pack
-        content_segments.append("QTY+53:{min_qty}:{uom}'".format(
+        content_segments.append("QTY+52:{min_qty}:{uom}'".format(
             min_qty=item.qty_per_pack,
             uom=get_uom_code(item_doc.get("stock_uom") or "PCE")
         ))
@@ -157,11 +158,11 @@ def download_pricat(edi_file):
         content_segments.append("DTM+44:20000101:102'")
         
         # price
-        content_segments.append("PRI+AAA:{rate}:CA'".format(
+        content_segments.append("PRI+AAA:{rate}:NTP'".format(
             rate=item.rate
         ))
         # recommended retail price
-        content_segments.append("PRI+INF:{retail_rate}:CA'".format(
+        content_segments.append("PRI+AAE:{retail_rate}:SRP'".format(
             retail_rate=item.retail_rate
         ))
         

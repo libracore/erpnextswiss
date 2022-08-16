@@ -98,17 +98,14 @@ def download_pricat(edi_file):
     for item in edi.pricat_items:
         item_doc = frappe.get_doc("Item", item.item_code)
         # line item
-        content_segments.append("LIN+{idx}+{action}+{gtin}:SRV'".format(
+        content_segments.append("LIN+{idx}+{action}+{gtin}:EN'".format(
             idx=item.idx,
             action=item.action.split("=")[0],
             gtin=item.gtin
         ))
         # internal item code
-        content_segments.append("PIA+1+{item_code}'".format(
+        content_segments.append("PIA+5+{item_code}:SA'".format(
             item_code=item.item_code[:35]
-        ))
-        content_segments.append("PIA+5+{gtin}:SA'".format(
-            gtin=item.gtin
         ))
         # description
         content_segments.append("IMD+F+ANM+:::{item_name}:'".format(
@@ -158,11 +155,11 @@ def download_pricat(edi_file):
         content_segments.append("DTM+44:20000101:102'")
         
         # price
-        content_segments.append("PRI+AAA:{rate}:NTP'".format(
+        content_segments.append("PRI+AAA:{rate:.2f}:NTP'".format(
             rate=item.rate
         ))
         # recommended retail price
-        content_segments.append("PRI+AAE:{retail_rate}:SRP'".format(
+        content_segments.append("PRI+AAE:{retail_rate:.2f}:SRP'".format(
             retail_rate=item.retail_rate
         ))
         

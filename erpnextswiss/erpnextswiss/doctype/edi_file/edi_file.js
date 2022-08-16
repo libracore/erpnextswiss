@@ -51,21 +51,6 @@ frappe.ui.form.on('EDI File', {
     }
 });
 
-frappe.ui.form.on('EDI File Pricat Item', {
-    rate(frm, cdt, cdn) {
-        var row = locals[cdt][cdn];
-        var tax_factor = 1;
-        if (frm.doc.taxes) {
-            for (var t = 0; t < frm.doc.taxes.length; t++) {
-                tax_factor += frm.doc.taxes[t].rate / 100;
-            }
-        }
-        if (row.rate) {
-            frappe.model.set_value(cdt, cdn, 'retail_rate', row.rate * tax_factor);
-        }
-    }
-});
-
 function add_item(frm) {
     frappe.prompt([
         {'fieldname': 'item_code', 'fieldtype': 'Link', 'options': 'Item', 'label': __('Item'), 'reqd': 1}  
@@ -88,7 +73,7 @@ function add_item(frm) {
                     frappe.model.set_value(child.doctype, child.name, 'item_name', details.item_name);
                     frappe.model.set_value(child.doctype, child.name, 'item_group', details.item_group);
                     frappe.model.set_value(child.doctype, child.name, 'rate', details.rate);
-                    // retail rate from change trigger
+                    frappe.model.set_value(child.doctype, child.name, 'retail_rate', details.retail_rate);
                     frappe.model.set_value(child.doctype, child.name, 'gtin', details.gtin);
                     console.log(details);
                     if (details.attributes) {                        

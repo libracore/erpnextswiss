@@ -27,6 +27,7 @@ class EDIFile(Document):
     def get_item_details(self, item_code):
         item = frappe.get_doc("Item", item_code)
         price_list = frappe.get_value("EDI Connection", self.edi_connection, "price_list")
+        retail_price_list = frappe.get_value("EDI Connection", self.edi_connection, "retail_price_list")
         details = {
             'item_code': item_code,
             'item_name': item.item_name,
@@ -68,6 +69,26 @@ class EDIFile(Document):
             details['rate'] = rates[0]['rate']
         else:
             details['rate'] = 0
+        # get retail price
+        retail_rates = frappe.db.sql("""
+            SELECT 
+                `tabItem Price`.`price_list_rate` AS `rate`
+            FROM `tabItem Price`
+            WHERE 
+                `tabItem Price`.`price_list` = "{price_list}"
+                AND `tabItem Price`.`item_code` = "{item_code}"
+                AND (`tabItem Price`.`valid_from` IS NULL OR `tabItem Price`.`valid_from` <= CURDATE())
+                AND (`tabItem Price`.`valid_upto` IS NULL OR `tabItem Price`.`valid_upto` >= CURDATE())
+            ORDER BY `tabItem Price`.`valid_from` DESC;
+            """.format(item_code=item_code, price_list=retail_price_list), as_dict=True)
+        tax_factor = 1
+        if self.taxes:
+            for t in self.taxes:
+                tax_factor += t.rate / 100
+        if len(retail_rates) > 0:
+            details['retail_rate'] = round(tax_factor * retail_rates[0]['rate'], 2)
+        else:
+            details['retail_rate'] = 0
         # get GTIN
         for barcode in item.barcodes:
             if barcode.barcode_type == "EAN":

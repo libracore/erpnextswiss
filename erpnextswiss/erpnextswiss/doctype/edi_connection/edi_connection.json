@@ -16,6 +16,8 @@
   "gln_recipient",
   "section_pricat",
   "price_list",
+  "col_price_list",
+  "retail_price_list",
   "sec_transmission",
   "transmission_mode",
   "col_transmission",
@@ -111,9 +113,19 @@
    "fieldtype": "Select",
    "label": "EAN version",
    "options": "EAN001\nEAN002\nEAN003\nEAN004\nEAN005\nEAN006\nEAN007\nEAN008\nEAN009\nEAN010"
+  },
+  {
+   "fieldname": "retail_price_list",
+   "fieldtype": "Link",
+   "label": "Retail Price List",
+   "options": "Price List"
+  },
+  {
+   "fieldname": "col_price_list",
+   "fieldtype": "Column Break"
   }
  ],
- "modified": "2022-08-15 21:20:56.405940",
+ "modified": "2022-08-16 08:48:28.880617",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "EDI Connection",

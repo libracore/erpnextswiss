@@ -5,7 +5,7 @@
 from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
-from erpnextswiss.erpnextswiss.edi import download_pricat
+from erpnextswiss.erpnextswiss.edi import download_pricat, download_desadv, get_gtin
 from erpnextswiss.erpnextswiss.attach_pdf import create_folder
 from frappe.utils import cint
 from frappe.utils.file_manager import save_file
@@ -22,6 +22,8 @@ class EDIFile(Document):
         content = None
         if self.edi_type == "PRICAT":
             content = download_pricat(self.name)
+        if self.edi_type == "DESADV":
+            content = download_desadv(self.name)
         return { 'content': content }
         
     def get_item_details(self, item_code):
@@ -90,9 +92,7 @@ class EDIFile(Document):
         else:
             details['retail_rate'] = 0
         # get GTIN
-        for barcode in item.barcodes:
-            if barcode.barcode_type == "EAN":
-                details['gtin'] = barcode.barcode
+        details['gtin'] = get_gtin(item)
                 
         return details
 

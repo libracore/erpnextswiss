@@ -35,33 +35,16 @@ def download_pricat(edi_file):
     
     content_segments = []
     # envelope
-    content_segments.append("UNB+{charset}:3+{gln_sender}:14+{gln_recipient}:14+{yy:02d}{mm:02d}{dd:02d}:{HH:02d}{MM:02d}+{name}+++++EANCOMREF 52+{test}'".format(
-        charset=edi_con.charset,
-        gln_sender=edi_con.gln_sender or "",
-        gln_recipient=edi_con.gln_recipient or "",
-        yy=int(str(edi.date.year)[2:4]),
-        mm=edi.date.month,
-        dd=edi.date.day,
-        HH=edi.date.hour,
-        MM=edi.date.minute,
-        name=edi.name,
-        test=cint(edi.test)
-    ))
+    content_segments.append(get_envelope(edi, edi_con))
     # message header
-    content_segments.append("UNH+{name}+PRICAT:D:{edi_format}:UN:{ean_version}'".format(
-        name=edi.name,
-        edi_format=edi_con.edi_format,
-        ean_version=edi_con.ean_version
-    ))
+    content_segments.append(get_message_header(edi, edi_con))
     # beginning: price/sales catalogue number (hashed price list name, max. length 17)
     content_segments.append("BGM+9+{price_list}+9'".format(
         price_list=hashlib.md5((edi_con.price_list or "notdefined").encode('utf-8')).hexdigest()[:17]
     ))
     # ### SG1
     # message date
-    content_segments.append("DTM+137:{year:04d}{month:02d}{day:02d}:102'".format(
-        year=edi.date.year, month=edi.date.month, day=edi.date.day
-    ))
+    content_segments.append(get_message_date(edi))
     ## date range placeholders
     content_segments.append("DTM+194:20000101:102'")
     content_segments.append("DTM+206:20991231:102'")
@@ -188,3 +171,161 @@ def get_uom_code(uom):
     else:
         # fallback to piece
         return "PCE"
+
+# DESADV section
+
+"""
+Endpoint to hook delivery notes to DESADV
+"""
+@frappe.whitelist()
+def check_create_desadv(delivery_note):
+    # fetch delivery note
+    dn = frappe.get_doc("Delivery Note", delivery_note)
+    # check if there is a EDI connection for this customer
+    desadv_connections = frappe.get_all("EDI Connection", 
+        filters={'edi_type': 'DESADV', 'customer': dn.customer, 'disabled': 0}, 
+        fields=['name'])
+    if len(desadv_connections) > 0:
+        desadv_file = create_desadv(desadv_connections[0]['name'], delivery_note)
+        
+"""
+Creates a new EDI File of DESADV type
+"""
+def create_desadv(edi_connection, delivery_note):
+    edi_con = frappe.get_doc("EDI Connection", edi_connection)
+    edi_file = frappe.get_doc({
+        'doctype': 'EDI File',
+        'edi_connection': edi_connection,
+        'edi_type': edi_con.edi_type,
+        'date': datetime.now(),
+        'title': "DESADV - {0}".format(datetime.now()),
+        'delivery_note': delivery_note
+    })
+    edi_file.insert()
+    edi_file.submit()
+    frappe.db.commit()
+    return edi_file.name
+    
+"""
+Prepares the content of a PRICAT file for download
+"""
+def download_desadv(edi_file):
+    edi = frappe.get_doc("EDI File", edi_file)
+    edi_con = frappe.get_doc("EDI Connection", edi.edi_connection)
+    delivery_note = frappe.get_doc("Delivery Note", edi.delivery_note)
+    
+    content_segments = []
+    # envelope
+    content_segments.append(get_envelope(edi, edi_con))
+    # message header
+    content_segments.append(get_message_header(edi, edi_con))
+    # beginning: price/sales catalogue number (hashed price list name, max. length 17)
+    content_segments.append("BGM+351+{delivery_note}+9'".format(
+        delivery_note=edi.delivery_note[:35]
+    ))
+    # ### SG1
+    # message date
+    content_segments.append(get_message_date(edi))
+    ## dispatch date
+    content_segments.append("DTM+11:{year:04d}{month:02d}{day:02d}:102'".format(
+        year=delivery_note.posting_date.year, month=delivery_note.posting_date.month, day=delivery_note.posting_date.day
+    ))
+    
+    # ### SG2
+    # supplier location number
+    content_segments.append("NAD+SU+{gln_sender}::9'".format(
+        gln_sender=edi_con.gln_sender or ""
+    ))
+    
+    # buyer location number - branch gln
+    content_segments.append("NAD+BY+{gln_recipient}::9'".format(
+        gln_recipient=frappe.get_value("Address", 
+            (delivery_note.shipping_address_name or delivery_note.customer_address), "branch_gln") or ""
+    ))
+    # delivery party
+    content_segments.append("NAD+DP+{gln_recipient}::9'".format(
+        gln_recipient=frappe.get_value("Address", 
+            (delivery_note.shipping_address_name or delivery_note.customer_address), "branch_gln") or ""
+    ))
+    # ultimate consignee
+    content_segments.append("NAD+UC+{gln_recipient}::9'".format(
+        gln_recipient=frappe.get_value("Address", 
+            (delivery_note.shipping_address_name or delivery_note.customer_address), "branch_gln") or ""
+    ))
+
+    
+    # ### SG10
+    # consignment packaging sequence
+    content_segments.append("CPS+1'")
+    
+    # ### SG11
+    # packages
+    content_segments.append("PAC+1'")
+    
+    # ### SG17 items
+    for item in delivery_note.items:
+        item_doc = frappe.get_doc("Item", item.item_code)
+        # line item
+        content_segments.append("LIN+{idx}++{gtin}:EN'".format(
+            idx=item.idx,
+            gtin=get_gtin(item_doc)
+        ))
+        # quantity
+        content_segments.append("QTY+12:{qty}:{uom}'".format(
+            qty=item.qty,
+            uom=get_uom_code(item_doc.get("stock_uom") or "PCE")
+        ))
+        # reference: order number
+        if delivery_note.po_no:
+            content_segments.append("RFF+ON:{po_no}'".format(
+                po_no=delivery_note.po_no
+            ))
+    
+
+    # closing segment
+    content_segments.append("UNT+{segment_count}+{name}'".format(
+        segment_count=len(content_segments) + 1,
+        name=edi.name
+    ))
+    content_segments.append("UNZ+{message_count}+{name}'".format(
+        message_count=1,
+        name=edi.name
+    ))
+    content = "\n".join(content_segments)
+    return content
+
+# segment functions
+def get_envelope(edi, edi_con):
+    return "UNB+{charset}:3+{gln_sender}:14+{gln_recipient}:14+{yy:02d}{mm:02d}{dd:02d}:{HH:02d}{MM:02d}+{name}+++++EANCOMREF 52+{test}'".format(
+        charset=edi_con.charset,
+        gln_sender=edi_con.gln_sender or "",
+        gln_recipient=edi_con.gln_recipient or "",
+        yy=int(str(edi.date.year)[2:4]),
+        mm=edi.date.month,
+        dd=edi.date.day,
+        HH=edi.date.hour,
+        MM=edi.date.minute,
+        name=edi.name,
+        test=cint(edi.test)
+    )
+    
+def get_message_header(edi, edi_con):
+    return "UNH+{name}+{edi_type}:D:{edi_format}:UN:{ean_version}'".format(
+        name=edi.name,
+        edi_type=edi.edi_type,
+        edi_format=edi_con.edi_format,
+        ean_version=edi_con.ean_version
+    )
+
+def get_message_date(edi):
+    return "DTM+137:{year:04d}{month:02d}{day:02d}:102'".format(
+        year=edi.date.year, month=edi.date.month, day=edi.date.day
+    )
+
+def get_gtin(item_doc):
+    gtin = None
+    for barcode in item_doc.barcodes:
+        if barcode.barcode_type == "EAN":
+            gtin = barcode.barcode
+            break
+    return gtin

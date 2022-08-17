@@ -14,10 +14,15 @@
   "company",
   "gln_sender",
   "gln_recipient",
+  "disabled",
   "section_pricat",
   "price_list",
   "col_price_list",
   "retail_price_list",
+  "section_desadv",
+  "customer",
+  "col_desadv",
+  "customer_name",
   "sec_transmission",
   "transmission_mode",
   "col_transmission",
@@ -37,7 +42,7 @@
    "fieldname": "edi_type",
    "fieldtype": "Select",
    "label": "EDI Type",
-   "options": "PRICAT"
+   "options": "PRICAT\nDESADV"
   },
   {
    "depends_on": "eval:doc.edi_type==\"PRICAT\"",
@@ -123,9 +128,38 @@
   {
    "fieldname": "col_price_list",
    "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "eval:doc.edi_type==\"DESADV\"",
+   "fieldname": "section_desadv",
+   "fieldtype": "Section Break",
+   "label": "DESADV"
+  },
+  {
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "label": "Customer",
+   "options": "Customer"
+  },
+  {
+   "fieldname": "col_desadv",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "customer.customer_name",
+   "fieldname": "customer_name",
+   "fieldtype": "Data",
+   "label": "Customer name",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "disabled",
+   "fieldtype": "Check",
+   "label": "Disabled"
   }
  ],
- "modified": "2022-08-16 08:48:28.880617",
+ "modified": "2022-08-17 20:29:32.131351",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "EDI Connection",

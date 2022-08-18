@@ -19,7 +19,7 @@
   "price_list",
   "col_price_list",
   "retail_price_list",
-  "section_desadv",
+  "section_customer",
   "customer",
   "col_desadv",
   "customer_name",
@@ -130,12 +130,6 @@
    "fieldtype": "Column Break"
   },
   {
-   "depends_on": "eval:doc.edi_type==\"DESADV\"",
-   "fieldname": "section_desadv",
-   "fieldtype": "Section Break",
-   "label": "DESADV"
-  },
-  {
    "fieldname": "customer",
    "fieldtype": "Link",
    "label": "Customer",
@@ -157,9 +151,15 @@
    "fieldname": "disabled",
    "fieldtype": "Check",
    "label": "Disabled"
+  },
+  {
+   "depends_on": "eval:[\"DESADV\", \"SLSRPT\"].contains(doc.edi_type)",
+   "fieldname": "section_customer",
+   "fieldtype": "Section Break",
+   "label": "Customer"
   }
  ],
- "modified": "2022-08-17 20:29:32.131351",
+ "modified": "2022-08-18 22:39:53.525191",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "EDI Connection",

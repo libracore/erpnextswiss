@@ -55,6 +55,9 @@ jenv = {
     ]
 }
 
+# allow to link incoing mails to EDI File
+email_append_to = ["EDI File"]
+
 # Home Pages
 # ----------
 

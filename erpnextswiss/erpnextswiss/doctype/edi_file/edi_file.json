@@ -21,7 +21,15 @@
   "section_desadv",
   "delivery_note",
   "section_develop",
-  "test"
+  "test",
+  "section_incoming",
+  "status",
+  "communication",
+  "col_incoming",
+  "subject",
+  "filename",
+  "section_content",
+  "content"
  ],
  "fields": [
   {
@@ -116,6 +124,7 @@
    "read_only": 1
   },
   {
+   "depends_on": "eval:doc.edi_type==\"DESADV\"",
    "fieldname": "section_desadv",
    "fieldtype": "Section Break",
    "label": "DESADV"
@@ -125,10 +134,58 @@
    "fieldtype": "Link",
    "label": "Delivery Note",
    "options": "Delivery Note"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "section_incoming",
+   "fieldtype": "Section Break",
+   "label": "Incoming"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Open\nProcessed",
+   "read_only": 1
+  },
+  {
+   "fieldname": "subject",
+   "fieldtype": "Data",
+   "label": "Subject",
+   "read_only": 1
+  },
+  {
+   "fieldname": "col_incoming",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "communication",
+   "fieldtype": "Link",
+   "label": "Communication",
+   "options": "Communication",
+   "read_only": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "section_content",
+   "fieldtype": "Section Break",
+   "label": "Content"
+  },
+  {
+   "fieldname": "content",
+   "fieldtype": "Code",
+   "label": "Content",
+   "read_only": 1
+  },
+  {
+   "fieldname": "filename",
+   "fieldtype": "Data",
+   "label": "Filename",
+   "read_only": 1
   }
  ],
  "is_submittable": 1,
- "modified": "2022-08-17 20:32:42.607612",
+ "modified": "2022-08-18 21:49:52.015605",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "EDI File",
@@ -137,7 +194,6 @@
   {
    "amend": 1,
    "cancel": 1,
-   "create": 1,
    "delete": 1,
    "email": 1,
    "export": 1,
@@ -152,7 +208,6 @@
   {
    "amend": 1,
    "cancel": 1,
-   "create": 1,
    "delete": 1,
    "email": 1,
    "export": 1,
@@ -167,7 +222,6 @@
   {
    "amend": 1,
    "cancel": 1,
-   "create": 1,
    "delete": 1,
    "email": 1,
    "export": 1,

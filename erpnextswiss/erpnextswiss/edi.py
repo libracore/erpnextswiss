@@ -8,6 +8,8 @@ from datetime import datetime
 import frappe
 import hashlib
 from frappe.utils import cint
+from frappe.desk.form.load import get_attachments
+from datetime import datetime
 
 """
 Creates a new EDI File of PRICAT type
@@ -21,7 +23,7 @@ def create_pricat(edi_connection):
         'date': datetime.now(),
         'title': "PRICAT - {0}".format(datetime.now())
     })
-    edi_file.insert()
+    edi_file.insert(ignore_permissions=True)
     frappe.db.commit()
     return edi_file.name
     
@@ -201,7 +203,7 @@ def create_desadv(edi_connection, delivery_note):
         'title': "DESADV - {0}".format(datetime.now()),
         'delivery_note': delivery_note
     })
-    edi_file.insert()
+    edi_file.insert(ignore_permissions=True)
     edi_file.submit()
     frappe.db.commit()
     return edi_file.name
@@ -230,7 +232,12 @@ def download_desadv(edi_file):
     content_segments.append("DTM+11:{year:04d}{month:02d}{day:02d}:102'".format(
         year=delivery_note.posting_date.year, month=delivery_note.posting_date.month, day=delivery_note.posting_date.day
     ))
-    
+    # reference: order number
+    if delivery_note.po_no:
+        content_segments.append("RFF+VN:{po_no}'".format(
+            po_no=delivery_note.po_no
+        ))
+            
     # ### SG2
     # supplier location number
     content_segments.append("NAD+SU+{gln_sender}::9'".format(
@@ -274,13 +281,7 @@ def download_desadv(edi_file):
         content_segments.append("QTY+12:{qty}:{uom}'".format(
             qty=item.qty,
             uom=get_uom_code(item_doc.get("stock_uom") or "PCE")
-        ))
-        # reference: order number
-        if delivery_note.po_no:
-            content_segments.append("RFF+ON:{po_no}'".format(
-                po_no=delivery_note.po_no
-            ))
-    
+        ))    
 
     # closing segment
     content_segments.append("UNT+{segment_count}+{name}'".format(
@@ -329,3 +330,170 @@ def get_gtin(item_doc):
             gtin = barcode.barcode
             break
     return gtin
+
+def get_item_from_gtin(gtin):
+    ean_matches = frappe.db.sql("""
+        SELECT `parent`
+        FROM `tabItem Barcode`
+        WHERE `barcode_type` = "EAN"
+          AND `barcode` = "{gtin}";
+    """.format(gtin=gtin)
+    if len(ean_matches) > 0:
+        return ean_matches[0]['parent']
+    else:
+        return None
+
+"""
+Inbound EDI message: parse communication and set file
+"""
+def parse_communication(edi_file, communication):
+    edi = frappe.get_doc("EDI File", edi_file)
+    comm = frappe.get_doc("Communication", communication)
+    # fetch attachments
+    attachments = get_attachments("Communication", communication)
+    for a in attachments:
+        f = frappe.get_doc("File", a['name'])
+        content = f.get_content()
+        edi.filename = f.file_name
+        edi.content = content
+        edi.save(ignore_permissions=True)
+        
+    if "ORDERS" in edi.subject or "ORDERS" in edi.filename:
+        edi.edi_type = "ORDERS"
+        edi.save(ignore_permissions=True)
+        create_orders(edi_file)
+    elif "SLSRPT" in edi.subject or "SLSRPT" in edi.filename:
+        edi.edi_type = "SLSRPT"
+        edi.save(ignore_permissions=True)
+        create_slsrpt(edi_file)
+    
+    return
+    
+"""
+Creates a new EDI File of SLSRPT type
+"""
+def create_slsrpt(edi_file):
+    edi = frappe.get_doc("EDI File", edi_file)
+    # parse content
+    segments = get_segments(edi.content)
+    data = parse_edi(segments)
+    
+    # find matching connection
+    edi_cons = frappe.get_all("EDI Connection", 
+        filters={
+            'edi_type': "SLSRPT",
+            'gln_sender': data['sender_gln'],
+            'gln_recipient': data['recipient_gln']
+        },
+        fields=['name']
+    )
+    if len(edi_cons) > 0:
+        edi_con = frappe.get_doc("EDI Connection", edi_cons[0]['name'])
+        edi.edi_connection = edi_cons[0]['name']
+        
+        # create sales report
+        sales_report = frappe.get_doc({
+            'doctype': "EDI Sales Report",
+            'edi_file': edi_file,
+            'customer': edi_con.customer,
+            'date': data['document_date'],
+            'currency': data['currency']
+        })
+        for item in data['items']:
+            sales_report.append("items", {
+                'barcode': item['barcode'],
+                'item_code': item['item_code'],
+                'qty': item['qty'],
+                'rate': item['net_unit_rate']
+            })
+        sales_report.insert(ignore_permissions=True)
+        edi.submit()
+    frappe.db.commit()
+    return edi_file.name
+
+"""
+Creates a new EDI File of ORDERS type
+"""
+def create_orders(edi_file):
+    edi = frappe.get_doc("EDI File", edi_file)
+    # parse content
+    
+        # TODO
+        
+    edi_file.insert(ignore_permissions=True)
+    frappe.db.commit()
+    return edi_file.name
+    
+def get_segments(content):
+    return content.split("\n")
+
+def parse_segment(segment):
+    structure = segment.split("+")
+    for s in structure:
+        s = s.split(":")
+    return structure
+
+def parse_date(date_str, date_code):
+    if date_code == "102":
+        return datetime.strptime(date_str, "%Y%m%d")
+        
+def parse_edi(segments):
+    data = {
+        'items': []
+    }
+    for segment in segments:
+        structure = parse_segment(segment)
+        if structure[0] == "UNB":
+            # header
+            data['sender_gln'] = structure[2][0]
+            data['recipient_gln'] = structure[3][0]
+        elif structure[0] == "UNH":
+            # message header
+            data['edi_type'] = structure[2][0]
+        elif structure[0] == "BGM":
+            # begin message
+            data['action'] = structure[3][0]
+        elif structure[0] == "DTM":
+            # date
+            if structure[1][0] == "137":        # document date
+                data['document_date'] = parse_date(structure[1][1], structure[1][2])
+            elif structure[1][0] == "90":        # report start date
+                data['report_start_date'] = parse_date(structure[1][1], structure[1][2])
+            elif structure[1][0] == "91":        # report end date
+                data['report_end_date'] = parse_date(structure[1][1], structure[1][2])
+        elif structure[0] == "NAD":
+            # name and address
+            if structure[1][0] == "SU":        # supplier
+                data['supplier'] = structure[2][0]
+            elif structure[1][0] == "BY":        # buyer
+                data['buyer'] = structure[2][0]
+        elif structure[0] == "CUX":
+            # currencies
+            data['currency'] = structure[1][1]
+        elif structure[0] == "LOC":
+            # location
+            data['location_gln'] = structure[2][0]
+        elif structure[0] == "LIN":
+            # line item
+            # find item
+            item_barcode = structure[3][0]
+            item_code = get_item_from_gtin(item_barcode)
+            data['items'].append({
+                'barcode': item_barcode,
+                'item_code': item_code
+            })
+        elif structure[0] == "PRI":
+            # price details
+            if structure[1][0] == "AAA":
+                data['items'][-1]['calculation_net_rate'] = float(structure[1][1]
+            elif structure[1][0] == "NTP":
+                data['items'][-1]['net_unit_rate'] = float(structure[1][1]
+        elif structure[0] == "QTY":
+            # quantity
+            data['items'][-1]['qty'] = float(structure[1][1]
+        elif structure[0] == "UNT":
+            # message trailer
+            data['segments'] = structure[1][0]
+    
+    return data
+    

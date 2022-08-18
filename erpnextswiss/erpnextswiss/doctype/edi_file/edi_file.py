@@ -5,7 +5,7 @@
 from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
-from erpnextswiss.erpnextswiss.edi import download_pricat, download_desadv, get_gtin
+from erpnextswiss.erpnextswiss.edi import download_pricat, download_desadv, parse_communication, get_gtin
 from erpnextswiss.erpnextswiss.attach_pdf import create_folder
 from frappe.utils import cint
 from frappe.utils.file_manager import save_file
@@ -16,6 +16,21 @@ class EDIFile(Document):
         # create and transmit file
         self.transmit_file()
         
+        return
+    
+    def after_insert(self):
+        if not self.edi_type:
+            # this is an inbound message: check communication
+            communications = frappe.get_all("Communication", 
+                filters={
+                    'reference_doctype': 'EDI File',
+                    'reference_name': self.name
+                },
+                fields=['name']
+            )
+            if len(communications) > 0:
+                for c in communications:
+                    parse_communication(self.name, c['name'])
         return
         
     def download_file(self):

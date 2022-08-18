@@ -42,7 +42,7 @@
    "fieldname": "edi_type",
    "fieldtype": "Select",
    "label": "EDI Type",
-   "options": "PRICAT\nDESADV"
+   "options": "DESADV\nPRICAT\nSLSRPT"
   },
   {
    "depends_on": "eval:doc.edi_type==\"PRICAT\"",
@@ -153,13 +153,13 @@
    "label": "Disabled"
   },
   {
-   "depends_on": "eval:[\"DESADV\", \"SLSRPT\"].contains(doc.edi_type)",
+   "depends_on": "eval:[\"DESADV\", \"SLSRPT\"].includes(doc.edi_type)",
    "fieldname": "section_customer",
    "fieldtype": "Section Break",
    "label": "Customer"
   }
  ],
- "modified": "2022-08-18 22:39:53.525191",
+ "modified": "2022-08-18 23:25:18.332421",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "EDI Connection",

@@ -201,6 +201,12 @@ def get_data():
                        "name": "EDI File",
                        "label": _("EDI File"),
                        "description": _("EDI File")                   
+                   } ,
+                   {
+                       "type": "doctype",
+                       "name": "EDI Sales Report",
+                       "label": _("EDI Sales Report"),
+                       "description": _("EDI Sales Report")                   
                    }               
             ]
         },

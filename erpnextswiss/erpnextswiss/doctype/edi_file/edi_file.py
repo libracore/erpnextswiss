@@ -5,7 +5,7 @@
 from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
-from erpnextswiss.erpnextswiss.edi import download_pricat, download_desadv, parse_communication, get_gtin
+from erpnextswiss.erpnextswiss.edi import download_pricat, download_desadv, get_gtin
 from erpnextswiss.erpnextswiss.attach_pdf import create_folder
 from frappe.utils import cint
 from frappe.utils.file_manager import save_file
@@ -16,21 +16,6 @@ class EDIFile(Document):
         # create and transmit file
         self.transmit_file()
         
-        return
-    
-    def after_insert(self):
-        if not self.edi_type:
-            # this is an inbound message: check communication
-            communications = frappe.get_all("Communication", 
-                filters={
-                    'reference_doctype': 'EDI File',
-                    'reference_name': self.name
-                },
-                fields=['name']
-            )
-            if len(communications) > 0:
-                for c in communications:
-                    parse_communication(self.name, c['name'])
         return
         
     def download_file(self):
@@ -115,22 +100,22 @@ class EDIFile(Document):
     Create and attach the file
     """
     def transmit_file(self):
-        content = self.download_file()
-        # check if file was created
-        if 'content' in content:
-            # create EDI file attachment folder
-            folder = create_folder("edi_file", "Home")
-            # store EDI File
-            f = save_file(
-                "{0}.edi".format(self.name), 
-                content['content'], 
-                "EDI File", 
-                self.name, 
-                folder=folder, 
-                is_private=True
-            )
-            # send mail
-            if frappe.get_value("EDI Connection", self.edi_connection, "transmission_mode") == "Email":
+        if frappe.get_value("EDI Connection", self.edi_connection, "transmission_mode") == "Email":
+            content = self.download_file()
+            # check if file was created
+            if 'content' in content:
+                # create EDI file attachment folder
+                folder = create_folder("edi_file", "Home")
+                # store EDI File
+                f = save_file(
+                    "{0}.edi".format(self.name), 
+                    content['content'], 
+                    "EDI File", 
+                    self.name, 
+                    folder=folder, 
+                    is_private=True
+                )
+                # send mail
                 send(
                     recipients=frappe.get_value("EDI Connection", self.edi_connection, "email_recipient"), 
                     subject=self.name, 
@@ -139,7 +124,7 @@ class EDIFile(Document):
                     reference_name=self.name,
                     attachments=[{'fid': f.name}]
                 )
-            
-        else:
-            frappe.log_error("No content found: {0}".format(self.name), "Transmit EDI File")
+                
+            else:
+                frappe.log_error("No content found: {0}".format(self.name), "Transmit EDI File")
         return

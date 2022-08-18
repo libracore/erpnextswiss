@@ -10,6 +10,7 @@ import hashlib
 from frappe.utils import cint
 from frappe.desk.form.load import get_attachments
 from datetime import datetime
+from frappe import _
 
 """
 Creates a new EDI File of PRICAT type
@@ -337,12 +338,37 @@ def get_item_from_gtin(gtin):
         FROM `tabItem Barcode`
         WHERE `barcode_type` = "EAN"
           AND `barcode` = "{gtin}";
-    """.format(gtin=gtin)
+    """.format(gtin=gtin), as_dict=True)
     if len(ean_matches) > 0:
         return ean_matches[0]['parent']
     else:
         return None
 
+"""
+Inbound: monitor EDI files for incoming
+"""
+def process_incoming():
+    incoming_files = frappe.db.sql("""
+        SELECT `name`
+        FROM `tabEDI File`
+        WHERE `edi_type` IS NULL
+          AND `docstatus` = 0;
+    """, as_dict=True)
+    
+    for edi_file in incoming_files:
+        # this is an inbound message: check communication
+        communications = frappe.get_all("Communication", 
+            filters={
+                'reference_doctype': 'EDI File',
+                'reference_name': edi_file['name']
+            },
+            fields=['name']
+        )
+        if len(communications) > 0:
+            for c in communications:
+                parse_communication(edi_file['name'], c['name'])
+    return
+        
 """
 Inbound EDI message: parse communication and set file
 """
@@ -408,8 +434,10 @@ def create_slsrpt(edi_file):
             })
         sales_report.insert(ignore_permissions=True)
         edi.submit()
+    else:
+        frappe.log_error( _("No matching EDI Connection found for {0}").format(edi_file), _("Create EDI SLSRPT") )
     frappe.db.commit()
-    return edi_file.name
+    return
 
 """
 Creates a new EDI File of ORDERS type
@@ -422,16 +450,17 @@ def create_orders(edi_file):
         
     edi_file.insert(ignore_permissions=True)
     frappe.db.commit()
-    return edi_file.name
+    return
     
 def get_segments(content):
     return content.split("\n")
 
 def parse_segment(segment):
     structure = segment.split("+")
+    matrix = []
     for s in structure:
-        s = s.split(":")
-    return structure
+        matrix.append(s.split(":"))
+    return matrix
 
 def parse_date(date_str, date_code):
     if date_code == "102":
@@ -443,17 +472,17 @@ def parse_edi(segments):
     }
     for segment in segments:
         structure = parse_segment(segment)
-        if structure[0] == "UNB":
+        if structure[0][0] == "UNB":
             # header
             data['sender_gln'] = structure[2][0]
             data['recipient_gln'] = structure[3][0]
-        elif structure[0] == "UNH":
+        elif structure[0][0] == "UNH":
             # message header
             data['edi_type'] = structure[2][0]
-        elif structure[0] == "BGM":
+        elif structure[0][0] == "BGM":
             # begin message
             data['action'] = structure[3][0]
-        elif structure[0] == "DTM":
+        elif structure[0][0] == "DTM":
             # date
             if structure[1][0] == "137":        # document date
                 data['document_date'] = parse_date(structure[1][1], structure[1][2])
@@ -461,19 +490,19 @@ def parse_edi(segments):
                 data['report_start_date'] = parse_date(structure[1][1], structure[1][2])
             elif structure[1][0] == "91":        # report end date
                 data['report_end_date'] = parse_date(structure[1][1], structure[1][2])
-        elif structure[0] == "NAD":
+        elif structure[0][0] == "NAD":
             # name and address
             if structure[1][0] == "SU":        # supplier
                 data['supplier'] = structure[2][0]
             elif structure[1][0] == "BY":        # buyer
                 data['buyer'] = structure[2][0]
-        elif structure[0] == "CUX":
+        elif structure[0][0] == "CUX":
             # currencies
             data['currency'] = structure[1][1]
-        elif structure[0] == "LOC":
+        elif structure[0][0] == "LOC":
             # location
             data['location_gln'] = structure[2][0]
-        elif structure[0] == "LIN":
+        elif structure[0][0] == "LIN":
             # line item
             # find item
             item_barcode = structure[3][0]
@@ -482,16 +511,16 @@ def parse_edi(segments):
                 'barcode': item_barcode,
                 'item_code': item_code
             })
-        elif structure[0] == "PRI":
+        elif structure[0][0] == "PRI":
             # price details
             if structure[1][0] == "AAA":
-                data['items'][-1]['calculation_net_rate'] = float(structure[1][1]
+                data['items'][-1]['calculation_net_rate'] = float(structure[1][1])
             elif structure[1][0] == "NTP":
-                data['items'][-1]['net_unit_rate'] = float(structure[1][1]
-        elif structure[0] == "QTY":
+                data['items'][-1]['net_unit_rate'] = float(structure[1][1])
+        elif structure[0][0] == "QTY":
             # quantity
-            data['items'][-1]['qty'] = float(structure[1][1]
-        elif structure[0] == "UNT":
+            data['items'][-1]['qty'] = float(structure[1][1].split("'")[0])
+        elif structure[0][0] == "UNT":
             # message trailer
             data['segments'] = structure[1][0]
     

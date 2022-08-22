@@ -344,6 +344,14 @@ def get_item_from_gtin(gtin):
     else:
         return None
 
+def get_address_from_gln(gln):
+    gln_matches = frappe.get_all("Address",
+        filters={'branch_gln': gln},
+        fields=['name'])
+    if len(gln_matches) > 0:
+        return gln_matches[0]['name']
+    else:
+        return None
 """
 Inbound: monitor EDI files for incoming
 """
@@ -383,6 +391,11 @@ def parse_communication(edi_file, communication):
         edi.filename = f.file_name
         edi.content = content
         edi.save(ignore_permissions=True)
+    
+    # fallback: if no content was found from attachment, try to parse communication body
+    if not edi.content:
+        edi.content = comm.content
+        edi.save(ignore_permissions=True)
         
     if "ORDERS" in edi.subject or "ORDERS" in edi.filename:
         edi.edi_type = "ORDERS"
@@ -409,7 +422,8 @@ def create_slsrpt(edi_file):
         filters={
             'edi_type': "SLSRPT",
             'gln_sender': data['sender_gln'],
-            'gln_recipient': data['recipient_gln']
+            'gln_recipient': data['recipient_gln'],
+            'disabled': 0
         },
         fields=['name']
     )
@@ -423,7 +437,10 @@ def create_slsrpt(edi_file):
             'edi_file': edi_file,
             'customer': edi_con.customer,
             'date': data['document_date'],
-            'currency': data['currency']
+            'currency': data['currency'],
+            'location_gln': data['location_gln'],
+            'address': get_address_from_gln(data['location_gln']),
+            'title': "{0} - {1}".format(edi_con.customer, data['document_date'])
         })
         for item in data['items']:
             sales_report.append("items", {
@@ -445,10 +462,54 @@ Creates a new EDI File of ORDERS type
 def create_orders(edi_file):
     edi = frappe.get_doc("EDI File", edi_file)
     # parse content
-    
-        # TODO
+    segments = get_segments(edi.content)
+    data = parse_edi(segments)
+    print("{0}".format(data))
+    print("{0}".format({
+            'edi_type': "ORDERS",
+            'gln_sender': data['sender_gln'] if 'gln_sender' in data else data['buyer'],
+            'gln_recipient': data['recipient_gln'] if 'recipient_gln' in data else data['supplier'],
+            'disabled': 0
+        }))
+    # find matching connection
+    edi_cons = frappe.get_all("EDI Connection", 
+        filters={
+            'edi_type': "ORDERS",
+            'gln_sender': data['sender_gln'] if 'gln_sender' in data else data['buyer'],
+            'gln_recipient': data['recipient_gln'] if 'recipient_gln' in data else data['supplier'],
+            'disabled': 0
+        },
+        fields=['name']
+    )
+    if len(edi_cons) > 0:
+        edi_con = frappe.get_doc("EDI Connection", edi_cons[0]['name'])
+        edi.edi_connection = edi_cons[0]['name']
         
-    edi_file.insert(ignore_permissions=True)
+        # create sales order
+        sales_order = frappe.get_doc({
+            'doctype': "Sales Order",
+            'edi_file': edi_file,
+            'customer': edi_con.customer,
+            'transaction_date': data['document_date'],
+            'shipping_address_name': get_address_from_gln(data['deliver_to']),
+            'delivery_date': data['requested_delivery_date'],
+            'po_no': data['reference']
+        })
+        if 'currency' in data:
+            sales_order.currency = data['currency']
+        for item in data['items']:
+            if item['item_code']:
+                sales_order.append("items", {
+                    'item_code': item['item_code'],
+                    'qty': item['qty'],
+                    'rate': item['calculation_net_rate'] if 'calculation_net_rate' in item else item['net_unit_rate']
+                })
+            else:
+                frappe.log_error( _("Order of unknown item: {0}: {1}").format(edi_file, item['barcode']), _("EDI create order") )
+        sales_order.insert(ignore_permissions=True)
+        edi.submit()
+    else:
+        frappe.log_error( _("No matching EDI Connection found for {0}").format(edi_file), _("Create EDI ORDERS") )
     frappe.db.commit()
     return
     
@@ -463,8 +524,10 @@ def parse_segment(segment):
     return matrix
 
 def parse_date(date_str, date_code):
-    if date_code == "102":
+    if date_code == "102" or date_code == "102'":
         return datetime.strptime(date_str, "%Y%m%d")
+    else:
+        return date_str
         
 def parse_edi(segments):
     data = {
@@ -490,12 +553,18 @@ def parse_edi(segments):
                 data['report_start_date'] = parse_date(structure[1][1], structure[1][2])
             elif structure[1][0] == "91":        # report end date
                 data['report_end_date'] = parse_date(structure[1][1], structure[1][2])
+            elif structure[1][0] == "2":        # requested delivery date
+                data['requested_delivery_date'] = parse_date(structure[1][1], structure[1][2])
+        elif structure[0][0] == "RFF":
+            data['reference'] = (structure[1][1] or "").replace("'", "")
         elif structure[0][0] == "NAD":
             # name and address
             if structure[1][0] == "SU":        # supplier
                 data['supplier'] = structure[2][0]
             elif structure[1][0] == "BY":        # buyer
                 data['buyer'] = structure[2][0]
+            elif structure[1][0] == "DP":        # delivery address
+                data['deliver_to'] = structure[2][0]
         elif structure[0][0] == "CUX":
             # currencies
             data['currency'] = structure[1][1]
@@ -514,9 +583,9 @@ def parse_edi(segments):
         elif structure[0][0] == "PRI":
             # price details
             if structure[1][0] == "AAA":
-                data['items'][-1]['calculation_net_rate'] = float(structure[1][1])
+                data['items'][-1]['calculation_net_rate'] = float((structure[1][1] or "").replace("'", ""))
             elif structure[1][0] == "NTP":
-                data['items'][-1]['net_unit_rate'] = float(structure[1][1])
+                data['items'][-1]['net_unit_rate'] = float((structure[1][1] or "").replace("'", ""))
         elif structure[0][0] == "QTY":
             # quantity
             data['items'][-1]['qty'] = float(structure[1][1].split("'")[0])

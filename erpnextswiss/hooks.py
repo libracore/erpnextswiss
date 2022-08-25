@@ -55,6 +55,9 @@ jenv = {
     ]
 }
 
+# allow to link incoing mails to EDI File
+email_append_to = ["EDI File"]
+
 # Home Pages
 # ----------
 
@@ -134,6 +137,9 @@ after_install = "erpnextswiss.setup.install.after_install"
 scheduler_events = {
     "daily": [
         "erpnextswiss.erpnextswiss.doctype.inspection_equipment.inspection_equipment.check_calibration_status"
+    ],
+    "hourly": [
+        "erpnextswiss.erpnextswiss.edi.process_incoming"
     ]
 }
 

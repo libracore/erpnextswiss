@@ -42,12 +42,14 @@
   {
    "fieldname": "date",
    "fieldtype": "Datetime",
+   "in_list_view": 1,
    "label": "Date"
   },
   {
    "fetch_from": "edi_connection.edi_type",
    "fieldname": "edi_type",
    "fieldtype": "Data",
+   "in_list_view": 1,
    "label": "EDI Type",
    "read_only": 1
   },
@@ -185,7 +187,7 @@
   }
  ],
  "is_submittable": 1,
- "modified": "2022-08-18 21:49:52.015605",
+ "modified": "2022-08-25 21:14:01.962402",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "EDI File",

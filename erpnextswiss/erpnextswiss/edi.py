@@ -423,7 +423,8 @@ def create_slsrpt(edi_file):
             'edi_type': "SLSRPT",
             'gln_sender': data['sender_gln'],
             'gln_recipient': data['recipient_gln'],
-            'disabled': 0
+            'disabled': 0,
+            'date': datetime.now()
         },
         fields=['name']
     )
@@ -464,20 +465,14 @@ def create_orders(edi_file):
     # parse content
     segments = get_segments(edi.content)
     data = parse_edi(segments)
-    print("{0}".format(data))
-    print("{0}".format({
-            'edi_type': "ORDERS",
-            'gln_sender': data['sender_gln'] if 'gln_sender' in data else data['buyer'],
-            'gln_recipient': data['recipient_gln'] if 'recipient_gln' in data else data['supplier'],
-            'disabled': 0
-        }))
     # find matching connection
     edi_cons = frappe.get_all("EDI Connection", 
         filters={
             'edi_type': "ORDERS",
             'gln_sender': data['sender_gln'] if 'gln_sender' in data else data['buyer'],
             'gln_recipient': data['recipient_gln'] if 'recipient_gln' in data else data['supplier'],
-            'disabled': 0
+            'disabled': 0,
+            'date':datetime.now()
         },
         fields=['name']
     )
@@ -506,6 +501,7 @@ def create_orders(edi_file):
                 })
             else:
                 frappe.log_error( _("Order of unknown item: {0}: {1}").format(edi_file, item['barcode']), _("EDI create order") )
+        sales_order.flags.ignore_mandatory = True
         sales_order.insert(ignore_permissions=True)
         edi.submit()
     else:

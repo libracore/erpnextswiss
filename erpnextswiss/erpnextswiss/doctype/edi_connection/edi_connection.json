@@ -41,6 +41,7 @@
    "default": "PRICAT",
    "fieldname": "edi_type",
    "fieldtype": "Select",
+   "in_list_view": 1,
    "label": "EDI Type",
    "options": "DESADV\nPRICAT\nSLSRPT\nORDERS"
   },
@@ -159,7 +160,7 @@
    "label": "Customer"
   }
  ],
- "modified": "2022-08-23 00:02:59.661614",
+ "modified": "2022-08-25 21:07:22.976369",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "EDI Connection",

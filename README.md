@@ -78,6 +78,8 @@ In case you update from the sources and observe an error, make sure to update de
     * ISO 20022
     * ZUGFeRD
     * Interface to Zefix
+    * Datatrans interface for payments
+    * EDI connector: allows to fully integrate EDI exchange (PRICAT, DESADV, ORDERS, SLSRPT, ...)
 
 ## Release notes
 Refer to [https://github.com/libracore/erpnextswiss/wiki/Release-Notes](https://github.com/libracore/erpnextswiss/wiki/Release-Notes)

@@ -11,6 +11,7 @@
   "payment_reminder_auto_submit",
   "column_payment_reminder",
   "payment_reminder_charges",
+  "payment_reminder_level_blocking_period",
   "section_automated_payments",
   "planning_days",
   "participant_number",
@@ -227,10 +228,16 @@
    "fieldname": "enable_salary_payment",
    "fieldtype": "Check",
    "label": "Enable salary payment"
+  },
+  {
+   "fieldname": "payment_reminder_level_blocking_period",
+   "fieldtype": "Table",
+   "label": "Payment Reminder Level Blocking Period",
+   "options": "ERPNextSwiss Settings Payment Reminder Level Blocking Period"
   }
  ],
  "issingle": 1,
- "modified": "2021-11-16 15:02:53.244767",
+ "modified": "2022-06-16 09:15:04.146366",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "ERPNextSwiss Settings",

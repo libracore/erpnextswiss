@@ -13,6 +13,7 @@
   "column_main",
   "canton",
   "canton_code",
+  "bfsnr",
   "municipality",
   "country",
   "country_code",
@@ -88,12 +89,19 @@
    "label": "Longitude"
   },
   {
+   "fetch_from": "bfsnr.municipality",
    "fieldname": "municipality",
    "fieldtype": "Data",
    "label": "Municipality"
+  },
+  {
+   "fieldname": "bfsnr",
+   "fieldtype": "Link",
+   "label": "BFSNR",
+   "options": "Municipality"
   }
  ],
- "modified": "2021-08-03 14:01:32.349467",
+ "modified": "2022-06-03 12:02:01.643476",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "Pincode",

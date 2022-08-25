@@ -71,6 +71,19 @@ def get_data():
             ]
         },
         {
+            "label": _("Finance"),
+            "icon": "fa fa-users",
+            "items": [
+                   {
+                        "type": "report",
+                        "name": "Account Sheets",
+                        "label": _("Account Sheets"),
+                        "doctype": "GL Entry",
+                        "is_query_report": True
+                   }
+            ]
+        },
+        {
             "label": _("Human Resources"),
             "icon": "fa fa-users",
             "items": [
@@ -92,6 +105,13 @@ def get_data():
                         "name": "Monthly Worktime",
                         "label": _("Monthly Worktime"),
                         "doctype": "Timesheet",
+                        "is_query_report": True
+                   },
+                   {
+                        "type": "report",
+                        "name": "Annual Salary Sheet",
+                        "label": _("Annual Salary Sheet"),
+                        "doctype": "Salary Slip",
                         "is_query_report": True
                    }
             ]
@@ -172,6 +192,12 @@ def get_data():
             "label": _("Integrations"),
             "icon": "octicon octicon-git-compare",
             "items": [
+                   {
+                       "type": "doctype",
+                       "name": "Datatrans Settings",
+                       "label": _("Datatrans Settings"),
+                       "description": _("Datatrans Settings")                   
+                   },
                    {
                        "type": "doctype",
                        "name": "Abacus Export File",

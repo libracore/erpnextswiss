@@ -445,11 +445,19 @@ def create_slsrpt(edi_file):
             'title': "{0} - {1}".format(edi_con.customer, data['document_date'])
         })
         for item in data['items']:
+            if item['location_gln']:
+                addresses = frappe.get_all("Address", filters={'branch_gln': item['location_gln']}, fields=['name'])
+                if len(addresses) > 0:
+                    address = addresses[0]['name']
+                else:
+                    address = None
             sales_report.append("items", {
                 'barcode': item['barcode'],
                 'item_code': item['item_code'],
                 'qty': item['qty'],
-                'rate': item['net_unit_rate']
+                'rate': item['net_unit_rate'],
+                'gln': item['location_gln'],
+                'address': address
             })
         sales_report.insert(ignore_permissions=True)
         edi.submit()
@@ -531,6 +539,7 @@ def parse_edi(segments):
     data = {
         'items': []
     }
+    location_gln = None
     for segment in segments:
         structure = parse_segment(segment)
         if structure[0][0] == "UNB":
@@ -569,6 +578,7 @@ def parse_edi(segments):
         elif structure[0][0] == "LOC":
             # location
             data['location_gln'] = structure[2][0]
+            location_gln = structure[2][0]
         elif structure[0][0] == "LIN":
             # line item
             # find item
@@ -576,7 +586,8 @@ def parse_edi(segments):
             item_code = get_item_from_gtin(item_barcode)
             data['items'].append({
                 'barcode': item_barcode,
-                'item_code': item_code
+                'item_code': item_code,
+                'location_gln': location_gln            # apply last found location gln
             })
         elif structure[0][0] == "PRI":
             # price details

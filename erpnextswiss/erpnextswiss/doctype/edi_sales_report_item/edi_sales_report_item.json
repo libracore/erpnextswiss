@@ -6,9 +6,14 @@
  "field_order": [
   "item_code",
   "item_name",
+  "col_main",
   "qty",
   "rate",
-  "barcode"
+  "barcode",
+  "sec_location",
+  "gln",
+  "col_location",
+  "address"
  ],
  "fields": [
   {
@@ -41,10 +46,36 @@
    "fieldname": "barcode",
    "fieldtype": "Data",
    "label": "Barcode"
+  },
+  {
+   "fieldname": "col_main",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "sec_location",
+   "fieldtype": "Section Break",
+   "label": "Location"
+  },
+  {
+   "fieldname": "gln",
+   "fieldtype": "Data",
+   "label": "GLN",
+   "read_only": 1
+  },
+  {
+   "fieldname": "col_location",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "address",
+   "fieldtype": "Link",
+   "label": "Address",
+   "options": "Address",
+   "read_only": 1
   }
  ],
  "istable": 1,
- "modified": "2022-08-18 22:43:27.234641",
+ "modified": "2022-08-29 22:34:07.782393",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "EDI Sales Report Item",

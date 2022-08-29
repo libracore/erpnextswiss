@@ -41,7 +41,7 @@ DocType: VAT Declaration,Get values,Werte holen
 DocType: VAT Declaration,Recalculate,Neu berechnen
 DocType: VAT Declaration,Total revenue (200),"Total der vereinbarten bzw. vereinnahmten Entgelte (Art. 39), inkl. Entgelte aus Übertragungen im Meldeverfahren sowie aus Leistungen im Ausland (200)"
 DocType: VAT Declaration,Non-taxable revenue (205),Nicht steuerpflichtige Umsätze (205)
-DocType: VAT Declaration,Tax-free services (220),"Von der Steuer befreite Leistungen (u.a. Exporte; Art. 23), von der Steuer befreite Lesitungen an begünstigte Einrichtungen und Personen (220)"
+DocType: VAT Declaration,Tax-free services (220),"Von der Steuer befreite Leistungen (u.a. Exporte; Art. 23), von der Steuer befreite Leistungen an begünstigte Einrichtungen und Personen (220)"
 DocType: VAT Declaration,Revenue abroad (221),Leistungen im Ausland (221)
 DocType: VAT Declaration,Transfers (225),"Übertragung im Meldeverfahren (Art. 38, bitte zusätzlich Form. 764 einreichen) (225)"
 DocType: VAT Declaration,Non-taxable services (230),"Nicht steuerbare Leistungen (Art 21), für die nicht nach Art. 22 optiert wird (230)"

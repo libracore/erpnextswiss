@@ -1,0 +1,211 @@
+{
+ "autoname": "field:title",
+ "creation": "2022-05-08 20:22:22.897763",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "title",
+  "edi_type",
+  "charset",
+  "edi_format",
+  "ean_version",
+  "column_main",
+  "company",
+  "gln_sender",
+  "gln_recipient",
+  "disabled",
+  "section_pricat",
+  "price_list",
+  "col_price_list",
+  "retail_price_list",
+  "section_customer",
+  "customer",
+  "col_desadv",
+  "customer_name",
+  "sec_transmission",
+  "transmission_mode",
+  "col_transmission",
+  "email_recipient"
+ ],
+ "fields": [
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Title",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "default": "PRICAT",
+   "fieldname": "edi_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "EDI Type",
+   "options": "DESADV\nPRICAT\nSLSRPT\nORDERS"
+  },
+  {
+   "depends_on": "eval:doc.edi_type==\"PRICAT\"",
+   "fieldname": "section_pricat",
+   "fieldtype": "Section Break",
+   "label": "PRICAT"
+  },
+  {
+   "fieldname": "price_list",
+   "fieldtype": "Link",
+   "label": "Price List",
+   "options": "Price List"
+  },
+  {
+   "fieldname": "column_main",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "gln_sender",
+   "fieldtype": "Data",
+   "label": "GLN Sender"
+  },
+  {
+   "fieldname": "gln_recipient",
+   "fieldtype": "Data",
+   "label": "GLN Recipient"
+  },
+  {
+   "default": "UNOA",
+   "fieldname": "charset",
+   "fieldtype": "Select",
+   "label": "Charset",
+   "options": "UNOA\nUNOB\nUNOC\nUNOD\nUNOE\nUNOF"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company"
+  },
+  {
+   "default": "01B",
+   "fieldname": "edi_format",
+   "fieldtype": "Select",
+   "label": "Format",
+   "options": "01B\n96A"
+  },
+  {
+   "fieldname": "sec_transmission",
+   "fieldtype": "Section Break",
+   "label": "Transmission"
+  },
+  {
+   "default": "Email",
+   "fieldname": "transmission_mode",
+   "fieldtype": "Select",
+   "label": "Mode",
+   "options": "None\nEmail"
+  },
+  {
+   "fieldname": "col_transmission",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "eval:doc.transmission_mode==\"Email\"",
+   "fieldname": "email_recipient",
+   "fieldtype": "Data",
+   "label": "Email Recipient"
+  },
+  {
+   "default": "EAN008",
+   "fieldname": "ean_version",
+   "fieldtype": "Select",
+   "label": "EAN version",
+   "options": "EAN001\nEAN002\nEAN003\nEAN004\nEAN005\nEAN006\nEAN007\nEAN008\nEAN009\nEAN010"
+  },
+  {
+   "fieldname": "retail_price_list",
+   "fieldtype": "Link",
+   "label": "Retail Price List",
+   "options": "Price List"
+  },
+  {
+   "fieldname": "col_price_list",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "label": "Customer",
+   "options": "Customer"
+  },
+  {
+   "fieldname": "col_desadv",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "customer.customer_name",
+   "fieldname": "customer_name",
+   "fieldtype": "Data",
+   "label": "Customer name",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "disabled",
+   "fieldtype": "Check",
+   "label": "Disabled"
+  },
+  {
+   "depends_on": "eval:[\"DESADV\", \"SLSRPT\", \"ORDERS\"].includes(doc.edi_type)",
+   "fieldname": "section_customer",
+   "fieldtype": "Section Break",
+   "label": "Customer"
+  }
+ ],
+ "modified": "2022-08-25 21:07:22.976369",
+ "modified_by": "Administrator",
+ "module": "ERPNextSwiss",
+ "name": "EDI Connection",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Item Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "title_field": "title",
+ "track_changes": 1
+}

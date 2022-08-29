@@ -423,14 +423,15 @@ def create_slsrpt(edi_file):
             'edi_type': "SLSRPT",
             'gln_sender': data['sender_gln'],
             'gln_recipient': data['recipient_gln'],
-            'disabled': 0,
-            'date': datetime.now()
+            'disabled': 0
         },
         fields=['name']
     )
     if len(edi_cons) > 0:
         edi_con = frappe.get_doc("EDI Connection", edi_cons[0]['name'])
         edi.edi_connection = edi_cons[0]['name']
+        edi.date = datetime.now()
+        edi.save(ignore_permission=True
         
         # create sales report
         sales_report = frappe.get_doc({
@@ -471,14 +472,15 @@ def create_orders(edi_file):
             'edi_type': "ORDERS",
             'gln_sender': data['sender_gln'] if 'gln_sender' in data else data['buyer'],
             'gln_recipient': data['recipient_gln'] if 'recipient_gln' in data else data['supplier'],
-            'disabled': 0,
-            'date':datetime.now()
+            'disabled': 0
         },
         fields=['name']
     )
     if len(edi_cons) > 0:
         edi_con = frappe.get_doc("EDI Connection", edi_cons[0]['name'])
         edi.edi_connection = edi_cons[0]['name']
+        edi.date = datetime.now()
+        edi.save(ignore_permission=True)
         
         # create sales order
         sales_order = frappe.get_doc({

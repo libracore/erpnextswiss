@@ -431,7 +431,7 @@ def create_slsrpt(edi_file):
         edi_con = frappe.get_doc("EDI Connection", edi_cons[0]['name'])
         edi.edi_connection = edi_cons[0]['name']
         edi.date = datetime.now()
-        edi.save(ignore_permission=True)
+        edi.save(ignore_permissions=True)
         
         # create sales report
         sales_report = frappe.get_doc({
@@ -480,7 +480,7 @@ def create_orders(edi_file):
         edi_con = frappe.get_doc("EDI Connection", edi_cons[0]['name'])
         edi.edi_connection = edi_cons[0]['name']
         edi.date = datetime.now()
-        edi.save(ignore_permission=True)
+        edi.save(ignore_permissions=True)
         
         # create sales order
         sales_order = frappe.get_doc({

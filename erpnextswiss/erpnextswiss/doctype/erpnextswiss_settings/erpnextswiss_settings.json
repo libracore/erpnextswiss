@@ -24,6 +24,7 @@
   "column_bank_wizard",
   "always_use_entry_transaction_type",
   "auto_process_matches",
+  "numeric_only_debtor_matching",
   "bank_import_section",
   "bankimport_table",
   "invoice_code_line_scanning_section",
@@ -234,10 +235,17 @@
    "fieldtype": "Table",
    "label": "Payment Reminder Level Blocking Period",
    "options": "ERPNextSwiss Settings Payment Reminder Level Blocking Period"
+  },
+  {
+   "default": "0",
+   "description": "Uses only the numeric part of a sales invoice number for matching",
+   "fieldname": "numeric_only_debtor_matching",
+   "fieldtype": "Check",
+   "label": "Numeric-only debtor reference matching"
   }
  ],
  "issingle": 1,
- "modified": "2022-06-16 09:15:04.146366",
+ "modified": "2022-09-01 17:14:08.794789",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "ERPNextSwiss Settings",

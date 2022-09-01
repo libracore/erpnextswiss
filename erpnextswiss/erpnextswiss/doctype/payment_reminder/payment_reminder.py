@@ -62,7 +62,15 @@ def create_payment_reminders(company):
         except:
             max_level = 3
         for customer in customers:
-            sql_query = ("""SELECT `name`, `due_date`, `posting_date`, `payment_reminder_level`, `grand_total`, `outstanding_amount` , `currency`
+            sql_query = ("""SELECT 
+                        `name`, 
+                        `due_date`, 
+                        `posting_date`, 
+                        `payment_reminder_level`, 
+                        `grand_total`, 
+                        `outstanding_amount` , 
+                        `currency`,
+                        `contact_email`
                     FROM `tabSales Invoice` 
                     WHERE `outstanding_amount` > 0 AND `customer` = '{customer}'
                       AND `docstatus` = 1
@@ -72,6 +80,7 @@ def create_payment_reminders(company):
                       AND ((`exclude_from_payment_reminder_until` IS NULL) OR (`exclude_from_payment_reminder_until` < CURDATE()));
                     """.format(customer=customer.customer, company=company))
             open_invoices = frappe.db.sql(sql_query, as_dict=True)
+            email = None
             if open_invoices:
                 now = datetime.now()
                 invoices = []
@@ -95,6 +104,8 @@ def create_payment_reminders(company):
                     total_before_charges += invoice.outstanding_amount
                     invoices.append(new_invoice)
                     currency = invoice.currency
+                    if invoice.contact_email:
+                        email = invoice.contact_email
                 # find reminder charge
                 charge_matches = frappe.get_all("ERPNextSwiss Settings Payment Reminder Charge", 
                     filters={ 'reminder_level': highest_level },
@@ -115,7 +126,8 @@ def create_payment_reminders(company):
                     'reminder_charge': reminder_charge,
                     'total_with_charge': (total_before_charges + reminder_charge),
                     'company': company,
-                    'currency': currency
+                    'currency': currency,
+                    'email': email
                 })
                 reminder_record = new_reminder.insert(ignore_permissions=True)
                 if int(auto_submit) == 1:

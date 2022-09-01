@@ -1,0 +1,244 @@
+{
+ "autoname": "naming_series:",
+ "creation": "2022-05-08 20:33:33.615799",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "edi_connection",
+  "edi_type",
+  "naming_series",
+  "column_head",
+  "date",
+  "title",
+  "amended_from",
+  "section_pricat",
+  "button_add_item",
+  "pricat_items",
+  "sec_taxes",
+  "taxes_template",
+  "taxes",
+  "section_desadv",
+  "delivery_note",
+  "section_develop",
+  "test",
+  "section_incoming",
+  "status",
+  "communication",
+  "col_incoming",
+  "subject",
+  "filename",
+  "section_content",
+  "content"
+ ],
+ "fields": [
+  {
+   "fieldname": "edi_connection",
+   "fieldtype": "Link",
+   "label": "EDI Connection",
+   "options": "EDI Connection",
+   "read_only": 1
+  },
+  {
+   "fieldname": "date",
+   "fieldtype": "Datetime",
+   "in_list_view": 1,
+   "label": "Date"
+  },
+  {
+   "fetch_from": "edi_connection.edi_type",
+   "fieldname": "edi_type",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "EDI Type",
+   "read_only": 1
+  },
+  {
+   "default": "ME.######",
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Naming Series",
+   "options": "ME.######"
+  },
+  {
+   "fieldname": "column_head",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "label": "Title"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "section_develop",
+   "fieldtype": "Section Break",
+   "label": "Develop"
+  },
+  {
+   "default": "0",
+   "fieldname": "test",
+   "fieldtype": "Check",
+   "label": "Test"
+  },
+  {
+   "depends_on": "eval:doc.edi_type==\"PRICAT\"",
+   "fieldname": "section_pricat",
+   "fieldtype": "Section Break",
+   "label": "PRICAT"
+  },
+  {
+   "fieldname": "button_add_item",
+   "fieldtype": "Button",
+   "label": "Add item"
+  },
+  {
+   "fieldname": "pricat_items",
+   "fieldtype": "Table",
+   "label": "Items",
+   "options": "EDI File Pricat Item"
+  },
+  {
+   "depends_on": "eval:doc.edi_type==\"PRICAT\"",
+   "fieldname": "sec_taxes",
+   "fieldtype": "Section Break",
+   "label": "Taxes and Charges"
+  },
+  {
+   "fieldname": "taxes_template",
+   "fieldtype": "Link",
+   "label": "Taxes and Charges Template",
+   "options": "Sales Taxes and Charges Template"
+  },
+  {
+   "fieldname": "taxes",
+   "fieldtype": "Table",
+   "label": "Taxes and Charges",
+   "options": "Sales Taxes and Charges"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "EDI File",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval:doc.edi_type==\"DESADV\"",
+   "fieldname": "section_desadv",
+   "fieldtype": "Section Break",
+   "label": "DESADV"
+  },
+  {
+   "fieldname": "delivery_note",
+   "fieldtype": "Link",
+   "label": "Delivery Note",
+   "options": "Delivery Note"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "section_incoming",
+   "fieldtype": "Section Break",
+   "label": "Incoming"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Open\nProcessed",
+   "read_only": 1
+  },
+  {
+   "fieldname": "subject",
+   "fieldtype": "Data",
+   "label": "Subject",
+   "read_only": 1
+  },
+  {
+   "fieldname": "col_incoming",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "communication",
+   "fieldtype": "Link",
+   "label": "Communication",
+   "options": "Communication",
+   "read_only": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "section_content",
+   "fieldtype": "Section Break",
+   "label": "Content"
+  },
+  {
+   "fieldname": "content",
+   "fieldtype": "Code",
+   "label": "Content",
+   "read_only": 1
+  },
+  {
+   "fieldname": "filename",
+   "fieldtype": "Data",
+   "label": "Filename",
+   "read_only": 1
+  }
+ ],
+ "is_submittable": 1,
+ "modified": "2022-08-25 21:14:01.962402",
+ "modified_by": "Administrator",
+ "module": "ERPNextSwiss",
+ "name": "EDI File",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "amend": 1,
+   "cancel": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "amend": 1,
+   "cancel": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "amend": 1,
+   "cancel": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Item Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "title_field": "title",
+ "track_changes": 1
+}

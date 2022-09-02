@@ -7,6 +7,7 @@ from frappe import _
 from frappe.utils.data import date_diff, getdate, add_days
 from datetime import date, timedelta
 from erpnext.hr.doctype.leave_application.leave_application import get_leave_details
+from frappe.utils import cint
 
 def execute(filters=None):
     if "HR Manager" in frappe.get_roles(frappe.session.user):
@@ -204,6 +205,9 @@ def get_actual_time(filters, employee):
     except:
         actual_time = 0
         
+    if cint(filters.get('ignore_py')) == 1:
+        return actual_time
+    
     # handle carryover and payouts
     employee = frappe.get_doc("Employee", employee)
     if employee.carryover_and_payouts:

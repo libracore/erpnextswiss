@@ -41,10 +41,15 @@ frappe.query_reports["Worktime Overview"] = {
                         frappe.query_report.set_filter_value('employee', "");
                         frappe.query_report.refresh();
                     }
+                },
+                {
+                    "fieldname":"ignore_py",
+                    "label": __("Ignore previous year"),
+                    "fieldtype": "Check"
                 }
             ],
-	"onload": function() {
-		return frappe.call({
+    "onload": function() {
+        return frappe.call({
             "method": "erpnextswiss.erpnextswiss.report.worktime_overview.worktime_overview.get_company",
             "args": {},
             "async": true,
@@ -56,5 +61,5 @@ frappe.query_reports["Worktime Overview"] = {
                 company_filter.set_input(company_filter.df.default);
             }
         });
-	}
+    }
 }

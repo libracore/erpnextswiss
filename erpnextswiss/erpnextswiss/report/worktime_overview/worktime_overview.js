@@ -41,6 +41,11 @@ frappe.query_reports["Worktime Overview"] = {
                         frappe.query_report.set_filter_value('employee', "");
                         frappe.query_report.refresh();
                     }
+                },
+                {
+                    "fieldname":"ignore_py",
+                    "label": __("Ignore previous year"),
+                    "fieldtype": "Check"
                 }
             ],
 	"onload": function() {

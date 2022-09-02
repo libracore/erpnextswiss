@@ -12,7 +12,9 @@ frappe.ui.form.on('Address', {
                                 'callback': function(response) {
                                     if (response.message) {
                                         cur_frm.set_value('address_line1', response.message.street);
-                                        cur_frm.set_value('plz', response.message.pincode);
+                                        if (cur_frm.doc.plz) { 
+                                            cur_frm.set_value('plz', response.message.pincode);
+                                        }
                                         cur_frm.set_value('pincode', response.message.pincode);
                                         cur_frm.set_value('city', response.message.city);
                                         cur_frm.set_value('state', response.message.canton);

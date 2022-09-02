@@ -7,7 +7,7 @@ frappe.ui.form.on('Payment Proposal', {
              // add download pain.001 button on submitted record
              frm.add_custom_button(__("Download bank file"), function() {
                   generate_bank_file(frm);
-             });
+             }).addClass("btn-primary");
         } else if (frm.doc.docstatus == 0) {
              // add set payment date
              frm.add_custom_button(__("Set Payment Date"), function() {

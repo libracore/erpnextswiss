@@ -205,9 +205,9 @@ def get_actual_time(filters, employee):
         actual_time = 0
         
     if cint(filters.get('ignore_py')) == 1:
-		return actual_time
-	
-	# handle carryover and payouts
+        return actual_time
+    
+    # handle carryover and payouts
     employee = frappe.get_doc("Employee", employee)
     if employee.carryover_and_payouts:
         year = getdate(from_date).strftime("%Y")

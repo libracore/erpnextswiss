@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2021, libracore (https://www.libracore.com) and contributors
+// Copyright (c) 2018-2022, libracore (https://www.libracore.com) and contributors
 // For license information, please see license.txt
 
 frappe.ui.form.on('Payment Reminder', {

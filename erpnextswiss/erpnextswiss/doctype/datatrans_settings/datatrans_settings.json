@@ -1,0 +1,105 @@
+{
+ "creation": "2022-06-14 22:28:20.978049",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "endpoint",
+  "sec_credentials",
+  "username",
+  "col_credentials",
+  "password",
+  "sec_payment_methods",
+  "payment_methods",
+  "sec_redirect",
+  "success_url",
+  "error_url",
+  "cancel_url"
+ ],
+ "fields": [
+  {
+   "default": "https://api.sandbox.datatrans.com/v1",
+   "description": "https://api.sandbox.datatrans.com/v1",
+   "fieldname": "endpoint",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Endpoint",
+   "reqd": 1
+  },
+  {
+   "description": "These are system-generated credentials from UPP Management &gt; Security",
+   "fieldname": "sec_credentials",
+   "fieldtype": "Section Break",
+   "label": "Credentials"
+  },
+  {
+   "fieldname": "username",
+   "fieldtype": "Data",
+   "label": "User name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "col_credentials",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "password",
+   "fieldtype": "Password",
+   "label": "Password",
+   "reqd": 1
+  },
+  {
+   "fieldname": "sec_payment_methods",
+   "fieldtype": "Section Break",
+   "label": "Payment methods"
+  },
+  {
+   "fieldname": "payment_methods",
+   "fieldtype": "Table",
+   "label": "Payment methods",
+   "options": "Datatrans Payment Method",
+   "reqd": 1
+  },
+  {
+   "fieldname": "sec_redirect",
+   "fieldtype": "Section Break",
+   "label": "Redirects"
+  },
+  {
+   "fieldname": "success_url",
+   "fieldtype": "Data",
+   "label": "Success URL"
+  },
+  {
+   "fieldname": "error_url",
+   "fieldtype": "Data",
+   "label": "Error URL"
+  },
+  {
+   "fieldname": "cancel_url",
+   "fieldtype": "Data",
+   "label": "Cancel URL"
+  }
+ ],
+ "issingle": 1,
+ "modified": "2022-06-16 23:54:06.592922",
+ "modified_by": "Administrator",
+ "module": "ERPNextSwiss",
+ "name": "Datatrans Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

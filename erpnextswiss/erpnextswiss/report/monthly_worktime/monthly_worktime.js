@@ -9,7 +9,10 @@ frappe.query_reports["Monthly Worktime"] = {
             "label": __("Employee"),
             "fieldtype": "Link",
             "reqd": 1,
-            "options": "Employee"
+            "options": "Employee",
+            "onchange": function() {
+                console.log("changed");
+            }
         },
         {
             "fieldname":"month",

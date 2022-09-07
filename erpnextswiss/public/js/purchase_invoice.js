@@ -5,6 +5,9 @@ frappe.ui.form.on('Purchase Invoice', {
                 check_defaults(frm);
             });
         }
+        if (frm.doc.__islocal) {
+            pull_supplier_defaults(frm);
+        }
         if ((frm.doc.docstatus === 1) && (frm.doc.is_proposed === 1)) {
             cur_frm.dashboard.add_comment(__('This document has been transmitted to the bank for payment'), 'blue', true);
         }
@@ -45,6 +48,9 @@ frappe.ui.form.on('Purchase Invoice', {
                 }
             });     
         }
+    },
+    supplier: function(frm) {
+        pull_supplier_defaults(frm);
     }
 });
 
@@ -214,6 +220,7 @@ function show_esr_detail_dialog(frm, participant, reference, amount, default_set
     field_list.push({'fieldname': 'tax_rate', 'fieldtype': 'Float', 'label': __('Tax Rate in %'), 'default': default_settings.default_tax_rate});
     field_list.push({'fieldname': 'reference', 'fieldtype': 'Data', 'label': __('ESR Reference'), 'read_only': 1, 'default': reference});
     field_list.push({'fieldname': 'participant', 'fieldtype': 'Data', 'label': __('ESR Participant'), 'read_only': 1, 'default': participant});
+    field_list.push({'fieldname': 'cost_center', 'fieldtype': 'Link', 'label': __('Cost Center'), 'options': "Cost Center", 'default': locals[":Company"][frappe.defaults.get_user_default("company")]['cost_center'] });
     
     frappe.prompt(field_list,
     function(values){
@@ -260,6 +267,7 @@ function fetch_esr_details_to_new_sinv(frm, values) {
     cur_frm.refresh_field('items');
     setTimeout(function(){
         frappe.model.set_value(child.doctype, child.name, 'rate', rate);
+        frappe.model.set_value(child.doctype, child.name, 'cost_center', values.cost_center);
         cur_frm.refresh_field('items');
     }, 1000);
 }
@@ -284,7 +292,24 @@ function fetch_esr_details_to_existing_sinv(frm, values) {
         cur_frm.refresh_field('items');
         setTimeout(function(){
             frappe.model.set_value(child.doctype, child.name, 'rate', rate);
+            frappe.model.set_value(child.doctype, child.name, 'cost_center', values.cost_center);
             cur_frm.refresh_field('items');
         }, 1000);
+    }
+}
+
+function pull_supplier_defaults(frm) {
+    if (frm.doc.supplier) {
+        frappe.call({
+            'method': "frappe.client.get",
+            'args': {
+                'doctype': "Supplier",
+                "name": frm.doc.supplier
+            },
+            "callback": function(response) {
+                var supplier = response.message;
+                cur_frm.set_value("payment_type", supplier.default_payment_method);
+            }
+        });
     }
 }

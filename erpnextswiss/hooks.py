@@ -17,8 +17,9 @@ app_license = "AGPL"
 # include js, css files in header of desk.html
 # app_include_css = "/assets/erpnextswiss/css/erpnextswiss.css"
 app_include_js = [
-    "/assets/erpnextswiss/js/swiss_common.js"
-    ]
+    "/assets/erpnextswiss/js/swiss_common.js",
+	"/assets/erpnextswiss/js/iban.js"
+]
 
 # include js, css files in header of web template
 # web_include_css = "/assets/erpnextswiss/css/erpnextswiss.css"
@@ -49,9 +50,13 @@ jenv = {
     "methods": [
         "get_tax_details:erpnextswiss.erpnextswiss.report.kontrolle_mwst.kontrolle_mwst.get_data",
         "get_account_sheets:erpnextswiss.erpnextswiss.finance.get_account_sheets",
-        "get_week_from_date:erpnextswiss.erpnextswiss.common_functions.get_week_from_date"
+        "get_week_from_date:erpnextswiss.erpnextswiss.jinja.get_week_from_date",
+        "strip_html:erpnextswiss.erpnextswiss.jinja.strip_html"
     ]
 }
+
+# allow to link incoing mails to EDI File
+email_append_to = ["EDI File"]
 
 # Home Pages
 # ----------
@@ -132,6 +137,9 @@ after_install = "erpnextswiss.setup.install.after_install"
 scheduler_events = {
     "daily": [
         "erpnextswiss.erpnextswiss.doctype.inspection_equipment.inspection_equipment.check_calibration_status"
+    ],
+    "hourly": [
+        "erpnextswiss.erpnextswiss.edi.process_incoming"
     ]
 }
 

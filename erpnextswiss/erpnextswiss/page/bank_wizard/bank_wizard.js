@@ -60,6 +60,9 @@ frappe.bank_wizard = {
             } else if (file.name.toLowerCase().endsWith(".zip")) {
                 // this is a zip file
                 console.log("unzipping " + file.name + "...");
+                // enable waiting gif
+                frappe.bank_wizard.start_wait();
+                // unzip
                 JSZip.loadAsync(file).then(function(zip) {
                     // async: compile a promise to extract all contained files
                     var promises = [];
@@ -206,13 +209,13 @@ frappe.bank_wizard = {
         var default_customer = document.getElementById("default_customer").value;
         var default_supplier = document.getElementById("default_supplier").value;
         message.transactions.forEach(function (transaction) {
-	    // add generic payables/receivables handler
-	    if (transaction.credit_debit == "DBIT") {
+        // add generic payables/receivables handler
+        if (transaction.credit_debit == "DBIT") {
             // quick match (purchase invoice)
             var button = document.getElementById("btn-quick-pinv-" + transaction.txid);
             if (button) {
                 button.addEventListener("click", function(e) {
-		    e.target.disabled = true;
+                    e.target.disabled = true;
                     var payment = {
                         'amount': transaction.amount,
                         'date': transaction.date,
@@ -225,6 +228,7 @@ frappe.bank_wizard = {
                         'references': transaction.invoice_matches,
                         'remarks': (transaction.transaction_reference + ", " + transaction.party_name + ", " + transaction.party_address),
                         'auto_submit': 1,
+                        'party_iban': transaction.party_iban,
                         'company': company
                     }
                     frappe.bank_wizard.quick_payment_entry(payment, transaction.txid);
@@ -237,7 +241,7 @@ frappe.bank_wizard = {
             var button = document.getElementById("btn-quick-exp-" + transaction.txid);
             if (button) {
                 button.addEventListener("click", function(e) {
-		    e.target.disabled = true;
+                    e.target.disabled = true;
                     var payment = {
                         'amount': transaction.amount,
                         'date': transaction.date,
@@ -250,6 +254,7 @@ frappe.bank_wizard = {
                         'references': transaction.expense_matches,
                         'remarks': (transaction.transaction_reference + ", " + transaction.party_name + ", " + transaction.party_address),
                         'auto_submit': 1,
+                        'party_iban': transaction.party_iban,
                         'company': company
                     }
                     frappe.bank_wizard.quick_payment_entry(payment, transaction.txid);
@@ -262,7 +267,7 @@ frappe.bank_wizard = {
             var button = document.getElementById("btn-close-pinv-" + transaction.txid);
             if (button) {
                 button.addEventListener("click", function(e) {
-		    e.target.disabled = true;
+                    e.target.disabled = true;
                     var payment = {
                         'amount': transaction.amount,
                         'date': transaction.date,
@@ -274,6 +279,7 @@ frappe.bank_wizard = {
                         'party': transaction.party_match,
                         'references': transaction.invoice_matches,
                         'remarks': (transaction.transaction_reference + ", " + transaction.party_name + ", " + transaction.party_address),
+                        'party_iban': transaction.party_iban,
                         'company': company
                     }
                     frappe.bank_wizard.create_payment_entry(payment, transaction.txid);
@@ -283,7 +289,7 @@ frappe.bank_wizard = {
             var button = document.getElementById("btn-close-exp-" + transaction.txid);
             if (button) {
                 button.addEventListener("click", function(e) {
-		    e.target.disabled = true;
+                    e.target.disabled = true;
                     var payment = {
                         'amount': transaction.amount,
                         'date': transaction.date,
@@ -295,6 +301,7 @@ frappe.bank_wizard = {
                         'party': transaction.employee_match,
                         'references': transaction.expense_matches,
                         'remarks': (transaction.transaction_reference + ", " + transaction.party_name + ", " + transaction.party_address),
+                        'party_iban': transaction.party_iban,
                         'company': company
                     }
                     frappe.bank_wizard.create_payment_entry(payment, transaction.txid);
@@ -304,7 +311,7 @@ frappe.bank_wizard = {
             var button = document.getElementById("btn-close-supplier-" + transaction.txid);
             if (button) {
                 button.addEventListener("click", function(e) {
-		    e.target.disabled = true;
+                    e.target.disabled = true;
                     var payment = {
                         'amount': transaction.amount,
                         'date': transaction.date,
@@ -315,6 +322,7 @@ frappe.bank_wizard = {
                         'party_type': "Supplier",
                         'party': transaction.party_match,
                         'remarks': (transaction.transaction_reference + ", " + transaction.party_name + ", " + transaction.party_address),
+                        'party_iban': transaction.party_iban,
                         'company': company
                     }
                     frappe.bank_wizard.create_payment_entry(payment, transaction.txid);
@@ -324,7 +332,7 @@ frappe.bank_wizard = {
             var button = document.getElementById("btn-close-employee-" + transaction.txid);
             if (button) {
                 button.addEventListener("click", function(e) {
-		    e.target.disabled = true;
+                    e.target.disabled = true;
                     var payment = {
                         'amount': transaction.amount,
                         'date': transaction.date,
@@ -335,6 +343,7 @@ frappe.bank_wizard = {
                         'party_type': "Employee",
                         'party': transaction.employee_match,
                         'remarks': (transaction.transaction_reference + ", " + transaction.party_name + ", " + transaction.party_address),
+                        'party_iban': transaction.party_iban,
                         'company': company
                     }
                     frappe.bank_wizard.create_payment_entry(payment, transaction.txid);
@@ -344,7 +353,7 @@ frappe.bank_wizard = {
             var button = document.getElementById("btn-close-payable-" + transaction.txid);
             if (button) {
                 button.addEventListener("click", function(e) {
-		    e.target.disabled = true;
+                    e.target.disabled = true;
                     var payment = {
                         'amount': transaction.amount,
                         'date': transaction.date,
@@ -355,17 +364,18 @@ frappe.bank_wizard = {
                         'party_type': "Supplier",
                         'party': default_supplier,
                         'remarks': (transaction.transaction_reference + ", " + transaction.party_name + ", " + transaction.party_address),
+                        'party_iban': transaction.party_iban,
                         'company': company
                     }
                     frappe.bank_wizard.create_payment_entry(payment, transaction.txid);
                 });
             }
-	    } else {
+        } else {
             // quick match (sales invoice)
             var button = document.getElementById("btn-quick-sinv-" + transaction.txid);
             if (button) {
                 button.addEventListener("click", function(e) {
-		    e.target.disabled = true;
+                    e.target.disabled = true;
                     var payment = {
                         'amount': transaction.amount,
                         'date': transaction.date,
@@ -378,6 +388,7 @@ frappe.bank_wizard = {
                         'references': transaction.invoice_matches,
                         'remarks': (transaction.transaction_reference + ", " + transaction.party_name + ", " + transaction.party_address),
                         'auto_submit': 1,
+                        'party_iban': transaction.party_iban,
                         'company': company
                     }
                     frappe.bank_wizard.quick_payment_entry(payment, transaction.txid);
@@ -390,7 +401,7 @@ frappe.bank_wizard = {
             var button = document.getElementById("btn-close-sinv-" + transaction.txid);
             if (button) {
                 button.addEventListener("click", function(e) {
-		    e.target.disabled = true;
+                    e.target.disabled = true;
                     var payment = {
                         'amount': transaction.amount,
                         'date': transaction.date,
@@ -402,6 +413,7 @@ frappe.bank_wizard = {
                         'party': transaction.party_match,
                         'references': transaction.invoice_matches,
                         'remarks': (transaction.transaction_reference + ", " + transaction.party_name + ", " + transaction.party_address),
+                        'party_iban': transaction.party_iban,
                         'company': company
                     }
                     frappe.bank_wizard.create_payment_entry(payment, transaction.txid);
@@ -411,7 +423,7 @@ frappe.bank_wizard = {
             var button = document.getElementById("btn-close-customer-" + transaction.txid);
             if (button) {
                 button.addEventListener("click", function(e) {
-		    e.target.disabled = true;
+                    e.target.disabled = true;
                     var payment = {
                         'amount': transaction.amount,
                         'date': transaction.date,
@@ -422,6 +434,7 @@ frappe.bank_wizard = {
                         'party_type': "Customer",
                         'party': transaction.party_match,
                         'remarks': (transaction.transaction_reference + ", " + transaction.party_name + ", " + transaction.party_address),
+                        'party_iban': transaction.party_iban,
                         'company': company
                     }
                     frappe.bank_wizard.create_payment_entry(payment, transaction.txid);
@@ -431,7 +444,7 @@ frappe.bank_wizard = {
             var button = document.getElementById("btn-close-receivable-" + transaction.txid);
             if (button) {
                 button.addEventListener("click", function(e) {
-		    e.target.disabled = true;
+                    e.target.disabled = true;
                     var payment = {
                         'amount': transaction.amount,
                         'date': transaction.date,
@@ -442,17 +455,18 @@ frappe.bank_wizard = {
                         'party_type': "Customer",
                         'party': default_customer,
                         'remarks': (transaction.transaction_reference + ", " + transaction.party_name + ", " + transaction.party_address),
+                        'party_iban': transaction.party_iban,
                         'company': company
                     }
                     frappe.bank_wizard.create_payment_entry(payment, transaction.txid);
                 });
             }
-	    }
-	    // add intermediate account handler
+        }
+        // add intermediate account handler
         var button = document.getElementById("btn-close-intermediate-" + transaction.txid);
-	    if (button) {
+        if (button) {
             button.addEventListener("click", function(e) {
-		e.target.disabled = true;
+                e.target.disabled = true;
                 var paid_to = bank_account;
                 var paid_from = intermediate_account;
                 if (transaction.credit_debit == "DBIT") {
@@ -468,6 +482,7 @@ frappe.bank_wizard = {
                         'reference_no': transaction.unique_reference,
                         'type': "Internal Transfer",
                         'remarks': (transaction.transaction_reference + ", " + transaction.party_name + ", " + transaction.party_address),
+                        'party_iban': transaction.party_iban,
                         'company': company
                     }
                     frappe.bank_wizard.create_payment_entry(payment, transaction.txid);
@@ -490,7 +505,7 @@ frappe.bank_wizard = {
     close_entry: function(txid) {
         // close the entry in the list
         var table_row = document.getElementById("row-transaction-" + txid);
-        table_row.classList.add("hidden");	
+        table_row.classList.add("hidden");    
     },
     quick_payment_entry: function(payment, txid) {
         frappe.call({

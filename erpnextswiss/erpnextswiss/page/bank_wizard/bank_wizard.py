@@ -67,7 +67,7 @@ def get_unpaid_sales_invoices_by_customer(customer):
     return open_sales_invoices   
 
 # create a payment entry
-def create_payment_entry(date, to_account, received_amount, transaction_id, remarks, auto_submit=False):
+def create_payment_entry(date, to_account, received_amount, transaction_id, remarks, party_iban=None, auto_submit=False):
     # get default customer
     default_customer = get_default_customer()
     if not frappe.db.exists('Payment Entry', {'reference_no': transaction_id}):
@@ -84,6 +84,7 @@ def create_payment_entry(date, to_account, received_amount, transaction_id, rema
         new_payment_entry.reference_no = transaction_id
         new_payment_entry.reference_date = date
         new_payment_entry.remarks = remarks
+        new_payment_entry.bank_account_no = party_iban
         inserted_payment_entry = new_payment_entry.insert()
         if auto_submit:
             new_payment_entry.submit()
@@ -476,7 +477,7 @@ def read_camt_transactions(transaction_entries, account, settings):
                             if match_suppliers:
                                 party_match = match_suppliers[0]['name']
                         if party_match:
-                            # restrict pins to supplier
+                            # restrict pinvs to supplier
                             possible_pinvs = frappe.get_all("Purchase Invoice",
                                 filters=[['docstatus', '=', 1], ['outstanding_amount', '>', 0], ['supplier', '=', party_match]],
                                 fields=['name', 'supplier', 'outstanding_amount', 'bill_no'])
@@ -521,17 +522,27 @@ def read_camt_transactions(transaction_entries, account, settings):
                         # sales invoices
                         possible_sinvs = frappe.get_all("Sales Invoice", 
                             filters=[['outstanding_amount', '>', 0], ['docstatus', '=', 1]], 
-                            fields=['name', 'customer', 'outstanding_amount', 'esr_reference'])
+                            fields=['name', 'customer', 'customer_name', 'outstanding_amount', 'esr_reference'])
                         if possible_sinvs:
                             invoice_matches = []
                             for sinv in possible_sinvs:
+                                is_match = False
                                 if sinv['name'] in transaction_reference or ('esr_reference' in sinv and sinv['esr_reference'] and sinv['esr_reference'] == transaction_reference):
+                                    # matched exact sales invoice reference or ESR reference
+                                    is_match = True
+                                elif cint(settings.numeric_only_debtor_matching) == 1:
+                                    # allow the numeric part matching
+                                    if get_numeric_only_reference(sinv['name']) in transaction_reference: 
+                                        # matched numeric part and customer name
+                                        is_match = True
+
+                                if is_match:
                                     invoice_matches.append(sinv['name'])
                                     # override party match in case there is one from the sales invoice
                                     party_match = sinv['customer']
                                     # add total matched amount
                                     matched_amount += float(sinv['outstanding_amount'])
-                                    
+                                        
                     # reset invoice matches in case there are no matches
                     try:
                         if len(invoice_matches) == 0:
@@ -670,7 +681,7 @@ def read_camt_transactions(transaction_entries, account, settings):
 @frappe.whitelist()
 def make_payment_entry(amount, date, reference_no, paid_from=None, paid_to=None, type="Receive", 
     party=None, party_type=None, references=None, remarks=None, auto_submit=False, exchange_rate=1,
-    company=None):
+    party_iban=None, company=None):
     # assert list
     if references:
         references = ast.literal_eval(references)
@@ -698,6 +709,7 @@ def make_payment_entry(amount, date, reference_no, paid_from=None, paid_to=None,
             'posting_date': date,
             'remarks': remarks,
             'camt_amount': float(amount),
+            'bank_account_no': party_iban,
             'company': company,
             'source_exchange_rate': exchange_rate,
             'target_exchange_rate': exchange_rate
@@ -717,6 +729,7 @@ def make_payment_entry(amount, date, reference_no, paid_from=None, paid_to=None,
             'posting_date': date,
             'remarks': remarks,
             'camt_amount': float(amount),
+            'bank_account_no': party_iban,
             'company': company,
             'source_exchange_rate': exchange_rate,
             'target_exchange_rate': exchange_rate
@@ -739,6 +752,7 @@ def make_payment_entry(amount, date, reference_no, paid_from=None, paid_to=None,
             'posting_date': date,
             'remarks': remarks,
             'camt_amount': float(amount),
+            'bank_account_no': party_iban,
             'company': company,
             'source_exchange_rate': exchange_rate,
             'target_exchange_rate': exchange_rate
@@ -790,3 +804,9 @@ def create_reference(payment_entry, invoice_reference, invoice_type="Sales Invoi
     payment_record.save()
     return
 
+def get_numeric_only_reference(s):
+    n = ""
+    for c in s:
+        if c.isdigit():
+            n += c
+    return n

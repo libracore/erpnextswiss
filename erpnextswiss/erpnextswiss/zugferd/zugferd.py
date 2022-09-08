@@ -16,7 +16,8 @@ Creates an XML file from a sales invoice
 :returns:                xml content (string)
 """
 def create_zugferd_pdf(docname, verify=True, format=None, doc=None, doctype="Sales Invoice", no_letterhead=0):
-    try:       
+    xml = None
+    try:
         html = frappe.get_print(doctype, docname, format, doc=doc, no_letterhead=no_letterhead)
         try:
             pdf = get_pdf(html, print_format=format)

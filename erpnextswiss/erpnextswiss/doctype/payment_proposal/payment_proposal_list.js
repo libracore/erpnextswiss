@@ -1,12 +1,12 @@
 frappe.listview_settings['Payment Proposal'] = {
     onload: function(listview) {
         listview.page.add_menu_item( __("Create Payment Proposal"), function() {
-            create_payment_proposal();
+            prepare_payment_proposal();
         });
     }
 }
 
-function create_payment_proposal() {
+function prepare_payment_proposal() {
     frappe.call({
         "method": "frappe.client.get",
         "args": {
@@ -23,7 +23,7 @@ function create_payment_proposal() {
                          'default': frappe.defaults.get_default("Company") }
                     ],
                     function(values){
-                        create_direct_debit_proposal(values.date, values.company);
+                        create_payment_proposal(values.date, values.company);
                     },
                     'Payment Proposal',
                     'Create'
@@ -37,14 +37,14 @@ function create_payment_proposal() {
  
 }
 
-function create_direct_debit_proposal(date, company) {
+function create_payment_proposal(date, company) {
     frappe.call({
         "method": "erpnextswiss.erpnextswiss.doctype.payment_proposal.payment_proposal.create_payment_proposal",
         "args": { "date": date, "company": company },
         "callback": function(response) {
             if (response.message) {
                 // redirect to the new record
-                window.location.href = ("/desk#Form/Payment Proposal/" + response.message);
+                window.location.href = response.message;
             } else {
                 // no records found
                 frappe.show_alert( __("No suitable invoices found.") );

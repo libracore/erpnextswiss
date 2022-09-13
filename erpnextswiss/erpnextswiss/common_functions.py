@@ -4,7 +4,7 @@
 import frappe
 from frappe import _
 from erpnextswiss.erpnextswiss.jinja import get_week_from_date
-from frappe.utils import cint
+from frappe.utils import cint, get_url_to_form, get_link_to_form, get_url_to_report, get_url_to_list, get_url_to_report_with_filters
 
 # try to get building number from address line
 def get_building_number(address_line):
@@ -151,3 +151,23 @@ def get_recursive_item_groups(item_group):
         if c['name'] not in item_groups:
             item_groups.append(c['name'])
     return item_groups
+
+@frappe.whitelist()
+def url_to_form(doctype, docname):
+    return get_url_to_form(doctype, docname)
+
+@frappe.whitelist()
+def link_to_form(doctype, docname):
+    return get_link_to_form(doctype, docname)
+
+@frappe.whitelist()
+def link_to_list(doctype):
+    return get_link_to_list(doctype)
+    
+@frappe.whitelist()
+def url_to_report(name):
+    return get_url_to_report(name)
+
+@frappe.whitelist()
+def url_to_report_with_filters(name, filters, report_type=None, doctype=None):
+    return get_url_to_report(name, fitlers, report_type, doctype)

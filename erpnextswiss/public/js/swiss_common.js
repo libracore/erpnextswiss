@@ -233,3 +233,58 @@ function fetch_price_list_rate(frm, cdt, cdn) {
         }
     });
 }
+
+function url_to_form(doctype, docname, callback) {
+    frappe.call({
+        'method': 'erpnextswiss.erpnextswiss.common_functions.url_to_form',
+        'args': {
+            'doctype': doctype,
+            'docname': docname
+        },              // note: async: false is still not working, response would be undefined
+        'callback': callback
+    });
+}
+
+function link_to_form(doctype, docname, callback) {
+    frappe.call({
+        'method': 'erpnextswiss.erpnextswiss.common_functions.link_to_form',
+        'args': {
+            'doctype': doctype,
+            'docname': docname
+        },              // note: async: false is still not working, response would be undefined
+        'callback': callback
+    });
+}
+
+function url_to_list(doctype, callback) {
+    frappe.call({
+        'method': 'erpnextswiss.erpnextswiss.common_functions.url_to_list',
+        'args': {
+            'doctype': doctype
+        },              // note: async: false is still not working, response would be undefined
+        'callback': callback
+    });
+}
+
+function url_to_report(name, callback) {
+    frappe.call({
+        'method': 'erpnextswiss.erpnextswiss.common_functions.url_to_report',
+        'args': {
+            'name': name
+        },              // note: async: false is still not working, response would be undefined
+        'callback': callback
+    });
+}
+
+function url_to_report_with_filters(name, filters, report_type, doctype, callback) {
+    frappe.call({
+        'method': 'erpnextswiss.erpnextswiss.common_functions.url_to_report_with_filters',
+        'args': {
+            'name': name,
+            'filters': filters,
+            'report_type': report_type,
+            'doctype': doctype
+        },              // note: async: false is still not working, response would be undefined
+        'callback': callback
+    });
+}

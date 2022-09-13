@@ -233,7 +233,14 @@ def get_data():
                        "name": "EDI Sales Report",
                        "label": _("EDI Sales Report"),
                        "description": _("EDI Sales Report")                   
-                   }               
+                   },
+                   {
+                        "type": "report",
+                        "name": "EDI Sales Report Overview",
+                        "label": _("EDI Sales Report Overview"),
+                        "doctype": "EDI Sales Report",
+                        "is_query_report": True
+                   }
             ]
         },
         {
@@ -246,9 +253,9 @@ def get_data():
                        "label": _("Daily Closing Statement"),
                        "description": _("Daily Closing Statement")                      
                    } 
-			]
-		},
-		{
+            ]
+        },
+        {
             "label": _("Quality"),
             "icon": "octicon octicon-verified",
             "items": [
@@ -258,31 +265,31 @@ def get_data():
                        "label": _("Non Conformity Report 8D"),
                        "description": _("Non Conformity Report 8D")                   
                    },
-				   {
+                   {
                        "type": "doctype",              
                        "name": "Inspection Equipment",
                        "label": _("Inspection Equipment"),
                        "description": _("Inspection Equipment")                   
                    },
-				   {
+                   {
                        "type": "doctype",
                        "name": "Inspection Equipment Transaction",
                        "label": _("Inspection Equipment Transaction"),
                        "description": _("Inspection Equipment Transaction")                   
                    },
-				   {
+                   {
                        "type": "doctype",
                        "name": "Inspection Equipment Type",
                        "label": _("Inspection Equipment Type"),
                        "description": _("Inspection Equipment Type")                   
                    },
-				   {
+                   {
                        "type": "doctype",
                        "name": "Calibration Test",
                        "label": _("Calibration / Test"),
                        "description": _("Calibration Test")                   
                    },
-				   {
+                   {
                        "type": "doctype",
                        "name": "Calibration Test Set",
                        "label": _("Calibration / Test-Set"),
@@ -300,24 +307,24 @@ def get_data():
                        "label": _("HLK Settings"),
                        "description": _("HLK Settings")                      
                    },
-				   {
+                {
                        "type": "doctype",
                        "name": "HLK Text Template",
                        "label": _("HLK Text Template"),
                        "description": _("HLK Text Template")                      
                    },
-				   {
+                {
                        "type": "doctype",
                        "name": "HLK Structur Organisation Template",
                        "label": _("HLK Structur Organisation Template"),
                        "description": _("HLK Structur Organisation Template")                      
                    },
-				   {
+                {
                        "type": "page",
                        "name": "bkp-importer",
                        "label": _("BKP Importer"),
                        "description": _("BKP Importer")                      
                    } 
-			]
-		}
+            ]
+        }
 ]

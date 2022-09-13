@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 import time
 from erpnextswiss.erpnextswiss.common_functions import get_building_number, get_street_name, get_pincode, get_city, get_primary_address
 import html          # used to escape xml content
-from frappe.utils import cint
+from frappe.utils import cint, get_url_to_form
 from unidecode import unidecode     # used to remove German/French-type special characters from bank identifieres
 
 class PaymentProposal(Document):
@@ -505,7 +505,7 @@ def create_payment_proposal(date=None, company=None):
     proposal_record = new_proposal.insert(ignore_permissions=True)      # ignore permissions, as noone has create permission to prevent the new button
     new_record = proposal_record.name
     frappe.db.commit()
-    return new_record
+    return get_url_to_form("Payment Proposal", new_record)
 
 # adds Windows-compatible line endings (to make the xml look nice)    
 def make_line(line):

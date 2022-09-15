@@ -419,7 +419,8 @@ def create_payment_proposal(date=None, company=None):
                   AND ((`tabPurchase Invoice`.`due_date` <= '{date}') 
                     OR ((IF (IFNULL(`tabPayment Terms Template`.`skonto_days`, 0) = 0, `tabPurchase Invoice`.`due_date`, (DATE_ADD(`tabPurchase Invoice`.`posting_date`, INTERVAL `tabPayment Terms Template`.`skonto_days` DAY)))) <= '{date}'))
                   AND `tabPurchase Invoice`.`is_proposed` = 0
-                  AND `tabPurchase Invoice`.`company` = '{company}';""".format(date=date, company=company))
+                  AND `tabPurchase Invoice`.`company` = '{company}'
+                GROUP BY `tabPurchase Invoice`.`name`;""".format(date=date, company=company))
     purchase_invoices = frappe.db.sql(sql_query, as_dict=True)
     # get all purchase invoices that pending
     total = 0.0

@@ -46,6 +46,9 @@ def import_pincodes(content):
         db_pincodes = frappe.get_all("Pincode", 
             filters={'pincode': element[field_index['pincode']], 'city': element[field_index['city']]}, 
             fields=['name'])
+        bfsnr = ""
+        if 'bfsnr' in field_index:
+            bfsnr = field_index['bfsnr'] or ""
         if not db_pincodes:
             # pincode is not in the database, create
             try:
@@ -65,7 +68,7 @@ def import_pincodes(content):
                 'city': element[field_index['city']] or "",
                 'canton': element[field_index['canton']] or "",
                 'canton_code': element[field_index['canton_code']] or "",
-                'bfsnr': element[field_index['bfsnr']] or "",
+                'bfsnr': bfsnr,
                 'country': country,
                 'country_code': country_code,
                 'title': "{0}-{1}".format(element[field_index['pincode']] or 0, element[field_index['city']] or ""),
@@ -79,7 +82,7 @@ def import_pincodes(content):
             pincode = frappe.get_doc('Pincode', db_pincodes[0]['name'])
             pincode.longitude = element[field_index['longitude']] or ""
             pincode.latitude = element[field_index['latitude']] or ""
-            pincode.bfsnr = element[field_index['bfsnr']] or ""
+            pincode.bfsnr = bfsnr
             pincode.save()
             frappe.db.commit()
     

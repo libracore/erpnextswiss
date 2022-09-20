@@ -104,10 +104,10 @@ def download_pricat(edi_file):
         # fabric (132, formerly U01)
         if edi_con.edi_format == "96A":
             code = "U01"
-            fabric = (item_doc.get("fabric") or "")[:35]
+            fabric = (item_doc.get("fabric") or "")[:35].replace("+", ",")
         else:
             code = "132"
-            fabric = item_doc.get("fabric") or ""
+            fabric = (item_doc.get("fabric") or "").replace("+", ",")
         content_segments.append("IMD+F+{code}+:::{fabric}:'".format(
             code=code,
             fabric=fabric

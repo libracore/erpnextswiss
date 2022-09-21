@@ -17,3 +17,9 @@ def has_attachments(dn, dt=None):
     else:
         return False
         
+def get_numeric_part(s):
+    num = ""
+    for c in inp_str:
+        if c.isdigit():
+            num = num + c
+    return num

@@ -493,13 +493,22 @@ def create_orders(edi_file):
         
         # create sales order(s)
         for d in data:
+            # set delivery date
+            delivery_date = d['document_date']
+            if 'requested_delivery_date' in d
+                delivery_date = d['requested_delivery_date']
+            elif 'latest_delivery_date' in d:
+                delivery_date = d['latest_delivery_date']
+            elif 'earliest_delivery_date' in d:
+                delivery_date = d['earliest_delivery_date']
+                
             sales_order = frappe.get_doc({
                 'doctype': "Sales Order",
                 'edi_file': edi_file,
                 'customer': edi_con.customer,
                 'transaction_date': d['document_date'],
                 'shipping_address_name': get_address_from_gln(d['deliver_to']),
-                'delivery_date': d['requested_delivery_date'] if 'requested_delivery_date' in d else d['document_date'],
+                'delivery_date': delivery_date,
                 'po_no': d['reference'],
                 'territory': frappe.get_value("Customer", edi_con.customer, "territory")
             })

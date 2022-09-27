@@ -500,7 +500,8 @@ def create_orders(edi_file):
                 'transaction_date': d['document_date'],
                 'shipping_address_name': get_address_from_gln(d['deliver_to']),
                 'delivery_date': d['requested_delivery_date'] if 'requested_delivery_date' in d else d['document_date'],
-                'po_no': d['reference']
+                'po_no': d['reference'],
+                'territory': frappe.get_value("Customer", edi_con.customer, "territory")
             })
             if 'currency' in data:
                 sales_order.currency = d['currency']
@@ -577,6 +578,10 @@ def parse_edi(segments):
                 data[-1]['report_end_date'] = parse_date(structure[1][1], structure[1][2])
             elif structure[1][0] == "2":        # requested delivery date
                 data[-1]['requested_delivery_date'] = parse_date(structure[1][1], structure[1][2])
+            elif structure[1][0] == "64":        # requested earliest delivery date
+                data[-1]['earliest_delivery_date'] = parse_date(structure[1][1], structure[1][2])
+            elif structure[1][0] == "63":        # requested latest delivery date
+                data[-1]['latest_delivery_date'] = parse_date(structure[1][1], structure[1][2])
         elif structure[0][0] == "RFF":
             data[-1]['reference'] = (structure[1][1] or "").replace("'", "")
         elif structure[0][0] == "NAD":

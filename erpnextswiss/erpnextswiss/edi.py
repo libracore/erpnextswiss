@@ -445,7 +445,7 @@ def create_slsrpt(edi_file):
                 'address': get_address_from_gln(d['location_gln']),
                 'title': "{0} - {1}".format(edi_con.customer, d['document_date'])
             })
-            for item in data['items']:
+            for item in d['items']:
                 if item['location_gln']:
                     addresses = frappe.get_all("Address", filters={'branch_gln': item['location_gln']}, fields=['name'])
                     if len(addresses) > 0:

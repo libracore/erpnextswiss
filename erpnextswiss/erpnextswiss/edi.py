@@ -551,7 +551,10 @@ def parse_edi(segments):
             data['edi_type'] = structure[2][0]
         elif structure[0][0] == "BGM":
             # begin message
-            data['action'] = structure[3][0]
+            try:
+                data['action'] = structure[3][0]
+            except:
+                data['action'] = 9          # default to add
         elif structure[0][0] == "DTM":
             # date
             if structure[1][0] == "137":        # document date

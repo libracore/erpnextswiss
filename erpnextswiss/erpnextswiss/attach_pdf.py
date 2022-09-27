@@ -13,11 +13,19 @@ from frappe.utils import cint
 @frappe.whitelist()
 def attach_pdf(doctype, docname, event=None, print_format=None, hashname=None, is_private=1, background=1):
     fallback_language = frappe.db.get_single_value("System Settings", "language") or "en"
+    try:
+        title = (frappe.get_value(doctype, docname, "title") or docname)
+    except:                 # in case this doctype has no title field
+        title = docname
+    try:
+        language = (frappe.get_value(doctype, docname, "language") or fallback_language)
+    except:                 # in case this doctype has no language field
+        language = fallback_language
     args = {
         "doctype": doctype,
         "name": docname,
-        "title": (frappe.get_value(doctype, docname, "title") or docname),
-        "lang": (frappe.get_value(doctype, docname, "language") or fallback_language),
+        "title": title,
+        "lang": language,
         "print_format": print_format,
         "hashname": cint(hashname),
         "is_private": cint(is_private)

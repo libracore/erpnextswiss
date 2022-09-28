@@ -495,7 +495,7 @@ def create_orders(edi_file):
         for d in data:
             # set delivery date
             delivery_date = d['document_date']
-            if 'requested_delivery_date' in d
+            if 'requested_delivery_date' in d:
                 delivery_date = d['requested_delivery_date']
             elif 'latest_delivery_date' in d:
                 delivery_date = d['latest_delivery_date']

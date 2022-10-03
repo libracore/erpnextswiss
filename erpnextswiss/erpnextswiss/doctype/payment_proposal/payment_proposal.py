@@ -116,7 +116,7 @@ class PaymentProposal(Document):
                     payment_type = "IBAN"
                 self.add_payment(supl.supplier_name, supl.iban, payment_type,
                     addr.address_line1, "{0} {1}".format(addr.pincode, addr.city), addr.country,
-                    amount, currency, " ".join(references), exec_date, bic=supl.bic)
+                    amount, currency, " ".join(references), exec_date, bic=supl.bic, receiver_id=supl.name)
                 total += amount
         # collect employees
         employees = []
@@ -201,7 +201,8 @@ class PaymentProposal(Document):
     
     def add_payment(self, receiver_name, iban, payment_type, address_line1, 
         address_line2, country, amount, currency, reference, execution_date, 
-        esr_reference=None, esr_participation_number=None, bic=None, is_salary=0):
+        esr_reference=None, esr_participation_number=None, bic=None, is_salary=0,
+        receiver_id=None):
             # prepare payment date
             if isinstance(execution_date,datetime):
                 pay_date = execution_date
@@ -213,6 +214,7 @@ class PaymentProposal(Document):
             # append payment record
             new_payment = self.append('payments', {})
             new_payment.receiver = receiver_name
+            new_payment.receiver_id = receiver_id
             new_payment.iban = iban
             new_payment.bic = bic
             new_payment.payment_type = payment_type

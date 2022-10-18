@@ -412,7 +412,11 @@ def read_camt_transactions(transaction_entries, account, settings, debug=False):
                                 # try to find an AddtlTxInf
                                 transaction_reference = transaction_soup.addtltxinf.get_text() 
                             except:
-                                transaction_reference = unique_reference
+                                # in case of numeric only matching, do not fall back to transaction id
+                                if cint(settings.numeric_only_debtor_matching) == 1:
+                                    transaction_reference = "???"
+                                else:
+                                    transaction_reference = unique_reference
                 # debug: show collected record in error log
                 #frappe.log_error("""type:{type}\ndate:{date}\namount:{currency} {amount}\nunique ref:{unique}
                 #    party:{party}\nparty address:{address}\nparty iban:{iban}\nremarks:{remarks}

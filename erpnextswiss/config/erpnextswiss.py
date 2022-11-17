@@ -71,6 +71,19 @@ def get_data():
             ]
         },
         {
+            "label": _("Finance"),
+            "icon": "fa fa-users",
+            "items": [
+                   {
+                        "type": "report",
+                        "name": "Account Sheets",
+                        "label": _("Account Sheets"),
+                        "doctype": "GL Entry",
+                        "is_query_report": True
+                   }
+            ]
+        },
+        {
             "label": _("Human Resources"),
             "icon": "fa fa-users",
             "items": [
@@ -92,6 +105,13 @@ def get_data():
                         "name": "Monthly Worktime",
                         "label": _("Monthly Worktime"),
                         "doctype": "Timesheet",
+                        "is_query_report": True
+                   },
+                   {
+                        "type": "report",
+                        "name": "Annual Salary Sheet",
+                        "label": _("Annual Salary Sheet"),
+                        "doctype": "Salary Slip",
                         "is_query_report": True
                    }
             ]
@@ -174,6 +194,12 @@ def get_data():
             "items": [
                    {
                        "type": "doctype",
+                       "name": "Datatrans Settings",
+                       "label": _("Datatrans Settings"),
+                       "description": _("Datatrans Settings")                   
+                   },
+                   {
+                       "type": "doctype",
                        "name": "Abacus Export File",
                        "label": _("Abacus Export File"),
                        "description": _("Abacus Export File")                   
@@ -187,6 +213,37 @@ def get_data():
             ]
         },
         {
+            "label": _("EDI"),
+            "icon": "octicon octicon-git-compare",
+            "items": [
+                   {
+                       "type": "doctype",
+                       "name": "EDI Connection",
+                       "label": _("EDI Connection"),
+                       "description": _("EDI Connection")                   
+                   },
+                   {
+                       "type": "doctype",
+                       "name": "EDI File",
+                       "label": _("EDI File"),
+                       "description": _("EDI File")                   
+                   } ,
+                   {
+                       "type": "doctype",
+                       "name": "EDI Sales Report",
+                       "label": _("EDI Sales Report"),
+                       "description": _("EDI Sales Report")                   
+                   },
+                   {
+                        "type": "report",
+                        "name": "EDI Sales Report Overview",
+                        "label": _("EDI Sales Report Overview"),
+                        "doctype": "EDI Sales Report",
+                        "is_query_report": True
+                   }
+            ]
+        },
+        {
             "label": _("POS"),
             "icon": "fa fa-money-bill",
             "items": [
@@ -196,9 +253,9 @@ def get_data():
                        "label": _("Daily Closing Statement"),
                        "description": _("Daily Closing Statement")                      
                    } 
-			]
-		},
-		{
+            ]
+        },
+        {
             "label": _("Quality"),
             "icon": "octicon octicon-verified",
             "items": [
@@ -208,31 +265,31 @@ def get_data():
                        "label": _("Non Conformity Report 8D"),
                        "description": _("Non Conformity Report 8D")                   
                    },
-				   {
+                   {
                        "type": "doctype",              
                        "name": "Inspection Equipment",
                        "label": _("Inspection Equipment"),
                        "description": _("Inspection Equipment")                   
                    },
-				   {
+                   {
                        "type": "doctype",
                        "name": "Inspection Equipment Transaction",
                        "label": _("Inspection Equipment Transaction"),
                        "description": _("Inspection Equipment Transaction")                   
                    },
-				   {
+                   {
                        "type": "doctype",
                        "name": "Inspection Equipment Type",
                        "label": _("Inspection Equipment Type"),
                        "description": _("Inspection Equipment Type")                   
                    },
-				   {
+                   {
                        "type": "doctype",
                        "name": "Calibration Test",
                        "label": _("Calibration / Test"),
                        "description": _("Calibration Test")                   
                    },
-				   {
+                   {
                        "type": "doctype",
                        "name": "Calibration Test Set",
                        "label": _("Calibration / Test-Set"),
@@ -250,24 +307,24 @@ def get_data():
                        "label": _("HLK Settings"),
                        "description": _("HLK Settings")                      
                    },
-				   {
+                {
                        "type": "doctype",
                        "name": "HLK Text Template",
                        "label": _("HLK Text Template"),
                        "description": _("HLK Text Template")                      
                    },
-				   {
+                {
                        "type": "doctype",
                        "name": "HLK Structur Organisation Template",
                        "label": _("HLK Structur Organisation Template"),
                        "description": _("HLK Structur Organisation Template")                      
                    },
-				   {
+                {
                        "type": "page",
                        "name": "bkp-importer",
                        "label": _("BKP Importer"),
                        "description": _("BKP Importer")                      
                    } 
-			]
-		}
+            ]
+        }
 ]

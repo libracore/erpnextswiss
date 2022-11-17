@@ -67,6 +67,9 @@ def set_customer_price_list(sinv):
     for item in sinv.items:
         if frappe.db.exists("Item Price", {"price_list": sinv.customer, "item_code": item.item_code}):
             item.rate = frappe.db.get_value("Item Price", {"price_list": sinv.customer, "item_code": item.item_code}, ["price_list_rate"])
+            if frappe.db.get_value("Item Price", {"price_list": sinv.customer, "item_code": item.item_code}, ["pauschalberechnung"]) == 1:
+                item.uom = 'pro Durchgang Pauschal'
+                item.qty = 1
     
     sinv.f5 = 1
     sinv.save()

@@ -22,7 +22,7 @@ The software comes as-is without any warranty.
 Requires an ERPNext server instance (refer to [https://github.com/frappe/erpnext](https://github.com/frappe/erpnext))
 
 ## Compatibility
-ERPNextSwiss is tested against ERPNext v12. There is a compatibility branch v11 (for user who prefer the old desk).
+ERPNextSwiss is tested against ERPNext v12. There are compatibility branches for v11 (for user who prefer the old desk) and v13 (for daring users).
 
 ERPNextSwiss is also compatible with Dokos ([https://dokos.io](https://dokos.io))
 
@@ -78,6 +78,8 @@ In case you update from the sources and observe an error, make sure to update de
     * ISO 20022
     * ZUGFeRD
     * Interface to Zefix
+    * Datatrans interface for payments
+    * EDI connector: allows to fully integrate EDI exchange (PRICAT, DESADV, ORDERS, SLSRPT, ...)
 
 ## Release notes
 Refer to [https://github.com/libracore/erpnextswiss/wiki/Release-Notes](https://github.com/libracore/erpnextswiss/wiki/Release-Notes)

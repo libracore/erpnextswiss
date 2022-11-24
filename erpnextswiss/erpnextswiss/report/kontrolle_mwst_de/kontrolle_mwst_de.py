@@ -13,7 +13,7 @@ def execute(filters=None):
     if not filters.end_date:
         filters.end_date = "2999-12-31"
     if not filters.code:
-        filters.code = "200"
+        filters.code = "81"
 
     # define columns
     columns = [
@@ -29,18 +29,18 @@ def execute(filters=None):
 
 def get_data(from_date, end_date, code, company="%"):
     # try to fetch data from VAT query
-    if frappe.db.exists("VAT query", "viewVAT_{code}".format(code=code)):
+    if frappe.db.exists("VAT query", "viewVAT_DE_{code}".format(code=code)):
         sql_query = ("""SELECT * 
                 FROM ({query}) AS `s` 
                 WHERE `s`.`posting_date` >= '{start_date}' 
                 AND `s`.`posting_date` <= '{end_date}'""".format(
-                query=frappe.get_value("VAT query", "viewVAT_{code}".format(code=code), "query"),
+                query=frappe.get_value("VAT query", "viewVAT_DE_{code}".format(code=code), "query"),
                 start_date=from_date, end_date=end_date).replace("{company}", company))      
     else:
         # fallback database view
         sql_query = """SELECT
                     *
-                FROM `viewVAT_{code}`
+                FROM `viewVAT_DE_{code}`
                 WHERE
                     `posting_date` >= \"{start_date}\"
                     AND `posting_date` <= \"{end_date}\"

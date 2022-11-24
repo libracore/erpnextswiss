@@ -104,10 +104,10 @@ def download_pricat(edi_file):
         # fabric (132, formerly U01)
         if edi_con.edi_format == "96A":
             code = "U01"
-            fabric = (item_doc.get("fabric") or "")[:35]
+            fabric = (item_doc.get("fabric") or "")[:35].replace("+", ",")
         else:
             code = "132"
-            fabric = item_doc.get("fabric") or ""
+            fabric = (item_doc.get("fabric") or "").replace("+", ",")
         content_segments.append("IMD+F+{code}+:::{fabric}:'".format(
             code=code,
             fabric=fabric
@@ -421,8 +421,8 @@ def create_slsrpt(edi_file):
     edi_cons = frappe.get_all("EDI Connection", 
         filters={
             'edi_type': "SLSRPT",
-            'gln_sender': data['sender_gln'],
-            'gln_recipient': data['recipient_gln'],
+            'gln_sender': data[0]['sender_gln'],
+            'gln_recipient': data[0]['recipient_gln'],
             'disabled': 0
         },
         fields=['name']
@@ -433,33 +433,34 @@ def create_slsrpt(edi_file):
         edi.date = datetime.now()
         edi.save(ignore_permissions=True)
         
-        # create sales report
-        sales_report = frappe.get_doc({
-            'doctype': "EDI Sales Report",
-            'edi_file': edi_file,
-            'customer': edi_con.customer,
-            'date': data['document_date'],
-            'currency': data['currency'],
-            'location_gln': data['location_gln'],
-            'address': get_address_from_gln(data['location_gln']),
-            'title': "{0} - {1}".format(edi_con.customer, data['document_date'])
-        })
-        for item in data['items']:
-            if item['location_gln']:
-                addresses = frappe.get_all("Address", filters={'branch_gln': item['location_gln']}, fields=['name'])
-                if len(addresses) > 0:
-                    address = addresses[0]['name']
-                else:
-                    address = None
-            sales_report.append("items", {
-                'barcode': item['barcode'],
-                'item_code': item['item_code'],
-                'qty': item['qty'],
-                'rate': item['net_unit_rate'],
-                'gln': item['location_gln'],
-                'address': address
+        # create sales report(s)
+        for d in data:
+            sales_report = frappe.get_doc({
+                'doctype': "EDI Sales Report",
+                'edi_file': edi_file,
+                'customer': edi_con.customer,
+                'date': d['document_date'],
+                'currency': d['currency'],
+                'location_gln': d['location_gln'],
+                'address': get_address_from_gln(d['location_gln']),
+                'title': "{0} - {1}".format(edi_con.customer, d['document_date'])
             })
-        sales_report.insert(ignore_permissions=True)
+            for item in d['items']:
+                if item['location_gln']:
+                    addresses = frappe.get_all("Address", filters={'branch_gln': item['location_gln']}, fields=['name'])
+                    if len(addresses) > 0:
+                        address = addresses[0]['name']
+                    else:
+                        address = None
+                sales_report.append("items", {
+                    'barcode': item['barcode'],
+                    'item_code': item['item_code'],
+                    'qty': item['qty'],
+                    'rate': item['net_unit_rate'],
+                    'gln': item['location_gln'],
+                    'address': address
+                })
+            sales_report.insert(ignore_permissions=True)
         edi.submit()
     else:
         frappe.log_error( _("No matching EDI Connection found for {0}").format(edi_file), _("Create EDI SLSRPT") )
@@ -478,8 +479,8 @@ def create_orders(edi_file):
     edi_cons = frappe.get_all("EDI Connection", 
         filters={
             'edi_type': "ORDERS",
-            'gln_sender': data['sender_gln'] if 'gln_sender' in data else data['buyer'],
-            'gln_recipient': data['recipient_gln'] if 'recipient_gln' in data else data['supplier'],
+            'gln_sender': data[0]['sender_gln'] if 'sender_gln' in data[0] else data[0]['buyer'],
+            'gln_recipient': data[0]['recipient_gln'] if 'recipient_gln' in data[0] else data[0]['supplier'],
             'disabled': 0
         },
         fields=['name']
@@ -490,29 +491,42 @@ def create_orders(edi_file):
         edi.date = datetime.now()
         edi.save(ignore_permissions=True)
         
-        # create sales order
-        sales_order = frappe.get_doc({
-            'doctype': "Sales Order",
-            'edi_file': edi_file,
-            'customer': edi_con.customer,
-            'transaction_date': data['document_date'],
-            'shipping_address_name': get_address_from_gln(data['deliver_to']),
-            'delivery_date': data['requested_delivery_date'],
-            'po_no': data['reference']
-        })
-        if 'currency' in data:
-            sales_order.currency = data['currency']
-        for item in data['items']:
-            if item['item_code']:
-                sales_order.append("items", {
-                    'item_code': item['item_code'],
-                    'qty': item['qty'],
-                    'rate': item['calculation_net_rate'] if 'calculation_net_rate' in item else item['net_unit_rate']
-                })
+        # create sales order(s)
+        for d in data:
+            # set delivery date
+            delivery_date = d['document_date']
+            if 'requested_delivery_date' in d:
+                delivery_date = d['requested_delivery_date']
+            elif 'latest_delivery_date' in d:
+                delivery_date = d['latest_delivery_date']
+            elif 'earliest_delivery_date' in d:
+                delivery_date = d['earliest_delivery_date']
+                
+            sales_order = frappe.get_doc({
+                'doctype': "Sales Order",
+                'edi_file': edi_file,
+                'customer': edi_con.customer,
+                'transaction_date': d['document_date'],
+                'shipping_address_name': get_address_from_gln(d['deliver_to']),
+                'delivery_date': delivery_date,
+                'po_no': d['reference'],
+                'territory': frappe.get_value("Customer", edi_con.customer, "territory")
+            })
+            if 'currency' in data:
+                sales_order.currency = d['currency']
             else:
-                frappe.log_error( _("Order of unknown item: {0}: {1}").format(edi_file, item['barcode']), _("EDI create order") )
-        sales_order.flags.ignore_mandatory = True
-        sales_order.insert(ignore_permissions=True)
+                sales_order.currency = frappe.get_value("Customer", edi_con.customer, "default_currency")
+            for item in d['items']:
+                if item['item_code']:
+                    sales_order.append("items", {
+                        'item_code': item['item_code'],
+                        'qty': item['qty'],
+                        'rate': item['calculation_net_rate'] if 'calculation_net_rate' in item else item['net_unit_rate']
+                    })
+                else:
+                    frappe.log_error( _("Order of unknown item: {0}: {1}").format(edi_file, item['barcode']), _("EDI create order") )
+            sales_order.flags.ignore_mandatory = True
+            sales_order.insert(ignore_permissions=True)
         edi.submit()
     else:
         frappe.log_error( _("No matching EDI Connection found for {0}").format(edi_file), _("Create EDI ORDERS") )
@@ -536,55 +550,70 @@ def parse_date(date_str, date_code):
         return date_str
         
 def parse_edi(segments):
-    data = {
-        'items': []
-    }
+    data = []
     location_gln = None
+    sender_gln = None
+    recipient_gln = None
     for segment in segments:
         structure = parse_segment(segment)
         if structure[0][0] == "UNB":
             # header
-            data['sender_gln'] = structure[2][0]
-            data['recipient_gln'] = structure[3][0]
+            sender_gln = structure[2][0]
+            recipient_gln = structure[3][0]
         elif structure[0][0] == "UNH":
             # message header
-            data['edi_type'] = structure[2][0]
+            # create new file structure
+            data.append({
+                'items': []
+            })
+            data[-1]['edi_type'] = structure[2][0]
+            #from UNB
+            data[-1]['sender_gln'] = sender_gln
+            data[-1]['recipient_gln'] = recipient_gln
         elif structure[0][0] == "BGM":
             # begin message
-            data['action'] = structure[3][0]
+            try:
+                data[-1]['reference'] = structure[2][0]
+                data[-1]['action'] = structure[3][0]
+            except:
+                data[-1]['action'] = 9          # default to add
         elif structure[0][0] == "DTM":
             # date
             if structure[1][0] == "137":        # document date
-                data['document_date'] = parse_date(structure[1][1], structure[1][2])
+                data[-1]['document_date'] = parse_date(structure[1][1], structure[1][2])
             elif structure[1][0] == "90":        # report start date
-                data['report_start_date'] = parse_date(structure[1][1], structure[1][2])
+                data[-1]['report_start_date'] = parse_date(structure[1][1], structure[1][2])
             elif structure[1][0] == "91":        # report end date
-                data['report_end_date'] = parse_date(structure[1][1], structure[1][2])
+                data[-1]['report_end_date'] = parse_date(structure[1][1], structure[1][2])
             elif structure[1][0] == "2":        # requested delivery date
-                data['requested_delivery_date'] = parse_date(structure[1][1], structure[1][2])
+                data[-1]['requested_delivery_date'] = parse_date(structure[1][1], structure[1][2])
+            elif structure[1][0] == "64":        # requested earliest delivery date
+                data[-1]['earliest_delivery_date'] = parse_date(structure[1][1], structure[1][2])
+            elif structure[1][0] == "63":        # requested latest delivery date
+                data[-1]['latest_delivery_date'] = parse_date(structure[1][1], structure[1][2])
         elif structure[0][0] == "RFF":
-            data['reference'] = (structure[1][1] or "").replace("'", "")
+            data[-1]['reference'] = (structure[1][1] or "").replace("'", "")
         elif structure[0][0] == "NAD":
             # name and address
             if structure[1][0] == "SU":        # supplier
-                data['supplier'] = structure[2][0]
+                data[-1]['supplier'] = structure[2][0]
             elif structure[1][0] == "BY":        # buyer
-                data['buyer'] = structure[2][0]
+                data[-1]['buyer'] = structure[2][0]
             elif structure[1][0] == "DP":        # delivery address
-                data['deliver_to'] = structure[2][0]
+                data[-1]['deliver_to'] = structure[2][0]
         elif structure[0][0] == "CUX":
             # currencies
-            data['currency'] = structure[1][1]
+            data[-1]['currency'] = structure[1][1]
         elif structure[0][0] == "LOC":
             # location
-            data['location_gln'] = structure[2][0]
+            data[-1]['location_gln'] = structure[2][0]
             location_gln = structure[2][0]
         elif structure[0][0] == "LIN":
             # line item
             # find item
             item_barcode = structure[3][0]
             item_code = get_item_from_gtin(item_barcode)
-            data['items'].append({
+            data[-1]['items'].append({
                 'barcode': item_barcode,
                 'item_code': item_code,
                 'location_gln': location_gln            # apply last found location gln
@@ -592,15 +621,15 @@ def parse_edi(segments):
         elif structure[0][0] == "PRI":
             # price details
             if structure[1][0] == "AAA":
-                data['items'][-1]['calculation_net_rate'] = float((structure[1][1] or "").replace("'", ""))
+                data[-1]['items'][-1]['calculation_net_rate'] = float((structure[1][1] or "").replace("'", ""))
             elif structure[1][0] == "NTP":
-                data['items'][-1]['net_unit_rate'] = float((structure[1][1] or "").replace("'", ""))
+                data[-1]['items'][-1]['net_unit_rate'] = float((structure[1][1] or "").replace("'", ""))
         elif structure[0][0] == "QTY":
             # quantity
-            data['items'][-1]['qty'] = float(structure[1][1].split("'")[0])
+            data[-1]['items'][-1]['qty'] = float(structure[1][1].split("'")[0])
         elif structure[0][0] == "UNT":
             # message trailer
-            data['segments'] = structure[1][0]
+            data[-1]['segments'] = structure[1][0]
     
     return data
     

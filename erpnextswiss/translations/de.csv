@@ -257,6 +257,7 @@ DocType: Payment Proposal,Salaries,Löhne
 DocType: Payment Proposal,Overview,Übersicht
 DocType: Payment Proposal,Target date,Zieldatum
 DocType: Payment Proposal,Employee name,Mitarbeitername
+DocType: Payment Proposal,Include Payments Until,Fälligkeiten einschliessen bis
 Page: Bank Wizard,Bank Wizard,Bankassistent
 Page: Bank Wizard,Transaction matched,Zahlung zugewiesen
 Page: Bank Wizard, transactions found, Zahlungen gefunden

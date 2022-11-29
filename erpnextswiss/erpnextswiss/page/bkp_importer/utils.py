@@ -10,9 +10,18 @@ from frappe.contacts.doctype.address.address import get_company_address
 from frappe.model.utils import get_fetch_values
 from erpnext.stock.doctype.item.item import get_item_defaults
 from erpnext.setup.doctype.item_group.item_group import get_item_group_defaults
+from frappe.utils.background_jobs import enqueue
 
 @frappe.whitelist()
 def calc_structur_organisation_totals(dt, dn):
+    args = {
+        'dt': dt,
+        'dn': dn
+    }
+    enqueue("erpnextswiss.erpnextswiss.page.bkp_importer.utils._calc_structur_organisation_totals", queue='long', job_name='Calc HLK Totals {0}'.format(dn), timeout=1500, **args)
+    return 'Calc HLK Totals {0}'.format(dn)
+
+def _calc_structur_organisation_totals(dt, dn):
     parent_list = []
     last_elements = frappe.db.sql("""
         SELECT
@@ -307,3 +316,58 @@ def get_item_group_for_structur_element_filter():
 def fetch_hlk_structur_organisation_table(template):
     template = frappe.get_doc("HLK Structur Organisation Template", template)
     return template.hlk_structur_organisation
+
+@frappe.whitelist()
+def is_calc_job_running(jobname):
+    from frappe.utils.background_jobs import get_jobs
+    running = get_info(jobname)
+    return running
+
+def get_info(jobname):
+    from rq import Queue, Worker
+    from frappe.utils.background_jobs import get_redis_conn
+    from frappe.utils import format_datetime, cint, convert_utc_to_user_timezone
+    colors = {
+        'queued': 'orange',
+        'failed': 'red',
+        'started': 'blue',
+        'finished': 'green'
+    }
+    conn = get_redis_conn()
+    queues = Queue.all(conn)
+    workers = Worker.all(conn)
+    jobs = []
+    show_failed=False
+
+    def add_job(j, name):
+        if j.kwargs.get('site')==frappe.local.site:
+            jobs.append({
+                'job_name': j.kwargs.get('kwargs', {}).get('playbook_method') \
+                    or str(j.kwargs.get('job_name')),
+                'status': j.status, 'queue': name,
+                'creation': format_datetime(convert_utc_to_user_timezone(j.created_at)),
+                'color': colors[j.status]
+            })
+            if j.exc_info:
+                jobs[-1]['exc_info'] = j.exc_info
+
+    for w in workers:
+        j = w.get_current_job()
+        if j:
+            add_job(j, w.name)
+
+    for q in queues:
+        if q.name != 'failed':
+            for j in q.get_jobs(): add_job(j, q.name)
+
+    if cint(show_failed):
+        for q in queues:
+            if q.name == 'failed':
+                for j in q.get_jobs()[:10]: add_job(j, q.name)
+    
+    found_job = 'refresh'
+    for job in jobs:
+        if job['job_name'] == jobname:
+            found_job = True
+
+    return found_job

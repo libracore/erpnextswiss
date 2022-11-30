@@ -25,7 +25,7 @@ function prepare_payment_proposal() {
                     function(values){
                         create_payment_proposal(values.date, values.company);
                     },
-                    __('Payment Proposal',)
+                    __('Payment Proposal'),
                     __('Create')
                 );
             } catch (err) {

@@ -32,4 +32,10 @@ def get_accounts_receivable(customer):
     filters = {
         'customer': customer
     }
-    return ReceivablePayableReport(filters).run(args)
+    raw = ReceivablePayableReport(filters).run(args)
+    try:
+        # extract relevant data
+        data = raw[1]
+        return data
+    except:
+        return []

@@ -82,6 +82,8 @@ def get_invoiceable_entries(from_date=None, to_date=None, customer=None):
         customer = "%"
     
     invoicing_item = frappe.get_value("ERPNextSwiss Settings", "ERPNextSwiss Settings", "service_item")
+    if not invoicing_item:
+        frappe.throw( _("Invoicing configuration is missing the invoice item. Please set under ERPNextSwiss Settings > Invoice Item."), _("Configuration missing") )
     invoicing_method = frappe.get_value("ERPNextSwiss Settings", "ERPNextSwiss Settings", "invoice_method") or "hours"
     
     sql_query = """
@@ -186,8 +188,24 @@ def create_invoice(from_date, to_date, customer):
         if item['qty'] > 0:                     # only append items with qty > 0 (otherwise this will cause an error)
             sinv.append('items', item)
     
+    # add default taxes and charges
+    taxes = find_tax_template()
+    if taxes:
+        sinv.taxes_and_charges = taxes
+        taxes_template = frappe.get_doc("Sales Taxes and Charges Template", taxes)
+        for t in taxes_template.taxes:
+            sinv.append("taxes", t)
+    
+    # insert new invoice
     sinv.insert()
     
     frappe.db.commit()
     
     return sinv.name
+
+def find_tax_template():
+    default_template = frappe.get_all("Sales Taxes and Charges Template", filters={'is_default': 1}, fields=['name'])
+    if len(default_template) > 0:
+        return default_template[0]['name']
+    else:
+        return None

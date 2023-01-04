@@ -8,7 +8,7 @@
  "idx": 0,
  "is_standard": "Yes",
  "letter_head": "Commercial",
- "modified": "2022-12-30 20:15:26.130051",
+ "modified": "2023-01-04 13:45:08.311705",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "Service Invoicing",
@@ -23,6 +23,9 @@
   },
   {
    "role": "Accounts User"
+  },
+  {
+   "role": "Sales Master Manager"
   }
  ]
 }

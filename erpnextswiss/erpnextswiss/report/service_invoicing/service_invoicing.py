@@ -145,7 +145,7 @@ def get_invoiceable_entries(from_date=None, to_date=None, customer=None):
             AND (`tabDelivery Note`.`posting_date` >= "{from_date}" AND `tabDelivery Note`.`posting_date` <= "{to_date}")
             AND `tabSales Invoice Item`.`name` IS NULL
                     
-        ORDER BY `date` ASC;
+        ORDER BY `customer_name` ASC, `date` ASC;
     """.format(from_date=from_date, to_date=to_date, invoicing_item=invoicing_item, customer=customer, method=invoicing_method)
     entries = frappe.db.sql(sql_query, as_dict=True)
     return entries

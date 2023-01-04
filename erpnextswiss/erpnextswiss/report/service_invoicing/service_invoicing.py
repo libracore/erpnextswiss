@@ -151,7 +151,7 @@ def get_invoiceable_entries(from_date=None, to_date=None, customer=None):
     return entries
 
 @frappe.whitelist()
-def create_invoice(from_date, to_date, customer):
+def create_invoice(from_date, to_date, customer, company=None):
     # fetch entries
     entries = get_invoiceable_entries(from_date=from_date, to_date=to_date, customer=customer)
     
@@ -187,6 +187,20 @@ def create_invoice(from_date, to_date, customer):
      
         if item['qty'] > 0:                     # only append items with qty > 0 (otherwise this will cause an error)
             sinv.append('items', item)
+    
+    # check currency and debtors account
+    customer_doc = frappe.get_doc("Customer", customer)
+    if customer_doc.default_currency:
+        sinv.currency = customer_doc.default_currency
+    
+    # assume debtors account from first row (#NOTE TO FUTURE SELF: INCLUDE MULTI-COMPANY)
+    if customer_doc.accounts and len(customer_doc.accounts) > 0:
+        if company:
+            for a in customer_doc.accounts:
+                if a.company == company:
+                    sinv.debit_to = a.account
+        else:
+            sinv.debit_to = customer_doc.accounts[0].account
     
     # add default taxes and charges
     taxes = find_tax_template()

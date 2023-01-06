@@ -165,39 +165,57 @@ function validate_hlk_element_allocation(frm) {
 
 function calc_structur_organisation_totals(frm) {
     if (!frm.doc.__islocal) {
-        frappe.dom.freeze(__("Calc HLK Totals..."));
-        frappe.call({
-            "method": "erpnextswiss.erpnextswiss.page.bkp_importer.utils.calc_structur_organisation_totals",
-            "args": {
-                "dt": "Quotation",
-                "dn": frm.doc.name
-            },
-            "async": false,
-            "callback": function(response) {
-                var jobname = response.message;
-                if (jobname) {
-                    let calc_refresher = setInterval(calc_refresher_handler, 3000, jobname);
-                    function calc_refresher_handler(jobname) {
-                        frappe.call({
-                        'method': "erpnextswiss.erpnextswiss.page.bkp_importer.utils.is_calc_job_running",
-                            'args': {
-                                'jobname': jobname
-                            },
-                            'callback': function(res) {
-                                if (res.message == 'refresh') {
-                                    clearInterval(calc_refresher);
-                                    frappe.dom.unfreeze();
-                                    cur_frm.reload_doc();
-                                }
-                            }
-                        });
-                    }
-                } else {
-                    frappe.dom.unfreeze();
+        var hlk_structur_without_parent = check_hlk_structur_allocation(frm);
+        if (hlk_structur_without_parent != '') {
+            frappe.confirm(
+                'Nachfolgende HLK Strukturen besitzen kein Eltern Element:' + hlk_structur_without_parent + '<br><br>Ist das korrekt und wollen Sie weiterfahren?',
+                function(){
+                    // on yes
+                    sub_calc_structur_organisation_totals(frm)
+                },
+                function(){
+                    // on no
+                    show_alert('Totalen Berechnung abgebrochen')
                 }
-            }
-        });
+            )
+        } else {
+            sub_calc_structur_organisation_totals(frm)
+        }
     }
+}
+function sub_calc_structur_organisation_totals(frm) {
+    frappe.dom.freeze(__("Calc HLK Totals..."));
+    frappe.call({
+        "method": "erpnextswiss.erpnextswiss.page.bkp_importer.utils.calc_structur_organisation_totals",
+        "args": {
+            "dt": "Quotation",
+            "dn": frm.doc.name
+        },
+        "async": false,
+        "callback": function(response) {
+            var jobname = response.message;
+            if (jobname) {
+                let calc_refresher = setInterval(calc_refresher_handler, 3000, jobname);
+                function calc_refresher_handler(jobname) {
+                    frappe.call({
+                    'method': "erpnextswiss.erpnextswiss.page.bkp_importer.utils.is_calc_job_running",
+                        'args': {
+                            'jobname': jobname
+                        },
+                        'callback': function(res) {
+                            if (res.message == 'refresh') {
+                                clearInterval(calc_refresher);
+                                frappe.dom.unfreeze();
+                                cur_frm.reload_doc();
+                            }
+                        }
+                    });
+                }
+            } else {
+                frappe.dom.unfreeze();
+            }
+        }
+    });
 }
 
 function transfer_structur_organisation_discounts(frm) {
@@ -220,8 +238,19 @@ function check_hlk_element_allocation(frm) {
     var feedback = '';
     var items = cur_frm.doc.items;
     items.forEach(function(item_entry) {
-        if (item_entry.hlk_element == null) {
+        if (item_entry.hlk_element.length < 1) {
             feedback = feedback + '<br>#' + String(item_entry.idx);
+        }
+    });
+    return feedback
+}
+
+function check_hlk_structur_allocation(frm) {
+    var feedback = '';
+    var items = cur_frm.doc.hlk_structur_organisation;
+    items.forEach(function(item_entry) {
+        if (item_entry.parent_element.length < 1) {
+            feedback = feedback + '<br>#' + String(item_entry.idx) + ': ' + item_entry.main_element;
         }
     });
     return feedback

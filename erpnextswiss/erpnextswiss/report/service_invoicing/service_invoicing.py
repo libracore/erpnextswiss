@@ -168,7 +168,10 @@ def create_invoice(from_date, to_date, customer, company=None):
             remarkstring = "{0}: {1}<br>{2}".format(e.date.strftime("%d.%m.%Y"), e.employee_name, e.remarks)
         else:
             remarkstring = "{0}: {1}".format(e.date.strftime("%d.%m.%Y"), e.employee_name)
-
+        
+        # project trace
+        sinv.project = e.project
+        
         item = {
             'item_code': e.item,
             'qty': e.qty,
@@ -180,6 +183,7 @@ def create_invoice(from_date, to_date, customer, company=None):
         if e.dt == "Delivery Note":
             item['delivery_note'] = e.reference
             item['dn_detail'] = e.detail
+
         elif e.dt == "Timesheet":
             item['timesheet'] = e.reference
             item['ts_detail'] = e.detail

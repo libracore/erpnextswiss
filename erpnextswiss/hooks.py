@@ -18,7 +18,7 @@ app_license = "AGPL"
 # app_include_css = "/assets/erpnextswiss/css/erpnextswiss.css"
 app_include_js = [
     "/assets/erpnextswiss/js/swiss_common.js",
-	"/assets/erpnextswiss/js/iban.js"
+    "/assets/erpnextswiss/js/iban.js"
 ]
 
 # include js, css files in header of web template
@@ -51,7 +51,8 @@ jenv = {
         "get_tax_details:erpnextswiss.erpnextswiss.report.kontrolle_mwst.kontrolle_mwst.get_data",
         "get_account_sheets:erpnextswiss.erpnextswiss.finance.get_account_sheets",
         "get_week_from_date:erpnextswiss.erpnextswiss.jinja.get_week_from_date",
-        "strip_html:erpnextswiss.erpnextswiss.jinja.strip_html"
+        "strip_html:erpnextswiss.erpnextswiss.jinja.strip_html",
+        "get_accounts_receivable:erpnextswiss.erpnextswiss.jinja.get_accounts_receivable"
     ]
 }
 

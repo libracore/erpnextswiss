@@ -25,8 +25,8 @@ function prepare_payment_proposal() {
                     function(values){
                         create_payment_proposal(values.date, values.company);
                     },
-                    'Payment Proposal',
-                    'Create'
+                    __('Payment Proposal'),
+                    __('Create')
                 );
             } catch (err) {
                 frappe.msgprint("Error: " + err.message);

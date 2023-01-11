@@ -207,7 +207,7 @@ def create_invoice(from_date, to_date, customer, company=None):
             sinv.debit_to = customer_doc.accounts[0].account
     
     # add default taxes and charges
-    taxes = find_tax_template()
+    taxes = find_tax_template(customer)
     if taxes:
         sinv.taxes_and_charges = taxes
         taxes_template = frappe.get_doc("Sales Taxes and Charges Template", taxes)
@@ -221,9 +221,19 @@ def create_invoice(from_date, to_date, customer, company=None):
     
     return sinv.name
 
-def find_tax_template():
-    default_template = frappe.get_all("Sales Taxes and Charges Template", filters={'is_default': 1}, fields=['name'])
-    if len(default_template) > 0:
-        return default_template[0]['name']
+def find_tax_template(customer):
+    # check if the customer has a specific template
+    customer_doc = frappe.get_doc("Customer", customer)
+    if customer_doc.get("default_taxes_and_charges"):
+        template = customer_doc.get("default_taxes_and_charges")
     else:
-        return None
+        default_template = frappe.get_all("Sales Taxes and Charges Template", 
+            filters={
+                'is_default': 1
+            }, 
+            fields=['name'])
+        if len(default_template) > 0:
+            template = default_template[0]['name']
+        else:
+            template = None
+    return template

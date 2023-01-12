@@ -89,6 +89,15 @@ def calc_and_create_new_parent_list(parent_list, dt, dn):
     
 @frappe.whitelist()
 def transfer_structur_organisation_discounts(dt, dn):
+    args = {
+        'dt': dt,
+        'dn': dn
+    }
+    enqueue("erpnextswiss.erpnextswiss.page.bkp_importer.utils._transfer_structur_organisation_discounts", queue='long', job_name='transfer_structur_organisation_discounts {0}'.format(dn), timeout=1500, **args)
+    return 'transfer_structur_organisation_discounts {0}'.format(dn)
+
+@frappe.whitelist()
+def _transfer_structur_organisation_discounts(dt, dn):
     document = frappe.get_doc(dt, dn)
     parent_elements = []
     sub_parent_elements = []
@@ -321,6 +330,21 @@ def fetch_hlk_structur_organisation_table(template):
 def is_calc_job_running(jobname):
     from frappe.utils.background_jobs import get_jobs
     running = get_info(jobname)
+    return running
+
+@frappe.whitelist()
+def is_any_job_running(doctype, docname):
+    running = 'refresh'
+    if doctype == 'Quotation':
+        jobname = 'Calc HLK Totals {0}'.format(docname)
+        running = get_info(jobname)
+        if running == 'refresh':
+            jobname = 'transfer_structur_organisation_discounts {0}'.format(docname)
+            running = get_info(jobname)
+    if running == 'refresh':
+        running = False
+    else:
+        running = True
     return running
 
 def get_info(jobname):

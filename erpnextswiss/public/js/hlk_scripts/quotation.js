@@ -334,8 +334,10 @@ function check_hlk_structur_allocation(frm) {
     var feedback = '';
     var items = cur_frm.doc.hlk_structur_organisation;
     items.forEach(function(item_entry) {
-        if (item_entry.parent_element.length < 1) {
-            feedback = feedback + '<br>#' + String(item_entry.idx) + ': ' + item_entry.main_element;
+        if (item_entry.parent_element) {
+            if (item_entry.parent_element.length < 1) {
+                feedback = feedback + '<br>#' + String(item_entry.idx) + ': ' + item_entry.main_element;
+            }
         }
     });
     return feedback

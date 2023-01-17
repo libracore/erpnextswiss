@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 import time
 from erpnextswiss.erpnextswiss.common_functions import get_building_number, get_street_name, get_pincode, get_city, get_primary_address
 import html          # used to escape xml content
-from frappe.utils import cint
+from frappe.utils import cint, get_url_to_form
 from unidecode import unidecode     # used to remove German/French-type special characters from bank identifieres
 
 class PaymentProposal(Document):
@@ -112,9 +112,11 @@ class PaymentProposal(Document):
             if amount > 0:
                 supl = frappe.get_doc("Supplier", supplier)
                 addr = frappe.get_doc("Address", address)
+                if payment_type == "ESR":           # prevent if last invoice was by ESR, but others are also present -> pay as IBAN
+                    payment_type = "IBAN"
                 self.add_payment(supl.supplier_name, supl.iban, payment_type,
                     addr.address_line1, "{0} {1}".format(addr.pincode, addr.city), addr.country,
-                    amount, currency, " ".join(references), exec_date, bic=supl.bic)
+                    amount, currency, " ".join(references), exec_date, bic=supl.bic, receiver_id=supl.name)
                 total += amount
         # collect employees
         employees = []
@@ -199,7 +201,8 @@ class PaymentProposal(Document):
     
     def add_payment(self, receiver_name, iban, payment_type, address_line1, 
         address_line2, country, amount, currency, reference, execution_date, 
-        esr_reference=None, esr_participation_number=None, bic=None, is_salary=0):
+        esr_reference=None, esr_participation_number=None, bic=None, is_salary=0,
+        receiver_id=None):
             # prepare payment date
             if isinstance(execution_date,datetime):
                 pay_date = execution_date
@@ -211,6 +214,7 @@ class PaymentProposal(Document):
             # append payment record
             new_payment = self.append('payments', {})
             new_payment.receiver = receiver_name
+            new_payment.receiver_id = receiver_id
             new_payment.iban = iban
             new_payment.bic = bic
             new_payment.payment_type = payment_type
@@ -219,7 +223,10 @@ class PaymentProposal(Document):
             new_payment.receiver_country = country           
             new_payment.amount = amount
             new_payment.currency = currency
-            new_payment.reference = reference
+            if len(reference) > 140:
+                new_payment.reference = "{0}...".format(reference[:136])
+            else:
+                new_payment.reference = reference
             new_payment.execution_date = pay_date
             new_payment.esr_reference = esr_reference
             new_payment.esr_participation_number = esr_participation_number   
@@ -385,8 +392,8 @@ def create_payment_proposal(date=None, company=None):
     sql_query = ("""SELECT 
                   `tabPurchase Invoice`.`supplier` AS `supplier`, 
                   `tabPurchase Invoice`.`name` AS `name`,
-                  /* if company currency, use outstanding amount, otherwise grand total (in currency) */
-                  (IF (`tabPurchase Invoice`.`base_grand_total` = `tabPurchase Invoice`.`grand_total`,
+                  /* if creditor currency = document currency, use outstanding amount, otherwise grand total (in currency) */
+                  (IF (`tabPurchase Invoice`.`currency` = `tabAccount`.`account_currency`,
                    `tabPurchase Invoice`.`outstanding_amount`,
                    `tabPurchase Invoice`.`grand_total`
                    )) AS `outstanding_amount`,
@@ -397,8 +404,8 @@ def create_payment_proposal(date=None, company=None):
                      `tabPurchase Invoice`.`due_date`, 
                      (DATE_ADD(`tabPurchase Invoice`.`posting_date`, INTERVAL `tabPayment Terms Template`.`skonto_days` DAY))
                      )) AS `skonto_date`,
-                  /* if company currency, use outstanding amount, otherwise grand total (in currency) */
-                  (IF (`tabPurchase Invoice`.`base_grand_total` = `tabPurchase Invoice`.`grand_total`,
+                  /* if creditor currency = document currency, use outstanding amount, otherwise grand total (in currency) */
+                  (IF (`tabPurchase Invoice`.`currency` = `tabAccount`.`account_currency`,
                     (((100 - IFNULL(`tabPayment Terms Template`.`skonto_percent`, 0))/100) * `tabPurchase Invoice`.`outstanding_amount`),
                     (((100 - IFNULL(`tabPayment Terms Template`.`skonto_percent`, 0))/100) * `tabPurchase Invoice`.`grand_total`)
                     )) AS `skonto_amount`,
@@ -408,12 +415,14 @@ def create_payment_proposal(date=None, company=None):
                 FROM `tabPurchase Invoice` 
                 LEFT JOIN `tabPayment Terms Template` ON `tabPurchase Invoice`.`payment_terms_template` = `tabPayment Terms Template`.`name`
                 LEFT JOIN `tabSupplier` ON `tabPurchase Invoice`.`supplier` = `tabSupplier`.`name`
+                LEFT JOIN `tabAccount` ON `tabAccount`.`name` = `tabPurchase Invoice`.`credit_to`
                 WHERE `tabPurchase Invoice`.`docstatus` = 1 
                   AND `tabPurchase Invoice`.`outstanding_amount` > 0
                   AND ((`tabPurchase Invoice`.`due_date` <= '{date}') 
                     OR ((IF (IFNULL(`tabPayment Terms Template`.`skonto_days`, 0) = 0, `tabPurchase Invoice`.`due_date`, (DATE_ADD(`tabPurchase Invoice`.`posting_date`, INTERVAL `tabPayment Terms Template`.`skonto_days` DAY)))) <= '{date}'))
                   AND `tabPurchase Invoice`.`is_proposed` = 0
-                  AND `tabPurchase Invoice`.`company` = '{company}';""".format(date=date, company=company))
+                  AND `tabPurchase Invoice`.`company` = '{company}'
+                GROUP BY `tabPurchase Invoice`.`name`;""".format(date=date, company=company))
     purchase_invoices = frappe.db.sql(sql_query, as_dict=True)
     # get all purchase invoices that pending
     total = 0.0
@@ -499,8 +508,26 @@ def create_payment_proposal(date=None, company=None):
     proposal_record = new_proposal.insert(ignore_permissions=True)      # ignore permissions, as noone has create permission to prevent the new button
     new_record = proposal_record.name
     frappe.db.commit()
-    return new_record
+    return get_url_to_form("Payment Proposal", new_record)
 
 # adds Windows-compatible line endings (to make the xml look nice)    
 def make_line(line):
     return line + "\r\n"
+
+
+"""
+Allow to release purchase invoices (switch to next revision, before that exists, so it can be cancelled)
+"""
+@frappe.whitelist()
+def release_from_payment_proposal(purchase_invoice):
+    pinv = frappe.get_doc("Purchase Invoice", purchase_invoice)
+    if pinv.amended_from:
+        parts = pinv.name.split("-")
+        new_name = "{0}-{1}".format("-".join(parts[:-1]), (cint(parts[-1]) + 1))
+    else:
+        new_name = "{0}-1".format(pinv.name)
+    frappe.db.sql("""UPDATE `tabPayment Proposal Purchase Invoice` 
+        SET `purchase_invoice` = "{new_name}" 
+        WHERE `purchase_invoice` = "{old_name}";""".format(new_name=new_name, old_name=pinv.name))
+    frappe.db.commit()
+    return

@@ -1,0 +1,141 @@
+{
+ "creation": "2022-05-25 23:21:57.169298",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "item_code",
+  "col_item",
+  "item_name",
+  "item_group",
+  "sec_action",
+  "action",
+  "sec_pricing",
+  "rate",
+  "col_pricing",
+  "retail_rate",
+  "gtin",
+  "sec_details",
+  "min_qty",
+  "qty_per_pack",
+  "col_details",
+  "size",
+  "colour"
+ ],
+ "fields": [
+  {
+   "fieldname": "item_code",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Item code",
+   "options": "Item",
+   "reqd": 1
+  },
+  {
+   "default": "1=Add",
+   "fieldname": "action",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Action",
+   "options": "1=Add\n2=Delete\n3=Change\n4=No Action",
+   "reqd": 1
+  },
+  {
+   "fieldname": "rate",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Rate",
+   "precision": "2",
+   "reqd": 1
+  },
+  {
+   "fieldname": "gtin",
+   "fieldtype": "Data",
+   "label": "GTIN",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "item_code.item_name",
+   "fieldname": "item_name",
+   "fieldtype": "Data",
+   "label": "Item name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sec_details",
+   "fieldtype": "Section Break",
+   "label": "Details"
+  },
+  {
+   "default": "1",
+   "fieldname": "min_qty",
+   "fieldtype": "Float",
+   "label": "Min Qty"
+  },
+  {
+   "default": "1",
+   "fieldname": "qty_per_pack",
+   "fieldtype": "Float",
+   "label": "Qty per Pack"
+  },
+  {
+   "fieldname": "col_item",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "item_code.item_group",
+   "fieldname": "item_group",
+   "fieldtype": "Link",
+   "label": "Item Group",
+   "options": "Item Group",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sec_action",
+   "fieldtype": "Section Break",
+   "label": "Action"
+  },
+  {
+   "fieldname": "sec_pricing",
+   "fieldtype": "Section Break",
+   "label": "Pricing"
+  },
+  {
+   "fieldname": "col_pricing",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "retail_rate",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Retail Rate",
+   "precision": "2",
+   "reqd": 1
+  },
+  {
+   "fieldname": "col_details",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "size",
+   "fieldtype": "Data",
+   "label": "Size"
+  },
+  {
+   "fieldname": "colour",
+   "fieldtype": "Data",
+   "label": "Colour"
+  }
+ ],
+ "istable": 1,
+ "modified": "2022-08-13 08:50:36.555583",
+ "modified_by": "Administrator",
+ "module": "ERPNextSwiss",
+ "name": "EDI File Pricat Item",
+ "owner": "Administrator",
+ "permissions": [],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

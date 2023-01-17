@@ -11,6 +11,7 @@
   "payment_reminder_auto_submit",
   "column_payment_reminder",
   "payment_reminder_charges",
+  "payment_reminder_level_blocking_period",
   "section_automated_payments",
   "planning_days",
   "participant_number",
@@ -23,6 +24,7 @@
   "column_bank_wizard",
   "always_use_entry_transaction_type",
   "auto_process_matches",
+  "numeric_only_debtor_matching",
   "bank_import_section",
   "bankimport_table",
   "invoice_code_line_scanning_section",
@@ -37,7 +39,11 @@
   "enable_zefix",
   "column_zefix",
   "zefix_user",
-  "zefix_pw"
+  "zefix_pw",
+  "sec_invoicing",
+  "service_item",
+  "col_invoicing",
+  "invoice_method"
  ],
  "fields": [
   {
@@ -227,10 +233,45 @@
    "fieldname": "enable_salary_payment",
    "fieldtype": "Check",
    "label": "Enable salary payment"
+  },
+  {
+   "fieldname": "payment_reminder_level_blocking_period",
+   "fieldtype": "Table",
+   "label": "Payment Reminder Level Blocking Period",
+   "options": "ERPNextSwiss Settings Payment Reminder Level Blocking Period"
+  },
+  {
+   "default": "0",
+   "description": "Uses only the numeric part of a sales invoice number for matching",
+   "fieldname": "numeric_only_debtor_matching",
+   "fieldtype": "Check",
+   "label": "Numeric-only debtor reference matching"
+  },
+  {
+   "fieldname": "sec_invoicing",
+   "fieldtype": "Section Break",
+   "label": "Invoicing"
+  },
+  {
+   "fieldname": "service_item",
+   "fieldtype": "Link",
+   "label": "Service Item",
+   "options": "Item"
+  },
+  {
+   "fieldname": "col_invoicing",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "hours",
+   "fieldname": "invoice_method",
+   "fieldtype": "Select",
+   "label": "Method",
+   "options": "hours\nbilling_hours"
   }
  ],
  "issingle": 1,
- "modified": "2021-11-16 15:02:53.244767",
+ "modified": "2022-12-30 21:46:56.939396",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "ERPNextSwiss Settings",

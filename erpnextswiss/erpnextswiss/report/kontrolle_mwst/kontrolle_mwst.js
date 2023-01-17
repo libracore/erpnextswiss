@@ -3,7 +3,7 @@
 /* eslint-disable */
 
 frappe.query_reports["Kontrolle MwSt"] = {
-	"filters": [
+    "filters": [
         {
             "fieldname":"from_date",
             "label": __("From date"),
@@ -32,5 +32,5 @@ frappe.query_reports["Kontrolle MwSt"] = {
             "default" : frappe.defaults.get_default("Company"),
             "reqd": 1
         }
-	]
+    ]
 };

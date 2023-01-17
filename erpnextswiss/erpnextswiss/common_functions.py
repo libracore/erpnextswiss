@@ -4,6 +4,7 @@
 import frappe
 from frappe import _
 from erpnextswiss.erpnextswiss.jinja import get_week_from_date
+from frappe.utils import cint, get_url_to_form, get_link_to_form, get_url_to_report, get_url_to_list, get_url_to_report_with_filters
 
 # try to get building number from address line
 def get_building_number(address_line):
@@ -39,6 +40,7 @@ def get_city(address_line):
 
 # get primary address
 # target types: Customer, Supplier, Company
+@frappe.whitelist()
 def get_primary_address(target_name, target_type="Customer"):
     sql_query = """SELECT 
             `tabAddress`.`address_line1`, 
@@ -136,3 +138,36 @@ def get_scor_reference(reference):
     check_digit = '{num:02d}'.format(num=(98 - mod))
     # return full code
     return "RF{check}{reference}".format(check=check_digit, reference=reference)
+
+def get_recursive_item_groups(item_group):
+    children = frappe.get_list("Item Group", filters={'parent_item_group': item_group}, fields=['name', 'is_group'])
+    item_groups = [item_group]
+    for c in children:
+        if cint(c['is_group']) == 1:
+            sub_groups = get_recursive_item_groups(c['name'])
+            for s in sub_groups:
+                if s not in item_groups:
+                    item_groups.append(s)
+        if c['name'] not in item_groups:
+            item_groups.append(c['name'])
+    return item_groups
+
+@frappe.whitelist()
+def url_to_form(doctype, docname):
+    return get_url_to_form(doctype, docname)
+
+@frappe.whitelist()
+def link_to_form(doctype, docname):
+    return get_link_to_form(doctype, docname)
+
+@frappe.whitelist()
+def link_to_list(doctype):
+    return get_link_to_list(doctype)
+    
+@frappe.whitelist()
+def url_to_report(name):
+    return get_url_to_report(name)
+
+@frappe.whitelist()
+def url_to_report_with_filters(name, filters, report_type=None, doctype=None):
+    return get_url_to_report(name, fitlers, report_type, doctype)

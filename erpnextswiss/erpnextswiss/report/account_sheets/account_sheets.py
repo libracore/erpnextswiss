@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2021, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2017-2022, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
 
 from __future__ import unicode_literals
@@ -25,18 +25,22 @@ def get_columns(filters):
 
 def get_data(filters):
     # fetch accounts
-    conditions = ""
+    account_conditions = ""
+    transaction_conditions = ""
     if filters.from_account:
-        conditions += " AND `account_number` >= {0} ".format(filters.from_account)
+        account_conditions += " AND `account_number` >= {0} ".format(filters.from_account)
     if filters.to_account:
-        conditions += " AND `account_number` <= {0} ".format(filters.to_account)
+        account_conditions += " AND `account_number` <= {0} ".format(filters.to_account)
+    if filters.cost_center:
+        transaction_conditions += """ AND `cost_center` = "{0}" """.format(filters.cost_center)
+        
     accounts = frappe.db.sql("""SELECT `name`
         FROM `tabAccount`
         WHERE `disabled` = 0
           AND `is_group` = 0
           AND `company` = "{company}"
           {conditions}
-          ORDER BY `name` ASC;""".format(company=filters.company, conditions=conditions), as_dict=True)
+          ORDER BY `name` ASC;""".format(company=filters.company, conditions=account_conditions), as_dict=True)
     
     data = []
     # compute each account
@@ -50,7 +54,8 @@ def get_data(filters):
             FROM `tabGL Entry`
             WHERE `account` = "{account}"
               AND `docstatus` = 1
-              AND DATE(`posting_date`) < "{from_date}";""".format(
+              AND DATE(`posting_date`) < "{from_date}"
+              {conditions};""".format(conditions=transaction_conditions,
             account=account['name'], from_date=filters.from_date), as_dict=True)[0]
         if opening_balance['debit'] > opening_balance['credit']:
             opening_debit = opening_balance['debit'] - opening_balance['credit']
@@ -80,7 +85,8 @@ def get_data(filters):
               AND `docstatus` = 1
               AND DATE(`posting_date`) >= "{from_date}"
               AND DATE(`posting_date`) <= "{to_date}"
-            ORDER BY `posting_date` ASC;""".format(
+              {conditions}
+            ORDER BY `posting_date` ASC;""".format(conditions=transaction_conditions,
             account=account['name'], from_date=filters.from_date, to_date=filters.to_date), as_dict=True)
         for position in positions:
             opening_debit += position['debit']

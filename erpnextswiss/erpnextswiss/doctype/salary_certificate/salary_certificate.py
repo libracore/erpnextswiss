@@ -13,7 +13,7 @@ class SalaryCertificate(Document):
             frappe.msgprint( _("Please select a valid employee.") )
             return
         
-        if frappe.frappe.get_doc('Salary Certificate Settings').dynamic_config:
+        if frappe.get_doc('Salary Certificate Settings').dynamic_config == 1:
             fetch_dynamic(self)
         else:
             fetch_static(self)
@@ -115,7 +115,12 @@ def fetch_dynamic(self):
     # Pos 14
     self.other_salary_sides = frappe.get_doc('Salary Certificate Settings').other_salary_sides
     # Pos 15
-    self.remarks = frappe.get_doc('Salary Certificate Settings').remark_prefix + get_component_dynamic(self.employee, self.start_date, self.end_date, frappe.get_doc('Salary Certificate Settings').remarks)
+    value = get_component_dynamic(self.employee, self.start_date, self.end_date, frappe.get_doc('Salary Certificate Settings').remarks)
+    if value != 0.00:
+        self.remarks = frappe.get_doc('Salary Certificate Settings').remark_prefix + "{:12.2f}".format(value)
+    else:
+        self.remarks = frappe.get_doc('Salary Certificate Settings').remark_prefix
+
 
     self.save()
 
@@ -132,12 +137,12 @@ def get_component_dynamic(employee, start_date, end_date, componentlist):
     negativ = []
     for item in componentlist:
         comp = frappe.get_doc("Salary Component", item.component)
-        if item.is_negativ:
+        if item.is_negativ == 1:
             negativ.append(comp.name)
         else:
             positiv.append(comp.name)
 
-    expression = "' OR tabSalary Detail`.`salary_component` = '"
+    expression = "' OR `tabSalary Detail`.`salary_component` = '"
 
     pos = 0.0
     neg = 0.0
@@ -157,7 +162,7 @@ def get_component_dynamic(employee, start_date, end_date, componentlist):
         pos = values[0].amount
     
     if len(negativ) > 0:
-        expression_neg = expression.join(positiv)
+        expression_neg = expression.join(negativ)
 
         sql_query_neg = """SELECT `tabSalary Slip`.`employee`, IFNULL(SUM(`tabSalary Detail`.`amount`), 0) AS `amount`
             FROM `tabSalary Slip` 

@@ -8,7 +8,7 @@ from frappe.model.document import Document
 
 class VATDeclaration(Document):
     pass
-	
+
 @frappe.whitelist()
 def get_view_total(view_name, start_date, end_date, company=None):
     # try to fetch total from VAT query
@@ -27,8 +27,12 @@ def get_view_total(view_name, start_date, end_date, company=None):
                 WHERE `posting_date` >= '{1}' 
                 AND `posting_date` <= '{2}'""".format(view_name, start_date, end_date))
     # execute query
-    total = frappe.db.sql(sql_query, as_dict=True)
-    return { 'total': total[0].total }
+    try:
+        total = frappe.db.sql(sql_query, as_dict=True)
+    except Exception as err:
+        frappe.log_error(err, "VAT declaration {0}".format(view_name))
+        total = [{'total': 0}]
+    return { 'total': total[0]['total'] }
 
 @frappe.whitelist()
 def get_view_tax(view_name, start_date, end_date, company=None):
@@ -47,8 +51,12 @@ def get_view_tax(view_name, start_date, end_date, company=None):
                 FROM `{0}` 
                 WHERE `posting_date` >= '{1}' 
                 AND `posting_date` <= '{2}'""".format(view_name, start_date, end_date))
-    total = frappe.db.sql(sql_query, as_dict=True)
-    return { 'total': total[0].total }
+    try:
+        total = frappe.db.sql(sql_query, as_dict=True)
+    except Exception as err:
+        frappe.log_error(err, "VAT declaration {0}".format(view_name))
+        total = [{'total': 0}]
+    return { 'total': total[0]['total'] }
   
 @frappe.whitelist()
 def get_tax_rate(taxes_and_charges_template):

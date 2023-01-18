@@ -13,6 +13,7 @@
   "column_break_2",
   "customer",
   "customer_name",
+  "currency",
   "section_services",
   "services",
   "section_periods",
@@ -84,9 +85,15 @@
    "fieldtype": "Table",
    "label": "Periods",
    "options": "Contract Period"
+  },
+  {
+   "fieldname": "currency",
+   "fieldtype": "Link",
+   "label": "Currency",
+   "options": "Currency"
   }
  ],
- "modified": "2021-01-26 07:10:03.878180",
+ "modified": "2023-01-04 16:34:28.351615",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "Contract",

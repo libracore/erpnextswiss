@@ -127,6 +127,13 @@ def get_data():
                        "description": _("Contract")                   
                    },
                    {
+                        "type": "report",
+                        "name": "Service Invoicing",
+                        "label": _("Service Invoicing"),
+                        "doctype": "Timesheet",
+                        "is_query_report": True
+                   },
+                   {
                        "type": "doctype",
                        "name": "Specification Document",
                        "label": _("Specification Document"),

@@ -510,7 +510,8 @@ def create_orders(edi_file):
                 'shipping_address_name': get_address_from_gln(d['deliver_to']),
                 'delivery_date': delivery_date,
                 'po_no': d['reference'],
-                'territory': frappe.get_value("Customer", edi_con.customer, "territory")
+                'territory': frappe.get_value("Customer", edi_con.customer, "territory"),
+                'customer_group': frappe.get_value("Customer", edi_con.customer, "customer_group")
             })
             if 'currency' in data:
                 sales_order.currency = d['currency']

@@ -257,6 +257,7 @@ DocType: Payment Proposal,Salaries,Löhne
 DocType: Payment Proposal,Overview,Übersicht
 DocType: Payment Proposal,Target date,Zieldatum
 DocType: Payment Proposal,Employee name,Mitarbeitername
+DocType: Payment Proposal,Include Payments Until,Fälligkeiten einschliessen bis
 Page: Bank Wizard,Bank Wizard,Bankassistent
 Page: Bank Wizard,Transaction matched,Zahlung zugewiesen
 Page: Bank Wizard, transactions found, Zahlungen gefunden
@@ -391,3 +392,8 @@ Report: Account Sheets,Account Sheets,Kontenblätter
 DocType: ERPNextSwiss Settings,Blocking period in days,Sperrfrist in Tagen
 DocType: ERPNextSwiss Settings,Payment Reminder Level Blocking Period,Mahnstufen Sperrfristen
 Report: Budget Control,Budget Control,Budgetkontrolle
+Report: Service Invoicing,Service Invoicing,Dienstleistungsabrechnug
+Report: Service Invoicing,Create invoice,Rechnung erstellen
+Report: Service Invoicing,Created,Erstellt
+Report: Service Invoicing,Service Item,Dienstleistungsartikel
+Report: Service Invoicing,Invoicing,Abrechnung

@@ -456,7 +456,7 @@ def create_slsrpt(edi_file):
                     'barcode': item['barcode'],
                     'item_code': item['item_code'],
                     'qty': item['qty'],
-                    'rate': item['net_unit_rate'],
+                    'rate': item['net_unit_rate'] if 'net_unit_rate' in item else 0,
                     'gln': item['location_gln'],
                     'address': address
                 })

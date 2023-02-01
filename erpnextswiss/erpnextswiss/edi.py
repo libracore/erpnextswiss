@@ -236,7 +236,7 @@ def download_desadv(edi_file):
     # reference: order number
     if delivery_note.po_no:
         content_segments.append("RFF+VN:{po_no}'".format(
-            po_no=delivery_note.po_no
+            po_no=purify_string(delivery_note.po_no)
         ))
             
     # ### SG2
@@ -633,4 +633,7 @@ def parse_edi(segments):
             data[-1]['segments'] = structure[1][0]
     
     return data
+    
+def purify_string(s):
+    return (s or "").replace("\r", "").replace("\n", "")
     

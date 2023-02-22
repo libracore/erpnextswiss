@@ -236,7 +236,7 @@ def download_desadv(edi_file):
     # reference: order number
     if delivery_note.po_no:
         content_segments.append("RFF+VN:{po_no}'".format(
-            po_no=delivery_note.po_no
+            po_no=purify_string(delivery_note.po_no)
         ))
             
     # ### SG2
@@ -456,7 +456,7 @@ def create_slsrpt(edi_file):
                     'barcode': item['barcode'],
                     'item_code': item['item_code'],
                     'qty': item['qty'],
-                    'rate': item['net_unit_rate'],
+                    'rate': item['net_unit_rate'] if 'net_unit_rate' in item else 0,
                     'gln': item['location_gln'],
                     'address': address
                 })
@@ -633,4 +633,7 @@ def parse_edi(segments):
             data[-1]['segments'] = structure[1][0]
     
     return data
+    
+def purify_string(s):
+    return (s or "").replace("\r", "").replace("\n", "")
     

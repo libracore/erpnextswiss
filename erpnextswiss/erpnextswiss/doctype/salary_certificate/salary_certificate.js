@@ -12,7 +12,7 @@ frappe.ui.form.on('Salary Certificate', {
                     method: 'fetch_values',
                     doc: frm.doc,
                     callback: function(response) {
-                        refresh_field(['salary', 'gross_salary', 'net_salary', 'deduction_ahv', 'deduction_pk']);
+                        frm.refresh();
                                     
                         // show a short information
                         show_alert( __("Salary slip information collected"));

@@ -574,7 +574,7 @@ def parse_edi(segments):
         elif structure[0][0] == "BGM":
             # begin message
             try:
-                data[-1]['reference'] = (structure[2][0] r "").replace("'", "")
+                data[-1]['reference'] = (structure[2][0] or "").replace("'", "")
                 data[-1]['action'] = structure[3][0]
             except:
                 data[-1]['action'] = 9          # default to add

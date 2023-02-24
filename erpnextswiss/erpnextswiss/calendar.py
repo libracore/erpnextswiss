@@ -47,6 +47,7 @@ REGIONS = {
 
 HOST = "https://www.feiertagskalender.ch/index.php"
 
+@frappe.whitelist()
 def parse_holidays(region, year):
     # find data source
     r = requests.get("{0}?geo={1}&klasse=3&jahr={2}&hl=de".format(

@@ -23,7 +23,13 @@ function import_holidays(frm) {
                     var holidays = response.message;
                     for (var i = 0; i < holidays.length; i++) {
                         var child = cur_frm.add_child('holidays');
-                        frappe.model.set_value(child.doctype, child.name, 'holiday_date', holidays[i].date);
+                        var date_unc = (new Date(
+                            holidays[i].date.substring(6, 10), 
+                            parseInt(holidays[i].date.substring(3, 5)) - 1,  // js has 0-based months!!
+                            holidays[i].date.substring(0, 2),
+                            12                                              // use mid-day before UNC conversion
+                        )).toISOString().substring(0, 10);
+                        frappe.model.set_value(child.doctype, child.name, 'holiday_date', date_unc);
                         frappe.model.set_value(child.doctype, child.name, 'description', holidays[i].description);
                     }
                     cur_frm.refresh_field('holidays');

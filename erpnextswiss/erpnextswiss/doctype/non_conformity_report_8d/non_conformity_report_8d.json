@@ -240,11 +240,12 @@
   {
    "fieldname": "letter_head",
    "fieldtype": "Link",
+   "hidden": 1,
    "label": "Letter Head",
    "options": "Letter Head"
   }
  ],
- "modified": "2023-03-16 14:39:19.625836",
+ "modified": "2023-03-16 16:46:18.758797",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "Non Conformity Report 8D",

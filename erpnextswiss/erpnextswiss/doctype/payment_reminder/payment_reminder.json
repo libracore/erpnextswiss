@@ -145,13 +145,13 @@
    "fetch_if_empty": 1,
    "fieldname": "letter_head",
    "fieldtype": "Link",
-   "in_list_view": 1,
+   "hidden": 1,
    "label": "Letter Head",
    "options": "Letter Head"
   }
  ],
  "is_submittable": 1,
- "modified": "2023-03-16 14:40:02.272655",
+ "modified": "2023-03-16 16:46:58.514747",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "Payment Reminder",

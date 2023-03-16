@@ -14,6 +14,7 @@
   "customer",
   "customer_name",
   "currency",
+  "letter_head",
   "section_services",
   "services",
   "section_periods",
@@ -91,9 +92,16 @@
    "fieldtype": "Link",
    "label": "Currency",
    "options": "Currency"
+  },
+  {
+   "fieldname": "letter_head",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "Letter Head",
+   "options": "Letter Head"
   }
  ],
- "modified": "2023-01-04 16:34:28.351615",
+ "modified": "2023-03-16 16:45:29.323536",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "Contract",

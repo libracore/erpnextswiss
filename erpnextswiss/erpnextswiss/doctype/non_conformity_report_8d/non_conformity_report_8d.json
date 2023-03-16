@@ -11,6 +11,7 @@
   "customer_name",
   "column_break_1",
   "status",
+  "letter_head",
   "section_d1",
   "d1_team",
   "d1_complete",
@@ -235,9 +236,15 @@
    "fieldtype": "Data",
    "label": "Customer name",
    "read_only": 1
+  },
+  {
+   "fieldname": "letter_head",
+   "fieldtype": "Link",
+   "label": "Letter Head",
+   "options": "Letter Head"
   }
  ],
- "modified": "2020-12-03 17:35:26.721231",
+ "modified": "2023-03-16 14:39:19.625836",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "Non Conformity Report 8D",

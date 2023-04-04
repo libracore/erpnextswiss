@@ -87,8 +87,12 @@ def _import_update_items(xml_files, site_name):
             try:
                 items = soup.DataExpert.Body.find_all('Artikel')
                 item_group = soup.DataExpert.Head.Anbieter.Firma.get_text()
+                bkp_katalog_version = soup.DataExpert.Body.Katalog.get("Versions_Jahr") + "/" + soup.DataExpert.Body.Katalog.get("Versions_Nr")
                 if not frappe.db.exists('Item Group', item_group):
-                    bkp_error = create_item_group(item_group)
+                    bkp_error = create_item_group(item_group, bkp_katalog_version)
+                else:
+                    # add bkp version to item group
+                    frappe.db.set_value("Item Group", item_group, "bkp_katalog_version", bkp_katalog_version)
             except Exception as e:
                 bkp_error = True
                 frappe.log_error("{0}".format(e), "BKP Importer: Lesen Artikel")
@@ -182,13 +186,14 @@ def update_item(_item, soup, item_group):
         frappe.log_error("{0}".format(e), "BKP Importer: Updaten Artikel")
         return True
 
-def create_item_group(item_group):
+def create_item_group(item_group, bkp_katalog_version):
     try:
         default_item_group = frappe.db.get_single_value('Stock Settings', 'item_group')
         new_item_group = frappe.get_doc({
             "doctype": "Item Group",
             "parent_item_group": default_item_group,
-            "item_group_name": item_group
+            "item_group_name": item_group,
+            "bkp_katalog_version": bkp_katalog_version
         })
         new_item_group.insert()
         frappe.db.commit()

@@ -192,6 +192,12 @@ def get_data():
                        "name": "VAT query",
                        "label": _("VAT query"),
                        "description": _("VAT query")
+                   },
+                   {
+                       "type": "doctype",
+                       "name": "Salary Certificate Settings",
+                       "label": _("Salary Certificate Settings"),
+                       "description": _("Salary Certificate Settings")
                    }
             ]
         },

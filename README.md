@@ -67,6 +67,7 @@ In case you update from the sources and observe an error, make sure to update de
     * Seco overtime reporting (based on timesheet)
     * Seco monthly worktime (working hours and breaks) (based on timesheet)
     * Automatic settling of expenses and salary payments
+    * Import public holidays (region-dependent) into the Holidays List
 * General tools
     * Postal code lookup
     * Script-based data import

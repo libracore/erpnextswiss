@@ -39,7 +39,8 @@ doctype_js = {
     "Fiscal Year":      "public/js/fiscal_year.js",
     "Supplier":         "public/js/supplier.js",
     "Customer":         "public/js/customer.js",
-    "Address":         "public/js/address.js"
+    "Address":          "public/js/address.js",
+    "Holiday List":     "public/js/holiday_list.js"
 }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
@@ -52,7 +53,8 @@ jenv = {
         "get_account_sheets:erpnextswiss.erpnextswiss.finance.get_account_sheets",
         "get_week_from_date:erpnextswiss.erpnextswiss.jinja.get_week_from_date",
         "strip_html:erpnextswiss.erpnextswiss.jinja.strip_html",
-        "get_accounts_receivable:erpnextswiss.erpnextswiss.jinja.get_accounts_receivable"
+        "get_accounts_receivable:erpnextswiss.erpnextswiss.jinja.get_accounts_receivable",
+        "get_primary_company_address:erpnextswiss.scripts.crm_tools.get_primary_company_address"
     ]
 }
 

@@ -292,7 +292,8 @@ def read_camt_transactions(transaction_entries, account, settings, debug=False):
                                 amount = transaction_soup.txdtls.amt.get_text()
                                 party = transaction_soup.nm.get_text()
                                 code = "{0}:{1}:{2}".format(date, amount, party)
-                                frappe.log_error("Code: {0}".format(code))
+                                if settings.debug_mode:
+                                    frappe.log_error("Code: {0}".format(code))
                                 unique_reference = hashlib.md5(code.encode("utf-8")).hexdigest()
                 # --- find amount and currency
                 try:
@@ -418,19 +419,20 @@ def read_camt_transactions(transaction_entries, account, settings, debug=False):
                                 else:
                                     transaction_reference = unique_reference
                 # debug: show collected record in error log
-                #frappe.log_error("""type:{type}\ndate:{date}\namount:{currency} {amount}\nunique ref:{unique}
-                #    party:{party}\nparty address:{address}\nparty iban:{iban}\nremarks:{remarks}
-                #    payment_instruction_id:{payment_instruction_id}""".format(
-                #    type=credit_debit, date=date, currency=currency, amount=amount, unique=unique_reference, 
-                #    party=party_name, address=party_address, iban=party_iban, remarks=transaction_reference,
-                #    payment_instruction_id=payment_instruction_id))
+                if settings.debug_mode:
+                    frappe.log_error("""type:{type}\ndate:{date}\namount:{currency} {amount}\nunique ref:{unique}
+                        party:{party}\nparty address:{address}\nparty iban:{iban}\nremarks:{remarks}
+                        payment_instruction_id:{payment_instruction_id}""".format(
+                        type=credit_debit, date=date, currency=currency, amount=amount, unique=unique_reference, 
+                        party=party_name, address=party_address, iban=party_iban, remarks=transaction_reference,
+                        payment_instruction_id=payment_instruction_id))
                 
                 # check if this transaction is already recorded
                 match_payment_entry = frappe.get_all('Payment Entry', 
                     filters={'reference_no': unique_reference, 'company': company}, 
                     fields=['name'])
                 if match_payment_entry:
-                    if debug:
+                    if debug or settings.debug_mode:
                         frappe.log_error("Transaction {0} is already imported in {1}.".format(unique_reference, match_payment_entry[0]['name']))
                 else:
                     # try to find matching parties & invoices
@@ -610,7 +612,7 @@ def read_camt_transactions(transaction_entries, account, settings, debug=False):
             # check if this transaction is already recorded
             match_payment_entry = frappe.get_all('Payment Entry', filters={'reference_no': unique_reference}, fields=['name'])
             if match_payment_entry:
-                if debug:
+                if debug or settings.debug_mode:
                     frappe.log_error("Transaction {0} is already imported in {1}.".format(unique_reference, match_payment_entry[0]['name']))
             else:
                 # --- find transaction type: paid or received: (DBIT: paid, CRDT: received)

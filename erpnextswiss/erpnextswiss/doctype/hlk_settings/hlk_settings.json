@@ -1,0 +1,75 @@
+{
+ "creation": "2020-08-26 09:18:38.129742",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "section_general",
+  "validate_hlk_element_allocation",
+  "structur_element_filter",
+  "section_quotation",
+  "activate_automatic_validity_calculation",
+  "default_validity_in_months"
+ ],
+ "fields": [
+  {
+   "fieldname": "section_quotation",
+   "fieldtype": "Section Break",
+   "label": "Quotation"
+  },
+  {
+   "default": "0",
+   "fieldname": "activate_automatic_validity_calculation",
+   "fieldtype": "Check",
+   "label": "Activate Automatic Validity Calculation"
+  },
+  {
+   "depends_on": "eval:doc.activate_automatic_validity_calculation",
+   "fieldname": "default_validity_in_months",
+   "fieldtype": "Int",
+   "label": "Default Validity In Months"
+  },
+  {
+   "default": "0",
+   "fieldname": "validate_hlk_element_allocation",
+   "fieldtype": "Check",
+   "label": "Validate HLK Element Allocation"
+  },
+  {
+   "fieldname": "section_general",
+   "fieldtype": "Section Break",
+   "label": "General"
+  },
+  {
+   "fieldname": "structur_element_filter",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Item Group For Structur Element Filter",
+   "options": "Item Group",
+   "reqd": 1
+  }
+ ],
+ "issingle": 1,
+ "modified": "2020-09-23 15:42:08.015446",
+ "modified_by": "Administrator",
+ "module": "ERPNextSwiss",
+ "restrict_to_domain": "HLK",
+ "name": "HLK Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

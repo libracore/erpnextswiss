@@ -14,6 +14,8 @@
   "purchase_invoices",
   "section_expenses",
   "expenses",
+  "section_salaries",
+  "salaries",
   "section_overview",
   "total",
   "section_payments",
@@ -121,6 +123,7 @@
    "label": "Overview"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "total",
    "fieldtype": "Float",
    "label": "Total",
@@ -137,10 +140,22 @@
    "fieldname": "individual_payments",
    "fieldtype": "Check",
    "label": "Individual payments"
+  },
+  {
+   "fieldname": "section_salaries",
+   "fieldtype": "Section Break",
+   "label": "Salaries"
+  },
+  {
+   "fieldname": "salaries",
+   "fieldtype": "Table",
+   "label": "Salaries",
+   "options": "Payment Proposal Salary Slip"
   }
  ],
+ "in_create": 1,
  "is_submittable": 1,
- "modified": "2020-02-08 20:23:12.997408",
+ "modified": "2021-11-16 12:29:40.652470",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "Payment Proposal",
@@ -149,7 +164,6 @@
   {
    "amend": 1,
    "cancel": 1,
-   "create": 1,
    "delete": 1,
    "email": 1,
    "export": 1,
@@ -164,7 +178,6 @@
   {
    "amend": 1,
    "cancel": 1,
-   "create": 1,
    "delete": 1,
    "email": 1,
    "export": 1,
@@ -179,7 +192,6 @@
   {
    "amend": 1,
    "cancel": 1,
-   "create": 1,
    "delete": 1,
    "email": 1,
    "export": 1,

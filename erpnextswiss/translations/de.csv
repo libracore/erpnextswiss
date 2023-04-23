@@ -1,6 +1,10 @@
 Module: ERPNextSwiss,Fullsize,Ganzer Bildschirm
 Module: ERPNextSwiss,Fullsize View,Ganzer Bildschirm
 Module: ERPNextSwiss,Normal View,Normale Ansicht
+Module: ERPNextSwiss,Customer name,Kundenname
+Module: ERPNextSwiss,Item name,Artikelname
+Module: ERPNextSwiss,Always use entry transaction type,Immer Transaktionstyp des Eintrags verwenden
+Module: ERPNextSwiss,Automatically process full macthes,Eindeutige Treffer automatisch verarbeiten
 Page: bankimport,Bank import,Bankdaten importieren
 DocType: VAT Declaration,VAT Declaration,Mehrwertsteuerdeklaration
 Page: payment_export,Payment export,Zahlungsdatei erstellen
@@ -37,7 +41,7 @@ DocType: VAT Declaration,Get values,Werte holen
 DocType: VAT Declaration,Recalculate,Neu berechnen
 DocType: VAT Declaration,Total revenue (200),"Total der vereinbarten bzw. vereinnahmten Entgelte (Art. 39), inkl. Entgelte aus Übertragungen im Meldeverfahren sowie aus Leistungen im Ausland (200)"
 DocType: VAT Declaration,Non-taxable revenue (205),Nicht steuerpflichtige Umsätze (205)
-DocType: VAT Declaration,Tax-free services (220),"Von der Steuer befreite Leistungen (u.a. Exporte; Art. 23), von der Steuer befreite Lesitungen an begünstigte Einrichtungen und Personen (220)"
+DocType: VAT Declaration,Tax-free services (220),"Von der Steuer befreite Leistungen (u.a. Exporte; Art. 23), von der Steuer befreite Leistungen an begünstigte Einrichtungen und Personen (220)"
 DocType: VAT Declaration,Revenue abroad (221),Leistungen im Ausland (221)
 DocType: VAT Declaration,Transfers (225),"Übertragung im Meldeverfahren (Art. 38, bitte zusätzlich Form. 764 einreichen) (225)"
 DocType: VAT Declaration,Non-taxable services (230),"Nicht steuerbare Leistungen (Art 21), für die nicht nach Art. 22 optiert wird (230)"
@@ -118,7 +122,7 @@ Page: match_payments,No matches found.,Keine Treffer gefunden
 Page: match_payments,Auto match by ID,Abgleich per ID
 Page: match_payments,Auto match by ESR,Abgleich per ESR
 Page: payment_export,Some payments were skipped due to errors (check the payment file for details):,Einige Zahlungen wurden wegen Fehlern übersprungen (Zahlungsdatei enthält Details):
-DocType: Supplier,ESR Participation Number,ESR Teilnehmernummer
+DocType: Supplier,ESR Participation Number / QR-IBAN,ESR Teilnehmernummer/QR-IBAN
 DocType: Purchase Invoice,ESR Reference Number,ESR Referenznummer
 DocType: Salary Certificate,Salary Certificate,Lohnausweis
 DocType: Salary Certificate,Please save the record before populating it with data,Bitte speichern Sie den Datensatz bevor Daten eingelesen werden
@@ -171,6 +175,7 @@ DocType: Pincode,Set,Setzen
 DocType: Pincode,Import Pincodes,Postleitzahlen einlesen
 DocType: Pincode,Import started...,Import gestartet...
 DocType: Pincode,Successfully imported,Erfolgreich importiert
+DocType: Pincode,Open Map,Karte öffnen
 Page: abacus_export,Abacus Export,Abacus Transferdatei
 Page: abacus_export,Export General Ledger to an Abacus transfer file,Exportiert Transaktionen in eine Abacus Transferdatei
 Page: abacus_export,to,bis
@@ -183,6 +188,11 @@ Page: abacus_export,Reset export flags,Export-Markierungen entfernen
 DocType: ERPNextSwiss Settings,ERPNextSwiss Settings,ERPNextSwiss Einstellungen
 DocType: ERPNextSwiss Settings,Default Customer,Standardkunde
 DocType: ERPNextSwiss Settings,Use this to define a default customer,Setzt einen Standardkunden
+DocType: ERPNextSwiss Settings,Invoice Code Line Scanning,Rechnungsscanner
+DocType: ERPNextSwiss Settings,Default Item,Standardartikel
+DocType: ERPNextSwiss Settings,Enable salary payment,Lohnzahlungen ausführen
+DocType: ERPNextSwiss Settings,Numeric-only debtor reference matching,Rein-numerische Debitorenreferenzen verwenden
+DocType: ERPNextSwiss Settings,Uses only the numeric part of a sales invoice number for matching,Verwendet nur den numerischen Teil der Rechnugnsreferenz zum Abgleich
 DocType: Contract,Contract,Vertrag
 DocType: Contract,Contracts,Verträge
 DocType: ERPNextSwiss Settings,Automated Payments,Automatische Zahlungsabwicklung
@@ -218,7 +228,7 @@ DocType: Direct Debit Proposal,LSV Date,LSV-Datum
 DocType: Direct Debit Proposal,Please provide an intermediate account.,Bitte geben Sie ein Zwischenkonto an.
 DocType: Direct Debit Proposal,Please provide a skonto account and cost center.,Bitte geben Sie für den Skontoabzug ein Skonto-Konto und eine Kostenstelle an.
 DocType: Direct Debit Proposal,Please select an account to receive to.,Bitte wählen Sie ein Zielkonto aus.
-Close Invoice on Intermediate Account,Rechnungen gegen Zwischenkonto schliessen
+DocType: Direct Debit Proposal,Close Invoice on Intermediate Account,Rechnungen gegen Zwischenkonto schliessen
 DocType: Direct Debit Proposal,Intermediate,Zw.Konto
 DocType: Payment Proposal,Create Payment Proposal,Zahlungsvorschlag erstellen
 DocType: Payment Proposal,Payment Proposal,Zahlungsvorschlag
@@ -234,6 +244,20 @@ DocType: Payment Proposal,External Reference,Externe Referenz
 DocType: Payment Proposal,Skonto Date,Skonto-Datum
 DocType: Payment Proposal,Skonto Amount,Betrag mit Skonto
 DocType: Payment Proposal,Individual payments,Jede Rechnung einzeln bezahlen
+DocType: Payment Proposal,"Employee <a href=\"/desk#Form/Employee/{0}\">{0}</a> has no address.","Für den Mitarbeiter <a href=\"/desk#Form/Employee/{0}\">{0}</a> ist keine Adresse hinterlegt."
+DocType: Payment Proposal,"Company address missing or incomplete.","Unternehmensadresse fehlt oder ist unvollständig."
+DocType: Payment Proposal,"IBAN missing in pay from account.","Die IBAN des Zahlungskontos ist nicht hinterlegt."
+DocType: Payment Proposal,"Address missing for purchase invoice <a href=\"/desk#Form/Purchase Invoice/{0}\">{0}</a>","Für Eingangsrechnung <a href=\"/desk#Form/Purchase Invoice/{0}\">{0}</a> fehlt die Adresse."
+DocType: Payment Proposal,"ESR: missing transaction information (participant number or reference) in <a href=\"/desk#Form/Purchase Invoice/{0}\">{0}</a>","ESR: Transaktionsdetails fehlen (Teilnehmernummer oder Referenznummer) für <a href=\"/desk#Form/Purchase Invoice/{0}\">{0}</a>"
+DocType: Payment Proposal,"Missing IBAN for purchase invoice <a href=\"/desk#Form/Purchase Invoice/{0}\">{0}</a>","Bei Eingangsrechnung <a href=\"/desk#Form/Purchase Invoice/{0}\">{0}</a> fehlt die IBAN"
+DocType: Payment Proposal,"Employee <a href=\"/desk#Form/Employee/{0}\">{0}</a> has no bank account number.","Für Mitarbeiter <a href=\"/desk#Form/Employee/{0}\">{0}</a> ist kein Bankkonto hinterlegt."
+DocType: Payment Proposal,"Please configure the planning period in ERPNextSwiss Settings.","Bitte das Planungsintervall in den ERPNextSwiss-Einstellungen einstellen."
+DocType: Payment Proposal,Purchase Invoices,Eingangsrechnungen
+DocType: Payment Proposal,Salaries,Löhne
+DocType: Payment Proposal,Overview,Übersicht
+DocType: Payment Proposal,Target date,Zieldatum
+DocType: Payment Proposal,Employee name,Mitarbeitername
+DocType: Payment Proposal,Include Payments Until,Fälligkeiten einschliessen bis
 Page: Bank Wizard,Bank Wizard,Bankassistent
 Page: Bank Wizard,Transaction matched,Zahlung zugewiesen
 Page: Bank Wizard, transactions found, Zahlungen gefunden
@@ -294,3 +318,83 @@ DocType: Inspection Equipment,Blocked,Gesperrt
 DocType: Inspection Equipment,in months,in Monaten
 DocType: Inspection Equipment,Taken by,Entnommen von
 DocType: VAT query,VAT query,MwSt-Abfrage
+DocType: Non Conformity Report 8D,Non Conformity Report 8D,8D-Bericht
+DocType: Non Conformity Report 8D,"D1 Use a Team","D1 Zusammenstellen eines Teams für die Problemlösung"
+DocType: Non Conformity Report 8D,"D2 Describe the Problem","D2 Problembeschreibung"
+DocType: Non Conformity Report 8D,"D3 Develop Interim Containment Plan","D3 Sofortmassnahmen festlegen"
+DocType: Non Conformity Report 8D,"D4 Determine and Verify Root Causes and Escape Points","D4 Fehlerursache(n) feststellen"
+DocType: Non Conformity Report 8D,"D5 Verify Permanent Corrections (PCs) for Problem will resolve problem for the customer","D5 Planen von Abstellmassnahmen"
+DocType: Non Conformity Report 8D,"D6 Define and Implement Corrective Actions","D6 Einführen der Abstellmassnahmen"
+DocType: Non Conformity Report 8D,"D7 Prevent Recurrence / System Problems","D7 Fehlerwiederholung verhindern"
+DocType: Non Conformity Report 8D,"D8 Congratulate the Main Contributors to your Team","D8 Würdigen der Teamleistung"
+DocType: Non Conformity Report 8D,"Establish a team of people with product/process knowledge.","Die Mitglieder des Teams sollten über ausreichende Prozess- und Produktkenntnisse verfügen. Ebenso sollten sie zur Mitarbeit bereit sein und mit den notwendigen Kenntnissen und Kompetenzen ausgestattet sein, um das Problem auf seine Ursachen zu analysieren, Korrekturmassnahmen einzuleiten und ihre Wirksamkeit überwachen zu können."
+DocType: Non Conformity Report 8D,"Specify the problem by identifying in quantifiable terms the who, what, where, when, why, how, and how many (5W2H) for the problem.","Das Problem ist so genau wie möglich zu definieren, wobei der Kern des Problems herausgearbeitet und quantifiziert werden sollte."
+DocType: Non Conformity Report 8D,"Problem Description","Problembeschreibung"
+DocType: Non Conformity Report 8D,"Define and implement containment actions to isolate the problem from any customer.","Sofortmassnahmen dienen der Schadensbegrenzung, sollen zumindest vorläufig die Lieferfähigkeit sicherstellen und die weitere Ausbreitung des Problems verhindern, bis eine dauerhafte Lösung gefunden ist (z. B. Absonderung durch Sortierprüfung oder 100 %-Prüfung fehlerverdächtigen Materials)."
+DocType: Non Conformity Report 8D,"Interim Containment Plan","Kurzfristiger Plan"
+DocType: Non Conformity Report 8D,"Identify all applicable causes that could explain why the problem has occurred. Also identify why the problem was not noticed at the time it occurred. All causes shall be verified or proved. One can use five whys or Ishikawa diagrams to map causes against the effect or problem identified.","Es wird nach Fehlerursachen gesucht und die wahrscheinlichste(n) Grundursache(n) durch Experimente, Tests und Vergleiche identifiziert und nachgewiesen."
+DocType: Non Conformity Report 8D,"Root Cause Analysis","Ursachenanalyse"
+DocType: Non Conformity Report 8D,"Using pre-production programs, quantitatively confirm that the selected correction will resolve the problem. (Verify that the correction will actually solve the problem.)","Es werden Massnahmen ermittelt, die die Grundursachen beseitigen können. Die optimale(n) Massnahme(n) werden ausgewählt und durch Versuche nachgewiesen, dass das Problem effektiv und auch effizient gelöst werden kann sowie keine unerwünschten Nebenwirkungen entstehen werden. Bei der Festlegung von Massnahmen steht die Fehlervermeidung und nicht die Fehlerentdeckung im Vordergrund."
+DocType: Non Conformity Report 8D,"Remedial Actions","Abstellmassnahmen"
+DocType: Non Conformity Report 8D,"Define and Implement the best corrective actions.","Die Abstellmassnahmen können sich auf Prozessparameter, Produktspezifikationen und andere Vorgabedokumente sowie auf Prüfmethoden und die Mitarbeiterqualifikation auswirken. Nach erfolgreicher Einführung der Abstellmassnahme(n) wird/werden die Sofortmassnahme(n) aufgehoben."
+DocType: Non Conformity Report 8D,"Modify the management systems, operation systems, practices, and procedures to prevent recurrence of this and similar problems.","Es muss durch Vorbeugemassnahmen sichergestellt werden, dass gleiche oder ähnliche Fehler zukünftig ausgeschlossen werden. Die Wirksamkeit der getroffenen Massnahmen wird – z. B. durch Erhöhen der Prüfschärfe – über einen angemessenen Zeitraum überwacht. Hersteller von Produkten für die Automobil- und Luftfahrtindustrie sind aufgefordert, die im Rahmen der Ursachenfindung neu erkannten Risiken im Entwicklungs- und Herstellprozess nach der FMEA-Methode – failure mode and effects analysis (Fehlermöglichkeits- und Einflussanalyse) – (Risikoanalyse) zu bewerten und zu minimieren. Auch das Qualitätsmanagementsystem mit seinen festgelegten Verfahren und Regelungen wird möglicherweise an neue Anforderungen angepasst werden müssen."
+DocType: Non Conformity Report 8D,"Recognize the collective efforts of the team. The team needs to be formally thanked by the organization.","Die gemeinsame Anstrengung wird gewürdigt und die Erfahrungen ausgetauscht."
+DocType: Purchase Invoice,Invalid ESR Code Line,Ungültige ESR-Zeile
+DocType: Purchase Invoice,Scan Invoice,Rechnung scannen
+DocType: Purchase Invoice,ESR Amount,ESR Betrag
+DocType: Purchase Invoice,Amount Deviation,Betrags Abweichung
+DocType: Purchase Invoice,Add negative deviation as discount,Negative Abweichung als Rabatt hinzufügen
+DocType: Purchase Invoice,Add positive deviation as additional item,Positive Abweichung als Artikel hinzufügen
+DocType: Purchase Invoice,Positive Deviation Item,Artikel für positive Abweichung
+DocType: Purchase Invoice,Default Item,Standard-Artikel
+DocType: Purchase Invoice,Tax Rate in %,MWST in %
+DocType: Purchase Invoice,ESR Reference,ESR Referenz
+DocType: Purchase Invoice,ESR Participant,ESR Teilnehmer
+DocType: Purchase Invoice,ESR code not valid,ESR-Referenznummer ist ungültig
+DocType: Purchase Invoice,ESR code missing,ESR-Referenznummer fehlt
+DocType: Pruchase Invoice,This invoice is already recorded in,Diese Rechnung wurde bereits erfasst in
+DocType: Purchase Invoice,Process,Verarbeiten
+DocType: Purchase Invoice,Supplier matched,Lieferant gefunden
+DocType: Purchase Invoice,"Supplier found, but does not match with Invoice Supplier!","Lieferant gefunden, er stimmt aber nicht mit dem Lieferant auf der Rechnung überein!"
+DocType: Purchase Invoice,"No Supplier found! Fetched default Supplier.","Kein Lieferant gefunden! Der Standard-Lieferant wurde geladen."
+DocType: Purchase Invoice,"Multiple Supplier found, please choose one!","Mehere Lieferanten gefunden, bitte Auswahl treffen!"
+DocType: Purchase Invoice,"ESR / Invoice amount matched","ESR- / Rechnungs-Betrag stimmt überein"
+DocType: Purchase Invoice,"Invalid ESR Code Line or QR-Code","Ungültige ESR-Zeile oder ungültiger ESR-Code"
+DocType: Purchase Invoice,This document has been transmitted to the bank for payment,Dieses Dokument wurde zur Zahlung an die Bank übermittelt
+DocType: ERPNextSwiss Settings,Default Positive Deviation Item,Standard-Artikel für positive Abweichung
+DocType: ERPNextSwiss Settings,Default Tax Rate,Standard MWST-Satz
+DocType: ERPNextSwiss Settings,From Zefix,Von Zefix
+DocType: ERPNextSwiss Settings,Enable Zefix,Zefix aktivieren
+DocType: ERPNextSwiss Settings,Bank Settings,Bankeinstellungen
+DocType: ERPNextSwiss Settings,User name,Benutzername
+DocType: ERPNextSwiss Settings,Use this to define a default supplier,Diesen Lieferanten als Standardlieferanten evrwenden
+DocType: ERPNextSwiss Settings,Participant Number,Teilnehmernummer
+DocType: ERPNextSwiss Settings,"Number of days the payment rpoposal will look ahead. Payments with due date further ahead will not be proposed.","Anzahl Tage in der Zukunft, die für den Zahlugnsvorschlag einbezogen werden."
+apps/erpnextswiss/erpnextswiss/scripts/esr_qr_tools.py,"{missing_values} not found. Please configure this in the <a href='/desk#Form/ERPNextSwiss Settings'>ERPNextSwiss settings</a>.","{missing_values} nicht gefunden. Bitte konfigurieren Sie dies in den <a href='/desk#Form/ERPNextSwiss Settings'>ERPNextSwiss Einstellungen</a>."
+Report: Worktime Overview,Worktime Overview,Arbeitszeitübersicht
+Report: Worktime Overview,Ignore previous year,Vorjahr ignorieren
+DocType: Worktime Settings,Worktime Settings,Arbeitszeiteinstellungen
+DocType: Worktime Settings,Daily Hours,Tägliche Stunden
+DocType: Worktime Settings,Degree,Anstellungsgrad
+DocType: Worktime Settings,Public Holidays,Öffentliche Ferientage
+DocType: Worktime Settings,Activity Type Determination,Aktivitätsartzuweisung
+DocType: Worktime Settings,Column Label,Spaltenbeschriftung
+DocType: Worktime Settings,Target time in hours,Sollzeit (Stunden)
+DocType: Worktime Settings,Actual time in hours,Istzeit (Stunden)
+DocType: Worktime Settings,Difference in hours,Zeitabweichung (Stunden)
+DocType: Worktime Settings,Current holiday balance in days,Urlaubssaldo (Tage)
+DocType: Worktime Settings,Worktime Details,Arbeitszeitdetails
+DocType: Worktime Settings,Employment Degrees,Anstellungsgrade
+DocType: Worktime Settings,Carryover and Payouts,Überträge und Auszahlungen
+Report: Monthly Worktime,Monthly Worktime,Arbeitszeit im Monat
+Report: Annual Salary Sheet,Annual Salary Sheet,Jahreslohnzettel
+Report: Account Sheets,Account Sheets,Kontenblätter
+DocType: ERPNextSwiss Settings,Blocking period in days,Sperrfrist in Tagen
+DocType: ERPNextSwiss Settings,Payment Reminder Level Blocking Period,Mahnstufen Sperrfristen
+Report: Budget Control,Budget Control,Budgetkontrolle
+Report: Service Invoicing,Service Invoicing,Dienstleistungsabrechnug
+Report: Service Invoicing,Create invoice,Rechnung erstellen
+Report: Service Invoicing,Created,Erstellt
+Report: Service Invoicing,Service Item,Dienstleistungsartikel
+Report: Service Invoicing,Invoicing,Abrechnung
+DocType: Salary Certificate Settings,Salary Certificate Settings,Lohnausweis Einstellungen

@@ -1,0 +1,47 @@
+{
+ "creation": "2021-04-20 10:50:25.781433",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "company",
+  "year",
+  "public_holiday_list"
+ ],
+ "fields": [
+  {
+   "fieldname": "year",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Year",
+   "reqd": 1
+  },
+  {
+   "fieldname": "public_holiday_list",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Public Holiday List",
+   "options": "Holiday List",
+   "reqd": 1
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
+  }
+ ],
+ "istable": 1,
+ "modified": "2021-06-09 18:34:41.443223",
+ "modified_by": "Administrator",
+ "module": "ERPNextSwiss",
+ "name": "Public Holiday List",
+ "owner": "Administrator",
+ "permissions": [],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

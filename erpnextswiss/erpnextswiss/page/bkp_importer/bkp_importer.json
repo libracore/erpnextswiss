@@ -4,12 +4,13 @@
  "docstatus": 0,
  "doctype": "Page",
  "idx": 0,
- "modified": "2020-05-13 09:26:41.962912",
+ "modified": "2020-09-23 16:18:25.448378",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "bkp-importer",
  "owner": "Administrator",
  "page_name": "BKP Importer",
+ "restrict_to_domain": "HLK",
  "roles": [
   {
    "role": "System Manager"

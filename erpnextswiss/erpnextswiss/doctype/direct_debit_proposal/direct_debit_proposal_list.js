@@ -12,7 +12,7 @@ function create_direct_debit_proposal() {
         "callback": function(response) {
             if (response.message) {
                 // redirect to the new record
-                window.location.href = ("/desk#Form/Direct Debit Proposal/" + response.message);
+                window.location.href = response.message;
             } else {
                 // no records found
                 frappe.show_alert( __("No available sales invoices found.") );

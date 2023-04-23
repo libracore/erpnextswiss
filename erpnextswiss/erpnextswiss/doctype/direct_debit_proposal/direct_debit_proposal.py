@@ -9,6 +9,7 @@ from datetime import datetime
 import time
 import cgi          # used to escape xml content
 from frappe import _
+from frappe.utils.data import get_url_to_form
 
 class DirectDebitProposal(Document):
     def validate(self):
@@ -72,7 +73,7 @@ class DirectDebitProposal(Document):
             'paid_to': self.intermediate_account,
             'received_amount': amount,
             'paid_amount': amount,
-            'reference_no': reference_name,
+            'reference_no': "{0} {1}".format(reference_name, self.name),
             'reference_date': date,
             'remarks': "From Direct Debit Proposal {0}".format(self.name),
             'references': [{ 
@@ -95,7 +96,7 @@ class DirectDebitProposal(Document):
                 'paid_to': self.intermediate_account,
                 'received_amount': amount,
                 'paid_amount': amount,
-                'reference_no': reference_name,
+                'reference_no': "{0} {1}".format(reference_name, self.name),
                 'reference_date': date,
                 'remarks': "From Direct Debit Proposal {0}".format(self.name),
                 'references': [{ 
@@ -295,7 +296,7 @@ def create_direct_debit_proposal(company=None):
         proposal_record = new_proposal.insert()
         new_record = proposal_record.name
         frappe.db.commit()
-    return new_record
+    return get_url_to_form("Direct Debit Proposal", new_record) if new_record else None
 
 # adds Windows-compatible line endings (to make the xml look nice)    
 def make_line(line):

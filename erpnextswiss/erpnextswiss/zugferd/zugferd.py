@@ -7,6 +7,7 @@
 
 import frappe
 from frappe.utils.pdf import get_pdf
+from frappe.utils import flt
 from erpnextswiss.erpnextswiss.zugferd.zugferd_xml import create_zugferd_xml
 from facturx import generate_facturx_from_binary, get_facturx_xml_from_pdf, check_facturx_xsd, generate_facturx_from_file
 from datetime import datetime, date
@@ -49,7 +50,10 @@ def download_zugferd_pdf(sales_invoice_name, format=None, doc=None, no_letterhea
 
 @frappe.whitelist()    
 def get_xml(path):
-    xml_filename, xml_content = get_facturx_xml_from_pdf(path)
+    with open(path, "rb") as file:
+        pdf = file.read()
+        
+    xml_filename, xml_content = get_facturx_xml_from_pdf(pdf)
     return xml_content
 
 """
@@ -67,9 +71,10 @@ def get_content_from_zugferd(zugferd_xml, debug=False):
     invoice['supplier_name'] = seller.find('ram:name').string
     invoice['supplier_taxid'] = seller.find('ram:id').string
     invoice['supplier_globalid'] = seller.find('ram:id').string
-    invoice['supplier_pincode'] = seller.find('ram:postcodecode').string or ""
-    invoice['supplier_al'] = seller.find('ram:lineone').string or ""
-    invoice['supplier_city'] = seller.find('ram:cityname').string or ""
+    invoice['supplier_pincode'] = seller.find('ram:postcodecode').string if seller.find('ram:postcodecode') else  ""
+    invoice['supplier_al'] = seller.find('ram:lineone').string if seller.find('ram:lineone') else ""
+    invoice['supplier_city'] = seller.find('ram:cityname').string if seller.find('ram:cityname') else ""
+    invoice['supplier_country'] = seller.find('ram:countryid').string if seller.find('ram:countryid') else frappe.defaults.get_global_default("country")
     
     supplier_match_by_tax_id = frappe.get_all("Supplier", 
                                 filters={'tax_id': invoice['supplier_taxid']},
@@ -77,7 +82,6 @@ def get_content_from_zugferd(zugferd_xml, debug=False):
     if len(supplier_match_by_tax_id) > 0:
         # matched by tax id
         invoice['supplier'] = supplier_match_by_tax_id[0]['name']
-        invoice['supplier_identifikation'] = "1"
     else:
         supplier_match_by_name = frappe.get_all("Supplier", 
                                     filters={'supplier_name': invoice['supplier_name']},
@@ -85,22 +89,27 @@ def get_content_from_zugferd(zugferd_xml, debug=False):
         if len(supplier_match_by_name) > 0:
             # matched by supplier name
             invoice['supplier'] = supplier_match_by_name[0]['name']  
-            invoice['supplier_identifikation'] = "1" 
         else:
             # need to insert new supplier
             invoice['supplier'] = None
-            invoice['supplier_identifikation'] = "0"
     
-    # find due date
-    today = date.today()
-    d3 = today.strftime("%Y-%m-%d")
-    invoice['due_date'] = d3
+    # find invoice date
     try:        
-        date_str = soup.find('ram:duedatedatetime').string
-        invoice['due_date'] = datetime.datetime.strptime(date_str, '%Y%m%d').strftime('%d-%m-%Y')
+        date_str = soup.find('ram:issuedatetime').find('udt:datetimestring').string
+        invoice['posting_date'] = datetime.strptime(date_str, '%Y%m%d').strftime('%Y-%m-%d')
     except:
         # use default as due date
-        pass
+        today = date.today()
+        invoice['posting_date'] = today.strftime("%Y-%m-%d")
+        
+    # find due date
+    try:        
+        date_str = soup.find('ram:duedatedatetime').find('udt:datetimestring').string
+        invoice['due_date'] = datetime.strptime(date_str, '%Y%m%d').strftime('%Y-%m-%d')
+    except:
+        # use default as due date
+        today = date.today()
+        invoice['due_date'] = today.strftime("%Y-%m-%d")
 
     document_context = soup.find('rsm:exchangeddocument')
     invoice['terms'] = document_context.find('ram:content').string
@@ -129,15 +138,17 @@ def get_content_from_zugferd(zugferd_xml, debug=False):
 
     # collect items
     items = []
-    loop = 1
     for item in soup.find_all('ram:includedsupplychaintradelineitem'):
         _item = {
-            'net_price': soup.find('ram:netpriceproducttradeprice'),
-            'qty': soup.find('ram:billedquantity'),
-            'seller_item_code': (loop + 1),#item.find('ram:sellerassignedid').string,
-            'item_name': item.find('ram:name').string
+            'net_price': item.find('ram:netpriceproducttradeprice').find('ram:chargeamount').string, # if item.find('ram:netpriceproducttradeprice') else 0,
+            'qty': flt(item.find('ram:billedquantity').string) if item.find('ram:billedquantity') else 0,
+            'seller_item_code': item.find('ram:sellerassignedid').string,
+            'item_name': item.find('ram:name').string,
+            'item_code': None
         }
-        '''
+        if _item['qty'] == 0:       # skip 0-qty positions
+            continue
+            
         # match by seller item code
         match_item_by_code = frappe.get_all("Item",
                                             filters={'item_code': _item['seller_item_code']},
@@ -145,25 +156,16 @@ def get_content_from_zugferd(zugferd_xml, debug=False):
         if len(match_item_by_code) > 0: 
             _item['item_code'] = match_item_by_code[0]['name']
         else:
-        ''' 
-        
-        # match by item name
-        match_item_by_name = frappe.get_all("Item",
-                                            filters={'item_name': _item['item_name']},
-                                            fields=['name'])
-        if len(match_item_by_name) > 0: 
-            _item['item_name'] = match_item_by_name[0]['name']
-            
-            invoice['item_identifikation'] = "1" 
-        else:
-            # no match      
-             
-           
-            invoice['item_identifikation'] = "0" 
-            #add item
-                
-        
+            # match by item name
+            match_item_by_name = frappe.get_all("Item",
+                                                filters={'item_name': _item['item_name']},
+                                                fields=['name'])
+            if len(match_item_by_name) > 0: 
+                _item['item_code'] = match_item_by_name[0]['name']    
+
+        #add item
         items.append(_item)
+        
     invoice['items'] = items
     
     total_amounts = soup.find('ram:specifiedtradesettlementheadermonetarysummation')
@@ -172,4 +174,4 @@ def get_content_from_zugferd(zugferd_xml, debug=False):
     invoice['total_taxes'] = total_amounts.find('ram:taxtotalamount').string
     invoice['grand_total'] = total_amounts.find('ram:grandtotalamount').string
     
-    return 
+    return invoice

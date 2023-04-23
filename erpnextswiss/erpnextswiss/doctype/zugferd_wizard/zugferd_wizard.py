@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2019-2020, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2019-2023, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
 
 from __future__ import unicode_literals
@@ -7,15 +7,11 @@ import frappe
 from frappe.model.document import Document
 import os
 from erpnextswiss.erpnextswiss.zugferd.zugferd import get_xml, get_content_from_zugferd
-
-
-
-    
-     
-    
+from frappe import _
+import json
+from frappe.utils import cint, flt, get_link_to_form
 
 class ZUGFeRDWizard(Document):
-	
     def read_file(self):
         file_path = os.path.join(frappe.utils.get_bench_path(), 'sites', frappe.utils.get_site_path()) + self.file
         xml_content = get_xml(file_path)
@@ -24,161 +20,131 @@ class ZUGFeRDWizard(Document):
         content = frappe.render_template('erpnextswiss/erpnextswiss/doctype/zugferd_wizard/zugferd_content.html', invoice)
         # return html and dict
         return { 'html': content, 'dict': invoice }
-	 
-    def hello(self):
-        file_path = os.path.join(frappe.utils.get_bench_path(), 'sites', frappe.utils.get_site_path()) + self.file
-        xml_content = get_xml(file_path)
-        invoice = get_content_from_zugferd(xml_content)
-        frappe.msgprint("hey")
+    
+    def create_invoice(self):
+        if not self.content_dict:
+            frappe.throw( _("Please start by loading a document."), _("Notification") )
         
-        #generate supplier
-        frappe.msgprint(invoice['supplier_identifikation'])
-        if  invoice['supplier_identifikation'] == "0":
-            doc = frappe.get_doc({
+        settings = frappe.get_doc("ZUGFeRD Settings", "ZUGFeRD Settings")
+        
+        invoice = json.loads(self.content_dict)
+        
+        if  not invoice['supplier']:
+            # create new supplier
+            _supplier = {
                 'doctype': 'Supplier',
                 'title': invoice['supplier_name'],
                 'supplier_name': invoice['supplier_name'],
                 'tax_id': invoice['supplier_taxid'],
                 'global_id': invoice['supplier_globalid'],
                 'supplier_group': "All Supplier Groups" #supplier_group
-                })
-            doc.insert()
-            #generate supplier address
-         
-            address_doc = frappe.get_doc({
+            }
+            # apply default values
+            for d in settings.defaults:
+                if d.dt == "Supplier":
+                    _supplier[d.field] = d.value
+            supplier_doc = frappe.get_doc(_supplier)
+            supplier_doc.insert()
+            invoice['supplier'] = supplier_doc.name
+            
+            # generate supplier address
+            _address = {
                 'doctype': 'Address',
-                'address_title': invoice['supplier_name'] + " address",
+                'address_title': "{0} - {1}".format(invoice['supplier_name'], invoice['supplier_city']),
                 'pincode': invoice['supplier_pincode'],
                 'address_line1': invoice['supplier_al'],
                 'city': invoice['supplier_city'],
-                'links': [ {'link_doctype': 'Supplier', 'link_name': invoice['supplier_name']} ]
-                #'country': "Schweiz" #seller.find('ram:CountryID').string or ""
-            })
+                'links': [
+                    {
+                        'link_doctype': 'Supplier', 
+                        'link_name': invoice['supplier']
+                    }
+                ],
+                'country': invoice['supplier_country']
+            }
+            # apply default values
+            for d in settings.defaults:
+                if d.dt == "Address":
+                    _address[d.field] = d.value
+            address_doc = frappe.get_doc(_address)
             address_doc.insert()
         
-       
+        # create purchase invoice
+        pinv_doc = frappe.get_doc({
+            'doctype': 'Purchase Invoice',
+            'company': self.company,
+            'supplier': invoice.get('supplier'),
+            'due_date': invoice.get('due_date'),
+            'currency': invoice.get('currency'),
+            'bill_no': invoice.get('doc_id'),
+            'bill_date': invoice.get('posting_date'),
+            'terms': invoice.get('terms')
+        })
         
-        frappe.msgprint("item" + invoice['item_identifikation'])
-        if  invoice['item_identifikation'] == "0":
-            item_doc = frappe.get_doc ({
-                'item_code': invoice['items']['seller_item_code'],
-                'item_name': invoice['items']['item_name']
+        # find taxes and charges
+        taxes_and_charges_template = frappe.db.sql("""
+            SELECT `tabPurchase Taxes and Charges Template`.`name`
+            FROM `tabPurchase Taxes and Charges`
+            LEFT JOIN `tabPurchase Taxes and Charges Template` ON `tabPurchase Taxes and Charges Template`.`name` = `tabPurchase Taxes and Charges`.`parent`
+            WHERE 
+                `tabPurchase Taxes and Charges Template`.`company` = "{company}"
+                AND `tabPurchase Taxes and Charges`.`rate` = {tax_rate}
+            ;""".format(company=self.company, tax_rate=flt(invoice.get('tax_rate'))), as_dict=True)
+        if len(taxes_and_charges_template) > 0:
+            pinv_doc.taxes_and_charges = taxes_and_charges_template[0]['name']
+            taxes_template = frappe.get_doc("Purchase Taxes and Charges Template", taxes_and_charges_template[0]['name'])
+            for t in taxes_template.taxes:
+                pinv_doc.append("taxes", t)
+                
+        for item in invoice.get("items"):
+            if not item.get('item_code'):
+                if not frappe.db.exists("Item", item.get('seller_item_code')):
+                    _item = {
+                        'doctype': "Item",
+                        'item_code': item.get('seller_item_code'),
+                        'item_name': item.get('item_name'),
+                        'item_group': frappe.get_value("ZUGFeRD Settings", "ZUGFeRD Settings", "item_group")
+                    }
+                    # apply default values
+                    for d in settings.defaults:
+                        if d.dt == "Item":
+                            _item[d.field] = d.value
+                    item_doc = frappe.get_doc(_item)
+                    item_doc.insert()
+                    item['item_code'] = item_doc.name
+                else:
+                    item['item_code'] = item.get('seller_item_code')
+            
+            pinv_doc.append("items", {
+                'item_code': item.get('item_code'),
+                'item_name': item.get('item_name'),
+                'qty': flt(item.get("qty")),
+                'rate': flt(item.get("net_price"))
             })
-            item_doc.insert()
         
+        pinv_doc.insert()
+        frappe.db.commit()
         
+        # move file to new invoice
+        frappe.db.sql("""
+        UPDATE `tabFile`
+        SET 
+            `attached_to_name` = "{pinv}", 
+            `attached_to_doctype` = "Purchase Invoice"
+        WHERE
+            `attached_to_name` = "ZUGFeRD Wizard"
+            AND `attached_to_doctype` = "ZUGFeRD Wizard"
+        ;""".format(pinv=pinv_doc.name))
         
+        # clean up the wizard
+        self.content_dict = None
+        self.ready_for_import = 0
+        self.save()
         
-        pinv_doc = frappe.get_doc({
-            'doctype': 'Purchase Invoice',
-            'supplier': invoice['supplier_name'],
-            'title': invoice['supplier_name'],
-            'due_date': invoice['due_date'],
-            'currency': invoice['currency'],
-            #'payment_schedule[0].payment_term': invoice['payment_terms'],
-            'terms': invoice['terms'],
-            'naming_series': 'PINV-',
-            'status': 'Draft',
-            #'taxes_and_charges': invoice['tax_rule'],
-    
-            'items': [{
-                'item_code': 'Odile Low-UBL-420',
-                'item_name': 'Odile Low Ultra Blue',
-                'qty': 12,
-                'conversion_factor': 1,
-                'rate': 12,
-            }],
-        })
+        frappe.db.commit()
         
-    
+        frappe.msgprint( _("Import successful: {0}").format(
+             get_link_to_form("Purchase Invoice", pinv_doc.name)),
+            _("Success"))
             
-            
-        frappe.msgprint("Import successfully")
-        
-   
-        '''
-    def read_file(self):
-        file_path = os.path.join(frappe.utils.get_bench_path(), 'sites', frappe.utils.get_site_path()) + self.file
-        xml_content = get_xml(file_path)
-        invoice = get_content_from_zugferd(xml_content)
-        # render html
-        content = frappe.render_template('erpnextswiss/erpnextswiss/doctype/zugferd_wizard/zugferd_content.html', invoice)
-        # return html and dict
-        return { 'html': content, 'dict': invoice }
-        
-        '''
-        
-        
-    @frappe.whitelist()  
-    def hello2():
-        frappe.msgprint(invoice)
-    
-         
-        
-        
-    
-    
-    def hinz(self):
-        file_path = os.path.join(frappe.utils.get_bench_path(), 'sites', frappe.utils.get_site_path()) + self.file
-        xml_content = get_xml(file_path)
-        invoice = get_content_from_zugferd(xml_content)
-    
-    @frappe.whitelist()
-    def create_supplier(invoice):
-        doc = frappe.get_doc({
-            'doctype': 'Supplier',
-            'title': seller.find('ram:name').string,
-            'supplier_name': seller.find('ram:name').string,
-            'tax_id': seller.find('ram:id').string,
-            'supplier_group': "All Supplier Groups" #supplier_group
-        })
-        doc.insert()
-    
-        frappe.msgprint("<b>" + "Added new supplier: " + "</b>" + "<br>" + "<br>" + "<b>" + "Title: " + "</b>" 
-        + doc.title + "<br>" + "<b>" + "Supplier Name: " "</b>" + doc.supplier_name + "<br>" + "<b>" + "Global ID: " 
-        + "</b>" + doc.global_id + "<br>" + "<b>" + "Supplier Group: " + "</b>" + doc.supplier_group + "<br>")
-    
-        #INSERTION
-        address_doc = frappe.get_doc({
-            'doctype': 'Address',
-            'address_title': doc.supplier_name + " address",
-            'pincode': seller.find('ram:postcodecode').string,
-            'address_line1': seller.find('ram:lineone').string,
-            'city': 'zürich', #seller.find('ram:cityname').string or "",
-            'links': [ {'link_doctype': 'Supplier', 'link_name': doc.supplier_name} ]
-            #'country': "Schweiz" #seller.find('ram:CountryID').string or ""
-        })
-        address_doc.insert()
-
-    def create_purchase_invoice(self):
-        pinv_doc = frappe.get_doc({
-            'doctype': 'Purchase Invoice',
-            'supplier': 'LibraCore',
-            'title': invoice['supplier_name'],
-            'due_date': invoice['due_date'],
-            #'company': 'LibraCore',
-            'currency': invoice['currency'],
-            'payment_schedule[0].payment_term': invoice['payment_terms'],
-            'terms': invoice['terms'],
-            'naming_series': 'PINV-',
-            'status': 'Draft',
-            'taxes_and_charges': invoice['tax_rule'],
-            'items': [{
-                'item_code': 'Odile Low-UBL-420',
-                'item_name': 'Odile Low Ultra Blue',
-                'qty': 12,
-                'conversion_factor': 1,
-                'rate': 12,
-            }],
-        })
-        
-    def create_payment_terms(self):
-        #INSERTION
-        payment_terms = frappe.get_doc({
-            'doctype': 'Payment Term',
-            'payment_term_name': doc_id + " payment template",
-            'invoice_portion': '100.00',
-            'credit_days': '30',
-            'description': description, 
-        })
-        payment_terms.insert()
+        return

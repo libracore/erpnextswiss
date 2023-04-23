@@ -2,7 +2,7 @@
 
   <tr>
     <td> <b> {{ _("Purchase Invoice Number") }} </b></td>
-    <td><!--{{ bill_no }}--> No bill No. found</td>
+    <td>{{ doc_id or "-" }}</td>
     <td></td>
   </tr>
 
@@ -10,23 +10,23 @@
     <tr>
     <td> <b> {{ _("Supplier") }} </b> </td>
     <td>{{ supplier_name }} ({{ supplier_taxid }})</td>
-    <td>{% if not supplier %} <b>{{ _("NEW") }}</b>{% else %}[{{ supplier }}]{% endif %}</td>
+    <td>{% if not supplier %} <b>{{ _("NEW") }}</b>{% else %}{{ supplier }}{% endif %}</td>
   </tr>
 
   <tr>
     <td> <b> {{ _("Supplier Address") }} </b></td>
-    <td>{{ supplier_pincode }}<br> {{ supplier_al }} <br> {{ supplier_city }}</td>
+    <td>{{ supplier_al or "" }}<br>{{ supplier_pincode or "" }} {{ supplier_city or "" }}</td>
     <td>{% if not supplier %} <b>{{ _("NEW") }}</b>{% endif %}</td>
   </tr>
   
 {% for i in items %}
   <tr>
     <td> <b> {{ _("Item") }} {{ loop.index }}</b></td>
-    <td>    <b>Item name: </b>{{ i.item_name }} [{{i.seller_item_code}}] <br>
+    <td>    <b>Item name: </b>{{ i.item_name }} ({{i.seller_item_code}}) <br>
             <b>Net price: </b>{{ i.net_price }} <br> 
             <b>Quantity: </b>{{ i.qty }} <br>
     </td>
-    <td>{% if not i.item_code %} <b>{{ _("NEW") }}</b>{% else %}[{{ i.item_name }}]{% endif %}</td>
+    <td>{% if not i.item_code %} <b>{{ _("NEW") }}</b>{% else %}{{ i.item_code }}{% endif %}</td>
   </tr>
 {% endfor %}
 
@@ -51,7 +51,7 @@
   <tr>
     <td> <b> {{ _("Terms") }} </b></td>
     <td>{{ terms }}</td>
-    <td>{% if not terms %} <b>{{ _("NO TERMS AVAILABLE") }}</b> {% endif %}</td>
+    <td>{% if not terms %} <b>{{ _("No terms available") }}</b> {% endif %}</td>
   </tr>
 
   

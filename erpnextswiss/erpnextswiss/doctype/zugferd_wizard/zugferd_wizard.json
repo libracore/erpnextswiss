@@ -5,6 +5,8 @@
  "engine": "InnoDB",
  "field_order": [
   "file",
+  "col_main",
+  "company",
   "section_preview",
   "preview_html",
   "content_dict",
@@ -38,10 +40,20 @@
    "fieldname": "ready_for_import",
    "fieldtype": "Check",
    "label": "Ready for import"
+  },
+  {
+   "fieldname": "col_main",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company"
   }
  ],
  "issingle": 1,
- "modified": "2020-07-29 22:29:42.129096",
+ "modified": "2023-04-23 20:45:36.432454",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "ZUGFeRD Wizard",

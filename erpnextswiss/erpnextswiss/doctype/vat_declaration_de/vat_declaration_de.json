@@ -1,0 +1,523 @@
+{
+ "allow_rename": 1,
+ "autoname": "field:title",
+ "creation": "2022-11-24 15:17:51.597314",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "title",
+  "company",
+  "cmp_abbr",
+  "column_break_1",
+  "interval",
+  "amended_from",
+  "section_break_period",
+  "start_date",
+  "column_break_2",
+  "end_date",
+  "section_revenue",
+  "amount_81",
+  "amount_86",
+  "amount_35",
+  "amount_77",
+  "amount_76",
+  "col_revenue",
+  "tax_81",
+  "tax_86",
+  "tax_35",
+  "tax_77",
+  "tax_76",
+  "sec_ig_rev",
+  "amount_41",
+  "amount_44",
+  "amount_49",
+  "amount_43",
+  "amount_48",
+  "sec_ig_pur",
+  "amount_89",
+  "amount_93",
+  "amount_95",
+  "amount_94",
+  "amount_91",
+  "col_ig_pur",
+  "tax_89",
+  "tax_93",
+  "tax_95",
+  "tax_94",
+  "sec_reverse_charge",
+  "amount_46",
+  "amount_73",
+  "amount_84",
+  "col_rev_chg",
+  "tax_46",
+  "tax_73",
+  "tax_84",
+  "sec_add",
+  "amount_42",
+  "amount_60",
+  "amount_21",
+  "amount_45",
+  "col_add",
+  "total_revenue_tax",
+  "sec_pretax",
+  "pretax_placeholder",
+  "col_pretax",
+  "tax_66",
+  "tax_61",
+  "tax_62",
+  "tax_67",
+  "tax_63",
+  "tax_59",
+  "tax_64",
+  "total_pretax",
+  "sec_others",
+  "other_placeholder",
+  "col_others",
+  "tax_65",
+  "tax_69",
+  "preliminary_tax",
+  "tax_39",
+  "sec_tax",
+  "tax_placeholder",
+  "col_tax",
+  "tax_due"
+ ],
+ "fields": [
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Title",
+   "unique": 1
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "company.abbr",
+   "fieldname": "cmp_abbr",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Company abbreviation"
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_period",
+   "fieldtype": "Section Break",
+   "label": "Period"
+  },
+  {
+   "fieldname": "start_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Start"
+  },
+  {
+   "fieldname": "column_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "end_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "End"
+  },
+  {
+   "fieldname": "section_revenue",
+   "fieldtype": "Section Break",
+   "label": "Revenue"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "VAT Declaration DE",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "amount_81",
+   "fieldtype": "Currency",
+   "label": "Revenue at tax rate 19%"
+  },
+  {
+   "fieldname": "amount_86",
+   "fieldtype": "Currency",
+   "label": "Revenue at tax rate 7%"
+  },
+  {
+   "fieldname": "amount_35",
+   "fieldtype": "Currency",
+   "label": "Revenue at other tax rates"
+  },
+  {
+   "fieldname": "amount_77",
+   "fieldtype": "Currency",
+   "label": "Amount 77"
+  },
+  {
+   "fieldname": "amount_76",
+   "fieldtype": "Currency",
+   "label": "Amount 76"
+  },
+  {
+   "fieldname": "col_revenue",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "tax_81",
+   "fieldtype": "Currency",
+   "label": "Tax 81"
+  },
+  {
+   "fieldname": "tax_86",
+   "fieldtype": "Currency",
+   "label": "Tax 86"
+  },
+  {
+   "fieldname": "tax_35",
+   "fieldtype": "Currency",
+   "label": "Tax 35"
+  },
+  {
+   "fieldname": "tax_77",
+   "fieldtype": "Currency",
+   "label": "Tax 77"
+  },
+  {
+   "fieldname": "tax_76",
+   "fieldtype": "Currency",
+   "label": "Tax 76"
+  },
+  {
+   "fieldname": "sec_ig_rev",
+   "fieldtype": "Section Break",
+   "label": "Innercommunal revenue"
+  },
+  {
+   "fieldname": "amount_41",
+   "fieldtype": "Currency",
+   "label": "Pretax with UID"
+  },
+  {
+   "fieldname": "amount_44",
+   "fieldtype": "Currency",
+   "label": "Pretax vehicles without UID"
+  },
+  {
+   "fieldname": "amount_49",
+   "fieldtype": "Currency",
+   "label": "Pretax vehicules outside company"
+  },
+  {
+   "fieldname": "amount_43",
+   "fieldtype": "Currency",
+   "label": "Pretax export"
+  },
+  {
+   "fieldname": "amount_48",
+   "fieldtype": "Currency",
+   "label": "Revenue without pretax"
+  },
+  {
+   "fieldname": "sec_ig_pur",
+   "fieldtype": "Section Break",
+   "label": "Innercommunal purchases"
+  },
+  {
+   "fieldname": "amount_89",
+   "fieldtype": "Currency",
+   "label": "IG at 19%"
+  },
+  {
+   "fieldname": "amount_93",
+   "fieldtype": "Currency",
+   "label": "IG at 7%"
+  },
+  {
+   "fieldname": "amount_95",
+   "fieldtype": "Currency",
+   "label": "IG other rate"
+  },
+  {
+   "fieldname": "amount_94",
+   "fieldtype": "Currency",
+   "label": "New vehicules"
+  },
+  {
+   "fieldname": "amount_91",
+   "fieldtype": "Currency",
+   "label": "Amount 91"
+  },
+  {
+   "fieldname": "col_ig_pur",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "tax_89",
+   "fieldtype": "Currency",
+   "label": "Tax 89"
+  },
+  {
+   "fieldname": "tax_93",
+   "fieldtype": "Currency",
+   "label": "Tax 93"
+  },
+  {
+   "fieldname": "tax_95",
+   "fieldtype": "Currency",
+   "label": "Tax 95 (98)"
+  },
+  {
+   "fieldname": "tax_94",
+   "fieldtype": "Currency",
+   "label": "Tax 94 (96)"
+  },
+  {
+   "fieldname": "sec_reverse_charge",
+   "fieldtype": "Section Break",
+   "label": "Reverse Charge"
+  },
+  {
+   "fieldname": "amount_46",
+   "fieldtype": "Currency",
+   "label": "Amount 46"
+  },
+  {
+   "fieldname": "amount_73",
+   "fieldtype": "Currency",
+   "label": "Amount 73"
+  },
+  {
+   "fieldname": "amount_84",
+   "fieldtype": "Currency",
+   "label": "Amount 84"
+  },
+  {
+   "fieldname": "col_rev_chg",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "tax_46",
+   "fieldtype": "Currency",
+   "label": "Tax 46 (47)"
+  },
+  {
+   "fieldname": "tax_73",
+   "fieldtype": "Currency",
+   "label": "Tax 73 (74)"
+  },
+  {
+   "fieldname": "sec_add",
+   "fieldtype": "Section Break",
+   "label": "Additional Revenue"
+  },
+  {
+   "fieldname": "amount_42",
+   "fieldtype": "Currency",
+   "label": "Amount 42"
+  },
+  {
+   "fieldname": "amount_60",
+   "fieldtype": "Currency",
+   "label": "Amount 60"
+  },
+  {
+   "fieldname": "amount_21",
+   "fieldtype": "Currency",
+   "label": "Amount 21"
+  },
+  {
+   "fieldname": "amount_45",
+   "fieldtype": "Currency",
+   "label": "Amount 45"
+  },
+  {
+   "fieldname": "col_add",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "total_revenue_tax",
+   "fieldtype": "Currency",
+   "label": "Total revenue tax",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sec_pretax",
+   "fieldtype": "Section Break",
+   "label": "Pretax"
+  },
+  {
+   "fieldname": "col_pretax",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "tax_66",
+   "fieldtype": "Currency",
+   "label": "Pretax"
+  },
+  {
+   "fieldname": "tax_61",
+   "fieldtype": "Currency",
+   "label": "Pretax IG"
+  },
+  {
+   "fieldname": "tax_62",
+   "fieldtype": "Currency",
+   "label": "Pretax on import"
+  },
+  {
+   "fieldname": "tax_67",
+   "fieldtype": "Currency",
+   "label": "Pretax 67"
+  },
+  {
+   "fieldname": "tax_63",
+   "fieldtype": "Currency",
+   "label": "Pretax 63"
+  },
+  {
+   "fieldname": "tax_59",
+   "fieldtype": "Currency",
+   "label": "Pretax IG vehicles"
+  },
+  {
+   "fieldname": "tax_64",
+   "fieldtype": "Currency",
+   "label": "Correction on pretax"
+  },
+  {
+   "fieldname": "total_pretax",
+   "fieldtype": "Currency",
+   "label": "Total pretax",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sec_others",
+   "fieldtype": "Section Break",
+   "label": "Others"
+  },
+  {
+   "fieldname": "tax_65",
+   "fieldtype": "Currency",
+   "label": "Tax 65"
+  },
+  {
+   "fieldname": "tax_69",
+   "fieldtype": "Currency",
+   "label": "Tax 69"
+  },
+  {
+   "fieldname": "preliminary_tax",
+   "fieldtype": "Currency",
+   "label": "Preliminay tax",
+   "read_only": 1
+  },
+  {
+   "fieldname": "tax_39",
+   "fieldtype": "Currency",
+   "label": "Deduction for delayed tax"
+  },
+  {
+   "fieldname": "sec_tax",
+   "fieldtype": "Section Break",
+   "label": "Tax amount"
+  },
+  {
+   "fieldname": "tax_due",
+   "fieldtype": "Currency",
+   "label": "Tax due",
+   "read_only": 1
+  },
+  {
+   "default": "Monthly",
+   "fieldname": "interval",
+   "fieldtype": "Select",
+   "label": "Interval",
+   "options": "Monthly\nQuarterly"
+  },
+  {
+   "fieldname": "pretax_placeholder",
+   "fieldtype": "HTML"
+  },
+  {
+   "fieldname": "col_others",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "other_placeholder",
+   "fieldtype": "HTML"
+  },
+  {
+   "fieldname": "tax_84",
+   "fieldtype": "Currency",
+   "label": "Tax 84 (85)"
+  },
+  {
+   "fieldname": "col_tax",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "tax_placeholder",
+   "fieldtype": "HTML"
+  }
+ ],
+ "is_submittable": 1,
+ "modified": "2022-11-24 18:41:01.239380",
+ "modified_by": "Administrator",
+ "module": "ERPNextSwiss",
+ "name": "VAT Declaration DE",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Accounts User",
+   "share": 1
+  },
+  {
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Accounts Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "title_field": "title",
+ "track_changes": 1
+}

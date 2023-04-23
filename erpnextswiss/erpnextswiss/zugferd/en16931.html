@@ -1,0 +1,122 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<rsm:CrossIndustryInvoice xmlns:a='urn:un:unece:uncefact:data:standard:QualifiedDataType:100' xmlns:rsm='urn:un:unece:uncefact:data:standard:CrossIndustryInvoice:100' xmlns:qdt='urn:un:unece:uncefact:data:standard:QualifiedDataType:10' xmlns:ram='urn:un:unece:uncefact:data:standard:ReusableAggregateBusinessInformationEntity:100' xmlns:xs='http://www.w3.org/2001/XMLSchema' xmlns:udt='urn:un:unece:uncefact:data:standard:UnqualifiedDataType:100'>
+  <rsm:ExchangedDocumentContext>
+    <ram:GuidelineSpecifiedDocumentContextParameter>
+      <ram:ID>urn:cen.eu:en16931:2017</ram:ID>
+    </ram:GuidelineSpecifiedDocumentContextParameter>
+  </rsm:ExchangedDocumentContext>
+  <rsm:ExchangedDocument>
+    <ram:ID>{{ name }}</ram:ID>
+    <ram:TypeCode>380</ram:TypeCode>
+    <ram:IssueDateTime>
+      <udt:DateTimeString format='102'>{{ issue_date }}</udt:DateTimeString>
+    </ram:IssueDateTime>
+    {%- for note in notes %}
+    <ram:IncludedNote>
+      <ram:Content>{{ note.text }}</ram:Content>
+    </ram:IncludedNote>
+    {%- endfor %}
+  </rsm:ExchangedDocument>
+  <rsm:SupplyChainTradeTransaction>
+{%- for item in items %}
+    <ram:IncludedSupplyChainTradeLineItem>
+      <ram:AssociatedDocumentLineDocument>
+        <ram:LineID>{{ item.idx }}</ram:LineID>
+      </ram:AssociatedDocumentLineDocument>
+      <ram:SpecifiedTradeProduct>
+{%- if item.barcode %}
+        <ram:GlobalID schemeID='0160'>{{ item.barcode }}</ram:GlobalID>
+{%- endif %}
+        <ram:SellerAssignedID>{{ item.item_code }}</ram:SellerAssignedID>
+        <ram:Name>{{ item.item_name }}</ram:Name>
+      </ram:SpecifiedTradeProduct>
+      <ram:SpecifiedLineTradeAgreement>
+        <ram:GrossPriceProductTradePrice>
+          <ram:ChargeAmount>{{ "{:.2f}".format(item.price_list_rate) }}</ram:ChargeAmount>
+        </ram:GrossPriceProductTradePrice>
+        <ram:NetPriceProductTradePrice>
+          <ram:ChargeAmount>{{ "{:.2f}".format(item.rate) }}</ram:ChargeAmount>
+        </ram:NetPriceProductTradePrice>
+      </ram:SpecifiedLineTradeAgreement>
+      <ram:SpecifiedLineTradeDelivery>
+        <ram:BilledQuantity unitCode='{{ item.unit_code }}'>{{ item.qty }}</ram:BilledQuantity>
+      </ram:SpecifiedLineTradeDelivery>
+      <ram:SpecifiedLineTradeSettlement>
+        <ram:ApplicableTradeTax>
+          <ram:TypeCode>VAT</ram:TypeCode>
+          <ram:CategoryCode>S</ram:CategoryCode>
+          <ram:RateApplicablePercent>{{ "{:.2f}".format(overall_tax_rate_percent) }}</ram:RateApplicablePercent>
+        </ram:ApplicableTradeTax>
+        <ram:SpecifiedTradeSettlementLineMonetarySummation>
+          <ram:LineTotalAmount>{{ "{:.2f}".format(item.amount) }}</ram:LineTotalAmount>
+        </ram:SpecifiedTradeSettlementLineMonetarySummation>
+      </ram:SpecifiedLineTradeSettlement>
+    </ram:IncludedSupplyChainTradeLineItem>
+{%- endfor %}
+    <ram:ApplicableHeaderTradeAgreement>
+      <ram:SellerTradeParty>
+        <ram:Name>{{ company }}</ram:Name>
+        <ram:PostalTradeAddress>
+          <ram:PostcodeCode>{{ company_address.pincode }}</ram:PostcodeCode>
+          <ram:LineOne>{{ company_address.address_line1 }}</ram:LineOne>
+          <ram:CityName>{{ company_address.city }}</ram:CityName>
+          <ram:CountryID>{{ company_address.country_code }}</ram:CountryID>
+        </ram:PostalTradeAddress>
+        <ram:SpecifiedTaxRegistration>
+          <ram:ID schemeID='VA'>{{ tax_id }}</ram:ID>
+        </ram:SpecifiedTaxRegistration>
+      </ram:SellerTradeParty>
+      <ram:BuyerTradeParty>
+        <ram:ID>{{ customer }}</ram:ID>
+{#-        <ram:GlobalID schemeID='0088'>4000001987658</ram:GlobalID> #}
+        <ram:Name>{{ customer_name }}</ram:Name>
+        <ram:PostalTradeAddress>
+          <ram:PostcodeCode>{{ customer_address.pincode }}</ram:PostcodeCode>
+          <ram:LineOne>{{ customer_address.address_line1 }}</ram:LineOne>
+          <ram:CityName>{{ customer_address.city }}</ram:CityName>
+          <ram:CountryID>{{ customer_address.country_code }}</ram:CountryID>
+        </ram:PostalTradeAddress>
+      </ram:BuyerTradeParty>
+    </ram:ApplicableHeaderTradeAgreement>
+    <ram:ApplicableHeaderTradeDelivery>
+    </ram:ApplicableHeaderTradeDelivery>
+    <ram:ApplicableHeaderTradeSettlement>
+      <ram:InvoiceCurrencyCode>{{ currency }}</ram:InvoiceCurrencyCode>
+{%- if taxes %}
+  {%- for tax in taxes %}
+      <ram:ApplicableTradeTax>
+        <ram:CalculatedAmount>{{ "{:.2f}".format(tax.tax_amount) }}</ram:CalculatedAmount>
+        <ram:TypeCode>VAT</ram:TypeCode>
+        <ram:BasisAmount>{{ "{:.2f}".format(tax.net_amount) }}</ram:BasisAmount>
+        <ram:CategoryCode>S</ram:CategoryCode>
+        <ram:RateApplicablePercent>{{ "{:.2f}".format(tax.rate) }}</ram:RateApplicablePercent>
+      </ram:ApplicableTradeTax>
+  {%- endfor %}
+{%- else %}
+      <ram:ApplicableTradeTax>
+        <ram:CalculatedAmount>0</ram:CalculatedAmount>
+        <ram:TypeCode>VAT</ram:TypeCode>
+        <ram:BasisAmount>0</ram:BasisAmount>
+        <ram:CategoryCode>S</ram:CategoryCode>
+        <ram:RateApplicablePercent>0</ram:RateApplicablePercent>                       
+      </ram:ApplicableTradeTax>
+{%- endif %}
+      <ram:SpecifiedTradePaymentTerms>
+        <ram:Description>{{ payment_terms }}</ram:Description>
+        <ram:DueDateDateTime>
+          <udt:DateTimeString format='102'>{{ due_date }}</udt:DateTimeString>
+        </ram:DueDateDateTime>
+      </ram:SpecifiedTradePaymentTerms>
+      <ram:SpecifiedTradeSettlementHeaderMonetarySummation>
+        <ram:LineTotalAmount>{{ "{:.2f}".format(total) }}</ram:LineTotalAmount>
+        <ram:ChargeTotalAmount>{{ "{:.2f}".format(discount) }}</ram:ChargeTotalAmount>
+        <ram:AllowanceTotalAmount>0.00</ram:AllowanceTotalAmount>
+        <ram:TaxBasisTotalAmount>{{ "{:.2f}".format(net_total) }}</ram:TaxBasisTotalAmount>
+        <ram:TaxTotalAmount currencyID='{{ currency }}'>{{ "{:.2f}".format(total_tax) }}</ram:TaxTotalAmount>
+        <ram:GrandTotalAmount>{{ "{:.2f}".format(grand_total) }}</ram:GrandTotalAmount>
+        <ram:TotalPrepaidAmount>{{ "{:.2f}".format(prepaid_amount) }}</ram:TotalPrepaidAmount>
+        <ram:DuePayableAmount>{{ "{:.2f}".format(outstanding_amount) }}</ram:DuePayableAmount>
+      </ram:SpecifiedTradeSettlementHeaderMonetarySummation>
+    </ram:ApplicableHeaderTradeSettlement>
+  </rsm:SupplyChainTradeTransaction>
+</rsm:CrossIndustryInvoice>

@@ -1,0 +1,110 @@
+{
+ "autoname": "naming_series:",
+ "creation": "2021-01-26 06:50:37.533329",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "title",
+  "description",
+  "naming_series",
+  "section_trace",
+  "software_requirement",
+  "software_requirement_title",
+  "section_estimation",
+  "expected_effort"
+ ],
+ "fields": [
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Title",
+   "reqd": 1
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Text Editor",
+   "label": "Description",
+   "reqd": 1
+  },
+  {
+   "default": "PSPEC-.#####",
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Naming Series",
+   "options": "PSPEC-.#####",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_trace",
+   "fieldtype": "Section Break",
+   "label": "Trace"
+  },
+  {
+   "fieldname": "software_requirement",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Software Requirement",
+   "options": "Software Requirement",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "software_requirement.title",
+   "fieldname": "software_requirement_title",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Software Requirement Title",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_estimation",
+   "fieldtype": "Section Break",
+   "label": "Estimation"
+  },
+  {
+   "description": "in hours",
+   "fieldname": "expected_effort",
+   "fieldtype": "Float",
+   "label": "Expected effort"
+  }
+ ],
+ "modified": "2021-01-26 21:15:58.475486",
+ "modified_by": "Administrator",
+ "module": "ERPNextSwiss",
+ "name": "Software Specification",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "restrict_to_domain": "IT Development",
+ "search_fields": "title,description",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "title_field": "title",
+ "track_changes": 1
+}

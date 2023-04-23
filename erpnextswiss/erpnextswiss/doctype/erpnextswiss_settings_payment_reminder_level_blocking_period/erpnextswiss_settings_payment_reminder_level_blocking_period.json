@@ -1,0 +1,36 @@
+{
+ "creation": "2022-06-16 09:13:47.638585",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "reminder_level",
+  "blocking_days"
+ ],
+ "fields": [
+  {
+   "fieldname": "reminder_level",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Reminder Level",
+   "reqd": 1
+  },
+  {
+   "fieldname": "blocking_days",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Blocking period in days",
+   "reqd": 1
+  }
+ ],
+ "istable": 1,
+ "modified": "2022-06-16 09:13:47.638585",
+ "modified_by": "Administrator",
+ "module": "ERPNextSwiss",
+ "name": "ERPNextSwiss Settings Payment Reminder Level Blocking Period",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

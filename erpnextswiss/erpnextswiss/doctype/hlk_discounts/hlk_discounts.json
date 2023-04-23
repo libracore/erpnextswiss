@@ -1,0 +1,64 @@
+{
+ "creation": "2020-05-27 12:40:26.814402",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "description",
+  "discount_type",
+  "percentage",
+  "discount",
+  "is_cumulative"
+ ],
+ "fields": [
+  {
+   "fieldname": "description",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Description",
+   "reqd": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "discount",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Discount"
+  },
+  {
+   "fieldname": "discount_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Discount Type",
+   "options": "Percentage\nAmount",
+   "reqd": 1
+  },
+  {
+   "default": "0",
+   "depends_on": "eval:doc.discount_type=='Percentage'",
+   "fieldname": "percentage",
+   "fieldtype": "Percent",
+   "in_list_view": 1,
+   "label": "Percentage"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_cumulative",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Is Cumulativ"
+  }
+ ],
+ "istable": 1,
+ "modified": "2020-09-23 12:26:50.540696",
+ "modified_by": "Administrator",
+ "module": "ERPNextSwiss",
+ "name": "HLK Discounts",
+ "restrict_to_domain": "HLK",
+ "owner": "joel.mesmer@libracore.com",
+ "permissions": [],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

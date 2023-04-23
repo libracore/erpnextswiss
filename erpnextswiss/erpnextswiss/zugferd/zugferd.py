@@ -1,64 +1,56 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018-2020, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2018-2023, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
 #
 #
-#
-#
-import frappe, os
+
+
+import frappe
 from frappe.utils.pdf import get_pdf
 from erpnextswiss.erpnextswiss.zugferd.zugferd_xml import create_zugferd_xml
-#from facturx import generate_facturx_from_binary, get_facturx_xml_from_pdf, check_facturx_xsd, generate_facturx_from_file
-from erpnextswiss.erpnextswiss.zugferd.facturx.facturx import generate_facturx_from_binary, get_facturx_xml_from_pdf, check_facturx_xsd
+from facturx import generate_facturx_from_binary, get_facturx_xml_from_pdf, check_facturx_xsd, generate_facturx_from_file
+from datetime import datetime, date
 from bs4 import BeautifulSoup
-from frappe.utils.file_manager import save_file
-from pathlib import Path
-import unicodedata
-from PyPDF2 import PdfFileWriter
-import xml.etree.ElementTree as ET
-import xml.etree.ElementTree
-from xml.etree import ElementTree
-from lxml import etree
-from io import BytesIO
-import datetime
-from datetime import date
 
 """
-Creates a ZUGFeRD file from a sales invoice
-
-:params:docname:         document name of the sale invoice
-:params:verify:          verify xml content (default True)
-:params:format:          print format to use (default None/default)
-:params:doc:             document record of the sale invoice
-:params:doctype:         target doctype (default Sales Invoice)
-:params:no_letterhead:   disable letterhead (default 0)
-:returns:                ZUGFeRD pdf
+Creates an XML file from a sales invoice
+:params:sales_invoice:   document name of the sale invoice
+:returns:                xml content (string)
 """
 def create_zugferd_pdf(docname, verify=True, format=None, doc=None, doctype="Sales Invoice", no_letterhead=0):
-    try:       
+    xml = None
+    try:
         html = frappe.get_print(doctype, docname, format, doc=doc, no_letterhead=no_letterhead)
-        pdf = get_pdf(html)
+        try:
+            pdf = get_pdf(html, print_format=format)
+        except:
+            # this is a fallback to Frappe ERPNext that does not support dynamic print format options (such as smart shrinking)
+            pdf = get_pdf(html)
+            
         xml = create_zugferd_xml(docname)
-        facturx_pdf = generate_facturx_from_binary(pdf, xml.encode('utf-8'))  ## Unicode strings with encoding declaration are not supported. Please use bytes input or XML fragments without declaration.
-        return facturx_pdf
+        
+        if xml: 
+            facturx_pdf = generate_facturx_from_binary(pdf, xml.encode('utf-8'))  ## Unicode strings with encoding declaration are not supported. Please use bytes input or XML fragments without declaration.
+            return facturx_pdf
+        else:
+            # failed to generate xml, fallback
+            return get_pdf(html)
     except Exception as err:
-        frappe.log_error("Unable to create zugferdPDF: {0}\n{1}".format(err, xml), "ZUGFeRD")
+        frappe.log_error("Unable to create zugferdPDF for {2}: {0}\n{1}".format(err, xml, docname), "ZUGFeRD")
         # fallback to normal pdf
-        pdf = get_pdf(html)
-        return pdf
+        return get_pdf(html)
 
-@frappe.whitelist()    
-def hello():
-    frappe.msgprint("hallo ben")
-    return 
+@frappe.whitelist()
+def download_zugferd_pdf(sales_invoice_name, format=None, doc=None, no_letterhead=0, verify=True):
+    frappe.local.response.filename = "{name}.pdf".format(name=sales_invoice_name.replace(" ", "-").replace("/", "-"))
+    frappe.local.response.filecontent = create_zugferd_pdf(sales_invoice_name, verify=verify, format=format, doc=doc, no_letterhead=no_letterhead)
+    frappe.local.response.type = "download"
+    return
 
 @frappe.whitelist()    
 def get_xml(path):
     xml_filename, xml_content = get_facturx_xml_from_pdf(path)
     return xml_content
-
-
-
 
 """
 Extracts the relevant content for a purchase invoice from a ZUGFeRD XML
@@ -79,7 +71,6 @@ def get_content_from_zugferd(zugferd_xml, debug=False):
     invoice['supplier_al'] = seller.find('ram:lineone').string or ""
     invoice['supplier_city'] = seller.find('ram:cityname').string or ""
     
-    
     supplier_match_by_tax_id = frappe.get_all("Supplier", 
                                 filters={'tax_id': invoice['supplier_taxid']},
                                 fields=['name'])
@@ -99,10 +90,6 @@ def get_content_from_zugferd(zugferd_xml, debug=False):
             # need to insert new supplier
             invoice['supplier'] = None
             invoice['supplier_identifikation'] = "0"
-    
-    
-
-
     
     # find due date
     today = date.today()
@@ -175,8 +162,6 @@ def get_content_from_zugferd(zugferd_xml, debug=False):
             invoice['item_identifikation'] = "0" 
             #add item
                 
-                
-                
         
         items.append(_item)
     invoice['items'] = items
@@ -187,7 +172,4 @@ def get_content_from_zugferd(zugferd_xml, debug=False):
     invoice['total_taxes'] = total_amounts.find('ram:taxtotalamount').string
     invoice['grand_total'] = total_amounts.find('ram:grandtotalamount').string
     
-    return invoice
-
-    
-
+    return 

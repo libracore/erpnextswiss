@@ -1,0 +1,89 @@
+{
+ "creation": "2021-01-26 07:04:38.277841",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "software_specification",
+  "software_specification_title",
+  "software_specification_description",
+  "section_trace",
+  "software_requirement",
+  "column_requirement",
+  "software_requirement_title",
+  "section_estimation",
+  "expected_effort"
+ ],
+ "fields": [
+  {
+   "fieldname": "software_specification",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Software Specification",
+   "options": "Software Specification",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "software_specification.title",
+   "fieldname": "software_specification_title",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Specification Title",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "software_specification.description",
+   "fieldname": "software_specification_description",
+   "fieldtype": "Text Editor",
+   "label": "Specification"
+  },
+  {
+   "fieldname": "section_trace",
+   "fieldtype": "Section Break",
+   "label": "Trace"
+  },
+  {
+   "fetch_from": "software_specification.software_requirement",
+   "fieldname": "software_requirement",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Software Requirement",
+   "options": "Software Requirement",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_requirement",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "software_requirement.title",
+   "fieldname": "software_requirement_title",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Software Requirement Title",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_estimation",
+   "fieldtype": "Section Break",
+   "label": "Estimation"
+  },
+  {
+   "fetch_from": "software_specification.expected_effort",
+   "fieldname": "expected_effort",
+   "fieldtype": "Float",
+   "label": "Expected effort"
+  }
+ ],
+ "istable": 1,
+ "modified": "2021-01-26 07:04:38.277841",
+ "modified_by": "Administrator",
+ "module": "ERPNextSwiss",
+ "name": "Specification Document Specification",
+ "owner": "Administrator",
+ "permissions": [],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

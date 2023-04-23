@@ -34,6 +34,13 @@
       {%- else %}
       <BtchBookg>{{ payment.batch }}</BtchBookg>
       {%- endif %}
+      {%- if xml_region == "CH" and payment.is_salary and not payment.service_level == "SEPA" %}{# CH only: salary information #}
+      <PmtTpInf>
+        <CtgyPurp>
+          <Cd>SALA</Cd>
+        </CtgyPurp>
+      </PmtTpInf>
+      {%- endif %}
       <ReqdExctnDt>{{ payment.required_execution_date }}</ReqdExctnDt>
       <Dbtr>
         <Nm>{{ company.name }}</Nm>
@@ -49,6 +56,9 @@
         <Id>
           <IBAN>{{ company.iban }}</IBAN>
         </Id>
+        {%- if xml_region == "CH" and payment.is_salary %}{# CH only: salary information: confidential #}
+        <Tp><Prtry>NOA</Prtry></Tp>
+        {%- endif %}
       </DbtrAcct>
       <DbtrAgt>
           <FinInstnId>
@@ -74,6 +84,11 @@
         <Amt>
           <InstdAmt Ccy="{{ payment.currency }}">{{ "{:.2f}".format(payment.amount) }}</InstdAmt>
         </Amt>
+        {%- if payment.service_level == "IBAN" and xml_region == "CH" and payment.iban[0:2] != "CH" and payment.currency != "EUR" %}{# type 6 payment for USD #}
+        <CdtrAgt>
+            <FinInstnId><BIC>{{ payment.bic }}</BIC></FinInstnId>
+        </CdtrAgt>
+        {%- endif %}
         <Cdtr>
           <Nm>{{ payment.creditor.name }}</Nm>
           <PstlAdr>
@@ -98,6 +113,12 @@
         <Id><Othr><Id>{{ payment.esr_participation_number }}</Id></Othr></Id>
         </CdtrAcct>
         <RmtInf><Strd><CdtrRefInf><Ref>{{ payment.esr_reference }}</Ref></CdtrRefInf></Strd></RmtInf>
+        {%- elif payment.service_level == "QRR" %}
+        {#- QRR payment block #}
+        <CdtrAcct>
+        <Id><IBAN>{{ payment.esr_participation_number }}</IBAN></Id>
+        </CdtrAcct>
+        <RmtInf><Strd><CdtrRefInf><Tp><CdOrPrtry><Prtry>QRR</Prtry></CdOrPrtry></Tp><Ref>{{ payment.esr_reference }}</Ref></CdtrRefInf></Strd></RmtInf>
         {%- else %}
         {#- IBAN payment block #}
         <CdtrAcct>

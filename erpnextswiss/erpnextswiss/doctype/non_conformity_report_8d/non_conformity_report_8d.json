@@ -8,131 +8,92 @@
   "section_general",
   "title",
   "customer",
+  "customer_name",
   "column_break_1",
   "status",
   "section_d1",
-  "html_d1",
   "d1_team",
   "d1_complete",
   "section_d2",
-  "html_d2",
   "problem_description",
   "item_code",
   "item_name",
   "d2_complete",
   "section_d3",
-  "html_d3",
   "interim_containment_plan",
   "d3_complete",
   "section_d4",
-  "html_d4",
   "root_cause_analysis",
   "d4_complete",
   "section_d5",
-  "html_d5",
   "remedial_actions",
   "d5_complete",
   "section_d6",
-  "html_d6",
   "d6_remarks",
   "d6_complete",
   "section_d7",
-  "html_d7",
   "d7_remarks",
   "d7_complete",
   "section_d8",
-  "html_d8",
   "d8_remarks",
   "d8_complete"
  ],
  "fields": [
   {
    "collapsible": 1,
+   "description": "Establish a team of people with product/process knowledge.",
    "fieldname": "section_d1",
    "fieldtype": "Section Break",
    "label": "D1 Use a Team"
   },
   {
-   "fieldname": "html_d1",
-   "fieldtype": "HTML",
-   "options": "<p>Establish a team of people with product/process knowledge.</p>"
-  },
-  {
    "collapsible": 1,
+   "description": "Specify the problem by identifying in quantifiable terms the who, what, where, when, why, how, and how many (5W2H) for the problem.",
    "fieldname": "section_d2",
    "fieldtype": "Section Break",
    "label": "D2 Describe the Problem"
   },
   {
-   "fieldname": "html_d2",
-   "fieldtype": "HTML",
-   "options": "<p>Specify the problem by identifying in quantifiable terms the who, what, where, when, why, how, and how many (5W2H) for the problem.</p>"
-  },
-  {
    "collapsible": 1,
+   "description": "Define and implement containment actions to isolate the problem from any customer.",
    "fieldname": "section_d3",
    "fieldtype": "Section Break",
    "label": "D3 Develop Interim Containment Plan"
   },
   {
-   "fieldname": "html_d3",
-   "fieldtype": "HTML",
-   "options": "<p>Define and implement containment actions to isolate the problem from any customer.</p>"
-  },
-  {
    "collapsible": 1,
+   "description": "Identify all applicable causes that could explain why the problem has occurred. Also identify why the problem was not noticed at the time it occurred. All causes shall be verified or proved. One can use five whys or Ishikawa diagrams to map causes against the effect or problem identified.",
    "fieldname": "section_d4",
    "fieldtype": "Section Break",
    "label": "D4 Determine and Verify Root Causes and Escape Points"
   },
   {
-   "fieldname": "html_d4",
-   "fieldtype": "HTML",
-   "options": "<p>Identify all applicable causes that could explain why the problem has occurred. Also identify why the problem was not noticed at the time it occurred. All causes shall be verified or proved. One can use five whys or Ishikawa diagrams to map causes against the effect or problem identified.</p>"
-  },
-  {
    "collapsible": 1,
+   "description": "Using pre-production programs, quantitatively confirm that the selected correction will resolve the problem. (Verify that the correction will actually solve the problem.)",
    "fieldname": "section_d5",
    "fieldtype": "Section Break",
    "label": "D5 Verify Permanent Corrections (PCs) for Problem will resolve problem for the customer"
   },
   {
-   "fieldname": "html_d5",
-   "fieldtype": "HTML",
-   "options": "<p>Using pre-production programs, quantitatively confirm that the selected correction will resolve the problem. (Verify that the correction will actually solve the problem.)</p>"
-  },
-  {
    "collapsible": 1,
+   "description": "Define and Implement the best corrective actions.",
    "fieldname": "section_d6",
    "fieldtype": "Section Break",
    "label": "D6 Define and Implement Corrective Actions"
   },
   {
-   "fieldname": "html_d6",
-   "fieldtype": "HTML",
-   "options": "<p>Define and Implement the best corrective actions.</p>"
-  },
-  {
    "collapsible": 1,
+   "description": "Modify the management systems, operation systems, practices, and procedures to prevent recurrence of this and similar problems.",
    "fieldname": "section_d7",
    "fieldtype": "Section Break",
    "label": "D7 Prevent Recurrence / System Problems"
   },
   {
-   "fieldname": "html_d7",
-   "fieldtype": "HTML",
-   "options": "<p>Modify the management systems, operation systems, practices, and procedures to prevent recurrence of this and similar problems.</p>"
-  },
-  {
    "collapsible": 1,
+   "description": "Recognize the collective efforts of the team. The team needs to be formally thanked by the organization.",
    "fieldname": "section_d8",
    "fieldtype": "Section Break",
    "label": "D8 Congratulate the Main Contributors to your Team"
-  },
-  {
-   "fieldname": "html_d8",
-   "fieldtype": "HTML",
-   "options": "<p>Recognize the collective efforts of the team. The team needs to be formally thanked by the organization.</p>"
   },
   {
    "fieldname": "d1_team",
@@ -267,9 +228,16 @@
    "fieldtype": "Link",
    "label": "Item",
    "options": "Item"
+  },
+  {
+   "fetch_from": "customer.customer_name",
+   "fieldname": "customer_name",
+   "fieldtype": "Data",
+   "label": "Customer name",
+   "read_only": 1
   }
  ],
- "modified": "2020-02-12 21:03:09.337922",
+ "modified": "2020-12-03 17:35:26.721231",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "Non Conformity Report 8D",

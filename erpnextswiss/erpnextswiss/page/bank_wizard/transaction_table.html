@@ -23,13 +23,24 @@
           {% if transaction.credit_debit == "DBIT" %}
             <!-- Supplier -->
             {% if transaction.amount == transaction.matched_amount %}
-             <button type="submit" class="btn btn-xs btn-primary" id="btn-quick-pinv-{{ transaction.txid }}">&rArr;</button>
+             {% if transaction.invoice_matches %}
+               <button type="submit" class="btn btn-xs btn-primary" id="btn-quick-pinv-{{ transaction.txid }}">&rArr;</button>
+             {% endif %}
+             {% if transaction.expense_matches %}
+               <button type="submit" class="btn btn-xs btn-primary" id="btn-quick-exp-{{ transaction.txid }}">&rArr;</button>
+             {% endif %}
             {% endif %}
             {% if transaction.invoice_matches %}
              <button type="submit" class="btn btn-xs btn-success" id="btn-close-pinv-{{ transaction.txid }}">{{ __("Purchase Invoice") }}</button>
             {% endif %}
             {% if transaction.party_match %}
              <button type="submit" class="btn btn-xs btn-warning" id="btn-close-supplier-{{ transaction.txid }}">{{ __("Supplier") }}</button>
+            {% endif %}
+            {% if transaction.expense_matches %}
+             <button type="submit" class="btn btn-xs btn-success" id="btn-close-exp-{{ transaction.txid }}">{{ __("Expense Claim") }}</button>
+            {% endif %}
+            {% if transaction.employee_match %}
+             <button type="submit" class="btn btn-xs btn-warning" id="btn-close-employee-{{ transaction.txid }}">{{ __("Employee") }}</button>
             {% endif %}
             <button type="submit" class="btn btn-xs btn-default" id="btn-close-payable-{{ transaction.txid }}">{{ __("Payables") }}</button>
           {% else %}

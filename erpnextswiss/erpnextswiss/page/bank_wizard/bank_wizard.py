@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2017-2022, libracore and contributors
+# Copyright (c) 2017-2023, libracore and contributors
 # License: AGPL v3. See LICENCE
 
 from __future__ import unicode_literals
@@ -9,7 +9,6 @@ import hashlib
 import json
 from bs4 import BeautifulSoup
 import ast
-import cgi                              # (used to escape utf-8 to html)
 import six
 from frappe.utils import cint
 from frappe.utils.data import get_url_to_form
@@ -19,11 +18,12 @@ from frappe.utils.data import get_url_to_form
 # returns the sales invoice reference (name string) or None
 def match_by_amount(amount):
     # get sales invoices
-    sql_query = ("SELECT `name` " +
-                "FROM `tabSales Invoice` " +
-                "WHERE `docstatus` = 1 " + 
-                "AND `grand_total` = {0} ".format(amount) + 
-                "AND `status` != 'Paid'")
+    sql_query = ("""
+        SELECT `name` 
+        FROM `tabSales Invoice` 
+        WHERE `docstatus` = 1 
+        AND `grand_total` = {0} 
+        AND `status` != 'Paid'; """.format(amount) )
     open_sales_invoices = frappe.db.sql(sql_query, as_dict=True)
     if open_sales_invoices:
         if len(open_sales_invoices) == 1:
@@ -41,10 +41,11 @@ def match_by_amount(amount):
 # returns the sales invoice reference (name sting) or None
 def match_by_comment(comment):
     # get sales invoices (submitted, not paid)
-    sql_query = ("SELECT `name` " +
-                "FROM `tabSales Invoice` " +
-                "WHERE `docstatus` = 1 " + 
-                "AND `status` != 'Paid'")
+    sql_query = """
+        SELECT `name` 
+        FROM `tabSales Invoice` 
+        WHERE `docstatus` = 1  
+        AND `status` != 'Paid';"""
     open_sales_invoices = frappe.db.sql(sql_query, as_dict=True)
     if open_sales_invoices:
         # find sales invoice referernce in the comment
@@ -59,11 +60,12 @@ def match_by_comment(comment):
 # returns a dict (name) of sales invoice references or None
 def get_unpaid_sales_invoices_by_customer(customer):
     # get sales invoices (submitted, not paid)
-    sql_query = ("SELECT `name` " +
-                "FROM `tabSales Invoice` " +
-                "WHERE `docstatus` = 1 " + 
-                "AND `customer` = '{0}' ".format(customer) +
-                "AND `status` != 'Paid'")
+    sql_query = """
+        SELECT `name` " +
+        FROM `tabSales Invoice` 
+        WHERE `docstatus` = 1 
+        AND `customer` = '{0}' 
+        AND `status` != 'Paid'; """.format(customer)
     open_sales_invoices = frappe.db.sql(sql_query, as_dict=True)
     return open_sales_invoices   
 
@@ -73,19 +75,21 @@ def create_payment_entry(date, to_account, received_amount, transaction_id, rema
     default_customer = get_default_customer()
     if not frappe.db.exists('Payment Entry', {'reference_no': transaction_id}):
         # create new payment entry
-        new_payment_entry = frappe.get_doc({'doctype': 'Payment Entry'})
-        new_payment_entry.payment_type = "Receive"
-        new_payment_entry.party_type = "Customer";
-        new_payment_entry.party = default_customer
-        # date is in DD.MM.YYYY
-        new_payment_entry.posting_date = date
-        new_payment_entry.paid_to = to_account
-        new_payment_entry.received_amount = received_amount
-        new_payment_entry.paid_amount = received_amount
-        new_payment_entry.reference_no = transaction_id
-        new_payment_entry.reference_date = date
-        new_payment_entry.remarks = remarks
-        new_payment_entry.bank_account_no = party_iban
+        new_payment_entry = frappe.get_doc({
+            'doctype': 'Payment Entry',
+            'payment_type': "Receive",
+            'party_type': "Customer",
+            'party': default_customer,
+            # date is in DD.MM.YYYY
+            'posting_date': date,
+            'paid_to': to_account,
+            'received_amount': received_amount,
+            'paid_amount': received_amount,
+            'reference_no': transaction_id,
+            'reference_date': date,
+            'remarks': remarks,
+            'bank_account_no': party_iban
+        })
         inserted_payment_entry = new_payment_entry.insert()
         if auto_submit:
             new_payment_entry.submit()
@@ -97,14 +101,16 @@ def create_payment_entry(date, to_account, received_amount, transaction_id, rema
 # creates the reference record in a payment entry
 def create_reference(payment_entry, sales_invoice):
     # create a new payment entry reference
-    reference_entry = frappe.get_doc({"doctype": "Payment Entry Reference"})
-    reference_entry.parent = payment_entry
-    reference_entry.parentfield = "references"
-    reference_entry.parenttype = "Payment Entry"
-    reference_entry.reference_doctype = "Sales Invoice"
-    reference_entry.reference_name = sales_invoice
-    reference_entry.total_amount = frappe.get_value("Sales Invoice", sales_invoice, "base_grand_total")
-    reference_entry.outstanding_amount = frappe.get_value("Sales Invoice", sales_invoice, "outstanding_amount")
+    reference_entry = frappe.get_doc({
+        'doctype': "Payment Entry Reference",
+        'parent': payment_entry,
+        'parentfield': "references",
+        'parenttype': "Payment Entry",
+        'reference_doctype': "Sales Invoice",
+        'reference_name': sales_invoice,
+        'total_amount': frappe.get_value("Sales Invoice", sales_invoice, "base_grand_total"),
+        'outstanding_amount': frappe.get_value("Sales Invoice", sales_invoice, "outstanding_amount")
+    })
     paid_amount = frappe.get_value("Payment Entry", payment_entry, "paid_amount")
     if paid_amount > reference_entry.outstanding_amount:
         reference_entry.allocated_amount = reference_entry.outstanding_amount
@@ -292,7 +298,8 @@ def read_camt_transactions(transaction_entries, account, settings, debug=False):
                                 amount = transaction_soup.txdtls.amt.get_text()
                                 party = transaction_soup.nm.get_text()
                                 code = "{0}:{1}:{2}".format(date, amount, party)
-                                frappe.log_error("Code: {0}".format(code))
+                                if settings.debug_mode:
+                                    frappe.log_error("Code: {0}".format(code))
                                 unique_reference = hashlib.md5(code.encode("utf-8")).hexdigest()
                 # --- find amount and currency
                 try:
@@ -418,19 +425,20 @@ def read_camt_transactions(transaction_entries, account, settings, debug=False):
                                 else:
                                     transaction_reference = unique_reference
                 # debug: show collected record in error log
-                #frappe.log_error("""type:{type}\ndate:{date}\namount:{currency} {amount}\nunique ref:{unique}
-                #    party:{party}\nparty address:{address}\nparty iban:{iban}\nremarks:{remarks}
-                #    payment_instruction_id:{payment_instruction_id}""".format(
-                #    type=credit_debit, date=date, currency=currency, amount=amount, unique=unique_reference, 
-                #    party=party_name, address=party_address, iban=party_iban, remarks=transaction_reference,
-                #    payment_instruction_id=payment_instruction_id))
+                if settings.debug_mode:
+                    frappe.log_error("""type:{type}\ndate:{date}\namount:{currency} {amount}\nunique ref:{unique}
+                        party:{party}\nparty address:{address}\nparty iban:{iban}\nremarks:{remarks}
+                        payment_instruction_id:{payment_instruction_id}""".format(
+                        type=credit_debit, date=date, currency=currency, amount=amount, unique=unique_reference, 
+                        party=party_name, address=party_address, iban=party_iban, remarks=transaction_reference,
+                        payment_instruction_id=payment_instruction_id))
                 
                 # check if this transaction is already recorded
                 match_payment_entry = frappe.get_all('Payment Entry', 
                     filters={'reference_no': unique_reference, 'company': company}, 
                     fields=['name'])
                 if match_payment_entry:
-                    if debug:
+                    if debug or settings.debug_mode:
                         frappe.log_error("Transaction {0} is already imported in {1}.".format(unique_reference, match_payment_entry[0]['name']))
                 else:
                     # try to find matching parties & invoices
@@ -610,7 +618,7 @@ def read_camt_transactions(transaction_entries, account, settings, debug=False):
             # check if this transaction is already recorded
             match_payment_entry = frappe.get_all('Payment Entry', filters={'reference_no': unique_reference}, fields=['name'])
             if match_payment_entry:
-                if debug:
+                if debug or settings.debug_mode:
                     frappe.log_error("Transaction {0} is already imported in {1}.".format(unique_reference, match_payment_entry[0]['name']))
             else:
                 # --- find transaction type: paid or received: (DBIT: paid, CRDT: received)
@@ -788,7 +796,17 @@ def make_payment_entry(amount, date, reference_no, paid_from=None, paid_to=None,
             create_reference(new_entry.name, reference, reference_type)
     # automatically submit if enabled
     if auto_submit:
-        matched_entry = frappe.get_doc("Payment Entry", new_entry.name)
+        matched_entry = frappe.get_doc("Payment Entry", new_entry.name) # include changes from reference
+        if matched_entry.difference_amount != 0:
+            # for auto-submit, we need to clear this out to the exchange account
+            exchange_account = frappe.get_cached_value("Company", matched_entry.company, "exchange_gain_loss_account")
+            cost_center = frappe.get_cached_value("Company", matched_entry.company, "round_off_cost_center")
+            matched_entry.append("deductions", {
+                'account': exchange_account,
+                'cost_center': cost_center,
+                'amount': matched_entry.difference_amount
+            })
+            matched_entry.save()
         matched_entry.submit()
         frappe.db.commit()
     return get_url_to_form("Payment Entry", new_entry.name)

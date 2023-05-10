@@ -82,6 +82,17 @@ def get_data(filters):
             work_start = None
             work_end = None
         
+        # for holidays, try to fetch remarks from holiday list
+        if not remarks:
+            holidays = frappe.db.sql("""
+                SELECT `description` 
+                FROM `tabHoliday` 
+                WHERE `parenttype` = "Holiday List"
+                  AND `parentfield` = "holidays"
+                  AND `holiday_date` = "{day}";""".format(day=day), as_dict=True)
+            if len(holidays) > 0:
+                remarks = holidays[0]['description']
+                
         total_working_hours += working_hours    
         data.append({
             'day': day,

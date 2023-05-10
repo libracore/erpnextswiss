@@ -11,6 +11,7 @@
   "cmp_abbr",
   "column_break_1",
   "vat_type",
+  "letter_head",
   "section_break_period",
   "start_date",
   "column_break_2",
@@ -437,10 +438,19 @@
    "fieldtype": "Data",
    "hidden": 1,
    "label": "Company abbreviation"
+  },
+  {
+   "fetch_from": "company.default_letter_head",
+   "fetch_if_empty": 1,
+   "fieldname": "letter_head",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "Letter Head",
+   "options": "Letter Head"
   }
  ],
  "is_submittable": 1,
- "modified": "2022-05-14 07:09:58.804507",
+ "modified": "2023-03-16 16:47:34.175434",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "VAT Declaration",

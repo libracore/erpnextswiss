@@ -193,6 +193,7 @@ DocType: ERPNextSwiss Settings,Default Item,Standardartikel
 DocType: ERPNextSwiss Settings,Enable salary payment,Lohnzahlungen ausführen
 DocType: ERPNextSwiss Settings,Numeric-only debtor reference matching,Rein-numerische Debitorenreferenzen verwenden
 DocType: ERPNextSwiss Settings,Uses only the numeric part of a sales invoice number for matching,Verwendet nur den numerischen Teil der Rechnugnsreferenz zum Abgleich
+DocType: ERPNextSwiss Settings,Debug Mode,Debug-Modus
 DocType: Contract,Contract,Vertrag
 DocType: Contract,Contracts,Verträge
 DocType: ERPNextSwiss Settings,Automated Payments,Automatische Zahlungsabwicklung

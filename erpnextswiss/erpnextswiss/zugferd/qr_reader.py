@@ -4,72 +4,55 @@
 #
 #
 
-#import fitz # import error frontend
+import fitz             # part of pymupdf (note: for Py3.5, use pymupdf==1.16.18)
+import os
+from PIL import Image
+import cv2              # part of opencv-python
 import numpy as np
-import cv2
 import frappe
 
 @frappe.whitelist()
-def find_qr_content(filename):
-    qr_content = ""
-    with fitz.Document(filename) as doc:
-        for xref in {xref[0] for page in doc for xref in page.get_images(False) if xref[1] == 0}:
-            # dictionary with image
-            image_dict = doc.extract_image(xref)
-            # image as OpenCV's Mat
-            img = cv2.imdecode(np.frombuffer(image_dict["image"],
-                                           np.dtype('u{0}'.format(image_dict["bpc"] // 8))
-                                           ),
-                             cv2.IMREAD_GRAYSCALE)
-            #cv2.imshow("OpenCV", i)
-            #cv2.waitKey(0)
-            detect = cv2.QRCodeDetector()
-            value, points, straight_qr_code = detect.detectAndDecode(img)
-            qr_content += value
-    return qr_content
+def find_qr_content_from_pdf(filename):
+    codes = []
+    
+    # open PDF file
+    pdf_file = fitz.open(filename)
 
-#import cv2
-import os
-from wand.image import Image as wi
+    # get the number of pages in PDF file
+    page_nums = len(pdf_file)
 
-def find_qr_content2(filename):
-    PDFfile = wi(filename=filename,resolution=400)
-    Images = PDFfile.convert('png')
-    ImageSequence = 1
+    # create empty list to store images information
+    images_list = []
 
-    for img in PDFfile.sequence:
-        Image = wi(image = img)
-        Image.save(filename="/tmp/Image"+str(ImageSequence)+".png")
-        ImageSequence += 1
+    # extract all images from each page
+    for page_num in range(page_nums):
+        page_content = pdf_file[page_num]
+        images_list.extend(page_content.get_images())
 
-    # read the QRCODE image
-    image = cv2.imread("/tmp/Image1.png")
-    # initialize the cv2 QRCode detector
-    qrCodeDetector = cv2.QRCodeDetector()
-    # detect and decode
-    decodedText, points, straight_qrcode = qrCodeDetector.detectAndDecode(image)
-    #points is the output array of vertices of the found QR code quadrangle
-    #straight qrcode
-    # if there is a QR code
-    if points is not None:
-        # QR Code detected handling code
+    # raise error if PDF has no images
+    if len(images_list)==0:
+        raise ValueError('No images found in {0}'.format(filename))
 
-        print('Decoded data: ' + decodedText)
-        nrOfPoints = len(points)
-        print('Number of points:  ' + str(nrOfPoints))
-        points = points[0]
-        for i in range(len(points)):
-            pt1 = [int(val) for val in points[i]]
-            pt2 = [int(val) for val in points[(i + 1) % 4]]
-            cv2.line(image, pt1, pt2, color=(255, 0, 0), thickness=3)
-      
-        print('Successfully saved')
-        cv2.imshow('Detected QR code', image)
-        cv2.imwrite('Generated/extractedQrcode.png', image)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
-    else:
-        print("QR code not detected")
-        # display the image with lines# length of bounding box
+    # save all the extracted images
+    for i, img in enumerate(images_list, start=1):
+        # extract the image object number
+        xref = img[0]
+        # extract image
+        base_image = pdf_file.extract_image(xref)
+        # cv2 reader
+        qcd = cv2.QRCodeDetector()
+        # get bytes array of image
+        image_bytes = np.asarray(bytearray(base_image['image']), dtype="uint8")
+        img = cv2.imdecode(image_bytes, cv2.IMREAD_COLOR)
+        # add border to be able to detect it
+        color = [255, 255, 255]
+        top, bottom, left, right = [150]*4
+        img_with_border = cv2.copyMakeBorder(img, top, bottom, left, right, cv2.BORDER_CONSTANT, value=color)
 
+        retval, decoded_info, points, straight_qrcode = qcd.detectAndDecodeMulti(img_with_border)
 
+        if retval and len(decoded_info) > 0:
+            code = decoded_info[0]
+            codes.append(code)
+            
+    return codes

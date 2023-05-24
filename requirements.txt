@@ -3,4 +3,4 @@ bs4
 factur-x
 unidecode
 opencv-python
-fitz
+pymupdf==1.16.18

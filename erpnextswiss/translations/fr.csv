@@ -339,3 +339,6 @@ DocType: Purchase Invoice,ESR / Invoice amount matched,Correspondance entre le m
 DocType: ERPNextSwiss Settings,Default Positive Deviation Item,Élément d'écart positif par défaut
 DocType: ERPNextSwiss Settings,Default Tax Rate,Taux de taxe par défaut
 apps/erpnextswiss/erpnextswiss/scripts/esr_qr_tools.py,{missing_values} not found. Please configure this in the <a href='/desk#Form/ERPNextSwiss Settings'>ERPNextSwiss settings</a>.,{missing_values} introuvable. Veuillez le configurer dans les <a href='/desk#Form/ERPNextSwiss Settings'> ERPNextSwiss settings </a>.
+DocType: Payment Reminder,Final reminder,Dernier rappel
+DocType: Payment Reminder,First reminder,Premier rappel
+DocType: Payment Reminder,Second reminder,Deuxième rappel

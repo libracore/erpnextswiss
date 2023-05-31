@@ -399,3 +399,6 @@ Report: Service Invoicing,Created,Erstellt
 Report: Service Invoicing,Service Item,Dienstleistungsartikel
 Report: Service Invoicing,Invoicing,Abrechnung
 DocType: Salary Certificate Settings,Salary Certificate Settings,Lohnausweis Einstellungen
+DocType: Payment Reminder,Final reminder,Letzte Mahnung
+DocType: Payment Reminder,First reminder,Erste Mahnung
+DocType: Payment Reminder,Second reminder,Zweite Mahnung

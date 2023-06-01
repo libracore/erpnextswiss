@@ -92,7 +92,8 @@ class PaymentProposal(Document):
                         self.add_payment(supl.supplier_name, supl.iban, payment_type,
                             addr.address_line1, "{0} {1}".format(addr.pincode, addr.city), addr.country,
                             this_amount, currency, purchase_invoice.external_reference, skonto_date or due_date, 
-                            purchase_invoice.esr_reference, purchase_invoice.esr_participation_number, bic=supl.bic)
+                            purchase_invoice.esr_reference, purchase_invoice.esr_participation_number, bic=supl.bic,
+                            receiver_id=supl.name)
                         total += this_amount
                     else:
                         amount += this_amount

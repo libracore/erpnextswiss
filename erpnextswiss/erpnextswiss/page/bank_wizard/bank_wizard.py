@@ -61,7 +61,7 @@ def match_by_comment(comment):
 def get_unpaid_sales_invoices_by_customer(customer):
     # get sales invoices (submitted, not paid)
     sql_query = """
-        SELECT `name` " +
+        SELECT `name`
         FROM `tabSales Invoice` 
         WHERE `docstatus` = 1 
         AND `customer` = '{0}' 
@@ -517,7 +517,7 @@ def read_camt_transactions(transaction_entries, account, settings, debug=False):
                             for pinv in possible_pinvs:
                                 if ((pinv['name'] in transaction_reference) \
                                     or ((pinv['bill_no'] or pinv['name']) in transaction_reference) \
-                                    or (pinv['esr_reference_number'] and pinv['esr_reference_number'] in transaction_reference)
+                                    or (pinv['esr_reference_number'] and (pinv['esr_reference_number'].replace(" ", "") in transaction_reference.replace(" ", ""))) \
                                     or (payment_instruction_id == transaction_reference)):              # this is an override for Postfinance combined transactions that will not relay transaction ids
                                     invoice_matches.append(pinv['name'])
                                     # override party match in case there is one from the sales invoice

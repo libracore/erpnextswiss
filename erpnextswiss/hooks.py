@@ -51,6 +51,7 @@ jenv = {
     "methods": [
         "get_tax_details:erpnextswiss.erpnextswiss.report.kontrolle_mwst.kontrolle_mwst.get_data",
         "get_account_sheets:erpnextswiss.erpnextswiss.finance.get_account_sheets",
+        "get_customer_ledger:erpnextswiss.erpnextswiss.finance.get_customer_ledger",
         "get_week_from_date:erpnextswiss.erpnextswiss.jinja.get_week_from_date",
         "strip_html:erpnextswiss.erpnextswiss.jinja.strip_html",
         "get_accounts_receivable:erpnextswiss.erpnextswiss.jinja.get_accounts_receivable",

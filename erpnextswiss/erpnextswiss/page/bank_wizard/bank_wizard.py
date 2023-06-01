@@ -61,7 +61,7 @@ def match_by_comment(comment):
 def get_unpaid_sales_invoices_by_customer(customer):
     # get sales invoices (submitted, not paid)
     sql_query = """
-        SELECT `name` " +
+        SELECT `name`
         FROM `tabSales Invoice` 
         WHERE `docstatus` = 1 
         AND `customer` = '{0}' 

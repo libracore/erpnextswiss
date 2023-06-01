@@ -7,6 +7,7 @@ import frappe
 from frappe.model.document import Document
 import os
 from erpnextswiss.erpnextswiss.zugferd.zugferd import get_xml, get_content_from_zugferd
+from erpnextswiss.erpnextswiss.zugferd.qr_reader import find_qr_content_from_pdf, get_content_from_qr
 from frappe import _
 import json
 from frappe.utils import cint, flt, get_link_to_form
@@ -14,12 +15,24 @@ from frappe.utils import cint, flt, get_link_to_form
 class ZUGFeRDWizard(Document):
     def read_file(self):
         file_path = os.path.join(frappe.utils.get_bench_path(), 'sites', frappe.utils.get_site_path()) + self.file
+        # try to fetch data from zugferd
         xml_content = get_xml(file_path)
-        invoice = get_content_from_zugferd(xml_content)
+        invoice = None
+        if xml_content:
+            invoice = get_content_from_zugferd(xml_content)
+        else:
+            # zugferd failed, fall back to qr-reader
+            qr_content = find_qr_content_from_pdf(file_path)
+            if qr_content:
+                invoice = get_content_from_qr(qr_content, self.default_tax_rate)
         # render html
-        content = frappe.render_template('erpnextswiss/erpnextswiss/doctype/zugferd_wizard/zugferd_content.html', invoice)
-        # return html and dict
-        return { 'html': content, 'dict': invoice }
+        if invoice:
+            content = frappe.render_template('erpnextswiss/erpnextswiss/doctype/zugferd_wizard/zugferd_content.html', invoice)
+            # return html and dict
+            return { 'html': content, 'dict': invoice }
+        else:
+            return { 'html': "", 'dict': None }
+        
     
     def create_invoice(self):
         if not self.content_dict:
@@ -37,7 +50,7 @@ class ZUGFeRDWizard(Document):
                 'supplier_name': invoice['supplier_name'],
                 'tax_id': invoice['supplier_taxid'],
                 'global_id': invoice['supplier_globalid'],
-                'supplier_group': "All Supplier Groups" #supplier_group
+                'supplier_group': frappe.get_value("Buying Settings", "Buying Settings", "supplier_group") or frappe.get_all("Supplier Group", fields=['name'])[0]['name']
             }
             # apply default values
             for d in settings.defaults:
@@ -78,7 +91,8 @@ class ZUGFeRDWizard(Document):
             'currency': invoice.get('currency'),
             'bill_no': invoice.get('doc_id'),
             'bill_date': invoice.get('posting_date'),
-            'terms': invoice.get('terms')
+            'terms': invoice.get('terms'),
+            'esr_reference': invoice.get('esr_reference')
         })
         
         # find taxes and charges

@@ -21,6 +21,9 @@ frappe.ui.form.on('ZUGFeRD Wizard', {
                 })
             });
         }
+        if (!frm.doc.default_tax_rate) {
+            cur_frm.set_value("default_tax_rate", 7.7);
+        }
     },
     // change trigger on the file
     file: function(frm) {

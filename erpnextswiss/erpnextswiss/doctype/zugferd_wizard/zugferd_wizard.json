@@ -7,6 +7,7 @@
   "file",
   "col_main",
   "company",
+  "default_tax_rate",
   "section_preview",
   "preview_html",
   "content_dict",
@@ -50,10 +51,15 @@
    "fieldtype": "Link",
    "label": "Company",
    "options": "Company"
+  },
+  {
+   "fieldname": "default_tax_rate",
+   "fieldtype": "Percent",
+   "label": "Default Tax Rate"
   }
  ],
  "issingle": 1,
- "modified": "2023-04-23 20:45:36.432454",
+ "modified": "2023-06-01 22:48:38.551275",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "ZUGFeRD Wizard",

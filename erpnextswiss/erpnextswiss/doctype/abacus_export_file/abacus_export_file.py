@@ -5,7 +5,7 @@
 from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
-import cgi          # used to escape xml content
+import html          # used to escape xml content
 import ast
 
 class AbacusExportFile(Document):
@@ -342,7 +342,7 @@ class AbacusExportFile(Document):
                 tax_code = None
             # create content
             if item.customer_name:
-                text2 = cgi.escape(item.customer_name)
+                text2 = html.escape(item.customer_name)
             else:
                 text2 = ""
             if not restrict_currencies or item.currency in restrict_currencies:
@@ -366,7 +366,7 @@ class AbacusExportFile(Document):
                     'tax_rate': item.rate or None, 
                     'tax_currency': base_currency,
                     'tax_code': tax_code or "312", 
-                    'text1': cgi.escape(item.name),
+                    'text1': html.escape(item.name),
                     'text2': text2
                 })
             else:
@@ -390,7 +390,7 @@ class AbacusExportFile(Document):
                     'tax_rate': item.rate or None, 
                     'tax_currency': base_currency,
                     'tax_code': tax_code or "312", 
-                    'text1': cgi.escape(item.name),
+                    'text1': html.escape(item.name),
                     'text2': text2
                 })                
         
@@ -418,7 +418,7 @@ class AbacusExportFile(Document):
         pinv_items = frappe.db.sql(sql_query, as_dict=True)
         # create item entries
         if item.supplier_name:
-            text2 = cgi.escape(item.supplier_name)
+            text2 = html.escape(item.supplier_name)
         else:
             text2 = ""
         for item in pinv_items:
@@ -449,7 +449,7 @@ class AbacusExportFile(Document):
                     'tax_rate': item.rate or None, 
                     'tax_code': tax_code or "312", 
                     'tax_currency': base_currency,
-                    'text1': cgi.escape(item.name),
+                    'text1': html.escape(item.name),
                     'text2': text2
                 })
             else:
@@ -473,7 +473,7 @@ class AbacusExportFile(Document):
                     'tax_rate': item.rate or None, 
                     'tax_code': tax_code or "312", 
                     'tax_currency': base_currency,
-                    'text1': cgi.escape(item.name),
+                    'text1': html.escape(item.name),
                     'text2': text2
                 })
             
@@ -507,7 +507,7 @@ class AbacusExportFile(Document):
                 'tax_amount': None, 
                 'tax_rate': None, 
                 'tax_code': None, 
-                'text1': cgi.escape(pe_record.name)
+                'text1': html.escape(pe_record.name)
             }
             # append deductions
             for deduction in pe_record.deductions:
@@ -549,7 +549,7 @@ class AbacusExportFile(Document):
                 'tax_amount': None, 
                 'tax_rate': None, 
                 'tax_code': None, 
-                'text1': cgi.escape(jv_record.name)
+                'text1': html.escape(jv_record.name)
             }
             if jv_record.multi_currency == 1:
                 transaction['exchange_rate'] = jv_record.accounts[0].exchange_rate

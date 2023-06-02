@@ -217,9 +217,14 @@ def read_camt053(content, account):
             
     # verify iban
     account_iban = frappe.get_value("Account", account, "iban")
+    if not account_iban and cint(settings.iban_check_mandatory):
+        frappe.throw( _("Bank account has no IBAN.").format(account_iban, iban), _("Bank Import IBAN validation") )
     if account_iban and account_iban.replace(" ", "") != iban.replace(" ", ""):
-        frappe.log_error( _("IBAN mismatch {0} (account) vs. {1} (file)").format(account_iban, iban), _("Bank Import IBAN validation") )
-        frappe.msgprint( _("IBAN mismatch {0} (account) vs. {1} (file)").format(account_iban, iban), _("Bank Import IBAN validation") )
+        if cint(settings.iban_check_mandatory):
+            frappe.throw( _("IBAN mismatch {0} (account) vs. {1} (file)").format(account_iban, iban), _("Bank Import IBAN validation") )
+        else:
+            frappe.log_error( _("IBAN mismatch {0} (account) vs. {1} (file)").format(account_iban, iban), _("Bank Import IBAN validation") )
+            frappe.msgprint( _("IBAN mismatch {0} (account) vs. {1} (file)").format(account_iban, iban), _("Bank Import IBAN validation") )
 
     # transactions
     entries = soup.find_all('ntry')

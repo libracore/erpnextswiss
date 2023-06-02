@@ -268,6 +268,8 @@ Page: Bank Wizard,Please set the <b>default customer</b> in <a href=\"/desk#Form
 Page: Bank Wizard,Please set the <b>intermediate bank account</b> in <a href=\"/desk#Form/ERPNextSwiss Settings\">ERPNextSwiss Settings</a>.,Bitte setzen Sie ein <b>Zwischenkonto</b> unter <a href=\"/desk#Form/ERPNextSwiss Settings\">ERPNextSwiss Settings</a>.
 Page: Bank Wizard,An error occurred while parsing. Please check the log files.,Es ist ein Fehler aufgetreten. Bitte prüfen Sie die Fehlerprotokolle.
 Page: Bank Wizard,Unsupported file format. Please use an xml or zip camt file,Dieses Format wird nicht unterstützt. Bitte verwenden Sie eine gültige XML- oder ZIP-Datei
+Page: Bank Wizard,Bank account has no IBAN.,Das Bankkonto hat keine IBAN hinterlegt.
+Page: Bank Wizard,IBAN check mandatory,IBAN-Prüfung zwingend erforderlich
 DocType: Daily Closing Statement,Daily Closing Statement,Tagesabschluss
 DocType: Daily Closing Statement,Statistics,Statistik
 DocType: Daily Closing Statement,Total Sales,Total Umsatz

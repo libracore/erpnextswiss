@@ -3,6 +3,15 @@
 
 frappe.ui.form.on('ZUGFeRD Wizard', {
     refresh: function(frm) {
+        // filter for crono based on customer link field
+        cur_frm.fields_dict['default_item'].get_query = function(doc) {
+             return {
+                 filters: {
+                     "is_purchase_item": 1,
+                     "disabled": 0
+                 }
+             }
+        }
         // set company if empty
         if (!frm.doc.company) {
             cur_frm.set_value("company", frappe.defaults.get_user_default("company") || frappe.defaults.get_global_default("company"));
@@ -21,8 +30,33 @@ frappe.ui.form.on('ZUGFeRD Wizard', {
                 })
             });
         }
-        if (!frm.doc.default_tax_rate) {
-            cur_frm.set_value("default_tax_rate", 7.7);
+        if (!frm.doc.default_tax) {
+            frappe.call({
+                'method': "frappe.client.get_list",
+                'args': {
+                    'doctype': "Purchase Taxes and Charges Template",
+                    'filters': {
+                        'is_default': 1
+                    },
+                    'fields': ["name"]
+                },
+                'callback': function(response) {
+                    var templates = response.message;
+                    if (templates.length > 0) {
+                       cur_frm.set_value("default_tax", templates[0]['name']);
+                    }
+                }
+            });
+        }
+        if (!frm.doc.default_item) {
+            frappe.call({
+                'method': 'get_default_item',
+                'doc': frm.doc,
+                'callback': function(response) {
+                   var default_item = response.message;
+                   cur_frm.set_value("default_item", default_item);
+                }
+            });
         }
     },
     // change trigger on the file

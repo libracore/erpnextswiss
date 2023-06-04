@@ -76,19 +76,19 @@ Extracts the relevant content for a purchase invoice from a QR code
 :params:qr_content:     list of qr codes (text)
 :return:                simplified dict with content
 """
-def get_content_from_qr(qr_codes, default_tax_rate):
+def get_content_from_qr(qr_codes, default_tax, default_item):
     # dict for invoice
     invoice = {}
   
     # check format
     for code in qr_codes:
         if code.startswith("SPC"):
-            invoice = read_swiss_qr(code, default_tax_rate)
+            invoice = read_swiss_qr(code, default_tax, default_item)
             return invoice
     
     return None
         
-def read_swiss_qr(code, default_tax_rate):
+def read_swiss_qr(code, default_tax, default_item):
     invoice = {}
     
     code = code.replace("\r", "")          # remove windows line endings
@@ -119,7 +119,7 @@ def read_swiss_qr(code, default_tax_rate):
         if len(supplier_match_by_iban) > 0:
             # matched by tax id
             invoice['supplier'] = supplier_match_by_iban[0]['name']
-            invoice['supplier_taxid'] = supplier_match_by_iban[0]['tax_id']
+            invoice['supplier_taxid'] = supplier_match_by_iban[0].get('tax_id')
         else:
             supplier_match_by_qriban = frappe.get_all("Supplier", 
                                 filters={'esr_participation_number': invoice['iban']},
@@ -127,7 +127,7 @@ def read_swiss_qr(code, default_tax_rate):
             if len(supplier_match_by_qriban) > 0:
                 # matched by tax id
                 invoice['supplier'] = supplier_match_by_qriban[0]['name']
-                invoice['supplier_taxid'] = supplier_match_by_qriban[0]['tax_id']
+                invoice['supplier_taxid'] = supplier_match_by_qriban[0].get('tax_id')
             else:
                 supplier_match_by_name = frappe.get_all("Supplier", 
                                             filters={'supplier_name': invoice['supplier_name']},
@@ -135,7 +135,7 @@ def read_swiss_qr(code, default_tax_rate):
                 if len(supplier_match_by_name) > 0:
                     # matched by supplier name
                     invoice['supplier'] = supplier_match_by_name[0]['name']  
-                    invoice['supplier_taxid'] = supplier_match_by_iban[0]['tax_id']
+                    invoice['supplier_taxid'] = supplier_match_by_name[0].get('tax_id')
                 else:
                     # need to insert new supplier
                     invoice['supplier'] = None
@@ -152,32 +152,36 @@ def read_swiss_qr(code, default_tax_rate):
          
         invoice['currency'] = lines[19]
         
-        tax_rate = default_tax_rate                                     # default is not applicable: settings.scanning_default_tax_rate or 7.7
-        invoice['tax_rate'] = tax_rate
-        # find tax template matching the rate
-        tax_template_match = frappe.get_all("Purchase Taxes and Charges",
-                                            filters={'rate': tax_rate},
-                                            fields=['parent'])
-        if len(tax_template_match) > 0:
-            invoice['tax_template'] = tax_template_match[0]['parent']
+        tax_template = frappe.get_doc("Purchase Taxes and Charges Template", default_tax)
+        if len(tax_template.taxes) > 0:
+            tax_rate = tax_template.taxes[0].rate
         else:
-            invoice['tax_template'] = None
+            tax_rate = 0    
+            # default is not applicable: settings.scanning_default_tax_rate or 7.7, use no tax
+        invoice['tax_rate'] = tax_rate
+        invoice['tax_template'] = default_tax
         
         grand_total = flt(lines[18])
-        net_total = round(grand_total / ((100 + invoice['tax_rate'])/100), 2)
+        net_total = round(grand_total / ((100 + tax_rate)/100), 2)
         
         invoice['line_total'] = net_total
         invoice['total_taxes'] = grand_total - net_total
         invoice['grand_total'] = grand_total
         
+        # try to fetch a default item from the supplier
+        if frappe.db.exists("Supplier", invoice['supplier']):
+            supplier_item = frappe.get_value("Supplier", invoice['supplier'], 'default_item')
+            if supplier_item:
+                default_item = supplier_item
+                
         # collect items: not provided by QR
         invoice['items'] = [
             {
                 'net_price': net_total,
                 'qty': 1,
                 'seller_item_code': None,
-                'item_name': frappe.get_cached_value("Item", settings.scanning_default_item, "item_name"),
-                'item_code': settings.scanning_default_item
+                'item_name': frappe.get_cached_value("Item", default_item, "item_name"),
+                'item_code': default_item
             }
         ]
         

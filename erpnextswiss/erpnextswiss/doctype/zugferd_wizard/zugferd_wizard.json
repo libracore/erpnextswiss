@@ -4,10 +4,11 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
-  "file",
-  "col_main",
   "company",
-  "default_tax_rate",
+  "default_tax",
+  "default_item",
+  "col_main",
+  "file",
   "section_preview",
   "preview_html",
   "content_dict",
@@ -53,13 +54,20 @@
    "options": "Company"
   },
   {
-   "fieldname": "default_tax_rate",
-   "fieldtype": "Percent",
-   "label": "Default Tax Rate"
+   "fieldname": "default_tax",
+   "fieldtype": "Link",
+   "label": "Default Tax",
+   "options": "Purchase Taxes and Charges Template"
+  },
+  {
+   "fieldname": "default_item",
+   "fieldtype": "Link",
+   "label": "Default Item",
+   "options": "Item"
   }
  ],
  "issingle": 1,
- "modified": "2023-06-01 22:48:38.551275",
+ "modified": "2023-06-04 21:04:00.082743",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "ZUGFeRD Wizard",

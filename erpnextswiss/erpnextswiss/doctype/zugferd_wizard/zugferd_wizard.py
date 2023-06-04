@@ -24,7 +24,7 @@ class ZUGFeRDWizard(Document):
             # zugferd failed, fall back to qr-reader
             qr_content = find_qr_content_from_pdf(file_path)
             if qr_content:
-                invoice = get_content_from_qr(qr_content, self.default_tax_rate)
+                invoice = get_content_from_qr(qr_content, self.default_tax, self.default_item)
         # render html
         if invoice:
             content = frappe.render_template('erpnextswiss/erpnextswiss/doctype/zugferd_wizard/zugferd_content.html', invoice)
@@ -33,7 +33,9 @@ class ZUGFeRDWizard(Document):
         else:
             return { 'html': "", 'dict': None }
         
-    
+    def get_default_item(self):
+        return frappe.get_cached_value("ERPNextSwiss Settings", "ERPNextSwiss Settings", "scanning_default_item")
+        
     def create_invoice(self):
         if not self.content_dict:
             frappe.throw( _("Please start by loading a document."), _("Notification") )
@@ -91,10 +93,13 @@ class ZUGFeRDWizard(Document):
             'currency': invoice.get('currency'),
             'bill_no': invoice.get('doc_id'),
             'bill_date': invoice.get('posting_date'),
-            'terms': invoice.get('terms'),
-            'esr_reference': invoice.get('esr_reference')
+            'terms': invoice.get('terms')
         })
         
+        if invoice.get('esr_reference'):
+            pinv_doc.esr_reference_number = invoice.get('esr_reference')
+            pinv_doc.payment_type = "ESR"
+            
         # find taxes and charges
         taxes_and_charges_template = frappe.db.sql("""
             SELECT `tabPurchase Taxes and Charges Template`.`name`

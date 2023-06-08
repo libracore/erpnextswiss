@@ -404,3 +404,8 @@ DocType: Salary Certificate Settings,Salary Certificate Settings,Lohnausweis Ein
 DocType: Payment Reminder,Final reminder,Letzte Mahnung
 DocType: Payment Reminder,First reminder,Erste Mahnung
 DocType: Payment Reminder,Second reminder,Zweite Mahnung
+DocType: Payrexx Settings,Payrexx Settings,Payrexx-Einstellungen
+DocType: Payrexx Settings,Please set payrexx API key in the Payrexx settings.,Bitte den Payrexx API Key in den Payrexx-Einstellungen eintragen.
+DocType: Payrexx Settings,Payrexx Instance,Payrexx-Instanz
+DocType: Payrexx Settings,Payrexx API Key,Payrexx API-Schlüssel
+DocType: Payrexx Settings,Success URL,Erfolgs-URL

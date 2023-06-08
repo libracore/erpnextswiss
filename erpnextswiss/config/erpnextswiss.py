@@ -222,19 +222,25 @@ def get_data():
                        "name": "Datatrans Settings",
                        "label": _("Datatrans Settings"),
                        "description": _("Datatrans Settings")                   
-                   },
-                   {
+                    },
+                    {
+                       "type": "doctype",
+                       "name": "Payrexx Settings",
+                       "label": _("Payrexx Settings"),
+                       "description": _("Payrexx Settings")                   
+                    },
+                    {
                        "type": "doctype",
                        "name": "Abacus Export File",
                        "label": _("Abacus Export File"),
                        "description": _("Abacus Export File")                   
-                   },
-                   {
+                    },
+                    {
                        "type": "page",
                        "name": "abacus_export",
                        "label": _("Abacus Export"),
                        "description": _("Abacus Export")                   
-                   }                 
+                    }                 
             ]
         },
         {

@@ -58,6 +58,7 @@ In case you update from the sources and observe an error, make sure to update de
     * Payment export: allows to create payment files for banks (pain.001) from payment entries (paying)
     * QR invoices and ESR invoices: outgoing (sales invoices) as well as incoming (scan purchase invoices); QR invoice supports ESR/NON/SCOR
     * ZUGFeRD: fully electronic invoices.
+    * ZUGFeRD Wizard: read and interpret both ZUGFeRD and QR-invoices to purchase invoices
 * Tax
     * Import monthly average exchange rates, daily exchange rates (ESTV)
     * VAT declaration
@@ -80,6 +81,7 @@ In case you update from the sources and observe an error, make sure to update de
     * ZUGFeRD
     * Interface to Zefix
     * Datatrans interface for payments
+    * Payrexx payment interface
     * EDI connector: allows to fully integrate EDI exchange (PRICAT, DESADV, ORDERS, SLSRPT, ...)
 
 ## Release notes

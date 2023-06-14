@@ -10,7 +10,7 @@ from erpnextswiss.erpnextswiss.zugferd.zugferd import get_xml, get_content_from_
 from erpnextswiss.erpnextswiss.zugferd.qr_reader import find_qr_content_from_pdf, get_content_from_qr
 from frappe import _
 import json
-from frappe.utils import cint, flt, get_link_to_form
+from frappe.utils import cint, flt, get_link_to_form, get_url_to_form
 
 class ZUGFeRDWizard(Document):
     def read_file(self):
@@ -27,12 +27,18 @@ class ZUGFeRDWizard(Document):
                 invoice = get_content_from_qr(qr_content, self.default_tax, self.default_item)
         # render html
         if invoice:
-            content = frappe.render_template('erpnextswiss/erpnextswiss/doctype/zugferd_wizard/zugferd_content.html', invoice)
-            # return html and dict
-            return { 'html': content, 'dict': invoice }
+            return self.render_invoice(invoice)
         else:
             return { 'html': "", 'dict': None }
-        
+    
+    def render_invoice(self, invoice):
+        if (type(invoice) == str):
+            invoice = json.loads(invoice)
+            
+        content = frappe.render_template('erpnextswiss/erpnextswiss/doctype/zugferd_wizard/zugferd_content.html', invoice)
+        # return html and dict
+        return { 'html': content, 'dict': invoice }
+            
     def get_default_item(self):
         return frappe.get_cached_value("ERPNextSwiss Settings", "ERPNextSwiss Settings", "scanning_default_item")
         
@@ -144,26 +150,96 @@ class ZUGFeRDWizard(Document):
         pinv_doc.insert()
         frappe.db.commit()
         
-        # move file to new invoice
-        frappe.db.sql("""
-        UPDATE `tabFile`
-        SET 
-            `attached_to_name` = "{pinv}", 
-            `attached_to_doctype` = "Purchase Invoice"
-        WHERE
-            `attached_to_name` = "ZUGFeRD Wizard"
-            AND `attached_to_doctype` = "ZUGFeRD Wizard"
-        ;""".format(pinv=pinv_doc.name))
+        self.move_file(pinv_doc)
         
         # clean up the wizard
-        self.content_dict = None
-        self.ready_for_import = 0
-        self.save()
+        frappe.db.sql("""
+            UPDATE `tabSingles`
+            SET 
+                `value` = NULL
+            WHERE
+                `doctype` = "ZUGFeRD Wizard"
+                AND `field` = "content_dict"
+            ;""")
+        frappe.db.sql("""
+            UPDATE `tabSingles`
+            SET 
+                `value` = 0
+            WHERE
+                `doctype` = "ZUGFeRD Wizard"
+                AND `field` = "ready_for_import"
+            ;""")
         
         frappe.db.commit()
         
-        frappe.msgprint( _("Import successful: {0}").format(
-             get_link_to_form("Purchase Invoice", pinv_doc.name)),
-            _("Success"))
+        return {
+            'name': pinv_doc.name, 
+            'url': get_url_to_form("Purchase Invoice", pinv_doc.name),
+            'link': get_link_to_form("Purchase Invoice", pinv_doc.name)
+        }
+
+    def manual_purchase_invoice(self, company, supplier, date, bill_no, item, 
+        amount, cost_center, taxes_and_charges, project=None, remarks=None):
+        
+        pinv = frappe.get_doc({
+            'doctype': 'Purchase Invoice',
+            'company': company,
+            'supplier': supplier,
+            'posting_date': date, 
+            'project': project, 
+            'bill_no': bill_no, 
+            'cost_center': cost_center, 
+            'taxes_and_charges': taxes_and_charges, 
+            'terms': remarks,
+            'remarks': remarks,
+            'title': frappe.get_value("Supplier", supplier, "supplier_name")
+        })
+        
+        pinv.append("items", {
+            'item_code': item,
+            'qty': 1,
+            'rate': amount,
+            'amount': amount
+        })
+        
+        taxes = frappe.get_doc("Purchase Taxes and Charges Template", taxes_and_charges)
+        for t in taxes.taxes:
+            pinv.append("taxes", t)
             
+        pinv.set_missing_values()
+        pinv.calculate_taxes_and_totals()
+        pinv.flags.ignore_validate = True
+        pinv.insert()
+        
+        self.move_file(pinv)
+        
+        frappe.db.commit()
+        
+        return {
+            'name': pinv.name, 
+            'url': get_url_to_form("Purchase Invoice", pinv.name),
+            'link': get_link_to_form("Purchase Invoice", pinv.name)
+        }
+    
+    def move_file(self, pinv_doc):
+        # move file to new invoice
+        frappe.db.sql("""
+            UPDATE `tabFile`
+            SET 
+                `attached_to_name` = "{pinv}", 
+                `attached_to_doctype` = "Purchase Invoice"
+            WHERE
+                `attached_to_name` = "ZUGFeRD Wizard"
+                AND `attached_to_doctype` = "ZUGFeRD Wizard"
+            ;""".format(pinv=pinv_doc.name))
+            
+        # clear wizard
+        frappe.db.sql("""
+            UPDATE `tabSingles`
+            SET 
+                `value` = NULL
+            WHERE
+                `doctype` = "ZUGFeRD Wizard"
+                AND `field` = "file"
+            ;""")
         return

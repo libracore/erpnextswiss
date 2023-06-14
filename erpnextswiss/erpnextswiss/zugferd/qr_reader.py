@@ -170,7 +170,7 @@ def read_swiss_qr(code, default_tax, default_item):
         
         # try to fetch a default item from the supplier
         if frappe.db.exists("Supplier", invoice['supplier']):
-            supplier_item = frappe.get_value("Supplier", invoice['supplier'], 'default_item')
+            supplier_item = frappe.get_doc("Supplier", invoice['supplier']).get('default_item')
             if supplier_item:
                 default_item = supplier_item
                 

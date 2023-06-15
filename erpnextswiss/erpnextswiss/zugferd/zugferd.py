@@ -156,12 +156,23 @@ def get_content_from_zugferd(zugferd_xml, debug=False):
         if len(match_item_by_code) > 0: 
             _item['item_code'] = match_item_by_code[0]['name']
         else:
-            # match by item name
-            match_item_by_name = frappe.get_all("Item",
-                                                filters={'item_name': _item['item_name']},
-                                                fields=['name'])
-            if len(match_item_by_name) > 0: 
-                _item['item_code'] = match_item_by_name[0]['name']    
+            # match by supplier item code
+            supplier_item_matches = frappe.db.sql("""
+                SELECT `parent`
+                FROM `tabItem Supplier`
+                WHERE 
+                    `supplier` = "{supplier}"
+                    AND `supplier_part_no` = "{supplier_item}"
+                ;""".format(supplier=invoice['supplier'], supplier_item=_item['seller_item_code']), as_dict=True)
+            if len(supplier_item_matches) > 0:
+                _item['item_code'] = supplier_item_matches[0]['parent']
+            else:
+                # match by item name
+                match_item_by_name = frappe.get_all("Item",
+                                                    filters={'item_name': _item['item_name']},
+                                                    fields=['name'])
+                if len(match_item_by_name) > 0: 
+                    _item['item_code'] = match_item_by_name[0]['name']    
 
         #add item
         items.append(_item)

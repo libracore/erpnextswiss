@@ -123,20 +123,33 @@ class ZUGFeRDWizard(Document):
                 
         for item in invoice.get("items"):
             if not item.get('item_code'):
+                # get item from seller_item_code
                 if not frappe.db.exists("Item", item.get('seller_item_code')):
-                    _item = {
-                        'doctype': "Item",
-                        'item_code': item.get('seller_item_code'),
-                        'item_name': item.get('item_name'),
-                        'item_group': frappe.get_value("ZUGFeRD Settings", "ZUGFeRD Settings", "item_group")
-                    }
-                    # apply default values
-                    for d in settings.defaults:
-                        if d.dt == "Item":
-                            _item[d.field] = d.value
-                    item_doc = frappe.get_doc(_item)
-                    item_doc.insert()
-                    item['item_code'] = item_doc.name
+                    # try to find item by supplier item
+                    supplier_item_matches = frappe.db.sql("""
+                        SELECT `parent`
+                        FROM `tabItem Supplier`
+                        WHERE 
+                            `supplier` = "{supplier}"
+                            AND `supplier_part_no` = "{supplier_item}"
+                        ;""".format(supplier=pinv_doc.supplier, supplier_item=item.get('seller_item_code')), as_dict=True)
+                    if len(supplier_item_matches) > 0:
+                        item['item_code'] = supplier_item_matches[0]['parent']
+                    else:
+                        # create new item
+                        _item = {
+                            'doctype': "Item",
+                            'item_code': item.get('seller_item_code'),
+                            'item_name': item.get('item_name'),
+                            'item_group': frappe.get_value("ZUGFeRD Settings", "ZUGFeRD Settings", "item_group")
+                        }
+                        # apply default values
+                        for d in settings.defaults:
+                            if d.dt == "Item":
+                                _item[d.field] = d.value
+                        item_doc = frappe.get_doc(_item)
+                        item_doc.insert()
+                        item['item_code'] = item_doc.name
                 else:
                     item['item_code'] = item.get('seller_item_code')
             

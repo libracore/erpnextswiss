@@ -35,12 +35,14 @@
   {
    "fieldname": "content_dict",
    "fieldtype": "Code",
+   "hidden": 1,
    "label": "Content dict"
   },
   {
    "default": "0",
    "fieldname": "ready_for_import",
    "fieldtype": "Check",
+   "hidden": 1,
    "label": "Ready for import"
   },
   {
@@ -67,7 +69,7 @@
   }
  ],
  "issingle": 1,
- "modified": "2023-06-04 21:04:00.082743",
+ "modified": "2023-06-15 11:04:57.086993",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "ZUGFeRD Wizard",

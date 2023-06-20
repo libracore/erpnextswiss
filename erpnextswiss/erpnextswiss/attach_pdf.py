@@ -36,7 +36,7 @@ def enqueue(args):
                    timeout=90, is_async=True, **args)
     return
 
-def execute(doctype, name, title, lang=None, print_format=None, hashname=None, is_private=1):
+def execute(doctype, name, title, lang=None, print_format=None, hashname=None, is_private=1, file_name=None):
     if lang:
         frappe.local.lang = lang
 
@@ -45,7 +45,7 @@ def execute(doctype, name, title, lang=None, print_format=None, hashname=None, i
 
     pdf_data = get_pdf_data(doctype, name, print_format)
 
-    save_and_attach(pdf_data, doctype, name, title_folder, hashname, is_private)
+    save_and_attach(pdf_data, doctype, name, title_folder, hashname, is_private, file_name)
     return
 
 
@@ -65,16 +65,17 @@ def get_pdf_data(doctype, name, print_format=None):
     return frappe.utils.pdf.get_pdf(html, print_format=print_format)
 
 
-def save_and_attach(content, to_doctype, to_name, folder, hashname=None, is_private=1):
+def save_and_attach(content, to_doctype, to_name, folder, hashname=None, is_private=1, file_name=None):
     """
     Save content to disk and create a File document.
     File document is linked to another document.
     """
-    if not hashname:
-        file_name = "{0}.pdf".format(to_name.replace(" ", "-").replace("/", "-"))
-    else:
-        # use a hased file name
-        file_name = "{0}.pdf".format(hashlib.md5("{0}{1}".format(to_name, time.time()).encode('utf-8')).hexdigest())
+    if not file_name:
+        if not hashname:
+            file_name = "{0}.pdf".format(to_name.replace(" ", "-").replace("/", "-"))
+        else:
+            # use a hased file name
+            file_name = "{0}.pdf".format(hashlib.md5("{0}{1}".format(to_name, time.time()).encode('utf-8')).hexdigest())
 
     save_file(file_name, content, to_doctype,
               to_name, folder=folder, is_private=is_private)

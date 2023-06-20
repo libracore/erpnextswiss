@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2017-2019, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2017-2023, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
 
 from __future__ import unicode_literals
@@ -7,6 +7,7 @@ import frappe
 from frappe.model.document import Document
 import html          # used to escape xml content
 import ast
+from frappe.utils import cint
 
 class AbacusExportFile(Document):
     def submit(self):
@@ -16,48 +17,80 @@ class AbacusExportFile(Document):
     # find all transactions, add the to references and mark as collected
     def get_transactions(self):
         # get all documents
-        document_query = """SELECT 
+        if cint(self.debtors_only):
+            document_query = """SELECT 
                     "Sales Invoice" AS `dt`,
                     `tabSales Invoice`.`name` AS `dn`
                 FROM `tabSales Invoice`
                 WHERE
-                    `tabSales Invoice`.`posting_date` >= '{start_date}'
-                    AND `tabSales Invoice`.`posting_date` <= '{end_date}'
+                    `tabSales Invoice`.`posting_date` BETWEEN '{start_date}' AND '{end_date}'
                     AND `tabSales Invoice`.`docstatus` = 1
                     AND `tabSales Invoice`.`exported_to_abacus` = 0
                     AND `tabSales Invoice`.`company` = '{company}'
-                UNION SELECT 
-                    "Purchase Invoice" AS `dt`,
-                    `tabPurchase Invoice`.`name` AS `dn`
-                FROM `tabPurchase Invoice`
-                WHERE
-                    `tabPurchase Invoice`.`posting_date` >= '{start_date}'
-                    AND `tabPurchase Invoice`.`posting_date` <= '{end_date}'
-                    AND `tabPurchase Invoice`.`docstatus` = 1
-                    AND `tabPurchase Invoice`.`exported_to_abacus` = 0
-                    AND `tabPurchase Invoice`.`company` = '{company}'
                 UNION SELECT 
                     "Payment Entry" AS `dt`,
                     `tabPayment Entry`.`name` AS `dn`
                 FROM `tabPayment Entry`
                 WHERE
-                    `tabPayment Entry`.`posting_date` >= '{start_date}'
-                    AND `tabPayment Entry`.`posting_date` <= '{end_date}'
+                    `tabPayment Entry`.`posting_date` BETWEEN '{start_date}' AND '{end_date}'
                     AND `tabPayment Entry`.`docstatus` = 1
                     AND `tabPayment Entry`.`exported_to_abacus` = 0
                     AND `tabPayment Entry`.`company` = '{company}'
+                    AND `tabPayment Entry`.`payment_type` = 'Receive'
                 UNION SELECT 
                     "Journal Entry" AS `dt`,
                     `tabJournal Entry`.`name` AS `dn`
                 FROM `tabJournal Entry`
                 WHERE
-                    `tabJournal Entry`.`posting_date` >= '{start_date}'
-                    AND `tabJournal Entry`.`posting_date` <= '{end_date}'
+                    `tabJournal Entry`.`posting_date` BETWEEN '{start_date}' AND '{end_date}'
                     AND `tabJournal Entry`.`docstatus` = 1
                     AND `tabJournal Entry`.`exported_to_abacus` = 0
+                    AND (SELECT COUNT(`name`) 
+                         FROM `tabJournal Entry Account` 
+                         WHERE `tabJournal Entry Account`.`parent` = `tabJournal Entry`.`name`
+                           AND `tabJournal Entry Account`.`party_type` = 'Customer') > 0
                     AND `tabJournal Entry`.`company` = '{company}';""".format(
                     start_date=self.from_date, end_date=self.to_date, 
                     company=self.company)
+        else:
+            document_query = """SELECT 
+                        "Sales Invoice" AS `dt`,
+                        `tabSales Invoice`.`name` AS `dn`
+                    FROM `tabSales Invoice`
+                    WHERE
+                        `tabSales Invoice`.`posting_date` BETWEEN '{start_date}' AND '{end_date}'
+                        AND `tabSales Invoice`.`docstatus` = 1
+                        AND `tabSales Invoice`.`exported_to_abacus` = 0
+                        AND `tabSales Invoice`.`company` = '{company}'
+                    UNION SELECT 
+                        "Purchase Invoice" AS `dt`,
+                        `tabPurchase Invoice`.`name` AS `dn`
+                    FROM `tabPurchase Invoice`
+                    WHERE
+                        `tabPurchase Invoice`.`posting_date` BETWEEN '{start_date}' AND '{end_date}'
+                        AND `tabPurchase Invoice`.`docstatus` = 1
+                        AND `tabPurchase Invoice`.`exported_to_abacus` = 0
+                        AND `tabPurchase Invoice`.`company` = '{company}'
+                    UNION SELECT 
+                        "Payment Entry" AS `dt`,
+                        `tabPayment Entry`.`name` AS `dn`
+                    FROM `tabPayment Entry`
+                    WHERE
+                        `tabPayment Entry`.`posting_date` BETWEEN '{start_date}' AND '{end_date}'
+                        AND `tabPayment Entry`.`docstatus` = 1
+                        AND `tabPayment Entry`.`exported_to_abacus` = 0
+                        AND `tabPayment Entry`.`company` = '{company}'
+                    UNION SELECT 
+                        "Journal Entry" AS `dt`,
+                        `tabJournal Entry`.`name` AS `dn`
+                    FROM `tabJournal Entry`
+                    WHERE
+                        `tabJournal Entry`.`posting_date` BETWEEN '{start_date}' AND '{end_date}'
+                        AND `tabJournal Entry`.`docstatus` = 1
+                        AND `tabJournal Entry`.`exported_to_abacus` = 0
+                        AND `tabJournal Entry`.`company` = '{company}';""".format(
+                        start_date=self.from_date, end_date=self.to_date, 
+                        company=self.company)
         
         docs = frappe.db.sql(document_query, as_dict=True)
         
@@ -356,8 +389,10 @@ class AbacusExportFile(Document):
                     'exchange_rate': item.conversion_rate,
                     'against_singles': [{
                         'account': self.get_account_number(item.income_account),
-                        'amount': item.base_income,
-                        'currency': base_currency
+                        'amount': item.income,
+                        'currency': item.currency,
+                        'key_amount': item.base_income,
+                        'key_currency': base_currency
                     }],
                     'debit_credit': "D", 
                     'date': item.posting_date, 
@@ -380,8 +415,10 @@ class AbacusExportFile(Document):
                     'exchange_rate': item.conversion_rate,
                     'against_singles': [{
                         'account': self.get_account_number(item.income_account),
-                        'amount': item.base_income,
-                        'currency': base_currency
+                        'amount': item.income,
+                        'currency': item.currency,
+                        'key_amount': item.base_income,
+                        'key_currency': base_currency
                     }],
                     'debit_credit': "D", 
                     'date': item.posting_date, 
@@ -495,13 +532,16 @@ class AbacusExportFile(Document):
                 'amount': pe_record.paid_amount, 
                 'against_singles': [{
                     'account': self.get_account_number(pe_record.paid_to),
-                    'amount': pe_record.received_amount,
-                    'currency': pe_record.paid_to_account_currency
+                    'amount': pe_record.total_allocated_amount,
+                    'currency': pe_record.paid_to_account_currency,
+                    'key_currency': base_currency,
+                    'key_amount': pe_record.base_paid_amount
                 }],
                 'debit_credit': "C", 
                 'date': pe_record.posting_date, 
                 'currency': pe_record.paid_from_account_currency, 
-                'key_currency': pe_record.paid_to_account_currency,
+                'key_currency': base_currency,
+                'key_amount': pe_record.base_total_allocated_amount,
                 'exchange_rate': pe_record.source_exchange_rate,
                 'tax_account': None, 
                 'tax_amount': None, 
@@ -514,7 +554,9 @@ class AbacusExportFile(Document):
                 transaction['against_singles'].append({
                     'account': self.get_account_number(deduction.account),
                     'amount': deduction.amount,
-                    'currency': pe_record.paid_to_account_currency                
+                    'currency': base_currency,
+                    'key_amount': deduction.amount,
+                    'key_currency': base_currency
                 })
             # insert transaction
             transactions.append(transaction)  

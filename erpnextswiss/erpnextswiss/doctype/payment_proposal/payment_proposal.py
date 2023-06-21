@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018-2022, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2018-2023, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
 
 from __future__ import unicode_literals
@@ -237,6 +237,13 @@ class PaymentProposal(Document):
     def create_payment(self, party_type, party_name, 
                             reference_type, reference_name, date,
                             amount):
+        if reference_type == "Purchase Invoice":
+            credit_to = frappe.get_value(reference_type, reference_name, "credit_to")
+        elif reference_type == "Expense Claim":
+            credit_to = frappe.get_value(reference_type, reference_name, "payable_account")
+        elif reference_type == "Expense Claim":
+            credit_to = frappe.get_value("Company", 
+                frappe.get_value(reference_type, reference_name, "company"), "default_payroll_payable_account")
         # create new payment entry
         new_payment_entry = frappe.get_doc({
             'doctype': 'Payment Entry',
@@ -245,6 +252,7 @@ class PaymentProposal(Document):
             'party': party_name,
             'posting_date': date,
             'paid_from': self.intermediate_account,
+            'paid_to': credit_to,
             'received_amount': amount,
             'paid_amount': amount,
             'reference_no': reference_name,

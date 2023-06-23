@@ -121,7 +121,7 @@ function get_city_from_pincode(pincode, target_field, state_field="", country=nu
             },
             async: false,
             callback: function(response) {
-                if (response.message && response.message.length > 0) {
+                if ((response.message) && (response.message.length > 0)) {
                     if (response.message.length == 1) {
                         // got exactly one city
                         var city = response.message[0].city;

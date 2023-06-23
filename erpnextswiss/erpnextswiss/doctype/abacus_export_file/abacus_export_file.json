@@ -11,6 +11,7 @@
   "column_head",
   "company",
   "aggregated",
+  "debtors_only",
   "amended_from",
   "section_transactions",
   "references"
@@ -68,10 +69,16 @@
    "fieldname": "aggregated",
    "fieldtype": "Check",
    "label": "Aggregated"
+  },
+  {
+   "default": "0",
+   "fieldname": "debtors_only",
+   "fieldtype": "Check",
+   "label": "Debtors only"
   }
  ],
  "is_submittable": 1,
- "modified": "2019-10-30 08:25:44.738604",
+ "modified": "2023-06-20 20:23:34.129844",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "Abacus Export File",

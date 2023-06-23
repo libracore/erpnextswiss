@@ -192,7 +192,7 @@ class ZUGFeRDWizard(Document):
         }
 
     def manual_purchase_invoice(self, company, supplier, date, bill_no, item, 
-        amount, cost_center, taxes_and_charges, project=None, remarks=None):
+        amount, cost_center, taxes_and_charges, project=None, remarks=None, esr_code=None, payment_method=None):
         
         pinv = frappe.get_doc({
             'doctype': 'Purchase Invoice',
@@ -205,7 +205,9 @@ class ZUGFeRDWizard(Document):
             'taxes_and_charges': taxes_and_charges, 
             'terms': remarks,
             'remarks': remarks,
-            'title': frappe.get_value("Supplier", supplier, "supplier_name")
+            'title': frappe.get_value("Supplier", supplier, "supplier_name"),
+            'esr_reference_number': esr_code,
+            'payment_type': payment_method
         })
         
         pinv.append("items", {

@@ -178,7 +178,16 @@ function create_manual_invoice(frm) {
                         },
                         'callback': function(response) {
                             var supplier = response.message;
-                            d.set_value("supplier_name", supplier.supplier_name)
+                            d.set_value("supplier_name", supplier.supplier_name);
+                            d.set_value("payment_method", supplier.default_payment_method);
+                            if (supplier.default_payment_method == "ESR") {
+                                d.set_df_property('esr_code', 'hidden', 0);
+                                d.set_df_property('esr_code', 'reqd', 1);
+                            } else {
+                                d.set_df_property('esr_code', 'hidden', 1);
+                                d.set_df_property('esr_code', 'reqd', 0);
+                                d.set_value("esr_code", "");
+                            }
                         }
                     });
                 }
@@ -243,6 +252,19 @@ function create_manual_invoice(frm) {
                 'fieldname': 'remarks', 
                 'fieldtype': 'Data', 
                 'label': __('Remarks')
+            },
+            {
+                'fieldname': 'esr_code', 
+                'fieldtype': 'Data', 
+                'label': __('ESR Code'),
+                'hidden': 1,
+                'reqd': 0
+            },
+            {
+                'fieldname': 'payment_method', 
+                'fieldtype': 'Data', 
+                'label': __('Payment Method'),
+                'hidden': 1
             }
         ],
         'primary_action': function() {
@@ -261,7 +283,9 @@ function create_manual_invoice(frm) {
                         'amount': values.amount,
                         'cost_center': values.cost_center,
                         'taxes_and_charges': values.taxes_and_charges,
-                        'remarks': values.remarks
+                        'remarks': values.remarks,
+                        'esr_code': values.esr_code,
+                        'payment_method': values.payment_method
                     },
                     'callback': function(r)
                     {

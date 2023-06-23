@@ -386,7 +386,7 @@ class PaymentProposal(Document):
 
 # this function will create a new payment proposal
 @frappe.whitelist()
-def create_payment_proposal(date=None, company=None):
+def create_payment_proposal(date=None, company=None, currency=None):
     if not date:
         # get planning days
         planning_days = int(frappe.get_value("ERPNextSwiss Settings", "ERPNextSwiss Settings", 'planning_days'))
@@ -420,7 +420,8 @@ def create_payment_proposal(date=None, company=None):
                     )) AS `skonto_amount`,
                   `tabPurchase Invoice`.`payment_type` AS `payment_type`,
                   `tabPurchase Invoice`.`esr_reference_number` AS `esr_reference`,
-                  `tabSupplier`.`esr_participation_number` AS `esr_participation_number`
+                  `tabSupplier`.`esr_participation_number` AS `esr_participation_number`,
+                  `tabPurchase Invoice`.`currency` AS `currency`
                 FROM `tabPurchase Invoice` 
                 LEFT JOIN `tabPayment Terms Template` ON `tabPurchase Invoice`.`payment_terms_template` = `tabPayment Terms Template`.`name`
                 LEFT JOIN `tabSupplier` ON `tabPurchase Invoice`.`supplier` = `tabSupplier`.`name`
@@ -437,22 +438,23 @@ def create_payment_proposal(date=None, company=None):
     total = 0.0
     invoices = []
     for invoice in purchase_invoices:
-        reference = invoice.external_reference or invoice.name
-        new_invoice = { 
-            'supplier': invoice.supplier,
-            'purchase_invoice': invoice.name,
-            'amount': invoice.outstanding_amount,
-            'due_date': invoice.due_date,
-            'currency': invoice.currency,
-            'skonto_date': invoice.skonto_date,
-            'skonto_amount': invoice.skonto_amount,
-            'payment_type': invoice.payment_type,
-            'esr_reference': invoice.esr_reference,
-            'esr_participation_number': invoice.esr_participation_number,
-            'external_reference': reference
-        }
-        total += invoice.skonto_amount
-        invoices.append(new_invoice)
+        if not currency or invoice.currency == currency:
+            reference = invoice.external_reference or invoice.name
+            new_invoice = { 
+                'supplier': invoice.supplier,
+                'purchase_invoice': invoice.name,
+                'amount': invoice.outstanding_amount,
+                'due_date': invoice.due_date,
+                'currency': invoice.currency,
+                'skonto_date': invoice.skonto_date,
+                'skonto_amount': invoice.skonto_amount,
+                'payment_type': invoice.payment_type,
+                'esr_reference': invoice.esr_reference,
+                'esr_participation_number': invoice.esr_participation_number,
+                'external_reference': reference
+            }
+            total += invoice.skonto_amount
+            invoices.append(new_invoice)
     # get all open expense claims
     sql_query = ("""SELECT `name`, 
                   `employee`, 
@@ -464,17 +466,17 @@ def create_payment_proposal(date=None, company=None):
                   AND `is_proposed` = 0
                   AND `company` = '{company}';""".format(company=company))
     expense_claims = frappe.db.sql(sql_query, as_dict=True)          
-    # get all purchase invoices that pending
     expenses = []
-    for expense in expense_claims:
-        new_expense = { 
-            'expense_claim': expense.name,
-            'employee': expense.employee,
-            'amount': expense.amount,
-            'payable_account': expense.payable_account
-        }
-        total += expense.amount
-        expenses.append(new_expense)
+    if not currency or currency == frappe.get_cached_value("Company", company, "default_currency"):
+        for expense in expense_claims:
+            new_expense = { 
+                'expense_claim': expense.name,
+                'employee': expense.employee,
+                'amount': expense.amount,
+                'payable_account': expense.payable_account
+            }
+            total += expense.amount
+            expenses.append(new_expense)
     # get all open salary slips
     salaries = []
     if cint(frappe.get_value("ERPNextSwiss Settings", "ERPNextSwiss Settings", "enable_salary_payment")) == 1:
@@ -490,16 +492,17 @@ def create_payment_proposal(date=None, company=None):
                       AND `tabSalary Slip`.`company` = '{company}';""".format(company=company))
         salary_slips = frappe.db.sql(sql_query, as_dict=True)          
         # append salary slips
-        for salary_slip in salary_slips:
-            new_salary = { 
-                'salary_slip': salary_slip.name,
-                'employee': salary_slip.employee,
-                'amount': salary_slip.amount,
-                'payable_account': salary_slip.payable_account,
-                'target_date': salary_slip.posting_date
-            }
-            total += salary_slip.amount
-            salaries.append(new_salary)
+        if not currency or currency == frappe.get_cached_value("Company", company, "default_currency"):
+            for salary_slip in salary_slips:
+                new_salary = { 
+                    'salary_slip': salary_slip.name,
+                    'employee': salary_slip.employee,
+                    'amount': salary_slip.amount,
+                    'payable_account': salary_slip.payable_account,
+                    'target_date': salary_slip.posting_date
+                }
+                total += salary_slip.amount
+                salaries.append(new_salary)
     # create new record
     new_record = None
     now = datetime.now()

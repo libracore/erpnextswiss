@@ -20,6 +20,33 @@ def find_qr_content_from_pdf(filename):
     # open PDF file
     pdf_file = fitz.open(filename)
 
+    # read by page
+    for page in pdf_file:
+        # get the page as image
+        try:
+            pix = page.get_pixmap(dpi=200)
+        except:
+            pix = page.get_pixmap(page.getPixmap(matrix=fitz.Matrix(2, 2)))                  # fall back to v1.16.18
+        # cv2 reader
+        qcd = cv2.QRCodeDetector()
+        # get bytes array of image
+        image_bytes = np.asarray(bytearray(pix.tobytes()), dtype="uint8")
+        img = cv2.imdecode(image_bytes, cv2.IMREAD_COLOR)
+        # add border to be able to detect it
+        color = [255, 255, 255]
+        top, bottom, left, right = [150]*4
+        img_with_border = cv2.copyMakeBorder(img, top, bottom, left, right, cv2.BORDER_CONSTANT, value=color)
+
+        retval, decoded_info, points, straight_qrcode = qcd.detectAndDecodeMulti(img_with_border)
+
+        if retval and len(decoded_info) > 0:
+            code = decoded_info[0]
+            codes.append(code)
+    
+    # if codes are found, you can leave here; otherwise, go to image-wise parsing
+    if len(codes) > 0:
+        return codes
+    
     # get the number of pages in PDF file
     page_nums = len(pdf_file)
 

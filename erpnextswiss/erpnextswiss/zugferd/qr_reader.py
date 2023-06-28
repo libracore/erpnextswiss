@@ -26,11 +26,14 @@ def find_qr_content_from_pdf(filename):
         try:
             pix = page.get_pixmap(dpi=200)
         except:
-            pix = page.get_pixmap(page.getPixmap(matrix=fitz.Matrix(2, 2)))                  # fall back to v1.16.18
+            pix = page.getPixmap(matrix=fitz.Matrix(2, 2))                  # fall back to v1.16.18
         # cv2 reader
         qcd = cv2.QRCodeDetector()
         # get bytes array of image
-        image_bytes = np.asarray(bytearray(pix.tobytes()), dtype="uint8")
+        try:
+            image_bytes = np.asarray(bytearray(pix.tobytes()), dtype="uint8")
+        except:
+            image_bytes = np.asarray(bytearray(pix.getImageData()), dtype="uint8")
         img = cv2.imdecode(image_bytes, cv2.IMREAD_COLOR)
         # add border to be able to detect it
         color = [255, 255, 255]

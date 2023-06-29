@@ -13,6 +13,8 @@ import html          # used to escape xml content
 from frappe.utils import cint, get_url_to_form
 from unidecode import unidecode     # used to remove German/French-type special characters from bank identifieres
 
+PAYMENT_REMARKS = "From Payment Proposal {0}"
+
 class PaymentProposal(Document):
     def validate(self):
         # check company settigs
@@ -140,7 +142,7 @@ class PaymentProposal(Document):
                     invoice.is_proposed = 1
                     invoice.save()
                     # create payment on intermediate
-                    if self.use_intermediate == 1:
+                    if cint(self.use_intermediate) == 1:
                         self.create_payment("Employee", employee, 
                             "Expense Claim", expense_claim.expense_claim, exec_date,
                             expense_claim.amount)
@@ -198,6 +200,20 @@ class PaymentProposal(Document):
             invoice = frappe.get_doc("Salary Slip", salary_slip.salary_slip)
             invoice.is_proposed = 0
             invoice.save()
+            
+        if cint(self.use_intermediate) == 1:
+            # cancel payment entries
+            payments = frappe.get_all("Payment Entry", 
+                filters={'payment_type': "Pay",
+                    'paid_from': self.intermediate_account,
+                    'remarks': PAYMENT_REMARKS.format(self.name),
+                    'docstatus': 1},
+                fields=['name']
+            )
+            for p in payment:
+                doc = frappe.get_doc("Payment Entry", p)
+                p.cancel(ignore_permissions=True)
+                
         return
     
     def add_payment(self, receiver_name, iban, payment_type, address_line1, 
@@ -257,7 +273,7 @@ class PaymentProposal(Document):
             'paid_amount': amount,
             'reference_no': reference_name,
             'reference_date': date,
-            'remarks': "From Payment Proposal {0}".format(self.name),
+            'remarks': PAYMENT_REMARKS.format(self.name),
             'references': [{ 
                 'reference_doctype': reference_type,
                 'reference_name': reference_name,

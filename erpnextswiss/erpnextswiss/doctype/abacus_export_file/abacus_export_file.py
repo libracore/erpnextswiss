@@ -528,20 +528,20 @@ class AbacusExportFile(Document):
             pe_record = frappe.get_doc("Payment Entry", item.name)
             # create content
             transaction = {
-                'account': self.get_account_number(pe_record.paid_from), 
+                'account': self.get_account_number(pe_record.paid_to),  # bank
                 'amount': pe_record.paid_amount, 
                 'against_singles': [{
-                    'account': self.get_account_number(pe_record.paid_to),
+                    'account': self.get_account_number(pe_record.paid_from),    # debtor
                     'amount': pe_record.total_allocated_amount,
-                    'currency': pe_record.paid_to_account_currency,
+                    'currency': pe_record.paid_from_account_currency,
                     'key_currency': base_currency,
-                    'key_amount': pe_record.base_paid_amount
+                    'key_amount': pe_record.base_total_allocated_amount
                 }],
                 'debit_credit': "C", 
                 'date': pe_record.posting_date, 
                 'currency': pe_record.paid_from_account_currency, 
                 'key_currency': base_currency,
-                'key_amount': pe_record.base_total_allocated_amount,
+                'key_amount': pe_record.base_paid_amount,
                 'exchange_rate': pe_record.source_exchange_rate,
                 'tax_account': None, 
                 'tax_amount': None, 
@@ -551,13 +551,28 @@ class AbacusExportFile(Document):
             }
             # append deductions
             for deduction in pe_record.deductions:
+                sign = 1
+                if frappe.get_cached_value("Account", deduction.account, 'root_type') in ['Asset', 'Expense']:
+                    sign = (-1)
                 transaction['against_singles'].append({
                     'account': self.get_account_number(deduction.account),
-                    'amount': deduction.amount,
-                    'currency': base_currency,
-                    'key_amount': deduction.amount,
+                    'amount': sign * (deduction.amount / pe_record.source_exchange_rate),    # virtual valuation to other currency
+                    'currency': pe_record.paid_to_account_currency,
+                    'key_amount': sign * deduction.amount,
                     'key_currency': base_currency
                 })
+                
+            # verify integrity
+            sums = {'base': transaction['key_amount'], 'other': transaction['amount']}
+            for s in transaction['against_singles']:
+                sums['base'] -= s['key_amount']
+                sums['other'] -= s['amount']
+            
+            if sums['base'] != 0:           # correct difference on last entry
+                transaction['against_singles'][-1]['key_amount'] += sums['base']
+            if sums['other'] != 0:           # correct difference on last entry
+                transaction['against_singles'][-1]['amount'] += sums['other']
+                
             # insert transaction
             transactions.append(transaction)  
 

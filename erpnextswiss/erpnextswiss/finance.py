@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018-2021, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2018-2023, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
 import frappe
 from frappe import _
 from frappe.utils.background_jobs import enqueue
 from frappe.utils.file_manager import save_file, remove_all
+from erpnext.setup.utils import get_exchange_rate as get_core_exchange_rate
 
 """ Jinja hook to create account sheets """
 def get_account_sheets(fiscal_year, company=None):
@@ -143,3 +144,13 @@ def get_customer_ledger(accounts, customer, in_account_currency=False):
         
     return data
     
+@frappe.whitelist()
+def get_exchange_rate(from_currency=None, to_currency=None, company=None, date=None):
+    if not from_currency and company:
+        from_currency = frappe.get_cached_value("Company", company, "default_currency")
+    if not to_currency and company:
+        to_currency = frappe.get_cached_value("Company", company, "default_currency")
+    
+    return get_core_exchange_rate(from_currency=from_currency, 
+        to_currency=to_currency, transaction_date=date)
+        

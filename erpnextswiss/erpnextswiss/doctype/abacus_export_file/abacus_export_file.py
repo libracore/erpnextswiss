@@ -592,12 +592,15 @@ class AbacusExportFile(Document):
         # create item entries
         for item in jv_items:
             jv_record = frappe.get_doc("Journal Entry", item.name)
+            key_currency = frappe.get_cached_value("Company", jv_record.company, "default_currency")
             if jv_record.accounts[0].debit_in_account_currency != 0:
                 debit_credit = "D"
                 amount = jv_record.accounts[0].debit_in_account_currency
+                key_amount = jv_record.accounts[0].debit
             else:
                 debit_credit = "C"
                 amount = jv_record.accounts[0].credit_in_account_currency
+                key_amount = jv_record.accounts[0].credit
             # create content
             transaction = {
                 'account': self.get_account_number(jv_record.accounts[0].account), 
@@ -610,27 +613,31 @@ class AbacusExportFile(Document):
                 'tax_amount': None, 
                 'tax_rate': None, 
                 'tax_code': None, 
-                'text1': html.escape(jv_record.name)
+                'text1': html.escape(jv_record.name),
+                'key_currency': key_currency,
+                'key_amount': key_amount
             }
             if jv_record.multi_currency == 1:
                 transaction['exchange_rate'] = jv_record.accounts[0].exchange_rate
-                transaction['key_currency'] = jv_record.accounts[0].account_currency
-            else:
-                transaction['key_currency'] = jv_record.accounts[0].account_currency
+                
             # append single accounts
             for i in range(1, len(jv_record.accounts), 1):
                 if debit_credit == "D":
                     amount = jv_record.accounts[i].credit_in_account_currency - jv_record.accounts[i].debit_in_account_currency
+                    key_amount = jv_record.accounts[i].credit - jv_record.accounts[i].debit
                 else:
                     amount = jv_record.accounts[i].debit_in_account_currency - jv_record.accounts[i].credit_in_account_currency
+                    key_amount = jv_record.accounts[i].debit - jv_record.accounts[i].credit
                 transaction_single = {
                     'account': self.get_account_number(jv_record.accounts[i].account),
                     'amount': amount,
-                    'currency': jv_record.accounts[i].account_currency
+                    'currency': jv_record.accounts[i].account_currency,
+                    'key_currency': key_currency,
+                    'key_amount': key_amount
                 }
                 if jv_record.multi_currency == 1:
                     transaction_single['exchange_rate'] = jv_record.accounts[i].exchange_rate
-                    transaction_single['key_currency'] = jv_record.accounts[i].account_currency
+
                 transaction['against_singles'].append(transaction_single)
             # insert transaction
             transactions.append(transaction)  

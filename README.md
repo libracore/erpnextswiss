@@ -59,9 +59,9 @@ In case you update from the sources and observe an error, make sure to update de
     * QR invoices and ESR invoices: outgoing (sales invoices) as well as incoming (scan purchase invoices); QR invoice supports ESR/NON/SCOR
     * ZUGFeRD: fully electronic invoices.
     * ZUGFeRD Wizard: read and interpret both ZUGFeRD and QR-invoices to purchase invoices
-* Tax
+* Taxes
     * Import monthly average exchange rates, daily exchange rates (ESTV)
-    * VAT declaration
+    * VAT declaration (with ESTV data transfer easyTax/ePortal)
     * Zefix integration
 * Human resources
     * Salary certificate ("Lohnausweis")
@@ -75,7 +75,10 @@ In case you update from the sources and observe an error, make sure to update de
     * Large data import tools
     * Dynamic newsletter content
  * Interfaces
-    * Interface to ESTV
+    * Interface to ESTV: 
+        * read exchange rates
+        * monthly average rates
+        * transmit tax forms
     * Interface to abacus (export transaction data)
     * ISO 20022
     * ZUGFeRD

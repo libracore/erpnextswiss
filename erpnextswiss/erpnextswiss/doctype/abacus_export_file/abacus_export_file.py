@@ -526,6 +526,10 @@ class AbacusExportFile(Document):
         # create item entries
         for item in pe_items:
             pe_record = frappe.get_doc("Payment Entry", item.name)
+            if pe_record.payment_type == "Pay":
+                debit_credit = "C"
+            else:
+                debit_credit = "D"
             # create content
             transaction = {
                 'account': self.get_account_number(pe_record.paid_to),  # bank
@@ -537,7 +541,7 @@ class AbacusExportFile(Document):
                     'key_currency': base_currency,
                     'key_amount': pe_record.base_total_allocated_amount
                 }],
-                'debit_credit': "C", 
+                'debit_credit': debit_credit, 
                 'date': pe_record.posting_date, 
                 'currency': pe_record.paid_from_account_currency, 
                 'key_currency': base_currency,

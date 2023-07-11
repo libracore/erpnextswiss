@@ -1,0 +1,287 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2009 sp1 (http://www.altova.com) by Lars Steffen (AWK Group AG) -->
+<xs:schema xmlns:eCH-0217="http://www.ech.ch/xmlns/eCH-0217/1" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:eCH-0058="http://www.ech.ch/xmlns/eCH-0058/5" xmlns:eCH-0097="http://www.ech.ch/xmlns/eCH-0097/3" targetNamespace="http://www.ech.ch/xmlns/eCH-0217/1" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0">
+	<xs:annotation>
+		<xs:documentation xml:lang="de">Spezifikation für die elektronische Einreichung von Mehrwertsteuer (MWST)-Abrechnungen im Portal ESTV SuisseTax</xs:documentation>
+		<xs:documentation xml:lang="fr">Spécification pour la remise électronique du décompte de la taxe sur la valeur ajoutée (TVA) sur le portail AFC SuisseTax</xs:documentation>
+	</xs:annotation>
+	<xs:import namespace="http://www.ech.ch/xmlns/eCH-0097/3" schemaLocation="http://www.ech.ch/xmlns/eCH-0097/3/eCH-0097-3-0.xsd"/>
+	<xs:import namespace="http://www.ech.ch/xmlns/eCH-0058/5" schemaLocation="http://www.ech.ch/xmlns/eCH-0058/5/eCH-0058-5-0.xsd"/>
+	<xs:simpleType name="uidOrganisationIdCategorieType">
+		<xs:restriction base="xs:string">
+			<xs:maxLength value="3"/>
+			<xs:minLength value="3"/>
+			<xs:enumeration value="CHE"/>
+			<xs:enumeration value="ADM"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="uidOrganisationIdType">
+		<xs:restriction base="xs:nonNegativeInteger">
+			<xs:totalDigits value="9"/>
+			<xs:fractionDigits value="0"/>
+			<xs:minInclusive value="000000001"/>
+			<xs:maxInclusive value="999999999"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="amountType">
+		<xs:restriction base="xs:decimal">
+			<xs:fractionDigits value="2"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="percentType">
+		<xs:restriction base="xs:decimal">
+			<xs:minInclusive value="0"/>
+			<xs:maxInclusive value="100"/>
+			<xs:fractionDigits value="2"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="variousDeductionType">
+		<xs:sequence>
+			<xs:element name="amountVariousDeduction" type="eCH-0217:amountType"/>
+			<xs:element name="descriptionVariousDeduction">
+				<xs:simpleType>
+					<xs:restriction base="xs:token">
+						<xs:minLength value="0"/>
+						<xs:maxLength value="50"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="turnoverTaxRateType">
+		<xs:sequence>
+			<xs:element name="taxRate" type="eCH-0217:percentType"/>
+			<xs:element name="turnover" type="eCH-0217:amountType"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="activityTurnoverTaxRateType">
+		<xs:sequence>
+			<xs:element name="activity">
+				<xs:simpleType>
+					<xs:restriction base="xs:token">
+						<xs:minLength value="0"/>
+						<xs:maxLength value="100"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="taxRate" type="eCH-0217:percentType"/>
+			<xs:element name="turnover" type="eCH-0217:amountType"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="verificationCompensationExportType">
+		<xs:sequence>
+			<xs:element name="invoiceNumber">
+				<xs:simpleType>
+					<xs:restriction base="xs:token">
+						<xs:minLength value="0"/>
+						<xs:maxLength value="80"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="invoiceDate" type="xs:date"/>
+			<xs:element name="typeOfService">
+				<xs:simpleType>
+					<xs:restriction base="xs:token">
+						<xs:minLength value="0"/>
+						<xs:maxLength value="100"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="taxRate" type="eCH-0217:percentType"/>
+			<xs:element name="turnover" type="eCH-0217:amountType"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="compilationCompensationExportType">
+		<xs:annotation>
+			<xs:documentation xml:lang="de">Anrechnung Export (Formular Nr. 1050)</xs:documentation>
+			<xs:documentation xml:lang="fr">Déduction des exportations (formulaire no. 1050)</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="verificationCompensationExport" type="eCH-0217:verificationCompensationExportType" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="verificationDeemedInputTaxDeductionType">
+		<xs:sequence>
+			<xs:element name="turnoverAndTaxRate" type="eCH-0217:turnoverTaxRateType"/>
+			<xs:element name="marginAndTaxRate" type="eCH-0217:turnoverTaxRateType"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="compilationDeemedInputTaxDeductionType">
+		<xs:annotation>
+			<xs:documentation xml:lang="de">Anrechnung der fiktiven Vorsteuer (Formular Nr. 1055)</xs:documentation>
+			<xs:documentation xml:lang="fr">Déduction de l’impôt préalable fictif (formulaire no. 1055)</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="verificationDeemedInputTaxDeduction" type="eCH-0217:verificationDeemedInputTaxDeductionType" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="verificationMarginTaxationType">
+		<xs:sequence>
+			<xs:element name="turnoverAndTaxRate" type="eCH-0217:turnoverTaxRateType"/>
+			<xs:element name="marginAndTaxRate" type="eCH-0217:turnoverTaxRateType"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="compilationMarginTaxationType">
+		<xs:annotation>
+			<xs:documentation xml:lang="de">Anrechnung der Margenbesteuerung (Formular Nr. 1056)</xs:documentation>
+			<xs:documentation xml:lang="fr">Déduction de l’imposition de la marge (formulaire no. 1056)</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="verificationMarginTaxation" type="eCH-0217:verificationMarginTaxationType" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="generalInformationType">
+		<xs:sequence>
+			<xs:element name="uid" type="eCH-0097:uidStructureType"/>
+			<xs:element name="organisationName" type="eCH-0097:organisationNameType"/>
+			<xs:element name="generationTime" type="xs:dateTime"/>
+			<xs:element name="reportingPeriodFrom" type="xs:date"/>
+			<xs:element name="reportingPeriodTill" type="xs:date"/>
+			<xs:element name="typeOfSubmission">
+				<xs:simpleType>
+					<xs:restriction base="xs:int">
+						<xs:enumeration value="1">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Ersteinreichung</xs:documentation>
+								<xs:documentation xml:lang="fr">Envoi initial</xs:documentation>
+							</xs:annotation>
+						</xs:enumeration>
+						<xs:enumeration value="2">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Korrekturabrechnung</xs:documentation>
+								<xs:documentation xml:lang="fr">Décompte de rectification</xs:documentation>
+							</xs:annotation>
+						</xs:enumeration>
+						<xs:enumeration value="3">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Jahresabstimmung</xs:documentation>
+								<xs:documentation xml:lang="fr">Concordance annuelle</xs:documentation>
+							</xs:annotation>
+						</xs:enumeration>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="formOfReporting">
+				<xs:simpleType>
+					<xs:restriction base="xs:int">
+						<xs:enumeration value="1">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">vereinbart</xs:documentation>
+								<xs:documentation xml:lang="fr">contre-prestations convenues</xs:documentation>
+							</xs:annotation>
+						</xs:enumeration>
+						<xs:enumeration value="2">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">vereinnahmt</xs:documentation>
+								<xs:documentation xml:lang="fr">contre-prestations reçues</xs:documentation>
+							</xs:annotation>
+						</xs:enumeration>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="businessReferenceId" type="eCH-0058:businessReferenceIdType"/>
+			<xs:element name="sendingApplication" type="eCH-0058:sendingApplicationType"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="turnoverComputationType">
+		<xs:sequence>
+			<xs:element name="totalConsideration" type="eCH-0217:amountType"/>
+			<xs:element name="suppliesToForeignCountries" type="eCH-0217:amountType" minOccurs="0"/>
+			<xs:element name="suppliesAbroad" type="eCH-0217:amountType" minOccurs="0"/>
+			<xs:element name="transferNotificationProcedure" type="eCH-0217:amountType" minOccurs="0"/>
+			<xs:element name="suppliesExemptFromTax" type="eCH-0217:amountType" minOccurs="0"/>
+			<xs:element name="reductionOfConsideration" type="eCH-0217:amountType" minOccurs="0"/>
+			<xs:element name="variousDeduction" type="eCH-0217:variousDeductionType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="effectiveReportingMethodType">
+		<xs:sequence>
+			<xs:element name="grossOrNet">
+				<xs:simpleType>
+					<xs:restriction base="xs:int">
+						<xs:enumeration value="1">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Netto (Empfehlung)</xs:documentation>
+								<xs:documentation xml:lang="fr">Net (recommandation)</xs:documentation>
+							</xs:annotation>
+						</xs:enumeration>
+						<xs:enumeration value="2">
+							<xs:annotation>
+								<xs:documentation xml:lang="de">Brutto</xs:documentation>
+								<xs:documentation xml:lang="fr">Brut</xs:documentation>
+							</xs:annotation>
+						</xs:enumeration>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="opted" type="eCH-0217:amountType" minOccurs="0"/>
+			<xs:element name="suppliesPerTaxRate" type="eCH-0217:turnoverTaxRateType" minOccurs="0" maxOccurs="100"/>
+			<xs:element name="acquisitionTax" type="eCH-0217:turnoverTaxRateType" minOccurs="0" maxOccurs="100"/>
+			<xs:element name="inputTaxMaterialAndServices" type="eCH-0217:amountType" minOccurs="0"/>
+			<xs:element name="inputTaxInvestments" type="eCH-0217:amountType" minOccurs="0"/>
+			<xs:element name="subsequentInputTaxDeduction" type="eCH-0217:amountType" minOccurs="0"/>
+			<xs:element name="inputTaxCorrections" type="eCH-0217:amountType" minOccurs="0"/>
+			<xs:element name="inputTaxReductions" type="eCH-0217:amountType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="netTaxRateMethodType">
+		<xs:sequence>
+			<xs:element name="suppliesPerTaxRate" type="eCH-0217:turnoverTaxRateType" minOccurs="0" maxOccurs="100"/>
+			<xs:element name="acquisitionTax" type="eCH-0217:turnoverTaxRateType" minOccurs="0" maxOccurs="100"/>
+			<xs:choice>
+				<xs:element name="compilationCompensationExport" type="eCH-0217:compilationCompensationExportType" minOccurs="0"/>
+				<xs:element name="compensationExport" type="eCH-0217:amountType" minOccurs="0"/>
+			</xs:choice>
+			<xs:choice>
+				<xs:element name="compilationDeemedInputTaxDeduction" type="eCH-0217:compilationDeemedInputTaxDeductionType" minOccurs="0"/>
+				<xs:element name="deemedInputTaxDeduction" type="eCH-0217:amountType" minOccurs="0"/>
+			</xs:choice>
+			<xs:choice>
+				<xs:element name="compilationMarginTaxation" type="eCH-0217:compilationMarginTaxationType" minOccurs="0"/>
+				<xs:element name="marginTaxation" type="eCH-0217:amountType" minOccurs="0"/>
+			</xs:choice>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="flatTaxRateMethodType">
+		<xs:sequence>
+			<xs:element name="suppliesPerTaxRate" type="eCH-0217:activityTurnoverTaxRateType" minOccurs="0" maxOccurs="100"/>
+			<xs:element name="acquisitionTax" type="eCH-0217:turnoverTaxRateType" minOccurs="0" maxOccurs="100"/>
+			<xs:choice>
+				<xs:element name="compilationCompensationExport" type="eCH-0217:compilationCompensationExportType" minOccurs="0"/>
+				<xs:element name="compensationExport" type="eCH-0217:amountType" minOccurs="0"/>
+			</xs:choice>
+			<xs:choice>
+				<xs:element name="compilationDeemedInputTaxDeduction" type="eCH-0217:compilationDeemedInputTaxDeductionType" minOccurs="0"/>
+				<xs:element name="deemedInputTaxDeduction" type="eCH-0217:amountType" minOccurs="0"/>
+			</xs:choice>
+			<xs:choice>
+				<xs:element name="compilationMarginTaxation" type="eCH-0217:compilationMarginTaxationType" minOccurs="0"/>
+				<xs:element name="marginTaxation" type="eCH-0217:amountType" minOccurs="0"/>
+			</xs:choice>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="otherFlowsOfFundsType">
+		<xs:sequence>
+			<xs:element name="subsidies" type="eCH-0217:amountType" minOccurs="0"/>
+			<xs:element name="donations" type="eCH-0217:amountType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:element name="VATDeclaration">
+		<xs:annotation>
+			<xs:documentation>Root-Element</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="generalInformation" type="eCH-0217:generalInformationType"/>
+				<xs:element name="turnoverComputation" type="eCH-0217:turnoverComputationType"/>
+				<xs:choice>
+					<xs:element name="effectiveReportingMethod" type="eCH-0217:effectiveReportingMethodType"/>
+					<xs:element name="netTaxRateMethod" type="eCH-0217:netTaxRateMethodType"/>
+					<xs:element name="flatTaxRateMethod" type="eCH-0217:flatTaxRateMethodType"/>
+				</xs:choice>
+				<xs:element name="payableTax" type="eCH-0217:amountType"/>
+				<xs:element name="otherFlowsOfFunds" type="eCH-0217:otherFlowsOfFundsType" minOccurs="0"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>

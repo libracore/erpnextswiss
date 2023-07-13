@@ -467,7 +467,7 @@ def create_payment_proposal(date=None, company=None, currency=None):
                 'payment_type': invoice.payment_type,
                 'esr_reference': invoice.esr_reference,
                 'esr_participation_number': invoice.esr_participation_number,
-                'external_reference': reference
+                'external_reference': unidecode(reference)
             }
             total += invoice.skonto_amount
             invoices.append(new_invoice)

@@ -146,7 +146,7 @@ def read_swiss_qr(code, default_tax, default_item):
         supplier_match_by_iban = frappe.db.sql("""
             SELECT `name`, `tax_id`
             FROM `tabSupplier` 
-            WHERE REPLACE(`iban`, " ", "") = "{iban}";""".format(iban=invoice['iban']))
+            WHERE REPLACE(`iban`, " ", "") = "{iban}";""".format(iban=invoice['iban']), as_dict=True)
         if len(supplier_match_by_iban) > 0:
             # matched by tax id
             invoice['supplier'] = supplier_match_by_iban[0]['name']
@@ -155,7 +155,7 @@ def read_swiss_qr(code, default_tax, default_item):
             supplier_match_by_qriban = frappe.db.sql("""
                 SELECT `name`, `tax_id` 
                 FROM `tabSupplier` 
-                WHERE REPLACE(`esr_participation_number`, " ", "") = "{iban}";""".format(iban=invoice['iban']))
+                WHERE REPLACE(`esr_participation_number`, " ", "") = "{iban}";""".format(iban=invoice['iban']), as_dict=True)
             if len(supplier_match_by_qriban) > 0:
                 # matched by tax id
                 invoice['supplier'] = supplier_match_by_qriban[0]['name']

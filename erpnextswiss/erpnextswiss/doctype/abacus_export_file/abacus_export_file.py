@@ -13,6 +13,17 @@ class AbacusExportFile(Document):
     def submit(self):
         self.get_transactions()
         return
+    
+    def on_cancel(self):
+        sinvs = self.get_references("Sales Invoice")
+        pinvs = self.get_references("Purchase Invoice")
+        pes = self.get_references("Payment Entry")
+        jvs = self.get_references("Journal Entry")
+        set_export_flag("Sales Invoice", self.get_sql_list(sinvs), 0)
+        set_export_flag("Purchase Invoice", self.get_sql_list(pinvs), 0)
+        set_export_flag("Payment Entry", self.get_sql_list(pes), 0)
+        set_export_flag("Journal Entry", self.get_sql_list(jvs), 0)
+        return
         
     # find all transactions, add the to references and mark as collected
     def get_transactions(self):
@@ -107,30 +118,10 @@ class AbacusExportFile(Document):
         pinvs = self.get_docs(docs, "Purchase Invoice")
         pes = self.get_docs(docs, "Payment Entry")
         jvs = self.get_docs(docs, "Journal Entry")
-        update_query = """UPDATE `tabSales Invoice`
-                SET `tabSales Invoice`.`exported_to_abacus` = 1
-                WHERE
-                    `tabSales Invoice`.`name` IN ({sinvs});""".format(
-                    sinvs=self.get_sql_list(sinvs))
-        frappe.db.sql(update_query)
-        update_query = """UPDATE `tabPurchase Invoice`
-                SET `tabPurchase Invoice`.`exported_to_abacus` = 1
-                WHERE
-                    `tabPurchase Invoice`.`name` IN ({pinvs});""".format(
-                    pinvs=self.get_sql_list(pinvs))
-        frappe.db.sql(update_query)
-        update_query = """UPDATE `tabPayment Entry`
-                SET `tabPayment Entry`.`exported_to_abacus` = 1
-                WHERE
-                    `tabPayment Entry`.`name` IN ({pes});""".format(
-                    pes=self.get_sql_list(pes))
-        frappe.db.sql(update_query)
-        update_query = """UPDATE `tabJournal Entry`
-                SET `tabJournal Entry`.`exported_to_abacus` = 1
-                WHERE
-                    `tabJournal Entry`.`name` IN ({jvs});""".format(
-                    jvs=self.get_sql_list(jvs))
-        frappe.db.sql(update_query)
+        set_export_flag("Sales Invoice", self.get_sql_list(sinvs), 1)
+        set_export_flag("Purchase Invoice", self.get_sql_list(pinvs), 1)
+        set_export_flag("Payment Entry", self.get_sql_list(pes), 1)
+        set_export_flag("Journal Entry", self.get_sql_list(jvs), 1)
         return
     
     # extract document names of one doctype as list
@@ -141,6 +132,13 @@ class AbacusExportFile(Document):
                 docs.append(d['dn'])
         return docs
     
+    def get_references(self, dt):
+        docs = []
+        for d in self.references:
+            if d.get('dt') == dt:
+                docs.append(d.get('dn'))
+        return docs
+        
     # safe call to get SQL IN statement    
     def get_sql_list(self, docs):
         if docs:
@@ -643,4 +641,13 @@ class AbacusExportFile(Document):
             transactions.append(transaction)  
                     
         return transactions        
+        
+def set_export_flag(dt, docs, exported):
+    update_query = """
+        UPDATE `tab{dt}`
+        SET `tab{dt}`.`exported_to_abacus` = {exported}
+        WHERE
+            `tab{dt}`.`name` IN ({docs});""".format(dt=dt, docs=docs, exported=exported)
+    frappe.db.sql(update_query)
+    return
         

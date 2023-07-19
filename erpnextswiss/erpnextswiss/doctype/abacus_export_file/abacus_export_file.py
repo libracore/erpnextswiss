@@ -345,15 +345,14 @@ class AbacusExportFile(Document):
         base_currency = frappe.get_value("Company", self.company, "default_currency")
         transactions = []
         sinvs = self.get_docs([ref.__dict__ for ref in self.references], "Sales Invoice")
-        sql_query = """SELECT DISTINCT `tabSales Invoice`.`name`, 
+        sql_query = """SELECT `tabSales Invoice`.`name`, 
                   `tabSales Invoice`.`posting_date`, 
                   `tabSales Invoice`.`currency`, 
                   `tabSales Invoice`.`grand_total` AS `debit`, 
                   `tabSales Invoice`.`base_grand_total` AS `base_debit`,
                   `tabSales Invoice`.`debit_to`,
                   `tabSales Invoice`.`net_total` AS `income`, 
-                  `tabSales Invoice`.`base_net_total` AS `base_income`, 
-                  `tabSales Invoice Item`.`income_account`,  
+                  `tabSales Invoice`.`base_net_total` AS `base_income`,  
                   `tabSales Invoice`.`base_total_taxes_and_charges` AS `tax`, 
                   `tabSales Taxes and Charges`.`account_head`,
                   `tabSales Invoice`.`taxes_and_charges`,
@@ -361,7 +360,6 @@ class AbacusExportFile(Document):
                   `tabSales Invoice`.`customer_name`,
                   `tabSales Invoice`.`conversion_rate`
                 FROM `tabSales Invoice`
-                LEFT JOIN `tabSales Invoice Item` ON `tabSales Invoice`.`name` = `tabSales Invoice Item`.`parent`
                 LEFT JOIN `tabSales Taxes and Charges` ON (`tabSales Invoice`.`name` = `tabSales Taxes and Charges`.`parent` AND  `tabSales Taxes and Charges`.`idx` = 1)
                 WHERE `tabSales Invoice`.`name` IN ({sinvs});""".format(sinvs=self.get_sql_list(sinvs))
         sinv_items = frappe.db.sql(sql_query, as_dict=True)    
@@ -376,61 +374,53 @@ class AbacusExportFile(Document):
                 text2 = html.escape(item.customer_name)
             else:
                 text2 = ""
-            if not restrict_currencies or item.currency in restrict_currencies:
-                # use values in actual currency
-                transactions.append({
-                    'account': self.get_account_number(item.debit_to), 
-                    'amount': item.debit, 
-                    'currency': item.currency, 
-                    'key_amount': item.base_debit, 
-                    'key_currency': base_currency,
-                    'exchange_rate': item.conversion_rate,
-                    'against_singles': [{
-                        'account': self.get_account_number(item.income_account),
-                        'amount': item.income,
-                        'currency': item.currency,
-                        'key_amount': item.base_income,
-                        'key_currency': base_currency
-                    }],
-                    'debit_credit': "D", 
-                    'date': item.posting_date, 
-                    'tax_account': self.get_account_number(item.account_head) or None, 
-                    'tax_amount': item.tax or None, 
-                    'tax_rate': item.rate or None, 
-                    'tax_currency': base_currency,
-                    'tax_code': tax_code or "312", 
-                    'text1': html.escape(item.name),
-                    'text2': text2
+            # find against accounts
+            against_positions = []
+            for account in frappe.db.sql("""
+                SELECT 
+                    `income_account`, 
+                    SUM(`base_net_amount`) AS `key_amount`, 
+                    SUM(`net_amount`) AS `amount`
+                FROM `tabSales Invoice Item`
+                WHERE `parent` = "{sinv}"
+                GROUP BY `income_account`;""".format(sinv=item.name), as_dict=True):
+                against_positions.append({
+                    'account': self.get_account_number(account['income_account']),
+                    'amount': account['amount'],
+                    'currency': item.currency,
+                    'key_amount': account['key_amount'],
+                    'key_currency': base_currency
                 })
-            else:
-                # use base currency
-                transactions.append({
-                    'account': self.get_account_number(item.debit_to), 
-                    'amount': item.base_debit, 
-                    'currency': base_currency, 
-                    'key_amount': item.base_debit, 
-                    'key_currency': base_currency,
-                    'exchange_rate': item.conversion_rate,
-                    'against_singles': [{
-                        'account': self.get_account_number(item.income_account),
-                        'amount': item.income,
-                        'currency': item.currency,
-                        'key_amount': item.base_income,
-                        'key_currency': base_currency
-                    }],
-                    'debit_credit': "D", 
-                    'date': item.posting_date, 
-                    'tax_account': self.get_account_number(item.account_head) or None, 
-                    'tax_amount': item.tax or None, 
-                    'tax_rate': item.rate or None, 
-                    'tax_currency': base_currency,
-                    'tax_code': tax_code or "312", 
-                    'text1': html.escape(item.name),
-                    'text2': text2
-                })                
+            
+            _tx = {
+                'account': self.get_account_number(item.debit_to), 
+                'amount': item.base_debit, 
+                'currency': base_currency, 
+                'key_amount': item.base_debit, 
+                'key_currency': base_currency,
+                'exchange_rate': item.conversion_rate,
+                'against_singles': against_positions,
+                'debit_credit': "D", 
+                'date': item.posting_date, 
+                'tax_account': self.get_account_number(item.account_head) or None, 
+                # 'tax_amount': item.tax or None,    # this takes the complete tax amount
+                'tax_amount': None,                  # calculate on the basis of the item
+                'tax_rate': item.rate or None, 
+                'tax_currency': base_currency,
+                'tax_code': tax_code or "312", 
+                'text1': html.escape(item.name),
+                'text2': text2
+            }
+                
+            if not restrict_currencies or item.currency in restrict_currencies:
+                _tx['amount'] = item.debit
+                _tx['currency'] = item.currency
+                
+            transactions.append(_tx)
+             
         
         pinvs = self.get_docs([ref.__dict__ for ref in self.references], "Purchase Invoice")
-        sql_query = """SELECT DISTINCT `tabPurchase Invoice`.`name`, 
+        sql_query = """SELECT `tabPurchase Invoice`.`name`, 
                   `tabPurchase Invoice`.`posting_date`, 
                   `tabPurchase Invoice`.`currency`, 
                   `tabPurchase Invoice`.`grand_total` AS `credit`, 
@@ -438,7 +428,6 @@ class AbacusExportFile(Document):
                   `tabPurchase Invoice`.`credit_to`,
                   `tabPurchase Invoice`.`net_total` AS `expense`,
                   `tabPurchase Invoice`.`base_net_total` AS `base_expense`, 
-                  `tabPurchase Invoice Item`.`expense_account`,  
                   `tabPurchase Invoice`.`base_total_taxes_and_charges` AS `tax`, 
                   `tabPurchase Taxes and Charges`.`account_head`,
                   `tabPurchase Invoice`.`taxes_and_charges`,
@@ -446,7 +435,6 @@ class AbacusExportFile(Document):
                   `tabPurchase Invoice`.`supplier_name`,
                   `tabPurchase Invoice`.`conversion_rate`
                 FROM `tabPurchase Invoice`
-                LEFT JOIN `tabPurchase Invoice Item` ON `tabPurchase Invoice`.`name` = `tabPurchase Invoice Item`.`parent`
                 LEFT JOIN `tabPurchase Taxes and Charges` ON (`tabPurchase Invoice`.`name` = `tabPurchase Taxes and Charges`.`parent` AND  `tabPurchase Taxes and Charges`.`idx` = 1)
                 WHERE `tabPurchase Invoice`.`name` IN ({pinvs});""".format(pinvs=self.get_sql_list(pinvs))
         
@@ -462,55 +450,50 @@ class AbacusExportFile(Document):
                 tax_code = tax_record.tax_code
             else:
                 tax_code = None
+            
+            # find against accounts
+            against_positions = []
+            for account in frappe.db.sql("""
+                SELECT 
+                    `expense_account`, 
+                    SUM(`base_net_amount`) AS `key_amount`, 
+                    SUM(`net_amount`) AS `amount`
+                FROM `tabPurchase Invoice Item`
+                WHERE `parent` = "{pinv}"
+                GROUP BY `expense_account`;""".format(pinv=item.name), as_dict=True):
+                against_positions.append({
+                    'account': self.get_account_number(account['expense_account']),
+                    'amount': account['amount'],
+                    'currency': item.currency,
+                    'key_amount': account['key_amount'],
+                    'key_currency': base_currency
+                })
             # create content
+            _tx = {
+                'account': self.get_account_number(item.credit_to), 
+                'amount': item.base_credit, 
+                'key_amount': item.base_credit, 
+                'key_currency': base_currency,
+                'exchange_rate': item.conversion_rate,
+                'against_singles': against_positions,
+                'debit_credit': "C", 
+                'date': item.posting_date, 
+                'currency': base_currency, 
+                'tax_account': self.get_account_number(item.account_head) or None, 
+                # 'tax_amount': item.tax or None,    # this takes the complete tax amount
+                'tax_amount': None,                  # calculate on the basis of the item
+                'tax_rate': item.rate or None, 
+                'tax_code': tax_code or "312", 
+                'tax_currency': base_currency,
+                'text1': html.escape(item.name),
+                'text2': text2
+            }
+                
             if not restrict_currencies or item.currency in restrict_currencies:
-                # use values in actual currency
-                transactions.append({
-                    'account': self.get_account_number(item.credit_to), 
-                    'amount': item.credit, 
-                    'key_amount': item.base_credit, 
-                    'key_currency': base_currency,
-                    'exchange_rate': item.conversion_rate,
-                    'against_singles': [{
-                        'account': self.get_account_number(item.expense_account),
-                        'amount': item.base_expense,
-                        'currency': base_currency
-                    }],
-                    'debit_credit': "C", 
-                    'date': item.posting_date, 
-                    'currency': item.currency, 
-                    'tax_account': self.get_account_number(item.account_head) or None, 
-                    'tax_amount': item.tax or None, 
-                    'tax_rate': item.rate or None, 
-                    'tax_code': tax_code or "312", 
-                    'tax_currency': base_currency,
-                    'text1': html.escape(item.name),
-                    'text2': text2
-                })
-            else:
-                # use base currency
-                transactions.append({
-                    'account': self.get_account_number(item.credit_to), 
-                    'amount': item.base_credit, 
-                    'key_amount': item.base_credit, 
-                    'key_currency': base_currency,
-                    'exchange_rate': item.conversion_rate,
-                    'against_singles': [{
-                        'account': self.get_account_number(item.expense_account),
-                        'amount': item.base_expense,
-                        'currency': base_currency
-                    }],
-                    'debit_credit': "C", 
-                    'date': item.posting_date, 
-                    'currency': base_currency, 
-                    'tax_account': self.get_account_number(item.account_head) or None, 
-                    'tax_amount': item.tax or None, 
-                    'tax_rate': item.rate or None, 
-                    'tax_code': tax_code or "312", 
-                    'tax_currency': base_currency,
-                    'text1': html.escape(item.name),
-                    'text2': text2
-                })
+                _tx['amount'] = item.credit
+                _tx['currency'] = item.currency
+                
+            transactions.append(_tx)
             
         # add payment entry transactions
         pes = self.get_docs([ref.__dict__ for ref in self.references], "Payment Entry")

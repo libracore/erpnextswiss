@@ -338,7 +338,7 @@ function pull_supplier_defaults(frm) {
 }
 
 function check_supplier_payment_details(frm) {
-    if ((frm.doc.supplier) && (!frm.doc.is_return) && (!frm.doc.is_paid) && (frm.doc.outstanding_amount > 0)) {
+    if ((frm.doc.supplier) && (!frm.doc.is_return) && (!frm.doc.is_paid)) {
         frappe.call({
             "method": "frappe.client.get",
             "args": {

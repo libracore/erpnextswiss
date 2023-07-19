@@ -210,9 +210,9 @@ class PaymentProposal(Document):
                     'docstatus': 1},
                 fields=['name']
             )
-            for p in payment:
-                doc = frappe.get_doc("Payment Entry", p)
-                p.cancel(ignore_permissions=True)
+            for p in payments:
+                doc = frappe.get_doc("Payment Entry", p['name'])
+                doc.cancel()
                 
         return
     

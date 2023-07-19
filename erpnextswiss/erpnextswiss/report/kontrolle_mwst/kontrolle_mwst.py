@@ -21,7 +21,8 @@ def execute(filters=None):
         {"label": _("Date"), "fieldname": "posting_date", "fieldtype": "Date", "width": 100},
         {"label": _("Total"), "fieldname": "base_grand_total", "fieldtype": "Currency", "width": 100},
         {"label": _("Taxes and Charges"), "fieldname": "taxes_and_charges", "fieldtype": "Data", "width": 150},
-        {"label": _("Tax Amount"), "fieldname": "total_taxes_and_charges", "fieldtype": "Currency", "width": 100}
+        {"label": _("Tax Amount"), "fieldname": "total_taxes_and_charges", "fieldtype": "Currency", "width": 100},
+        {"label": _("Remarks"), "fieldname": "remarks", "fieldtype": "Data", "width": 150}
     ]
 
     data = get_data(filters.from_date, filters.end_date, filters.code, filters.company)

@@ -85,7 +85,11 @@
                             <Currency>{{ transaction.tax_currency }}</Currency>
                             <Amount>0</Amount>
                         </AmountData>
+                        {%- if transaction.tax_amount or transaction.tax_rate == 0 %}
                         <KeyAmount>{{ "{:.2f}".format(((transaction.tax_amount or 0) * (-1))) }}</KeyAmount>
+                        {%- else %}
+                        <KeyAmount>{{ "{:.2f}".format(((against.key_amount * transaction.tax_rate / 100) * (-1))) }}</KeyAmount>
+                        {%- endif %}
                         <TaxRate>{{ transaction.tax_rate or 0 }}</TaxRate>
                         <TaxCoefficient>100</TaxCoefficient>
                         <Country>CH</Country>

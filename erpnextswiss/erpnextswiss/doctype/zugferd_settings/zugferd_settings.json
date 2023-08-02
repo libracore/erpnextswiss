@@ -1,0 +1,67 @@
+{
+ "creation": "2020-07-28 15:31:24.442020",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "section_items",
+  "item_group",
+  "sec_defaults",
+  "defaults"
+ ],
+ "fields": [
+  {
+   "description": "New items will be created in this group",
+   "fieldname": "item_group",
+   "fieldtype": "Link",
+   "label": "Item Group",
+   "options": "Item Group"
+  },
+  {
+   "fieldname": "section_items",
+   "fieldtype": "Section Break",
+   "label": "Items"
+  },
+  {
+   "description": "Add default field values for new records here",
+   "fieldname": "sec_defaults",
+   "fieldtype": "Section Break",
+   "label": "Default"
+  },
+  {
+   "fieldname": "defaults",
+   "fieldtype": "Table",
+   "label": "Default Values",
+   "options": "ZUGFeRD Default Value"
+  }
+ ],
+ "issingle": 1,
+ "modified": "2023-04-23 20:12:26.696700",
+ "modified_by": "Administrator",
+ "module": "ERPNextSwiss",
+ "name": "ZUGFeRD Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "Purchase User",
+   "share": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

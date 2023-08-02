@@ -157,48 +157,54 @@ def get_data():
             "label": _("Configuration"),
             "icon": "fa fa-bank",
             "items": [
-                   {
+                    {
                        "type": "doctype",
                        "name": "Label Printer",
                        "label": _("Label Printer"),
                        "description": _("Label Printer")                   
-                   },
-                   {
+                    },
+                    {
                        "type": "doctype",
                        "name": "Pincode",
                        "label": _("Pincode"),
                        "description": _("Pincode")                   
-                   },
-                   {
+                    },
+                    {
                        "type": "doctype",
                        "name": "ERPNextSwiss Settings",
                        "label": _("ERPNextSwiss Settings"),
                        "description": _("ERPNextSwiss Settings")                   
-                   },
-                   {
+                    },
+                    {
                        "type": "doctype",
                        "name": "Worktime Settings",
                        "label": _("Worktime Settings"),
                        "description": _("Worktime Settings")
-                   },
-                   {
+                    },
+                    {
                        "type": "doctype",
                        "name": "BankImport Template",
                        "label": _("BankImport Templates"),
                        "description": _("BankImport Templates")
-                   },
-                   {
+                    },
+                    {
                        "type": "doctype",
                        "name": "VAT query",
                        "label": _("VAT query"),
                        "description": _("VAT query")
-                   },
-                   {
+                    },
+                    {
                        "type": "doctype",
                        "name": "Salary Certificate Settings",
                        "label": _("Salary Certificate Settings"),
                        "description": _("Salary Certificate Settings")
-                   }
+                    },
+                    {
+                       "type": "doctype",
+                       "name": "ZUGFeRD Settings",
+                       "label": _("ZUGFeRD Settings"),
+                       "description": _("ZUGFeRD Settings")                   
+                    }
             ]
         },
         {
@@ -207,22 +213,34 @@ def get_data():
             "items": [
                    {
                        "type": "doctype",
+                       "name": "ZUGFeRD Wizard",
+                       "label": _("ZUGFeRD Wizard"),
+                       "description": _("ZUGFeRD Wizard")                   
+                    },
+                    {
+                       "type": "doctype",
                        "name": "Datatrans Settings",
                        "label": _("Datatrans Settings"),
                        "description": _("Datatrans Settings")                   
-                   },
-                   {
+                    },
+                    {
+                       "type": "doctype",
+                       "name": "Payrexx Settings",
+                       "label": _("Payrexx Settings"),
+                       "description": _("Payrexx Settings")                   
+                    },
+                    {
                        "type": "doctype",
                        "name": "Abacus Export File",
                        "label": _("Abacus Export File"),
                        "description": _("Abacus Export File")                   
-                   },
-                   {
+                    },
+                    {
                        "type": "page",
                        "name": "abacus_export",
                        "label": _("Abacus Export"),
                        "description": _("Abacus Export")                   
-                   }                 
+                    }                 
             ]
         },
         {

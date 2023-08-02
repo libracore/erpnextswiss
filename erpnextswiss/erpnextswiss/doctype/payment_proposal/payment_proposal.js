@@ -1,4 +1,4 @@
-// Copyright (c) 2018, libracore (https://www.libracore.com) and contributors
+// Copyright (c) 2018-2023, libracore (https://www.libracore.com) and contributors
 // For license information, please see license.txt
 
 frappe.ui.form.on('Payment Proposal', {
@@ -23,6 +23,14 @@ frappe.ui.form.on('Payment Proposal', {
                 }
             }
         }
+        cur_frm.fields_dict['intermediate_account'].get_query = function(doc) {
+            return {
+                filters: {
+                    "account_type": "Bank",
+                    "company": frm.doc.company
+                }
+            }
+        }
         // remove add grid buttons
         var grid_add_btns = document.getElementsByClassName("grid-add-row") || [];
         for (var b = 0; b < grid_add_btns.length; b++) {
@@ -30,23 +38,23 @@ frappe.ui.form.on('Payment Proposal', {
         }
      },
      validate: function(frm) {
-          if (frm.doc.pay_from_account == null) {
-               frappe.msgprint( __("Please select an account to pay from.") );
-               frappe.validated = false;
-          }
-          if ((frm.doc.use_intermediate == 1) && (frm.doc.intermediate_account == null)) {
-               frappe.msgprint( __("Please select an intermediate account.") );
-               frappe.validated = false;
-		  }
+        if (frm.doc.pay_from_account == null) {
+            frappe.msgprint( __("Please select an account to pay from.") );
+            frappe.validated = false;
+        }
+        if ((frm.doc.use_intermediate == 1) && (frm.doc.intermediate_account == null)) {
+            frappe.msgprint( __("Please select an intermediate account.") );
+            frappe.validated = false;
+        }
      }
 });
 
 function generate_bank_file(frm) {
      console.log("creating file...");
      frappe.call({
-          method: 'create_bank_file',
-          doc: frm.doc,
-          callback: function(r) {
+          'method': 'create_bank_file',
+          'doc': frm.doc,
+          'callback': function(r) {
                if (r.message) {
                     // prepare the xml file for download
                     download("payments.xml", r.message.content);
@@ -72,7 +80,7 @@ function set_payment_date(frm) {
     var d = new Date();
     d = new Date(d.setDate(d.getDate() + 1));
     frappe.prompt([
-            {'fieldname': 'date', 'fieldtype': 'Date', 'label': 'Execute Payments On', 'reqd': 1, 'default': d}  
+            {'fieldname': 'date', 'fieldtype': 'Date', 'label': __('Execute Payments On'), 'reqd': 1, 'default': d}  
         ],
         function(values){
             // loop through purchase invoices and set skonto date (this will be the execution date)
@@ -83,8 +91,8 @@ function set_payment_date(frm) {
             // set execution date
             cur_frm.set_value('date', values.date);
         },
-        'Execution Date',
-        'Set'
+        __('Execution Date'),
+        __('Set')
     );
 }
 

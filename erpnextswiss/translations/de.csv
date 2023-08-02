@@ -268,6 +268,8 @@ Page: Bank Wizard,Please set the <b>default customer</b> in <a href=\"/desk#Form
 Page: Bank Wizard,Please set the <b>intermediate bank account</b> in <a href=\"/desk#Form/ERPNextSwiss Settings\">ERPNextSwiss Settings</a>.,Bitte setzen Sie ein <b>Zwischenkonto</b> unter <a href=\"/desk#Form/ERPNextSwiss Settings\">ERPNextSwiss Settings</a>.
 Page: Bank Wizard,An error occurred while parsing. Please check the log files.,Es ist ein Fehler aufgetreten. Bitte prüfen Sie die Fehlerprotokolle.
 Page: Bank Wizard,Unsupported file format. Please use an xml or zip camt file,Dieses Format wird nicht unterstützt. Bitte verwenden Sie eine gültige XML- oder ZIP-Datei
+Page: Bank Wizard,Bank account has no IBAN.,Das Bankkonto hat keine IBAN hinterlegt.
+Page: Bank Wizard,IBAN check mandatory,IBAN-Prüfung zwingend erforderlich
 DocType: Daily Closing Statement,Daily Closing Statement,Tagesabschluss
 DocType: Daily Closing Statement,Statistics,Statistik
 DocType: Daily Closing Statement,Total Sales,Total Umsatz
@@ -399,3 +401,21 @@ Report: Service Invoicing,Created,Erstellt
 Report: Service Invoicing,Service Item,Dienstleistungsartikel
 Report: Service Invoicing,Invoicing,Abrechnung
 DocType: Salary Certificate Settings,Salary Certificate Settings,Lohnausweis Einstellungen
+DocType: Payment Reminder,Final reminder,Letzte Mahnung
+DocType: Payment Reminder,First reminder,Erste Mahnung
+DocType: Payment Reminder,Second reminder,Zweite Mahnung
+DocType: Payrexx Settings,Payrexx Settings,Payrexx-Einstellungen
+DocType: Payrexx Settings,Please set payrexx API key in the Payrexx settings.,Bitte den Payrexx API Key in den Payrexx-Einstellungen eintragen.
+DocType: Payrexx Settings,Payrexx Instance,Payrexx-Instanz
+DocType: Payrexx Settings,Payrexx API Key,Payrexx API-Schlüssel
+DocType: Payrexx Settings,Success URL,Erfolgs-URL
+DocType: ZUGFeRD Wizard,ZUGFeRD Wizard,Kreditoren-Assistent
+DocType: ZUGFeRD Wizard,Default Tax,Standard-Steuer
+DocType: ZUGFeRD Wizard,Please load a file...,Bitte eine Datei laden...
+DocType: ZUGFeRD Wizard,Ready for import,Bereit zum Einlesen
+DocType: ZUGFeRD Wizard,Create invoice,Rechnung erstellen
+DocType: ZUGFeRD Wizard,Manually create invoice,Rechnung manuell erstellen
+DocType: ZUGFeRD Wizard,This invoice cannot be interpreted automatically.,Diese Rechnung kann nicht automatisch verarbeitet werden
+DocType: ZUGFeRD Wizard,Import successful,Import erfolgreich
+DocType: ZUGFeRD Wizard,Creating invoice...,Rechnung erstellen...
+DocType: ZUGFeRD Wizard,Reading invoice...,Rechnung lesen...

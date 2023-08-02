@@ -1,5 +1,6 @@
 frappe.ui.form.on('Purchase Invoice', {
     refresh(frm) {
+        cur_frm.dashboard.clear_comment();
         if (frm.doc.__islocal||cur_frm.doc.docstatus == '0') {
             frm.add_custom_button(__("Scan Invoice"), function() {
                 check_defaults(frm);
@@ -11,9 +12,11 @@ frappe.ui.form.on('Purchase Invoice', {
         if ((frm.doc.docstatus === 1) && (frm.doc.is_proposed === 1)) {
             cur_frm.dashboard.add_comment(__('This document has been transmitted to the bank for payment'), 'blue', true);
         }
+        
+        check_supplier_payment_details(frm);
     },
     validate: function(frm) {
-        if (frm.doc.payment_type == "ESR") {
+        if (frm.doc.payment_type === "ESR") {
             if (frm.doc.esr_reference_number) {
                 if (!check_esr(frm.doc.esr_reference_number)) {
                     frappe.msgprint( __("ESR code not valid") ); 
@@ -42,15 +45,35 @@ frappe.ui.form.on('Purchase Invoice', {
                     r.message.forEach(function(pinv) { 
                         if (pinv.name != frm.doc.name) {
                             frappe.msgprint(  __("This invoice is already recorded in") + " " + pinv.name );
-                            frappe.validated=false;
+                            frappe.validated = false;
                         }
                     });
                 }
             });     
         }
+        
+        // check payment automation
+        if ((frm.doc.outstanding_amount > 0) && (!frm.doc.is_paid)) {
+            // validate payment
+            if (!locals.iban) {
+                // no iban found
+                frappe.msgprint(  __("Supplier has no suitable payment details.") );
+                frappe.validated = false;
+            } else {
+                if ((frm.doc.payment_type === "ESR") && (locals.iban.replaceAll(" ", "")[4] !== "3")){
+                    // invalid ESR reference
+                    frappe.msgprint(  __("Supplier has no valid QR-IBAN.") );
+                    frappe.validated = false;
+                }
+            }
+        }
     },
     supplier: function(frm) {
         pull_supplier_defaults(frm);
+        check_supplier_payment_details(frm);
+    },
+    payment_type: function(frm) {
+        check_supplier_payment_details(frm);
     }
 });
 
@@ -301,14 +324,42 @@ function fetch_esr_details_to_existing_sinv(frm, values) {
 function pull_supplier_defaults(frm) {
     if (frm.doc.supplier) {
         frappe.call({
-            'method': "frappe.client.get",
-            'args': {
-                'doctype': "Supplier",
+            "method": "frappe.client.get",
+            "args": {
+                "doctype": "Supplier",
                 "name": frm.doc.supplier
             },
             "callback": function(response) {
                 var supplier = response.message;
                 cur_frm.set_value("payment_type", supplier.default_payment_method);
+            }
+        });
+    }
+}
+
+function check_supplier_payment_details(frm) {
+    if ((frm.doc.supplier) && (!frm.doc.is_return) && (!frm.doc.is_paid)) {
+        frappe.call({
+            "method": "frappe.client.get",
+            "args": {
+                "doctype": "Supplier",
+                "name": frm.doc.supplier
+            },
+            "async": false,
+            "callback": function(response) {
+                var supplier = response.message;
+                if (cur_frm.doc.payment_type === "ESR") {
+                    cur_frm.dashboard.add_comment(__("ESR") + ": " + supplier.esr_participation_number, 'green', true);
+                    locals.iban = supplier.esr_participation_number;
+                } 
+                else if (cur_frm.doc.payment_type === "IBAN") {
+                    cur_frm.dashboard.add_comment(__("IBAN") + ": " + supplier.iban, 'green', true);
+                    locals.iban = supplier.iban;
+                }
+                else if (cur_frm.doc.payment_type === "SEPA") {
+                    cur_frm.dashboard.add_comment(__("SEPA") + ": " + supplier.iban, 'green', true);
+                    locals.iban = supplier.iban;
+                }
             }
         });
     }

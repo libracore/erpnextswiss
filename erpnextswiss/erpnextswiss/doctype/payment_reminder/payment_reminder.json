@@ -10,6 +10,7 @@
   "customer_name",
   "email",
   "letter_head",
+  "language",
   "column_general",
   "company",
   "title",
@@ -138,7 +139,8 @@
    "fieldname": "email",
    "fieldtype": "Data",
    "hidden": 1,
-   "label": "Email"
+   "label": "Email",
+   "options": "Email"
   },
   {
    "fetch_from": "company.default_letter_head",
@@ -148,10 +150,17 @@
    "hidden": 1,
    "label": "Letter Head",
    "options": "Letter Head"
+  },
+  {
+   "fetch_from": "customer.language",
+   "fieldname": "language",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Language"
   }
  ],
  "is_submittable": 1,
- "modified": "2023-03-16 16:46:58.514747",
+ "modified": "2023-06-20 20:22:04.129616",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "Payment Reminder",

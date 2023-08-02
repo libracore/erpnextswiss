@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018-2020, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2018-2023, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
 #
 #
@@ -60,7 +60,8 @@ def create_zugferd_xml(sales_invoice, verify=True):
             'total_tax': sinv.total_taxes_and_charges,
             'grand_total': (sinv.rounded_total or sinv.grand_total),
             'prepaid_amount': ((sinv.rounded_total or sinv.grand_total) - sinv.outstanding_amount),
-            'outstanding_amount': sinv.outstanding_amount
+            'outstanding_amount': sinv.outstanding_amount,
+            'po_no': sinv.po_no
         }
         data['items'] = []
         for item in sinv.items:

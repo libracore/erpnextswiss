@@ -77,6 +77,11 @@
           <ram:CountryID>{{ customer_address.country_code }}</ram:CountryID>
         </ram:PostalTradeAddress>
       </ram:BuyerTradeParty>
+      {%- if po_no %}
+      <ram:BuyerOrderReferencedDocument>
+        <ram:IssuerAssignedID>{{ po_no }}</ram:IssuerAssignedID>
+      </ram:BuyerOrderReferencedDocument>
+      {%- endif %}
     </ram:ApplicableHeaderTradeAgreement>
     <ram:ApplicableHeaderTradeDelivery>
     </ram:ApplicableHeaderTradeDelivery>

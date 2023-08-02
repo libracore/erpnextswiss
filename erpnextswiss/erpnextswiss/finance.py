@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018-2021, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2018-2023, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
 import frappe
 from frappe import _
 from frappe.utils.background_jobs import enqueue
 from frappe.utils.file_manager import save_file, remove_all
+from erpnext.setup.utils import get_exchange_rate as get_core_exchange_rate
 
 """ Jinja hook to create account sheets """
 def get_account_sheets(fiscal_year, company=None):
@@ -105,3 +106,51 @@ def build_long_fiscal_year_print(fiscal_year):
         file_name = ("{0}_{1}.pdf".format(fiscal_year.name, c.company)).replace(" ", "_").replace("/", "_")
         save_file(file_name, pdf, "Fiscal Year", fiscal_year.name, is_private=1)
     return
+
+"""
+Function to build customer credit statement of account
+
+Jinja-endpoint
+
+Company selection: defined through accounts
+"""
+def get_customer_ledger(accounts, customer, in_account_currency=False):
+    currency_selector = """`tabGL Entry`.`credit` - `tabGL Entry`.`debit`"""
+    if in_account_currency:
+        currency_selector = """`tabGL Entry`.`credit_in_account_currency` - `tabGL Entry`.`debit_in_account_currency`"""
+        
+    sql_query = """
+        SELECT
+            `tabGL Entry`.`posting_date` AS `posting_date`,
+            {currency_selector} AS `amount`,
+            `tabGL Entry`.`voucher_no` AS `voucher_no`
+        FROM `tabGL Entry`
+        LEFT JOIN `tabPayment Entry` ON `tabPayment Entry`.`name` = `tabGL Entry`.`voucher_no`
+        WHERE 
+            `tabGL Entry`.`account` IN ("{accounts}")
+            AND (`tabGL Entry`.`party` = "{customer}"
+                OR `tabPayment Entry`.`party` = "{customer}")
+        ORDER BY `tabGL Entry`.`posting_date` ASC;
+    """.format(accounts="\", \"".join(accounts), customer=customer, 
+        currency_selector=currency_selector)
+    
+    data = frappe.db.sql(sql_query, as_dict=True)
+    
+    # add balance
+    balance = 0
+    for d in data:
+        balance += d['amount']
+        d['balance'] = balance
+        
+    return data
+    
+@frappe.whitelist()
+def get_exchange_rate(from_currency=None, to_currency=None, company=None, date=None):
+    if not from_currency and company:
+        from_currency = frappe.get_cached_value("Company", company, "default_currency")
+    if not to_currency and company:
+        to_currency = frappe.get_cached_value("Company", company, "default_currency")
+    
+    return get_core_exchange_rate(from_currency=from_currency, 
+        to_currency=to_currency, transaction_date=date)
+        

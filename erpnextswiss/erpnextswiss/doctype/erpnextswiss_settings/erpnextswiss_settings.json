@@ -26,6 +26,7 @@
   "auto_process_matches",
   "numeric_only_debtor_matching",
   "debug_mode",
+  "iban_check_mandatory",
   "bank_import_section",
   "bankimport_table",
   "invoice_code_line_scanning_section",
@@ -275,10 +276,16 @@
    "fieldname": "debug_mode",
    "fieldtype": "Check",
    "label": "Debug Mode"
+  },
+  {
+   "default": "0",
+   "fieldname": "iban_check_mandatory",
+   "fieldtype": "Check",
+   "label": "IBAN check mandatory"
   }
  ],
  "issingle": 1,
- "modified": "2023-03-03 10:30:49.767974",
+ "modified": "2023-06-02 10:33:12.805101",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "ERPNextSwiss Settings",

@@ -18,7 +18,7 @@
                     <EntryType>{%- if transaction.against_singles|len == 1 %}S{%- else %}C{%- endif %}</EntryType>
                     <Type>Normal</Type>
                     <DebitCredit>{{ transaction.debit_credit }}</DebitCredit>
-					<Client></Client>
+                    <Client></Client>
                     {%- if transaction.customer %}
                     <Client>{{ transaction.customer }}</Client>
                     {%- endif %}
@@ -66,7 +66,7 @@
                         <Currency>{{ against.currency }}</Currency>
                         <Amount>{{ "{:.2f}".format(against.amount) }}</Amount>
                     </AmountData>
-                    <KeyAmount>{{ "{:.2f}".format(against.amount) }}</KeyAmount>
+                    <KeyAmount>{{ "{:.2f}".format(against.key_amount or against.amount) }}</KeyAmount>
                     <Account>{{ against.account }}</Account>
                     {%- if transaction.tax_account %}
                     <TaxAccount>{{ transaction.tax_account }}</TaxAccount>
@@ -85,7 +85,11 @@
                             <Currency>{{ transaction.tax_currency }}</Currency>
                             <Amount>0</Amount>
                         </AmountData>
+                        {%- if transaction.tax_amount or transaction.tax_rate == 0 %}
                         <KeyAmount>{{ "{:.2f}".format(((transaction.tax_amount or 0) * (-1))) }}</KeyAmount>
+                        {%- else %}
+                        <KeyAmount>{{ "{:.2f}".format(((against.key_amount * transaction.tax_rate / 100) * (-1))) }}</KeyAmount>
+                        {%- endif %}
                         <TaxRate>{{ transaction.tax_rate or 0 }}</TaxRate>
                         <TaxCoefficient>100</TaxCoefficient>
                         <Country>CH</Country>

@@ -26,7 +26,9 @@
   "sec_transmission",
   "transmission_mode",
   "col_transmission",
-  "email_recipient"
+  "email_recipient",
+  "sec_units",
+  "units"
  ],
  "fields": [
   {
@@ -158,9 +160,22 @@
    "fieldname": "section_customer",
    "fieldtype": "Section Break",
    "label": "Customer"
+  },
+  {
+   "collapsible": 1,
+   "description": "This allows to replace units for the transmision",
+   "fieldname": "sec_units",
+   "fieldtype": "Section Break",
+   "label": "Unit replacement"
+  },
+  {
+   "fieldname": "units",
+   "fieldtype": "Table",
+   "label": "Units",
+   "options": "EDI Connection Unit"
   }
  ],
- "modified": "2022-08-25 21:07:22.976369",
+ "modified": "2023-08-03 15:39:57.983203",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "EDI Connection",

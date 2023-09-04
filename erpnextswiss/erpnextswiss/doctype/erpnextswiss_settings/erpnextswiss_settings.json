@@ -9,6 +9,7 @@
   "default_supplier",
   "section_payment_reminder",
   "payment_reminder_auto_submit",
+  "no_reminder_on_credit_balance",
   "column_payment_reminder",
   "payment_reminder_charges",
   "payment_reminder_level_blocking_period",
@@ -282,10 +283,16 @@
    "fieldname": "iban_check_mandatory",
    "fieldtype": "Check",
    "label": "IBAN check mandatory"
+  },
+  {
+   "default": "0",
+   "fieldname": "no_reminder_on_credit_balance",
+   "fieldtype": "Check",
+   "label": "No Reminder on Credit Balance"
   }
  ],
  "issingle": 1,
- "modified": "2023-06-02 10:33:12.805101",
+ "modified": "2023-09-04 15:14:35.307749",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "ERPNextSwiss Settings",

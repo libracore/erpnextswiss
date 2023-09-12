@@ -27,6 +27,14 @@ class AbacusExportFile(Document):
         
     # find all transactions, add the to references and mark as collected
     def get_transactions(self):
+        # check elimination of zero-sum transactions
+        if cint(self.exclude_zero_sum_txs) == 1:
+            sinv_filter = """AND `tabSales Invoice`.`grand_total` != 0"""
+            pinv_filter = """AND `tabPurchase Invoice`.`grand_total` != 0"""
+        else:
+            sinv_filter = ""
+            pinv_filter = ""
+             
         # get all documents
         if cint(self.debtors_only):
             document_query = """SELECT 
@@ -38,6 +46,7 @@ class AbacusExportFile(Document):
                     AND `tabSales Invoice`.`docstatus` = 1
                     AND `tabSales Invoice`.`exported_to_abacus` = 0
                     AND `tabSales Invoice`.`company` = '{company}'
+                    {sinv_filter}
                 UNION SELECT 
                     "Payment Entry" AS `dt`,
                     `tabPayment Entry`.`name` AS `dn`
@@ -62,7 +71,7 @@ class AbacusExportFile(Document):
                            AND `tabJournal Entry Account`.`party_type` = 'Customer') > 0
                     AND `tabJournal Entry`.`company` = '{company}';""".format(
                     start_date=self.from_date, end_date=self.to_date, 
-                    company=self.company)
+                    company=self.company, sinv_filter=sinv_filter)
         else:
             document_query = """SELECT 
                         "Sales Invoice" AS `dt`,
@@ -73,6 +82,7 @@ class AbacusExportFile(Document):
                         AND `tabSales Invoice`.`docstatus` = 1
                         AND `tabSales Invoice`.`exported_to_abacus` = 0
                         AND `tabSales Invoice`.`company` = '{company}'
+                        {sinv_filter}
                     UNION SELECT 
                         "Purchase Invoice" AS `dt`,
                         `tabPurchase Invoice`.`name` AS `dn`
@@ -82,6 +92,7 @@ class AbacusExportFile(Document):
                         AND `tabPurchase Invoice`.`docstatus` = 1
                         AND `tabPurchase Invoice`.`exported_to_abacus` = 0
                         AND `tabPurchase Invoice`.`company` = '{company}'
+                        {pinv_filter}
                     UNION SELECT 
                         "Payment Entry" AS `dt`,
                         `tabPayment Entry`.`name` AS `dn`
@@ -101,7 +112,7 @@ class AbacusExportFile(Document):
                         AND `tabJournal Entry`.`exported_to_abacus` = 0
                         AND `tabJournal Entry`.`company` = '{company}';""".format(
                         start_date=self.from_date, end_date=self.to_date, 
-                        company=self.company)
+                        company=self.company, sinv_filter=sinv_filter, pinv_filter=pinv_filter)
         
         docs = frappe.db.sql(document_query, as_dict=True)
         

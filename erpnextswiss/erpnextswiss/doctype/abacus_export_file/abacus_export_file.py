@@ -422,12 +422,13 @@ class AbacusExportFile(Document):
                 'text1': html.escape(item.name),
                 'text2': text2
             }
-                
+            
             if not restrict_currencies or item.currency in restrict_currencies:
                 _tx['amount'] = item.debit
                 _tx['currency'] = item.currency
-                
-            transactions.append(_tx)
+            
+            if item.base_debit != 0 or cint(self.exclude_zero_sum_txs) == 0:     # if exclude zero, do not add this component
+                transactions.append(_tx)
              
         
         pinvs = self.get_docs([ref.__dict__ for ref in self.references], "Purchase Invoice")
@@ -503,8 +504,9 @@ class AbacusExportFile(Document):
             if not restrict_currencies or item.currency in restrict_currencies:
                 _tx['amount'] = item.credit
                 _tx['currency'] = item.currency
-                
-            transactions.append(_tx)
+            
+            if item.base_debit != 0 or cint(self.exclude_zero_sum_txs) == 0:     # if exclude zero, do not add this component
+                transactions.append(_tx)
             
         # add payment entry transactions
         pes = self.get_docs([ref.__dict__ for ref in self.references], "Payment Entry")

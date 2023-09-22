@@ -9,6 +9,7 @@
 import frappe
 from erpnextswiss.erpnextswiss.common_functions import get_primary_address
 from frappe import _
+from frappe.utils import cint
 from bs4 import BeautifulSoup
 from datetime import datetime
 from facturx import check_facturx_xsd
@@ -40,6 +41,7 @@ def create_zugferd_xml(sales_invoice, verify=True):
                 'text': html.escape("Sales Invoice {title} ({number}), {date}".format(
                     title=sinv.title, number=sinv.name, date=sinv.posting_date))
             })
+        if sinv.
         # compile xml content
         data = {
             'name': html.escape(sinv.name),
@@ -61,7 +63,15 @@ def create_zugferd_xml(sales_invoice, verify=True):
             'grand_total': (sinv.rounded_total or sinv.grand_total),
             'prepaid_amount': ((sinv.rounded_total or sinv.grand_total) - sinv.outstanding_amount),
             'outstanding_amount': sinv.outstanding_amount,
-            'po_no': sinv.po_no
+            'po_no': sinv.po_no,
+            'supplier_contact_name': html.escape(frappe.get_value("User", sinv.owner, "full_name") or ""),
+            'supplier_contact_phone': html.escape(frappe.get_value("User", sinv.owner, "phone") or ""),
+            'supplier_contact_email': html.escape(sinv.owner),
+            'customer_contact_name': html.escape(sinv.contact_display or ""),
+            'customer_contact_phone': html.escape(sinv.contact_mobile or ""),
+            'customer_contact_email': html.escape(sinv.contact_email or ""),
+            'is_return': cint(sinv.is_return),
+            'iban': frappe.get_value("Account", sinv.debit_to, "iban")
         }
         data['items'] = []
         for item in sinv.items:

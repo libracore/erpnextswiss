@@ -41,7 +41,6 @@ def create_zugferd_xml(sales_invoice, verify=True):
                 'text': html.escape("Sales Invoice {title} ({number}), {date}".format(
                     title=sinv.title, number=sinv.name, date=sinv.posting_date))
             })
-        if sinv.
         # compile xml content
         data = {
             'name': html.escape(sinv.name),

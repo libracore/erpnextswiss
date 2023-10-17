@@ -154,3 +154,8 @@ def get_exchange_rate(from_currency=None, to_currency=None, company=None, date=N
     return get_core_exchange_rate(from_currency=from_currency, 
         to_currency=to_currency, transaction_date=date)
         
+def get_debit_accounts(company):
+    accounts = []
+    for a in frappe.get_all("Account", filters={'account_type': 'Receivable', 'disabled': 0, 'company': company}, fields=['name']):
+        accounts.append(a.get("name"))
+    return accounts

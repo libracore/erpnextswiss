@@ -78,17 +78,18 @@
                     <SelectionCode></SelectionCode>
                     {%- if transaction.tax_account %}
                     <TaxData mode="SAVE">
-                        <TaxIncluded>I</TaxIncluded>
+                        <TaxIncluded>{%- if transaction.against_singles|len == 1 %}I{%- else %}E{%- endif %}</TaxIncluded>
                         <TaxType>1</TaxType>
                         <UseCode>1</UseCode>
                         <AmountData mode="SAVE">
                             <Currency>{{ transaction.tax_currency }}</Currency>
                             <Amount>0</Amount>
                         </AmountData>
+                        {%- if transaction.against_singles|len == 1 %}{%- set factor = (-1) %}{%- else %}{%- set factor = 1 %}{%- endif %}
                         {%- if transaction.tax_amount or transaction.tax_rate == 0 %}
-                        <KeyAmount>{{ "{:.2f}".format(((transaction.tax_amount or 0) * (-1))) }}</KeyAmount>
+                        <KeyAmount>{{ "{:.2f}".format(((transaction.tax_amount or 0) * factor)) }}</KeyAmount>
                         {%- else %}
-                        <KeyAmount>{{ "{:.2f}".format(((against.key_amount * transaction.tax_rate / 100) * (-1))) }}</KeyAmount>
+                        <KeyAmount>{{ "{:.2f}".format(((against.key_amount * transaction.tax_rate / 100) * factor)) }}</KeyAmount>
                         {%- endif %}
                         <TaxRate>{{ transaction.tax_rate or 0 }}</TaxRate>
                         <TaxCoefficient>100</TaxCoefficient>

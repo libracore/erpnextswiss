@@ -130,12 +130,12 @@ def download_pricat(edi_file):
         # quantity: minimum order
         content_segments.append("QTY+53:{min_qty}:{uom}'".format(
             min_qty=item.min_qty,
-            uom=get_uom_code(item_doc.get("stock_uom") or "PCE")
+            uom=get_uom_code(get_edi_unit(edi_con, item_doc.get("stock_uom") or "PCE"))
         ))
         # quantity: qty per pack
         content_segments.append("QTY+52:{min_qty}:{uom}'".format(
             min_qty=item.qty_per_pack,
-            uom=get_uom_code(item_doc.get("stock_uom") or "PCE")
+            uom=get_uom_code(get_edi_unit(edi_con, item_doc.get("stock_uom") or "PCE"))
         ))
         # availability date
         content_segments.append("DTM+44:20000101:102'")
@@ -281,7 +281,7 @@ def download_desadv(edi_file):
         # quantity
         content_segments.append("QTY+12:{qty}:{uom}'".format(
             qty=item.qty,
-            uom=get_uom_code(item_doc.get("stock_uom") or "PCE")
+            uom=get_uom_code(get_edi_unit(edi_con, item_doc.get("stock_uom") or "PCE"))
         ))    
 
     # closing segment
@@ -637,3 +637,24 @@ def parse_edi(segments):
 def purify_string(s):
     return (s or "").replace("\r", "").replace("\n", "")
     
+def get_edi_unit(edi_connection, unit):
+    if type(edi_connection) == str:
+        edi_connection = frappe.get_doc("EDI Connection", edi_connection)
+    edi_unit = unit
+    if edi_connection.units:
+        for u in edi_connection.units:
+            if u.system_unit == unit:
+                edi_unit = u.edi_unit
+                break
+    return edi_unit
+    
+def get_system_unit(edi_connection, unit):
+    if type(edi_connection) == str:
+        edi_connection = frappe.get_doc("EDI Connection", edi_connection)
+    system_unit = unit
+    if edi_connection.units:
+        for u in edi_connection.units:
+            if u.edi_unit == unit:
+                system_unit = u.system_unit
+                break
+    return system_unit

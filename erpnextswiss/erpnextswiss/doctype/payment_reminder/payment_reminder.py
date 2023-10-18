@@ -77,13 +77,6 @@ def create_payment_reminders(company):
         except:
             max_level = 3
         for customer in customers:
-            if frappe.get_value("ERPNextSwiss Settings", "ERPNextSwiss Settings", "no_reminder_on_credit_balance"):
-                # get customer credit balance
-                debit_accounts = get_debit_accounts(company)
-                gl_records = get_customer_ledger(debit_accounts, customer)
-                if len(gl_records) > 0 and gl_records[-1]['balance'] <= 0:
-                    continue        # skip on balance
-                    
             sql_query = ("""SELECT 
                         `name`, 
                         `due_date`, 
@@ -104,6 +97,14 @@ def create_payment_reminders(company):
             open_invoices = frappe.db.sql(sql_query, as_dict=True)
             email = None
             if open_invoices:
+                # check if this customer has an overall credit balance
+                if frappe.get_value("ERPNextSwiss Settings", "ERPNextSwiss Settings", "no_reminder_on_credit_balance"):
+                    # get customer credit balance
+                    debit_accounts = get_debit_accounts(company)
+                    gl_records = get_customer_ledger(debit_accounts, customer)
+                    if len(gl_records) > 0 and gl_records[-1]['balance'] >= 0:
+                        continue        # skip on balance
+                        
                 now = datetime.now()
                 invoices = []
                 highest_level = 0

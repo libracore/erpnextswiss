@@ -12,6 +12,7 @@
   "company",
   "aggregated",
   "debtors_only",
+  "exclude_zero_sum_txs",
   "amended_from",
   "section_transactions",
   "references"
@@ -75,10 +76,17 @@
    "fieldname": "debtors_only",
    "fieldtype": "Check",
    "label": "Debtors only"
+  },
+  {
+   "default": "0",
+   "depends_on": "eval:doc.aggregated==0",
+   "fieldname": "exclude_zero_sum_txs",
+   "fieldtype": "Check",
+   "label": "Exclude zero-sum invoices"
   }
  ],
  "is_submittable": 1,
- "modified": "2023-06-20 20:23:34.129844",
+ "modified": "2023-09-12 10:43:20.377585",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "Abacus Export File",

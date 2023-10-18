@@ -48,6 +48,13 @@ def download_zugferd_pdf(sales_invoice_name, format=None, doc=None, no_letterhea
     frappe.local.response.type = "download"
     return
 
+@frappe.whitelist()
+def download_zugferd_xml(sales_invoice_name):
+    frappe.local.response.filename = "{name}.xml".format(name=sales_invoice_name.replace(" ", "-").replace("/", "-"))
+    frappe.local.response.filecontent = create_zugferd_xml(sales_invoice_name)
+    frappe.local.response.type = "download"
+    return
+    
 @frappe.whitelist()    
 def get_xml(path):
     with open(path, "rb") as file:

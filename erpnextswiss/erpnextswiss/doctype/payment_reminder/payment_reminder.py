@@ -9,6 +9,8 @@ from datetime import datetime
 import json
 from frappe.utils.data import add_days
 from erpnextswiss.erpnextswiss.finance import get_customer_ledger, get_debit_accounts
+from frappe.utils.background_jobs import enqueue
+from frappe import _
 
 class PaymentReminder(Document):
     # this will apply all payment reminder levels and blocking days (as exclude_from_payment_reminder_until) in the sales invoices
@@ -36,6 +38,18 @@ class PaymentReminder(Document):
         self.update_reminder_levels()
     pass
 
+@frappe.whitelist()
+def enqueue_create_payment_reminders(company):
+    kwargs={
+      'company': company
+    }
+    
+    enqueue("erpnextswiss.erpnextswiss.doctype.payment_reminder.payment_reminder.create_payment_reminders",
+        queue='long',
+        timeout=15000,
+        **kwargs)
+    return {'result': _('Started...')}
+    
 # this function will create new payment reminders
 @frappe.whitelist()
 def create_payment_reminders(company):
@@ -137,7 +151,10 @@ def create_payment_reminders(company):
                     'currency': currency,
                     'email': email
                 })
-                reminder_record = new_reminder.insert(ignore_permissions=True)
+                try:
+                    reminder_record = new_reminder.insert(ignore_permissions=True)
+                except Exception as err:
+                    frappe.log_error(err, _("Unable to create payment reminder") )
                 if int(auto_submit) == 1:
                     reminder_record.update_reminder_levels()
                     reminder_record.submit()

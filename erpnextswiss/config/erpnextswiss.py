@@ -240,7 +240,13 @@ def get_data():
                        "name": "abacus_export",
                        "label": _("Abacus Export"),
                        "description": _("Abacus Export")                   
-                    }                 
+                    },
+                    {
+                       "type": "doctype",
+                       "name": "Worldline TIM",
+                       "label": _("Worldline TIM"),
+                       "description": _("Worldline TIM")                   
+                    }
             ]
         },
         {

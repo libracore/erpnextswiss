@@ -375,6 +375,10 @@ class AbacusExportFile(Document):
                 WHERE `tabSales Invoice`.`name` IN ({sinvs});""".format(sinvs=self.get_sql_list(sinvs))
         sinv_items = frappe.db.sql(sql_query, as_dict=True)    
         for item in sinv_items:
+            # if this is a zero-sum transaction, skip
+            if item['debit'] == 0:
+                continue
+                
             if item.taxes_and_charges:
                 tax_record = frappe.get_doc("Sales Taxes and Charges Template", item.taxes_and_charges)
                 tax_code = tax_record.tax_code
@@ -395,13 +399,14 @@ class AbacusExportFile(Document):
                 FROM `tabSales Invoice Item`
                 WHERE `parent` = "{sinv}"
                 GROUP BY `income_account`;""".format(sinv=item.name), as_dict=True):
-                against_positions.append({
-                    'account': self.get_account_number(account['income_account']),
-                    'amount': account['amount'],
-                    'currency': item.currency,
-                    'key_amount': account['key_amount'],
-                    'key_currency': base_currency
-                })
+                if account['amount']:               # only append non-zero entries
+                    against_positions.append({
+                        'account': self.get_account_number(account['income_account']),
+                        'amount': account['amount'],
+                        'currency': item.currency,
+                        'key_amount': account['key_amount'],
+                        'key_currency': base_currency
+                    })
             
             _tx = {
                 'account': self.get_account_number(item.debit_to), 

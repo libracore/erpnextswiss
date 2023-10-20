@@ -15,7 +15,9 @@
   "connectionipport",
   "integratorid",
   "cb_2",
-  "autocommit"
+  "autocommit",
+  "section_printer",
+  "printer_ip"
  ],
  "fields": [
   {
@@ -80,10 +82,20 @@
    "fieldname": "autocommit",
    "fieldtype": "Check",
    "label": "Auto Commit"
+  },
+  {
+   "fieldname": "section_printer",
+   "fieldtype": "Section Break",
+   "label": "Printer"
+  },
+  {
+   "fieldname": "printer_ip",
+   "fieldtype": "Data",
+   "label": "Printer IP"
   }
  ],
  "issingle": 1,
- "modified": "2023-10-19 13:02:22.876835",
+ "modified": "2023-10-20 14:12:59.203794",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "Worldline TIM",

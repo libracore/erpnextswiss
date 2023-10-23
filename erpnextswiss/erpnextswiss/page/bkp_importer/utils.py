@@ -56,8 +56,10 @@ def _calc_structur_organisation_totals(dt, dn):
                 if structur_element.main_element not in last_element_names:
                     structur_element.total = 0
         document.save()
-                    
-    while parent_list:
+    
+    count = 0
+    while parent_list and count < 10:
+        count += 1
         parent_list = calc_and_create_new_parent_list(parent_list, dt, dn)
             
     return

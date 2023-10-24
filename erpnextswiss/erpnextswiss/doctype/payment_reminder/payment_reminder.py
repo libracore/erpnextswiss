@@ -87,7 +87,7 @@ def create_payment_reminders(company):
                         `currency`,
                         `contact_email`
                     FROM `tabSales Invoice` 
-                    WHERE `outstanding_amount` > 0 AND `customer` = '{customer}'
+                    WHERE `outstanding_amount` > 0 AND `customer` = "{customer}"
                       AND `docstatus` = 1
                       AND `enable_lsv` = 0
                       AND (`due_date` < CURDATE())

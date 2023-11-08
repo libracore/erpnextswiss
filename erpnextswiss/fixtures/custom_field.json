@@ -1808,7 +1808,7 @@
   "in_standard_filter": 0,
   "insert_after": "total_commission",
   "label": "Creditor Reference",
-  "modified": "2023-11-08 14:26:17.747253",
+  "modified": "2020-12-05 09:42:05.946128",
   "name": "Sales Invoice-section_creditor_reference",
   "no_copy": 0,
   "options": null,

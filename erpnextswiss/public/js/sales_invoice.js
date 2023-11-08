@@ -27,7 +27,7 @@ frappe.ui.form.on('Sales Invoice', {
     refresh(frm) {
 
     },
-    // Generate RF Number
+    // Generate RF Number (Creditor Reference ISO 11649)
     onload: function(frm) {
   		'use strict';
   		const CHARCODE_A = 'A'.charCodeAt(0);

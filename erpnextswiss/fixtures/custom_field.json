@@ -1839,7 +1839,7 @@
     "dt":"Sales Invoice",
     "label":"Reference Number Full",
     "fieldname":"reference_number_full",
-    "insert_after":"disabled",
+    "insert_after":"reference_number",
     "length":25,
     "fieldtype":"Data",
     "precision":"",

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018-2020, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2018-2023, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
 
 from __future__ import unicode_literals
@@ -7,7 +7,7 @@ import frappe
 from frappe.model.document import Document
 from datetime import datetime
 import time
-import cgi          # used to escape xml content
+import html          # used to escape xml content
 from frappe import _
 from frappe.utils.data import get_url_to_form
 
@@ -150,7 +150,7 @@ class DirectDebitProposal(Document):
         content += make_line("      <InitgPty>")
         # initiating party name ( e.g. MUSTER AG )
         company_name = get_company_name(self.sales_invoices[0].sales_invoice)
-        content += make_line("        <Nm>{0}</Nm>".format(cgi.escape(company_name)))
+        content += make_line("        <Nm>{0}</Nm>".format(html.escape(company_name)))
         content += make_line("      </InitgPty>")
         content += make_line("    </GrpHdr>")
         
@@ -172,7 +172,7 @@ class DirectDebitProposal(Document):
         content += make_line("     </PmtTpInf>")
         content += make_line("     <ReqdColltnDt>{0}</ReqdColltnDt>".format(self.date))
         content += make_line("     <Cdtr>")
-        content += make_line("      <Nm>{0}</Nm>".format(cgi.escape(company_name)))
+        content += make_line("      <Nm>{0}</Nm>".format(html.escape(company_name)))
         content += make_line("     </Cdtr>")
         content += make_line("     <CdtrAcct>")
         content += make_line("      <Id>")
@@ -223,7 +223,7 @@ class DirectDebitProposal(Document):
             content += make_line("  </FinInstnId>")
             content += make_line(" </DbtrAgt>")
             content += make_line(" <Dbtr>")
-            content += make_line("  <Nm>{0}</Nm>".format(cgi.escape(customer.customer_name)))
+            content += make_line("  <Nm>{0}</Nm>".format(html.escape(customer.customer_name)))
             content += make_line(" </Dbtr>")
             content += make_line(" <DbtrAcct>")
             content += make_line("  <Id>")

@@ -107,7 +107,7 @@ class PaymentProposal(Document):
                     if self.use_intermediate == 1:
                         self.create_payment("Supplier", supplier, 
                             "Purchase Invoice", purchase_invoice.purchase_invoice, exec_date,
-                            purchase_invoice.amount)
+                            purchase_invoice.amount, self.company)
             # make sure execution date is valid
             if exec_date < datetime.now():
                 exec_date = datetime.now()      # + timedelta(days=1)
@@ -252,7 +252,7 @@ class PaymentProposal(Document):
     
     def create_payment(self, party_type, party_name, 
                             reference_type, reference_name, date,
-                            amount):
+                            amount, company):
         if reference_type == "Purchase Invoice":
             credit_to = frappe.get_value(reference_type, reference_name, "credit_to")
         elif reference_type == "Expense Claim":
@@ -263,6 +263,7 @@ class PaymentProposal(Document):
         # create new payment entry
         new_payment_entry = frappe.get_doc({
             'doctype': 'Payment Entry',
+            'company': company, 
             'payment_type': "Pay",
             'party_type': party_type,
             'party': party_name,

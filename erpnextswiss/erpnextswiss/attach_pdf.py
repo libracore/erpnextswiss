@@ -4,7 +4,7 @@
 # For license information, please see license.txt
 import frappe
 from frappe import _
-from frappe.core.doctype.file.file import create_new_folder
+from frappe.core.api.file import create_new_folder
 from frappe.utils.file_manager import save_file
 import hashlib
 import time
@@ -52,10 +52,10 @@ def execute(doctype, name, title, lang=None, print_format=None, hashname=None, i
 def create_folder(folder, parent):
     """Make sure the folder exists and return it's name."""
     new_folder_name = "/".join([parent, folder])
-    
+
     if not frappe.db.exists("File", new_folder_name):
         create_new_folder(folder, parent)
-    
+
     return new_folder_name
 
 

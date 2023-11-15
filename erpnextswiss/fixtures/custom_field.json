@@ -1914,10 +1914,7 @@
   },
   {
     "name": "ERPNextSwiss",
-    "owner": "gregory.rodicio@2itea.ch",
-    "creation": "2021-04-28 09:40:34.609905",
     "modified": "2023-10-13 13:47:55.246572",
-    "modified_by": "gregory.rodicio@2itea.ch",
     "docstatus": 0,
     "idx": 0,
     "label": "ERPNextSwiss",
@@ -1934,10 +1931,7 @@
     "shortcuts": [
       {
         "name": "bbc97bcd2c",
-        "owner": "gregory.rodicio@2itea.ch",
-        "creation": "2021-04-28 09:40:34.609905",
         "modified": "2023-10-13 13:47:55.246572",
-        "modified_by": "gregory.rodicio@2itea.ch",
         "docstatus": 0,
         "idx": 1,
         "type": "Page",
@@ -1951,10 +1945,7 @@
       },
       {
         "name": "f5bba7f421",
-        "owner": "gregory.rodicio@2itea.ch",
-        "creation": "2021-04-28 09:40:34.609905",
         "modified": "2023-10-13 13:47:55.246572",
-        "modified_by": "gregory.rodicio@2itea.ch",
         "docstatus": 0,
         "idx": 1,
         "type": "DocType",
@@ -1969,10 +1960,7 @@
       },
       {
         "name": "fe78f09fc1",
-        "owner": "gregory.rodicio@2itea.ch",
-        "creation": "2021-04-28 09:40:34.609905",
         "modified": "2023-10-13 13:47:55.246572",
-        "modified_by": "gregory.rodicio@2itea.ch",
         "docstatus": 0,
         "idx": 2,
         "type": "DocType",
@@ -1986,10 +1974,7 @@
       },
       {
         "name": "d6b6be007f",
-        "owner": "gregory.rodicio@2itea.ch",
-        "creation": "2021-04-28 09:40:34.609905",
         "modified": "2023-10-13 13:47:55.246572",
-        "modified_by": "gregory.rodicio@2itea.ch",
         "docstatus": 0,
         "idx": 3,
         "type": "DocType",
@@ -2003,10 +1988,7 @@
       },
       {
         "name": "66b723b8a8",
-        "owner": "gregory.rodicio@2itea.ch",
-        "creation": "2021-04-28 09:40:34.609905",
         "modified": "2023-10-13 13:47:55.246572",
-        "modified_by": "gregory.rodicio@2itea.ch",
         "docstatus": 0,
         "idx": 4,
         "type": "Page",
@@ -2020,10 +2002,7 @@
       },
       {
         "name": "d7754b9345",
-        "owner": "gregory.rodicio@2itea.ch",
-        "creation": "2021-04-28 09:40:34.609905",
         "modified": "2023-10-13 13:47:55.246572",
-        "modified_by": "gregory.rodicio@2itea.ch",
         "docstatus": 0,
         "idx": 5,
         "type": "DocType",
@@ -2037,10 +2016,7 @@
       },
       {
         "name": "6b11991d53",
-        "owner": "gregory.rodicio@2itea.ch",
-        "creation": "2021-04-28 09:40:34.609905",
         "modified": "2023-10-13 13:47:55.246572",
-        "modified_by": "gregory.rodicio@2itea.ch",
         "docstatus": 0,
         "idx": 6,
         "type": "DocType",
@@ -2054,10 +2030,7 @@
       },
       {
         "name": "39b0b917de",
-        "owner": "gregory.rodicio@2itea.ch",
-        "creation": "2021-04-28 09:40:34.609905",
         "modified": "2023-10-13 13:47:55.246572",
-        "modified_by": "gregory.rodicio@2itea.ch",
         "docstatus": 0,
         "idx": 7,
         "type": "DocType",

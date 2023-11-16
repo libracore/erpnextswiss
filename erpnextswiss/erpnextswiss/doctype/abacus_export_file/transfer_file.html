@@ -76,7 +76,7 @@
                     <Text1>{{ transaction.text1 }}</Text1>
                     <DocumentNumber>{{ short_reference }}</DocumentNumber>
                     <SelectionCode></SelectionCode>
-                    {%- if transaction.tax_account %}
+                    {#- {%- if transaction.tax_account %} #}
                     <TaxData mode="SAVE">
                         <TaxIncluded>{%- if transaction.against_singles|len == 1 %}I{%- else %}E{%- endif %}</TaxIncluded>
                         <TaxType>1</TaxType>
@@ -105,7 +105,7 @@
                         <Number></Number>
                         <FlatRate>0</FlatRate>
                     </TaxData>
-                    {%- endif %}
+                    {#- {%- endif %} #}
                 </SingleInformation>
                 {%- endfor %}
             </Entry>

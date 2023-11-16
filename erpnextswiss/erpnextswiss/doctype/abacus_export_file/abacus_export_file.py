@@ -245,8 +245,8 @@ class AbacusExportFile(Document):
                 'currency': item.currency, 
                 'tax_account': self.get_account_number(item.account_head) or None, 
                 'tax_amount': item.tax or None, 
-                'tax_rate': item.rate or None, 
-                'tax_code': tax_code or "312", 
+                'tax_rate': item.rate or 0, 
+                'tax_code': tax_code or "313", 
                 'tax_currency': base_currency,
                 'text1': item.name
             })
@@ -295,9 +295,9 @@ class AbacusExportFile(Document):
                 'currency': item.currency, 
                 'tax_account': self.get_account_number(item.account_head) or None, 
                 'tax_amount': item.tax or None, 
-                'tax_rate': item.rate or None, 
+                'tax_rate': item.rate or 0, 
                 'tax_currency': base_currency,
-                'tax_code': tax_code or "312", 
+                'tax_code': tax_code or "313", 
                 'text1': item.name
             })
             
@@ -336,7 +336,7 @@ class AbacusExportFile(Document):
                 'currency': pe_record.paid_from_account_currency, 
                 'tax_account': None, 
                 'tax_amount': None, 
-                'tax_rate': None, 
+                'tax_rate': 0, 
                 'tax_code': None, 
                 'text1': item.name
             }
@@ -421,7 +421,7 @@ class AbacusExportFile(Document):
                 'tax_account': self.get_account_number(item.account_head) or None, 
                 # 'tax_amount': item.tax or None,    # this takes the complete tax amount
                 'tax_amount': None,                  # calculate on the basis of the item
-                'tax_rate': item.rate or None, 
+                'tax_rate': item.rate or 0, 
                 'tax_currency': base_currency,
                 'tax_code': tax_code or "312", 
                 'text1': html.escape(item.name),
@@ -499,7 +499,7 @@ class AbacusExportFile(Document):
                 'tax_account': self.get_account_number(item.account_head) or None, 
                 # 'tax_amount': item.tax or None,    # this takes the complete tax amount
                 'tax_amount': None,                  # calculate on the basis of the item
-                'tax_rate': item.rate or None, 
+                'tax_rate': item.rate or 0, 
                 'tax_code': tax_code or "312", 
                 'tax_currency': base_currency,
                 'text1': html.escape(item.name),
@@ -548,7 +548,7 @@ class AbacusExportFile(Document):
                 'exchange_rate': pe_record.source_exchange_rate,
                 'tax_account': None, 
                 'tax_amount': None, 
-                'tax_rate': None, 
+                'tax_rate': 0, 
                 'tax_code': None, 
                 'text1': html.escape(pe_record.name)
             }
@@ -610,7 +610,7 @@ class AbacusExportFile(Document):
                 'currency': jv_record.accounts[0].account_currency, 
                 'tax_account': None, 
                 'tax_amount': None, 
-                'tax_rate': None, 
+                'tax_rate': 0, 
                 'tax_code': None, 
                 'text1': html.escape(jv_record.name),
                 'key_currency': key_currency,

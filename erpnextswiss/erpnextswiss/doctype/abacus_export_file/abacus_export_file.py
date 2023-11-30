@@ -438,7 +438,7 @@ class AbacusExportFile(Document):
                 _tx['currency'] = item.currency
             
             if item.base_debit != 0 or cint(self.exclude_zero_sum_txs) == 0:     # if exclude zero, do not add this component
-                transactions.append(_tx)
+                transactions.append(totalise_key_currency(_tx))
              
         
         pinvs = self.get_docs([ref.__dict__ for ref in self.references], "Purchase Invoice")
@@ -520,7 +520,7 @@ class AbacusExportFile(Document):
                 _tx['currency'] = item.currency
             
             if item.base_debit != 0 or cint(self.exclude_zero_sum_txs) == 0:     # if exclude zero, do not add this component
-                transactions.append(_tx)
+                transactions.append(totalise_key_currency(_tx))
             
         # add payment entry transactions
         pes = self.get_docs([ref.__dict__ for ref in self.references], "Payment Entry")
@@ -661,3 +661,18 @@ def set_export_flag(dt, docs, exported):
     frappe.db.sql(update_query)
     return
         
+"""
+Check debit and credit in key/base currency and if required, totalise using the last tax section (Abacus behaviour)
+"""
+def totalise_key_currency(tx):
+    # initialise with debit/credit from collective node
+    delta = tx.get("key_amount") or 0
+    # subtract single nodes with tax
+    for s in tx.get("against_singles"):
+        delta -= ((s.get("key_amount") or 0) + (s.get("key_tax_amount") or 0))
+        
+    # add delta
+    if delta != 0:
+        tx['against_singles'][-1]['key_tax_amount'] = rounded((tx['against_singles'][-1].get("key_tax_amount") or 0 ) + delta, 2)
+        
+    return tx

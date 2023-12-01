@@ -22,7 +22,7 @@ The software comes as-is without any warranty.
 Requires an ERPNext server instance (refer to [https://github.com/frappe/erpnext](https://github.com/frappe/erpnext))
 
 ## Compatibility
-ERPNextSwiss is tested against ERPNext v12. There are compatibility branches for v11 (for user who prefer the old desk) and v13 (for daring users). There are also branches for v14 and v15 of ERPNext which have been tested and validated for the company 2itea sàrl.
+ERPNextSwiss is tested against ERPNext v12. There are compatibility branches for v11 (for user who prefer the old desk) and v13 (for daring users). There are also branches for v14 and v15 of ERPNext which have been tested and validated for the company 2itea sàrl ([https://2itea.ch](https://2itea.ch))
 
 ERPNextSwiss is also compatible with Dokos ([https://dokos.io](https://dokos.io))
 

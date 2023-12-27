@@ -31,6 +31,18 @@
         <eCH-0217:grossOrNet>1</eCH-0217:grossOrNet>
         <eCH-0217:opted>0.00</eCH-0217:opted>
         <eCH-0217:suppliesPerTaxRate>
+            <eCH-0217:taxRate>8.1</eCH-0217:taxRate>
+            <eCH-0217:turnover>{{ "{:.2f}".format(z303 or 0) }}</eCH-0217:turnover>
+        </eCH-0217:suppliesPerTaxRate>
+        <eCH-0217:suppliesPerTaxRate>
+            <eCH-0217:taxRate>2.6</eCH-0217:taxRate>
+            <eCH-0217:turnover>{{ "{:.2f}".format(z313 or 0) }}</eCH-0217:turnover>
+        </eCH-0217:suppliesPerTaxRate>
+        <eCH-0217:suppliesPerTaxRate>
+            <eCH-0217:taxRate>3.8</eCH-0217:taxRate>
+            <eCH-0217:turnover>{{ "{:.2f}".format(z343 or 0) }}</eCH-0217:turnover>
+        </eCH-0217:suppliesPerTaxRate>
+        <eCH-0217:suppliesPerTaxRate>
             <eCH-0217:taxRate>7.7</eCH-0217:taxRate>
             <eCH-0217:turnover>{{ "{:.2f}".format(z302 or 0) }}</eCH-0217:turnover>
         </eCH-0217:suppliesPerTaxRate>
@@ -44,7 +56,7 @@
         </eCH-0217:suppliesPerTaxRate>
         <eCH-0217:acquisitionTax>
             <eCH-0217:taxRate>{{ "{:.2f}".format(acquisition_rate or 0) }}</eCH-0217:taxRate>
-            <eCH-0217:turnover>{{ "{:.2f}".format(z382 or 0) }}</eCH-0217:turnover>
+            <eCH-0217:turnover>{{ "{:.2f}".format(z383 or z382 or 0) }}</eCH-0217:turnover>
         </eCH-0217:acquisitionTax>
         <eCH-0217:inputTaxMaterialAndServices>{{ "{:.2f}".format(z400 or 0) }}</eCH-0217:inputTaxMaterialAndServices>
         <eCH-0217:inputTaxInvestments>{{ "{:.2f}".format(z405 or 0) }}</eCH-0217:inputTaxInvestments>

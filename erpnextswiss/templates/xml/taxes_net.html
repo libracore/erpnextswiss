@@ -29,6 +29,14 @@
     </eCH-0217:turnoverComputation>
     <eCH-0217:netTaxRateMethod>
         <eCH-0217:suppliesPerTaxRate>
+            <eCH-0217:taxRate>{{ "{:.2f}".format(rate1_2024 or 0) }}</eCH-0217:taxRate>
+            <eCH-0217:turnover>{{ "{:.2f}".format(z323 or 0) }}</eCH-0217:turnover>
+        </eCH-0217:suppliesPerTaxRate>
+        <eCH-0217:suppliesPerTaxRate>
+            <eCH-0217:taxRate>{{ "{:.2f}".format(rate2_2024 or 0) }}</eCH-0217:taxRate>
+            <eCH-0217:turnover>{{ "{:.2f}".format(z333 or 0) }}</eCH-0217:turnover>
+        </eCH-0217:suppliesPerTaxRate>
+        <eCH-0217:suppliesPerTaxRate>
             <eCH-0217:taxRate>{{ "{:.2f}".format(rate1 or 0) }}</eCH-0217:taxRate>
             <eCH-0217:turnover>{{ "{:.2f}".format(z322 or 0) }}</eCH-0217:turnover>
         </eCH-0217:suppliesPerTaxRate>
@@ -38,7 +46,7 @@
         </eCH-0217:suppliesPerTaxRate>
         <eCH-0217:acquisitionTax>
             <eCH-0217:taxRate>{{ "{:.2f}".format(acquisition_rate or 0) }}</eCH-0217:taxRate>
-            <eCH-0217:turnover>{{ "{:.2f}".format(z382 or 0) }}</eCH-0217:turnover>
+            <eCH-0217:turnover>{{ "{:.2f}".format(z383 or z382 or 0) }}</eCH-0217:turnover>
         </eCH-0217:acquisitionTax>
     </eCH-0217:netTaxRateMethod>
     <eCH-0217:payableTax>{{ "{:.2f}".format(z500 or 0) }}</eCH-0217:payableTax>

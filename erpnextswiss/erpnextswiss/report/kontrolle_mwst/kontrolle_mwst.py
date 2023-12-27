@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2022, libracore and contributors
+# Copyright (c) 2016-2023, libracore and contributors
 # For license information, please see license.txt
 
 from __future__ import unicode_literals

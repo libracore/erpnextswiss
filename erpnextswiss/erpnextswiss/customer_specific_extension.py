@@ -143,3 +143,16 @@ def contract_items_based_on_date(sinv, long=0):
         set_customer_price_list(sinv.name)
     else:
         return
+
+@frappe.whitelist()
+def check_missing_price(idx, item_code, price_list="Standard-Vertrieb"):
+    prices = frappe.db.get_list('Item Price',
+                                filters={
+                                    'item_code': item_code,
+                                    'price_list': price_list
+                                },
+                                fields=['name', 'price_list_rate'])
+    return {
+        'price_list_rate': prices[0].price_list_rate if len(prices) > 0 else 0,
+        'idx': idx
+    }

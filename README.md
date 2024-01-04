@@ -86,7 +86,9 @@ In case you update from the sources and observe an error, make sure to update de
     * Datatrans interface for payments
     * Payrexx payment interface
     * EDI connector: allows to fully integrate EDI exchange (PRICAT, DESADV, ORDERS, SLSRPT, ...)
-
+    * NextCloud:
+        * Update contacts from ERPNext to NextCloud address book
+      
 ## Release notes
 Refer to [https://github.com/libracore/erpnextswiss/wiki/Release-Notes](https://github.com/libracore/erpnextswiss/wiki/Release-Notes)
 

@@ -1,0 +1,14 @@
+BEGIN:VCARD
+VERSION:3.0
+PRODID;VALUE=TEXT:-//Sabre//Sabre VObject 4.4.2//EN
+UID:{{ uid }}
+FN:{{ full_name }}
+ADR;TYPE=HOME:;;{{ address_line1 or "" }};{{ city or "" }};{{ state or "" }};{{ pincode or "" }};{{ country or "" }}
+{%- for email in email_ids %}
+EMAIL;TYPE=HOME:{{ email.email_id or "" }}
+{%- endfor -%}
+{%- for phone in phone_nos %}
+TEL;TYPE=WORK,VOICE;VALUE=UNKNOWN:{{ phone.phone }}
+{%- endfor %}
+REV;VALUE=DATE-AND-OR-TIME:{{ ts }}
+END:VCARD

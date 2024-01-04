@@ -120,6 +120,12 @@ after_install = "erpnextswiss.setup.install.after_install"
 #         "on_trash": "method"
 #    }
 # }
+doc_events = {
+    "Contact": {
+        "on_update": "erpnextswiss.erpnextswiss.nextcloud.contacts.send_contact_to_nextcloud",
+        "on_trash": "erpnextswiss.erpnextswiss.nextcloud.contacts.delete_contact_from_nextcloud"
+    }
+}
 
 # Scheduled Tasks
 # ---------------

@@ -2,6 +2,7 @@ BEGIN:VCARD
 VERSION:3.0
 PRODID;VALUE=TEXT:-//Sabre//Sabre VObject 4.4.2//EN
 UID:{{ uid }}
+N:{{ last_name or "" }};{{ first_name or "" }};;;
 FN:{{ full_name }}
 ADR;TYPE=HOME:;;{{ address_line1 or "" }};{{ city or "" }};{{ state or "" }};{{ pincode or "" }};{{ country or "" }}
 {%- for email in email_ids %}

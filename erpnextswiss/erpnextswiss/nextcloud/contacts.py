@@ -29,6 +29,9 @@ def send_contact_to_nextcloud(contact, event=None, debug=False):
         contact_data.update(frappe.get_doc("Address", contact.address).as_dict())
     
     contact_data['uid'] = hashlib.md5((contact.name.lower()).encode("utf-8")).hexdigest()
+    if not contact_data['full_name']:
+        contact_data['full_name'] = "{0} {2}".format(contact.first_name or "", contact.last_name or "")
+        
     if type(contact.modified) == str:
         ts = datetime.strptime(contact.modified[:19], "%Y-%m-%d %H:%M:%S").strftime("%Y%m%dT%H%M%SZ")
     else:

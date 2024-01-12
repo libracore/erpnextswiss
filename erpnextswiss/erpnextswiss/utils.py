@@ -28,3 +28,13 @@ def get_numeric_part(s):
         return "0"
     else:
         return num
+        
+def get_first_day_of_first_cw(year):
+    date = datetime.strptime("{year}-01-01".format(year=year), "%Y-%m-%d")
+    for i in range(0, 7):
+        if date.strftime('%A') == "Thursday":
+            first_day_of_first_cw = frappe.utils.add_days(date, -3)
+            break
+        else:
+            date = frappe.utils.add_days(date, 1)
+    return first_day_of_first_cw

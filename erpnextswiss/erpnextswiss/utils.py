@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018-2022, libracore, Fink Zeitsysteme and contributors
+# Copyright (c) 2018-2024, libracore, Fink Zeitsysteme and contributors
 # For license information, please see license.txt
 #
 
 # imports
 import frappe
 from frappe import _
+from datetime import datetime
 
 def has_attachments(dn, dt=None):
     if dt:
@@ -32,7 +33,7 @@ def get_numeric_part(s):
 def get_first_day_of_first_cw(year):
     date = datetime.strptime("{year}-01-01".format(year=year), "%Y-%m-%d")
     for i in range(0, 7):
-        if date.strftime('%A') == "Thursday":
+        if date.weekday() == 3:            # 0 is Monday, 3 is Thursday
             first_day_of_first_cw = frappe.utils.add_days(date, -3)
             break
         else:

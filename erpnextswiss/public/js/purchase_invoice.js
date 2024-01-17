@@ -18,7 +18,7 @@ frappe.ui.form.on('Purchase Invoice', {
     validate: function(frm) {
         if (frm.doc.payment_type === "ESR") {
             if (frm.doc.esr_reference_number) {
-                if (!check_esr(frm.doc.esr_reference_number)) {
+                if ((!frm.doc.esr_reference_number.startsWith("RF")) && (!check_esr(frm.doc.esr_reference_number))) {
                     frappe.msgprint( __("ESR code not valid") ); 
                     frappe.validated=false;
                 } 

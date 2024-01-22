@@ -76,7 +76,7 @@
                     <Text1>{{ transaction.text1 }}</Text1>
                     <DocumentNumber>{{ short_reference }}</DocumentNumber>
                     <SelectionCode></SelectionCode>
-                    {%- if transaction.tax_account %}
+                    {%- if transaction.tax_code %}
                     <TaxData mode="SAVE">
                         <TaxIncluded>{%- if transaction.against_singles|len == 1 %}I{%- else %}E{%- endif %}</TaxIncluded>
                         <TaxType>1</TaxType>
@@ -86,15 +86,15 @@
                             <Currency>{{ against.currency }}</Currency>
                             <Amount>
                             {%- if against.currency == (transaction.key_currency or transaction.currency) -%}0{# hardcoded 0 otherwise abacus raises an error if doc currency = key currency #}
-                            {%- elif transaction.tax_amount or transaction.tax_rate == 0 -%}
-                                {{- "{:.2f}".format(((transaction.tax_amount or 0) * factor)) -}}
+                            {%- elif against.tax_amount or transaction.tax_rate == 0 -%}
+                                {{- "{:.2f}".format(((against.tax_amount or 0) * factor)) -}}
                             {%- else -%}
                                 {{- "{:.2f}".format(((against.amount * (transaction.tax_rate or 0) / 100) * factor)) -}}
                             {%- endif -%}
                             </Amount>
                         </AmountData>
-                        {%- if transaction.tax_amount or transaction.tax_rate == 0 %}
-                        <KeyAmount>{{ "{:.2f}".format(((transaction.tax_amount or 0) * factor)) }}</KeyAmount>
+                        {%- if against.key_tax_amount or transaction.tax_rate == 0 %}
+                        <KeyAmount>{{ "{:.2f}".format(((against.key_tax_amount or 0) * factor)) }}</KeyAmount>
                         {%- else %}
                         <KeyAmount>{{ "{:.2f}".format(((against.key_amount * transaction.tax_rate / 100) * factor)) }}</KeyAmount>
                         {%- endif %}

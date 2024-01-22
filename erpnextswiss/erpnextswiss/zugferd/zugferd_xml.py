@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018-2023, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2018-2024, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
 #
 #
@@ -62,7 +62,7 @@ def create_zugferd_xml(sales_invoice, verify=True):
             'grand_total': (sinv.rounded_total or sinv.grand_total),
             'prepaid_amount': ((sinv.rounded_total or sinv.grand_total) - sinv.outstanding_amount),
             'outstanding_amount': sinv.outstanding_amount,
-            'po_no': sinv.po_no,
+            'po_no': html.escape(sinv.po_no) if sinv.po_no else None,
             'supplier_contact_name': html.escape(frappe.get_value("User", sinv.owner, "full_name") or ""),
             'supplier_contact_phone': html.escape(frappe.get_value("User", sinv.owner, "phone") or ""),
             'supplier_contact_email': html.escape(sinv.owner),

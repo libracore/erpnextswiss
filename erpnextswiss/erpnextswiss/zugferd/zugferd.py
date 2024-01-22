@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018-2023, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2018-2024, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
 #
 #

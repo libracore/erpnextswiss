@@ -8,6 +8,7 @@ from frappe.model.document import Document
 import html          # used to escape xml content
 import ast
 from frappe.utils import cint
+from frappe.utils.data import rounded
 
 class AbacusExportFile(Document):
     def submit(self):
@@ -234,19 +235,19 @@ class AbacusExportFile(Document):
             # create content
             transactions.append({
                 'account': self.get_account_number(item.debit_to), 
-                'amount': item.debit, 
+                'amount': rounded(item.debit, 2), 
                 'against_singles': [{
                     'account': self.get_account_number(item.income_account),
-                    'amount': item.income,
+                    'amount': rounded(item.income, 2),
                     'currency': item.currency
                 }],
                 'debit_credit': "D", 
                 'date': self.to_date, 
                 'currency': item.currency, 
                 'tax_account': self.get_account_number(item.account_head) or None, 
-                'tax_amount': item.tax or None, 
-                'tax_rate': item.rate or None, 
-                'tax_code': tax_code or "312", 
+                'tax_amount': rounded(item.tax, 2) if item.tax else None, 
+                'tax_rate': rounded(item.rate, 2) if item.rate else 0, 
+                'tax_code': tax_code or "313", 
                 'tax_currency': base_currency,
                 'text1': item.name
             })
@@ -284,20 +285,20 @@ class AbacusExportFile(Document):
             # create content
             transactions.append({
                 'account': self.get_account_number(item.credit_to), 
-                'amount': item.credit, 
+                'amount': rounded(item.credit, 2), 
                 'against_singles': [{
                     'account': self.get_account_number(item.expense_account),
-                    'amount': item.expense,
+                    'amount': rounded(item.expense, 2),
                     'currency': item.currency
                 }],
                 'debit_credit': "C", 
                 'date': self.to_date, 
                 'currency': item.currency, 
                 'tax_account': self.get_account_number(item.account_head) or None, 
-                'tax_amount': item.tax or None, 
-                'tax_rate': item.rate or None, 
+                'tax_amount': rounded(item.tax, 2) if item.tax else None, 
+                'tax_rate': rounded(item.rate, 2) if item.rate else 0, 
                 'tax_currency': base_currency,
-                'tax_code': tax_code or "312", 
+                'tax_code': tax_code or "313", 
                 'text1': item.name
             })
             
@@ -325,10 +326,10 @@ class AbacusExportFile(Document):
             # create content
             transaction = {
                 'account': self.get_account_number(item.paid_from), 
-                'amount': item.amount, 
+                'amount': rounded(item.amount, 2), 
                 'against_singles': [{
                     'account': self.get_account_number(item.paid_to),
-                    'amount': item.amount,
+                    'amount': rounded(item.amount, 2),
                     'currency': pe_record.paid_to_account_currency
                 }],
                 'debit_credit': "C", 
@@ -336,7 +337,7 @@ class AbacusExportFile(Document):
                 'currency': pe_record.paid_from_account_currency, 
                 'tax_account': None, 
                 'tax_amount': None, 
-                'tax_rate': None, 
+                'tax_rate': 0, 
                 'tax_code': None, 
                 'text1': item.name
             }
@@ -344,7 +345,7 @@ class AbacusExportFile(Document):
             for deduction in pe_record.deductions:
                 transaction['against_singles'].append({
                     'account': self.get_account_number(deduction.account),
-                    'amount': deduction.amount,
+                    'amount': rounded(deduction.amount, 2),
                     'currency': item.currency                
                 })
             # insert transaction
@@ -375,6 +376,10 @@ class AbacusExportFile(Document):
                 WHERE `tabSales Invoice`.`name` IN ({sinvs});""".format(sinvs=self.get_sql_list(sinvs))
         sinv_items = frappe.db.sql(sql_query, as_dict=True)    
         for item in sinv_items:
+            # if this is a zero-sum transaction, skip
+            if item['debit'] == 0:
+                continue
+                
             if item.taxes_and_charges:
                 tax_record = frappe.get_doc("Sales Taxes and Charges Template", item.taxes_and_charges)
                 tax_code = tax_record.tax_code
@@ -395,19 +400,23 @@ class AbacusExportFile(Document):
                 FROM `tabSales Invoice Item`
                 WHERE `parent` = "{sinv}"
                 GROUP BY `income_account`;""".format(sinv=item.name), as_dict=True):
-                against_positions.append({
-                    'account': self.get_account_number(account['income_account']),
-                    'amount': account['amount'],
-                    'currency': item.currency,
-                    'key_amount': account['key_amount'],
-                    'key_currency': base_currency
-                })
+                if account['amount']:               # only append non-zero entries
+                    tax_amount = rounded((account['amount'] * (item.rate or 0) / 100), 2)
+                    against_positions.append({
+                        'account': self.get_account_number(account['income_account']),
+                        'amount': rounded(account['amount'], 2),
+                        'currency': item.currency,
+                        'key_amount': rounded(account['key_amount'], 2),
+                        'key_currency': base_currency,
+                        'tax_amount': tax_amount,
+                        'key_tax_amount': rounded((tax_amount * item.conversion_rate), 2)
+                    })
             
             _tx = {
                 'account': self.get_account_number(item.debit_to), 
-                'amount': item.base_debit, 
+                'amount': rounded(item.base_debit, 2), 
                 'currency': base_currency, 
-                'key_amount': item.base_debit, 
+                'key_amount': rounded(item.base_debit, 2), 
                 'key_currency': base_currency,
                 'exchange_rate': item.conversion_rate,
                 'against_singles': against_positions,
@@ -415,8 +424,9 @@ class AbacusExportFile(Document):
                 'date': item.posting_date, 
                 'tax_account': self.get_account_number(item.account_head) or None, 
                 # 'tax_amount': item.tax or None,    # this takes the complete tax amount
-                'tax_amount': None,                  # calculate on the basis of the item
-                'tax_rate': item.rate or None, 
+                # 'tax_amount': None,                  # calculate on the basis of the item
+                'tax_amount': (item.base_debit * (item.rate or 0) / 100),
+                'tax_rate': rounded(item.rate, 2) if item.rate else 0, 
                 'tax_currency': base_currency,
                 'tax_code': tax_code or "312", 
                 'text1': html.escape(item.name),
@@ -424,11 +434,11 @@ class AbacusExportFile(Document):
             }
             
             if not restrict_currencies or item.currency in restrict_currencies:
-                _tx['amount'] = item.debit
+                _tx['amount'] = rounded(item.debit, 2)
                 _tx['currency'] = item.currency
             
             if item.base_debit != 0 or cint(self.exclude_zero_sum_txs) == 0:     # if exclude zero, do not add this component
-                transactions.append(_tx)
+                transactions.append(totalise_key_currency(_tx))
              
         
         pinvs = self.get_docs([ref.__dict__ for ref in self.references], "Purchase Invoice")
@@ -473,18 +483,21 @@ class AbacusExportFile(Document):
                 FROM `tabPurchase Invoice Item`
                 WHERE `parent` = "{pinv}"
                 GROUP BY `expense_account`;""".format(pinv=item.name), as_dict=True):
+                tax_amount = rounded((account['amount'] * (item.rate or 0) / 100), 2)
                 against_positions.append({
                     'account': self.get_account_number(account['expense_account']),
-                    'amount': account['amount'],
+                    'amount': rounded(account['amount'], 2),
                     'currency': item.currency,
-                    'key_amount': account['key_amount'],
-                    'key_currency': base_currency
+                    'key_amount': rounded(account['key_amount'], 2),
+                    'key_currency': base_currency,
+                    'tax_amount': tax_amount,
+                    'key_tax_amount': rounded((tax_amount * item.conversion_rate), 2)
                 })
             # create content
             _tx = {
                 'account': self.get_account_number(item.credit_to), 
-                'amount': item.base_credit, 
-                'key_amount': item.base_credit, 
+                'amount': rounded(item.base_credit, 2), 
+                'key_amount': rounded(item.base_credit, 2), 
                 'key_currency': base_currency,
                 'exchange_rate': item.conversion_rate,
                 'against_singles': against_positions,
@@ -493,8 +506,9 @@ class AbacusExportFile(Document):
                 'currency': base_currency, 
                 'tax_account': self.get_account_number(item.account_head) or None, 
                 # 'tax_amount': item.tax or None,    # this takes the complete tax amount
-                'tax_amount': None,                  # calculate on the basis of the item
-                'tax_rate': item.rate or None, 
+                # 'tax_amount': None,                  # calculate on the basis of the item
+                # 'tax_amount': (item.base_credit * (item.rate or 0) / 100),
+                'tax_rate': rounded(item.rate, 2) if item.rate else 0, 
                 'tax_code': tax_code or "312", 
                 'tax_currency': base_currency,
                 'text1': html.escape(item.name),
@@ -502,11 +516,11 @@ class AbacusExportFile(Document):
             }
                 
             if not restrict_currencies or item.currency in restrict_currencies:
-                _tx['amount'] = item.credit
+                _tx['amount'] = rounded(item.credit, 2)
                 _tx['currency'] = item.currency
             
             if item.base_debit != 0 or cint(self.exclude_zero_sum_txs) == 0:     # if exclude zero, do not add this component
-                transactions.append(_tx)
+                transactions.append(totalise_key_currency(_tx))
             
         # add payment entry transactions
         pes = self.get_docs([ref.__dict__ for ref in self.references], "Payment Entry")
@@ -527,23 +541,23 @@ class AbacusExportFile(Document):
             # create content
             transaction = {
                 'account': self.get_account_number(pe_record.paid_to),  # bank
-                'amount': pe_record.paid_amount, 
+                'amount': rounded(pe_record.paid_amount, 2), 
                 'against_singles': [{
                     'account': self.get_account_number(pe_record.paid_from),    # debtor
-                    'amount': pe_record.total_allocated_amount,
+                    'amount': rounded(pe_record.total_allocated_amount, 2),
                     'currency': pe_record.paid_from_account_currency,
                     'key_currency': base_currency,
-                    'key_amount': pe_record.base_total_allocated_amount
+                    'key_amount': rounded(pe_record.base_total_allocated_amount, 2)
                 }],
                 'debit_credit': debit_credit, 
                 'date': pe_record.posting_date, 
                 'currency': pe_record.paid_from_account_currency, 
                 'key_currency': base_currency,
-                'key_amount': pe_record.base_paid_amount,
+                'key_amount': rounded(pe_record.base_paid_amount, 2),
                 'exchange_rate': pe_record.source_exchange_rate,
                 'tax_account': None, 
                 'tax_amount': None, 
-                'tax_rate': None, 
+                'tax_rate': 0, 
                 'tax_code': None, 
                 'text1': html.escape(pe_record.name)
             }
@@ -554,9 +568,9 @@ class AbacusExportFile(Document):
                     sign = (-1)
                 transaction['against_singles'].append({
                     'account': self.get_account_number(deduction.account),
-                    'amount': sign * (deduction.amount / pe_record.source_exchange_rate),    # virtual valuation to other currency
+                    'amount': rounded(sign * (deduction.amount / pe_record.source_exchange_rate), 2),    # virtual valuation to other currency
                     'currency': pe_record.paid_to_account_currency,
-                    'key_amount': sign * deduction.amount,
+                    'key_amount': rounded(sign * deduction.amount, 2),
                     'key_currency': base_currency
                 })
                 
@@ -598,18 +612,18 @@ class AbacusExportFile(Document):
             # create content
             transaction = {
                 'account': self.get_account_number(jv_record.accounts[0].account), 
-                'amount': amount, 
+                'amount': rounded(amount, 2), 
                 'against_singles': [],
                 'debit_credit': debit_credit, 
                 'date': jv_record.posting_date, 
                 'currency': jv_record.accounts[0].account_currency, 
                 'tax_account': None, 
                 'tax_amount': None, 
-                'tax_rate': None, 
+                'tax_rate': 0, 
                 'tax_code': None, 
                 'text1': html.escape(jv_record.name),
                 'key_currency': key_currency,
-                'key_amount': key_amount
+                'key_amount': rounded(key_amount, 2)
             }
             if jv_record.multi_currency == 1:
                 transaction['exchange_rate'] = jv_record.accounts[0].exchange_rate
@@ -624,10 +638,10 @@ class AbacusExportFile(Document):
                     key_amount = jv_record.accounts[i].debit - jv_record.accounts[i].credit
                 transaction_single = {
                     'account': self.get_account_number(jv_record.accounts[i].account),
-                    'amount': amount,
+                    'amount': rounded(amount, 2),
                     'currency': jv_record.accounts[i].account_currency,
                     'key_currency': key_currency,
-                    'key_amount': key_amount
+                    'key_amount': rounded(key_amount, 2)
                 }
                 if jv_record.multi_currency == 1:
                     transaction_single['exchange_rate'] = jv_record.accounts[i].exchange_rate
@@ -647,3 +661,18 @@ def set_export_flag(dt, docs, exported):
     frappe.db.sql(update_query)
     return
         
+"""
+Check debit and credit in key/base currency and if required, totalise using the last tax section (Abacus behaviour)
+"""
+def totalise_key_currency(tx):
+    # initialise with debit/credit from collective node
+    delta = tx.get("key_amount") or 0
+    # subtract single nodes with tax
+    for s in tx.get("against_singles"):
+        delta -= ((s.get("key_amount") or 0) + (s.get("key_tax_amount") or 0))
+        
+    # add delta
+    if delta != 0:
+        tx['against_singles'][-1]['key_tax_amount'] = rounded((tx['against_singles'][-1].get("key_tax_amount") or 0 ) + delta, 2)
+        
+    return tx

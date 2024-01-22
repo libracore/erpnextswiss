@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2017-2018, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2017-2023, libracore (https://www.libracore.com) and contributors
 # License: AGPL v3. See LICENCE
 
 from __future__ import unicode_literals
@@ -7,7 +7,7 @@ import frappe
 from frappe import throw, _
 import time
 from erpnextswiss.erpnextswiss.common_functions import get_building_number, get_street_name, get_pincode, get_city
-import cgi              # used to escape xml content
+import html              # used to escape xml content
 
 @frappe.whitelist()
 def get_payments():

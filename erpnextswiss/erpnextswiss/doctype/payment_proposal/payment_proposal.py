@@ -51,7 +51,7 @@ class PaymentProposal(Document):
         
     def on_submit(self):
         # clean payments (to prevent accumulation on re-submit)
-        self.payments = {}
+        self.payments = []
         # create the aggregated payment table
         # collect customers
         suppliers = []
@@ -229,25 +229,23 @@ class PaymentProposal(Document):
             if pay_date.date() < datetime.now().date():
                 pay_date = datetime.now().date()
             # append payment record
-            new_payment = self.append('payments', {})
-            new_payment.receiver = receiver_name
-            new_payment.receiver_id = receiver_id
-            new_payment.iban = iban
-            new_payment.bic = bic
-            new_payment.payment_type = payment_type
-            new_payment.receiver_address_line1 = address_line1
-            new_payment.receiver_address_line2 = address_line2
-            new_payment.receiver_country = country           
-            new_payment.amount = amount
-            new_payment.currency = currency
-            if len(reference) > 140:
-                new_payment.reference = "{0}...".format(reference[:136])
-            else:
-                new_payment.reference = reference
-            new_payment.execution_date = pay_date
-            new_payment.esr_reference = esr_reference
-            new_payment.esr_participation_number = esr_participation_number   
-            new_payment.is_salary = is_salary   
+            new_payment = self.append('payments', {
+                'receiver': receiver_name,
+                'receiver_id': receiver_id,
+                'iban': iban,
+                'bic': bic,
+                'payment_type': payment_type,
+                'receiver_address_line1': address_line1,
+                'receiver_address_line2': address_line2,
+                'receiver_country': country,    
+                'amount': amount,
+                'currency': currency,
+                'reference': "{0}...".format(reference[:136]) if len(reference) > 140 else reference,
+                'execution_date': pay_date,
+                'esr_reference': esr_reference,
+                'esr_participation_number': esr_participation_number,
+                'is_salary': is_salary 
+            })
             return
     
     def create_payment(self, party_type, party_name, 

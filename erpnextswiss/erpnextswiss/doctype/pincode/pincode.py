@@ -86,7 +86,6 @@ def import_pincodes(content):
             pincode.latitude = element[field_index['latitude']] or ""
             if 'bfsnr' in field_index:
                 pincode.bfsnr = element[field_index['bfsnr']] or ""
-            pincode.bfsnr = bfsnr
             pincode.save()
             frappe.db.commit()
     

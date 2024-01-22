@@ -121,7 +121,7 @@ function get_city_from_pincode(pincode, target_field, state_field="", country=nu
             },
             async: false,
             callback: function(response) {
-                if (response.message) {
+                if ((response.message) && (response.message.length > 0)) {
                     if (response.message.length == 1) {
                         // got exactly one city
                         var city = response.message[0].city;
@@ -233,3 +233,89 @@ function fetch_price_list_rate(frm, cdt, cdn) {
         }
     });
 }
+
+function url_to_form(doctype, docname, callback) {
+    frappe.call({
+        'method': 'erpnextswiss.erpnextswiss.common_functions.url_to_form',
+        'args': {
+            'doctype': doctype,
+            'docname': docname
+        },              // note: async: false is still not working, response would be undefined
+        'callback': callback
+    });
+}
+
+function link_to_form(doctype, docname, callback) {
+    frappe.call({
+        'method': 'erpnextswiss.erpnextswiss.common_functions.link_to_form',
+        'args': {
+            'doctype': doctype,
+            'docname': docname
+        },              // note: async: false is still not working, response would be undefined
+        'callback': callback
+    });
+}
+
+function url_to_list(doctype, callback) {
+    frappe.call({
+        'method': 'erpnextswiss.erpnextswiss.common_functions.url_to_list',
+        'args': {
+            'doctype': doctype
+        },              // note: async: false is still not working, response would be undefined
+        'callback': callback
+    });
+}
+
+function url_to_report(name, callback) {
+    frappe.call({
+        'method': 'erpnextswiss.erpnextswiss.common_functions.url_to_report',
+        'args': {
+            'name': name
+        },              // note: async: false is still not working, response would be undefined
+        'callback': callback
+    });
+}
+
+function url_to_report_with_filters(name, filters, report_type, doctype, callback) {
+    frappe.call({
+        'method': 'erpnextswiss.erpnextswiss.common_functions.url_to_report_with_filters',
+        'args': {
+            'name': name,
+            'filters': filters,
+            'report_type': report_type,
+            'doctype': doctype
+        },              // note: async: false is still not working, response would be undefined
+        'callback': callback
+    });
+}
+
+// get calendar week according to ISO 8601
+function get_week(date) {
+    if (!(date instanceof Date)) {
+        date = new Date(date);
+    }
+
+    // ISO week date weeks start on Monday, so correct the day number
+    var nDay = (date.getDay() + 6) % 7;
+
+    // ISO 8601 states that week 1 is the week with the first Thursday of that year
+    // Set the target date to the Thursday in the target week
+    date.setDate(date.getDate() - nDay + 3);
+
+    // Store the millisecond value of the target date
+    var n1stThursday = date.valueOf();
+
+    // Set the target to the first Thursday of the year
+    // First, set the target to January 1st
+    date.setMonth(0, 1);
+
+    // Not a Thursday? Correct the date to the next Thursday
+    if (date.getDay() !== 4) {
+        date.setMonth(0, 1 + ((4 - date.getDay()) + 7) % 7);
+    }
+
+    // The week number is the number of weeks between the first Thursday of the year
+    // and the Thursday in the target week (604800000 = 7 * 24 * 3600 * 1000)
+    return 1 + Math.ceil((n1stThursday - date) / 604800000);
+}
+

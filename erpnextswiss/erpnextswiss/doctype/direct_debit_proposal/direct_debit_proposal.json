@@ -10,6 +10,7 @@
   "column_main",
   "date",
   "company",
+  "letter_head",
   "section_invoices",
   "sales_invoices",
   "section_payments",
@@ -116,10 +117,19 @@
    "fieldtype": "Link",
    "label": "Skonto Cost Center",
    "options": "Cost Center"
+  },
+  {
+   "fetch_from": "company.default_letter_head",
+   "fetch_if_empty": 1,
+   "fieldname": "letter_head",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "Letter Head",
+   "options": "Letter Head"
   }
  ],
  "is_submittable": 1,
- "modified": "2020-04-29 21:58:33.159570",
+ "modified": "2023-03-16 16:45:53.116572",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "Direct Debit Proposal",

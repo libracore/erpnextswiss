@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    <title>Simple Example ECR TimApi</title>
+    <meta http-equiv="Content-Type" content="text/html;charset=ISO-8859-1">
+    <script src="/assets/erpnextswiss/js/tim/testing/timapi.js"></script>
+    </head>
+    <body>
+    <div class="ecr" id="mainEcr">
+        <h1>Simple Example ECR</h1>
+        <div class="display">
+            <div id="display-line1">&nbsp;</div>
+            <div id="display-line2">&nbsp;</div>
+        </div>
+        <div class="control">
+            <form>
+                <fieldset>
+                    <legend>Transaction Parameters</legend>
+                    <div class="row">
+                        <label>Amount CHF (in minor units):</label>
+                        <input id="editAmount" class="ui-widget ui-widget-content ui-corner-all" value="850" size="6"/>
+                    </div>
+                    <div class="row">
+                        <label>Last Transaction Sequence: </label>
+                        <input id="lastTransaction" class="ui-widget ui-widget-content ui-corner-all" value="0" size="6"/>
+                    </div>
+                </fieldset>
+                <fieldset>
+                    <legend>Financial Functions</legend>
+                    <button id="btnPurchase">Purchase</button>
+                    <button id="btnCredit">Credit</button>
+                    <button id="btnCommit">Commit</button>
+                    <button id="btnRollblack">Rollback</button>
+                    <button id="btnReversal">Reversal</button>
+                </fieldset>
+                <fieldset>
+                    <legend>Other Functions</legend>
+                    <button id="btnBalance">Balance</button>
+                    <button id="btnReconciliation">Reconciliation</button>
+                    <button id="btnReconfig">Reconfig</button>
+                    <button id="btnCancel">Cancel</button>
+                </fieldset>
+                <fieldset>
+                    <legend>State Management</legend>
+                    <button id="btnConnect">Connect</button>
+                    <button id="btnDisconnect">Disconnect</button>	
+                    <button id="btnLogin">Login</button>
+                    <button id="btnLogout">Logout</button>
+                    <button id="btnActivate">Activate</button>
+                    <button id="btnDeactivate">Deactivate</button>
+                </fieldset>
+            </form>
+        </div>
+    </div>
+  </body>
+</html>

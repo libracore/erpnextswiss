@@ -1,0 +1,92 @@
+body {
+    background: #404040;
+    font-family: 'Arial';
+}
+
+div.ecr {
+    width: 30em;
+    margin: auto auto auto auto;
+    text-align: center;
+    background: #d0d0d0;
+    border: none;
+    padding-bottom: 1px;
+    font-size: 12pt;
+    border-radius: 0.7em;
+}
+
+div.ecr h1 {
+    background: #2288c7;
+    margin: 0;
+    padding: 0.25em;
+    font-size: 125%;
+    border-top-left-radius: 0.5em;
+    border-top-right-radius: 0.5em;
+    color: white;
+}
+
+div.ecr div.display {
+    background: #ceeb67;
+    margin: 1.5em;
+    padding: 2em 1em 2em 1em;
+    font-family: monospace;
+    font-size: 120%;
+    border-radius: 1em;
+    border: 2px solid #b0b0b0;
+}
+
+div.ecr div.control {
+    background: #f8f8f8;
+    margin: 1em 0.5em 0.5em 0.5em;
+    padding: 0.5em;
+    font-size: 100%;
+    border-radius: 1em;
+    border: 0px solid #b0b0b0;
+}
+
+div.ecr div.row {
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+}
+
+div.ecr div.row input {
+    margin-left: 1em;
+    text-align: right;
+    width: 4em;
+
+    font-size: 85%;
+    background-color: white;
+    border: 1px solid #d0d0d0;
+    padding: 0.2em;
+    padding-left: 0.5em;
+    grid-column: value;
+    border-radius: 0.35em;
+}
+
+div.ecr div.row input:hover {
+    background: #e7f3ff;
+}
+
+div.ecr label {
+    color: black;
+}
+
+div.ecr fieldset {
+    border-radius: 1em;
+    margin: 5px;
+    border: 2px solid #b0b0b0;
+    color: #b0b0b0;
+}
+
+div.ecr button {
+    background-color: #d0d0d0;
+    width: 10em;
+    height: 2em;
+    font-size: 100%;
+    margin: 5px;
+    border-radius: 0.5em;
+    color: black;
+}
+
+div.ecr button:hover {
+    filter: brightness(110%);
+}

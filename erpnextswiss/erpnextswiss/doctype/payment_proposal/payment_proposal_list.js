@@ -20,13 +20,14 @@ function prepare_payment_proposal() {
                 frappe.prompt([
                         {'fieldname': 'date', 'fieldtype': 'Date', 'label': __('Include Payments Until'), 'reqd': 1, 'default': d},
                         {'fieldname': 'company', 'fieldtype': 'Link', 'label': __("Company"), 'options': 'Company', 
-                         'default': frappe.defaults.get_default("Company") }
+                         'default': frappe.defaults.get_default("Company") },
+                        {'fieldname': 'currency', 'fieldtype': 'Link', 'label': __('Currency'), 'options': 'Currency'},
                     ],
                     function(values){
-                        create_payment_proposal(values.date, values.company);
+                        create_payment_proposal(values.date, values.company, values.currency);
                     },
-                    'Payment Proposal',
-                    'Create'
+                    __('Payment Proposal'),
+                    __('Create')
                 );
             } catch (err) {
                 frappe.msgprint("Error: " + err.message);
@@ -37,10 +38,14 @@ function prepare_payment_proposal() {
  
 }
 
-function create_payment_proposal(date, company) {
+function create_payment_proposal(date, company, currency) {
     frappe.call({
         "method": "erpnextswiss.erpnextswiss.doctype.payment_proposal.payment_proposal.create_payment_proposal",
-        "args": { "date": date, "company": company },
+        "args": { 
+            "date": date, 
+            "company": company,
+            "currency": currency
+        },
         "callback": function(response) {
             if (response.message) {
                 // redirect to the new record

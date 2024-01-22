@@ -1,0 +1,260 @@
+{
+ "creation": "2023-01-16 23:42:03.354126",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "dynamic_config",
+  "configuration_section",
+  "salary",
+  "catering",
+  "car",
+  "other_salary_description",
+  "other_salary",
+  "irregular_description",
+  "irregular",
+  "capital_description",
+  "capital",
+  "participation",
+  "board",
+  "other_description",
+  "other",
+  "deduction_ahv",
+  "deduction_pension",
+  "deduction_pension_additional",
+  "source_tax_deduction",
+  "effective_expenses_travel_check",
+  "effective_expenses_travel",
+  "effective_other_expenses_description",
+  "effective_other_expenses",
+  "representation_expenses",
+  "car_expenses",
+  "other_net_expenses_description",
+  "other_net_expenses",
+  "education",
+  "other_salary_sides",
+  "remark_prefix",
+  "remarks"
+ ],
+ "fields": [
+  {
+   "description": "Verpflegung und Unterkunft (Zimmer)<br>\nIn diesem Feld ist der Wert anzugeben, der dem Arbeitnehmer dadurch zufliesst, dass er 20 \ngratis Verpflegung und Unterkunft vom Arbeitgeber erh\u00e4lt\n<b> siehe Wegleitung </b>",
+   "fieldname": "catering",
+   "fieldtype": "Table",
+   "label": "2.1 Catering",
+   "options": "Salary Component Link"
+  },
+  {
+   "description": "In diesem Feld ist der Wert anzugeben, der dem Arbeitnehmer dadurch zufliesst, dass er ein Gesch\u00e4ftsfahrzeug auch privat ben\u00fctzen darf. \u00dcbernimmt der Arbeitgeber s\u00e4mtliche Kosten und hat der Arbeitnehmer lediglich die Benzinkosten f\u00fcr gr\u00f6ssere Privatfahrten am Wochenende oder in den Ferien zu bezahlen, so betr\u00e4gt der zu deklarierende Betrag pro \nMonat 0,9 % des Kaufpreises inkl. s\u00e4mtlichen Sonderausstattungen (exkl. Mehrwertsteuer), mindestens aber CHF 150 pro Monat, wenn der Kaufpreis weniger als CHF 16\u2019667 betr\u00e4gt. ",
+   "fieldname": "car",
+   "fieldtype": "Table",
+   "label": "2.2 Car",
+   "options": "Salary Component Link"
+  },
+  {
+   "fieldname": "other_salary",
+   "fieldtype": "Table",
+   "label": "2.3 Other salary",
+   "options": "Salary Component Link"
+  },
+  {
+   "fieldname": "irregular",
+   "fieldtype": "Table",
+   "label": "3 Irregular",
+   "options": "Salary Component Link"
+  },
+  {
+   "fieldname": "capital",
+   "fieldtype": "Table",
+   "label": "4 Capital",
+   "options": "Salary Component Link"
+  },
+  {
+   "description": "Beteiligungsrechte gem\u00e4ss Beiblatt",
+   "fieldname": "participation",
+   "fieldtype": "Table",
+   "label": "5 Participation",
+   "options": "Salary Component Link"
+  },
+  {
+   "description": "Verwaltungsratsentsch\u00e4digungen\n<ul>\n<li>Verwaltungsratsentsch\u00e4digungen;</li>\n<li>Sitzungsgelder</li>\n<li>Tantiemen</li>\n</ul>",
+   "fieldname": "board",
+   "fieldtype": "Table",
+   "label": "6 Board",
+   "options": "Salary Component Link"
+  },
+  {
+   "fieldname": "other",
+   "fieldtype": "Table",
+   "label": "7 Other",
+   "options": "Salary Component Link"
+  },
+  {
+   "description": "Ordentliche Beitr\u00e4ge f\u00fcr die berufliche Vorsorge",
+   "fieldname": "deduction_pension",
+   "fieldtype": "Table",
+   "label": "10.1 Deduction pension",
+   "options": "Salary Component Link"
+  },
+  {
+   "fieldname": "effective_other_expenses",
+   "fieldtype": "Table",
+   "label": "13.1.2 Effective other expenses",
+   "options": "Salary Component Link"
+  },
+  {
+   "description": "Pauschale Repr\u00e4sentationsspesen \nIn diesem Feld ist ein Pauschalbetrag (Einzelfallpauschalen gem\u00e4ss Rz 52 fallen nicht darunter) anzugeben, der leitenden Angestellten oder dem Aussendienstpersonal f\u00fcr Kleinspesen (in der Regel Einzelauslagen unter CHF 50) und repr\u00e4sentative Auslagen (z. B. f\u00fcr private Einladungen zu Hause) ausbezahlt wurde.",
+   "fieldname": "representation_expenses",
+   "fieldtype": "Table",
+   "label": "13.2.1 Representation expenses",
+   "options": "Salary Component Link"
+  },
+  {
+   "description": "Pauschale Autospesen\nIn diesem Feld ist ein Pauschalbetrag anzugeben, der einem Arbeitnehmer ausbezahlt wurde, der sein Privatfahrzeug oft gesch\u00e4ftlich verwenden muss (in der Regel mehrere tausend Kilometer pro Jahr). Die Spesenpauschale muss in etwa den effektiven Auslagen \nentsprechen. ",
+   "fieldname": "car_expenses",
+   "fieldtype": "Table",
+   "label": "13.2.2 Car expenses",
+   "options": "Salary Component Link"
+  },
+  {
+   "fieldname": "other_net_expenses",
+   "fieldtype": "Table",
+   "label": "13.2.3 Other net expenses",
+   "options": "Salary Component Link"
+  },
+  {
+   "description": "Beitr\u00e4ge des Arbeitgebers f\u00fcr die berufsorientierte Aus- und Weiterbildung \u2013 einschliesslich Umschulungskosten",
+   "fieldname": "education",
+   "fieldtype": "Table",
+   "label": "13.3 Education",
+   "options": "Salary Component Link"
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Table",
+   "label": "15 Remarks",
+   "options": "Salary Component Link"
+  },
+  {
+   "description": "Lohn (soweit nicht unter Ziffer 2 bis 7 des Lohnausweises aufzuf\u00fchren)\n<ul>\n<li>das ordentliche Sal\u00e4r sowie die Taggelder aus Versicherungen</li>\n<li>s\u00e4mtliche Zulagen (z. B. Geburts-, Kinder- oder andere Familienzulagen, Funktions-, \nSchicht-, Pikett-, Versetzungs-, Mittags-, Nacht-, Sonntags- und Wegzulagen, Pr\u00e4mien)</li>\n<li>Provisionen</li>\n<li>Verg\u00fctungen f\u00fcr den Arbeitsweg</li>\n<li>alle Barbeitr\u00e4ge an die ausw\u00e4rtige Verpflegung am Arbeitsort </li>\n</ul>",
+   "fieldname": "salary",
+   "fieldtype": "Table",
+   "label": "1. Salary",
+   "options": "Salary Component Link"
+  },
+  {
+   "default": "0",
+   "fieldname": "dynamic_config",
+   "fieldtype": "Check",
+   "label": "Dynamic Configuration"
+  },
+  {
+   "depends_on": "eval:doc.dynamic_config",
+   "fieldname": "configuration_section",
+   "fieldtype": "Section Break",
+   "label": "Configuration"
+  },
+  {
+   "fieldname": "remark_prefix",
+   "fieldtype": "Data",
+   "label": "15 Remark Prefix Text"
+  },
+  {
+   "description": "Auf dieser Zeile ist vorab die Art einer allf\u00e4lligen weiteren, vom Arbeitgeber ausgerichteten \nGehaltsnebenleistung anzugeben, die der Arbeitgeber bewerten kann",
+   "fieldname": "other_salary_description",
+   "fieldtype": "Data",
+   "label": "2.3 Other salary description"
+  },
+  {
+   "description": "Bei einem <b>unterj\u00e4hrigem</b> Arbeitsverh\u00e4ltnis<br>\n<ul>\n<li>\nUmzugsentsch\u00e4digungen\n</li>\n<li>\nAntritts- und Austrittsentsch\u00e4digungen\n</li>\n</ul>",
+   "fieldname": "irregular_description",
+   "fieldtype": "Data",
+   "label": "3 Irregular description"
+  },
+  {
+   "description": "Kapitalleistungen mit einem m\u00f6glicherweise reduzierten Steuersatz\n<ul>\n<li>Abgangsentsch\u00e4digungen mit Vorsorgecharakter</li>\n<li>Kapitalleistungen mit Vorsorgecharakter</li>\n<li>Lohnnachzahlungen usw.</li>\n</ul>",
+   "fieldname": "capital_description",
+   "fieldtype": "Data",
+   "label": "4 Capital description"
+  },
+  {
+   "description": "Beitr\u00e4ge AHV/IV/EO/ALV/NBUV",
+   "fieldname": "deduction_ahv",
+   "fieldtype": "Table",
+   "label": "9 Deductions AHV/IV/EO/ALV/NBUV",
+   "options": "Salary Component Link"
+  },
+  {
+   "description": "Beitr\u00e4ge f\u00fcr den Einkauf in die berufliche Vorsorge die vom Lohn abgezogen wurden.",
+   "fieldname": "deduction_pension_additional",
+   "fieldtype": "Table",
+   "label": "10.2 Deduction pension additional",
+   "options": "Salary Component Link"
+  },
+  {
+   "description": "Quellensteuerabzug",
+   "fieldname": "source_tax_deduction",
+   "fieldtype": "Table",
+   "label": "12 Source tax deduction",
+   "options": "Salary Component Link"
+  },
+  {
+   "description": "Alle effektiven Spesenverg\u00fctungen, die bei einem Arbeitnehmer angefallen sind (inkl. \nSpesenauslagen welche \u00fcber Unternehmenskreditkarten bezahlt werden), m\u00fcssen deklariert werden ausser Rz 52 ist erf\u00fcllt.",
+   "fieldname": "effective_expenses_travel",
+   "fieldtype": "Table",
+   "label": "13.1.1 Effective expenses travel",
+   "options": "Salary Component Link"
+  },
+  {
+   "fieldname": "effective_other_expenses_description",
+   "fieldtype": "Data",
+   "label": "13.1.2 Effective other expenses description"
+  },
+  {
+   "fieldname": "other_net_expenses_description",
+   "fieldtype": "Data",
+   "label": "13.2.3 Other net exenses description"
+  },
+  {
+   "description": "Auf diesen Zeilen sind (ohne Angabe des Betrages) die Gehaltsnebenleistungen des Arbeitgebers aufzuf\u00fchren, die er nicht selbst bewerten kann und die er deshalb nicht unter Ziffer 2 des Lohnausweises deklariert hat. Als solche Gehaltsnebenleistungen gelten geldwerte Vorteile verschiedenster Art. In Betracht fallen insbesondere Waren oder Dienstleistungen des Arbeitgebers, die der Arbeitnehmer gratis oder zu einem besonders tiefen\nVorzugspreis erworben hat.",
+   "fieldname": "other_salary_sides",
+   "fieldtype": "Data",
+   "label": "14 Other salary sides"
+  },
+  {
+   "description": "Andere Leistungen\n<ul>\n<li>Trinkgelder (bei wesentlichem Bestandteil des Lohnes</li>\n<li>Taggelder</li>\n<li>Leistungen der Arbeitslosenversicherung</li>\n<li>Leistungen der EO</li>\n<li>Vom Arbeitgeber \u00fcbernommene Quellensteuern oder andere Steuern</li>\n<li>Vom Arbeitgeber f\u00fcr Kinder des Arbeitnehmers bezahlte Schulgelder</li>\n</ul>",
+   "fieldname": "other_description",
+   "fieldtype": "Data",
+   "label": "7 Other description"
+  },
+  {
+   "default": "0",
+   "description": "Effektive Reise-, Verpflegungs- und \u00dcbernachtungsspesen<br>\nX setzten wenn alle Vorgaben von Rz 52 erf\u00fcllt sind. <br>\nUnternehmen mit einem genehmigten Spesenreglement haben im Lohnausweis unter Ziffer 15 folgenden Vermerk anzubringen: \u00abSpesenreglement durch Kanton X \n(Autokennzeichen des Kantons) am ... (Datum) genehmigt. \u00bb\n\n",
+   "fieldname": "effective_expenses_travel_check",
+   "fieldtype": "Check",
+   "label": "13.1.1 Effective expenses travel"
+  }
+ ],
+ "issingle": 1,
+ "modified": "2023-01-17 11:21:01.329215",
+ "modified_by": "Administrator",
+ "module": "ERPNextSwiss",
+ "name": "Salary Certificate Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

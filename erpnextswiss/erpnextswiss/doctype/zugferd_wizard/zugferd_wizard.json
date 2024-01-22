@@ -1,0 +1,101 @@
+{
+ "creation": "2020-05-06 16:26:10.793686",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "company",
+  "default_tax",
+  "default_item",
+  "col_main",
+  "file",
+  "section_preview",
+  "preview_html",
+  "content_dict",
+  "ready_for_import"
+ ],
+ "fields": [
+  {
+   "fieldname": "file",
+   "fieldtype": "Attach",
+   "in_list_view": 1,
+   "label": "File"
+  },
+  {
+   "fieldname": "section_preview",
+   "fieldtype": "Section Break",
+   "label": "Preview"
+  },
+  {
+   "fieldname": "preview_html",
+   "fieldtype": "HTML",
+   "label": "Preview",
+   "options": "Please load a file..."
+  },
+  {
+   "fieldname": "content_dict",
+   "fieldtype": "Code",
+   "hidden": 1,
+   "label": "Content dict"
+  },
+  {
+   "default": "0",
+   "fieldname": "ready_for_import",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "Ready for import"
+  },
+  {
+   "fieldname": "col_main",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company"
+  },
+  {
+   "fieldname": "default_tax",
+   "fieldtype": "Link",
+   "label": "Default Tax",
+   "options": "Purchase Taxes and Charges Template"
+  },
+  {
+   "fieldname": "default_item",
+   "fieldtype": "Link",
+   "label": "Default Item",
+   "options": "Item"
+  }
+ ],
+ "issingle": 1,
+ "modified": "2023-06-15 11:04:57.086993",
+ "modified_by": "Administrator",
+ "module": "ERPNextSwiss",
+ "name": "ZUGFeRD Wizard",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "Purchase Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC"
+}

@@ -1,0 +1,77 @@
+<table class="table">
+
+  <tr>
+    <td> <b> {{ _("Purchase Invoice Number") }} </b></td>
+    <td>{{ doc_id or "-" }}</td>
+    <td></td>
+  </tr>
+
+
+    <tr>
+    <td> <b> {{ _("Supplier") }} </b> </td>
+    <td>{{ supplier_name }} ({{ supplier_taxid }})</td>
+    <td>{% if not supplier %} <b>{{ _("NEW") }}</b>{% else %}{{ supplier }}{% endif %}</td>
+  </tr>
+
+  <tr>
+    <td> <b> {{ _("Supplier Address") }} </b></td>
+    <td>{{ supplier_al or "" }}<br>{{ supplier_pincode or "" }} {{ supplier_city or "" }}</td>
+    <td>{% if not supplier %} <b>{{ _("NEW") }}</b>{% endif %}</td>
+  </tr>
+  
+{% for i in items %}
+  <tr>
+    <td> <b> {{ _("Item") }} {{ loop.index }}</b></td>
+    <td>    <b>Item name: </b>{{ i.item_name }} ({{i.seller_item_code}}) <br>
+            <b>Net price: </b>{{ i.net_price }} <br> 
+            <b>Quantity: </b>{{ i.qty }} <br>
+    </td>
+    <td>{% if not i.item_code %} <b>{{ _("NEW") }}</b>{% else %}{{ i.item_code }}{% endif %}</td>
+  </tr>
+{% endfor %}
+
+  <tr>
+    <td> <b> {{ _("Currency") }} </b></td>
+    <td>{{ currency }}</td>
+    <td></td>
+  </tr>
+
+  <tr>
+    <td> <b> {{ _("Due Date") }} </b></td>
+    <td> {{ frappe.utils.get_datetime(due_date).strftime('%d.%m.%Y') }}</td> 
+    <td></td>
+  </tr>
+
+  <tr>
+    <td> <b> {{ _("Tax rate") }} </b></td>
+    <td>{{ tax_rate }}</td>
+    <td></td>
+  </tr>
+  
+  <tr>
+    <td> <b> {{ _("Terms") }} </b></td>
+    <td>{{ terms }}</td>
+    <td>{% if not terms %} <b>{{ _("No terms available") }}</b> {% endif %}</td>
+  </tr>
+
+  
+  
+  <tr>
+    <td> <b> Amount before Taxes({{ currency }}) </b></td>
+    <td>{{ line_total }}</td>
+    <td></td>
+  </tr>
+  
+  <tr>
+    <td> <b> Total taxes </b></td>
+    <td>{{ total_taxes }}</td>
+    <td></td>
+  </tr>
+  
+  <tr>
+    <td> <b> Grand total </b></td>
+    <td>{{ grand_total }}</td>
+    <td></td>
+  </tr>
+  
+</table>

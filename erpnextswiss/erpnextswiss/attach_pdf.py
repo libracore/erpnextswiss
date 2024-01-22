@@ -13,11 +13,12 @@ from frappe.utils import cint
 @frappe.whitelist()
 def attach_pdf(doctype, docname, event=None, print_format=None, hashname=None, is_private=1, background=1):
     fallback_language = frappe.db.get_single_value("System Settings", "language") or "en"
+    doc = frappe.get_doc(doctype, docname)
     args = {
         "doctype": doctype,
         "name": docname,
-        "title": (frappe.get_value(doctype, docname, "title") or docname),
-        "lang": (frappe.get_value(doctype, docname, "language") or fallback_language),
+        "title": (doc.get("title") or docname),
+        "lang": (doc.get("language") or fallback_language),
         "print_format": print_format,
         "hashname": cint(hashname),
         "is_private": cint(is_private)
@@ -35,7 +36,7 @@ def enqueue(args):
                    timeout=90, is_async=True, **args)
     return
 
-def execute(doctype, name, title, lang=None, print_format=None, hashname=None, is_private=1):
+def execute(doctype, name, title, lang=None, print_format=None, hashname=None, is_private=1, file_name=None):
     if lang:
         frappe.local.lang = lang
 
@@ -44,7 +45,7 @@ def execute(doctype, name, title, lang=None, print_format=None, hashname=None, i
 
     pdf_data = get_pdf_data(doctype, name, print_format)
 
-    save_and_attach(pdf_data, doctype, name, title_folder, hashname, is_private)
+    save_and_attach(pdf_data, doctype, name, title_folder, hashname, is_private, file_name)
     return
 
 
@@ -61,19 +62,20 @@ def create_folder(folder, parent):
 def get_pdf_data(doctype, name, print_format=None):
     """Document -> HTML -> PDF."""
     html = frappe.get_print(doctype, name, print_format)
-    return frappe.utils.pdf.get_pdf(html)
+    return frappe.utils.pdf.get_pdf(html, print_format=print_format)
 
 
-def save_and_attach(content, to_doctype, to_name, folder, hashname=None, is_private=1):
+def save_and_attach(content, to_doctype, to_name, folder, hashname=None, is_private=1, file_name=None):
     """
     Save content to disk and create a File document.
     File document is linked to another document.
     """
-    if not hashname:
-        file_name = "{0}.pdf".format(to_name.replace(" ", "-").replace("/", "-"))
-    else:
-        # use a hased file name
-        file_name = "{0}.pdf".format(hashlib.md5("{0}{1}".format(to_name, time.time()).encode('utf-8')).hexdigest())
+    if not file_name:
+        if not hashname:
+            file_name = "{0}.pdf".format(to_name.replace(" ", "-").replace("/", "-"))
+        else:
+            # use a hased file name
+            file_name = "{0}.pdf".format(hashlib.md5("{0}{1}".format(to_name, time.time()).encode('utf-8')).hexdigest())
 
     save_file(file_name, content, to_doctype,
               to_name, folder=folder, is_private=is_private)

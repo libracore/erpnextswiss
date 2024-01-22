@@ -8,6 +8,9 @@ from frappe.model.document import Document
 from datetime import datetime
 import json
 from frappe.utils.data import add_days
+from erpnextswiss.erpnextswiss.finance import get_customer_ledger, get_debit_accounts
+from frappe.utils.background_jobs import enqueue
+from frappe import _
 
 class PaymentReminder(Document):
     # this will apply all payment reminder levels and blocking days (as exclude_from_payment_reminder_until) in the sales invoices
@@ -35,6 +38,18 @@ class PaymentReminder(Document):
         self.update_reminder_levels()
     pass
 
+@frappe.whitelist()
+def enqueue_create_payment_reminders(company):
+    kwargs={
+      'company': company
+    }
+    
+    enqueue("erpnextswiss.erpnextswiss.doctype.payment_reminder.payment_reminder.create_payment_reminders",
+        queue='long',
+        timeout=15000,
+        **kwargs)
+    return {'result': _('Started...')}
+    
 # this function will create new payment reminders
 @frappe.whitelist()
 def create_payment_reminders(company):
@@ -72,7 +87,7 @@ def create_payment_reminders(company):
                         `currency`,
                         `contact_email`
                     FROM `tabSales Invoice` 
-                    WHERE `outstanding_amount` > 0 AND `customer` = '{customer}'
+                    WHERE `outstanding_amount` > 0 AND `customer` = "{customer}"
                       AND `docstatus` = 1
                       AND `enable_lsv` = 0
                       AND (`due_date` < CURDATE())
@@ -82,6 +97,14 @@ def create_payment_reminders(company):
             open_invoices = frappe.db.sql(sql_query, as_dict=True)
             email = None
             if open_invoices:
+                # check if this customer has an overall credit balance
+                if frappe.get_value("ERPNextSwiss Settings", "ERPNextSwiss Settings", "no_reminder_on_credit_balance"):
+                    # get customer credit balance
+                    debit_accounts = get_debit_accounts(company)
+                    gl_records = get_customer_ledger(debit_accounts, customer)
+                    if len(gl_records) > 0 and gl_records[-1]['balance'] >= 0:
+                        continue        # skip on balance
+                        
                 now = datetime.now()
                 invoices = []
                 highest_level = 0
@@ -129,7 +152,10 @@ def create_payment_reminders(company):
                     'currency': currency,
                     'email': email
                 })
-                reminder_record = new_reminder.insert(ignore_permissions=True)
+                try:
+                    reminder_record = new_reminder.insert(ignore_permissions=True)
+                except Exception as err:
+                    frappe.log_error(err, _("Unable to create payment reminder") )
                 if int(auto_submit) == 1:
                     reminder_record.update_reminder_levels()
                     reminder_record.submit()

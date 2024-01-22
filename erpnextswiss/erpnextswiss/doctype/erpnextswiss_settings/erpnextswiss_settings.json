@@ -9,6 +9,7 @@
   "default_supplier",
   "section_payment_reminder",
   "payment_reminder_auto_submit",
+  "no_reminder_on_credit_balance",
   "column_payment_reminder",
   "payment_reminder_charges",
   "payment_reminder_level_blocking_period",
@@ -25,6 +26,8 @@
   "always_use_entry_transaction_type",
   "auto_process_matches",
   "numeric_only_debtor_matching",
+  "debug_mode",
+  "iban_check_mandatory",
   "bank_import_section",
   "bankimport_table",
   "invoice_code_line_scanning_section",
@@ -39,7 +42,11 @@
   "enable_zefix",
   "column_zefix",
   "zefix_user",
-  "zefix_pw"
+  "zefix_pw",
+  "sec_invoicing",
+  "service_item",
+  "col_invoicing",
+  "invoice_method"
  ],
  "fields": [
   {
@@ -242,10 +249,50 @@
    "fieldname": "numeric_only_debtor_matching",
    "fieldtype": "Check",
    "label": "Numeric-only debtor reference matching"
+  },
+  {
+   "fieldname": "sec_invoicing",
+   "fieldtype": "Section Break",
+   "label": "Invoicing"
+  },
+  {
+   "fieldname": "service_item",
+   "fieldtype": "Link",
+   "label": "Service Item",
+   "options": "Item"
+  },
+  {
+   "fieldname": "col_invoicing",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "hours",
+   "fieldname": "invoice_method",
+   "fieldtype": "Select",
+   "label": "Method",
+   "options": "hours\nbilling_hours"
+  },
+  {
+   "default": "0",
+   "fieldname": "debug_mode",
+   "fieldtype": "Check",
+   "label": "Debug Mode"
+  },
+  {
+   "default": "0",
+   "fieldname": "iban_check_mandatory",
+   "fieldtype": "Check",
+   "label": "IBAN check mandatory"
+  },
+  {
+   "default": "0",
+   "fieldname": "no_reminder_on_credit_balance",
+   "fieldtype": "Check",
+   "label": "No Reminder on Credit Balance"
   }
  ],
  "issingle": 1,
- "modified": "2022-09-01 17:14:08.794789",
+ "modified": "2023-09-04 15:14:35.307749",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "ERPNextSwiss Settings",

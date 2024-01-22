@@ -22,7 +22,7 @@ The software comes as-is without any warranty.
 Requires an ERPNext server instance (refer to [https://github.com/frappe/erpnext](https://github.com/frappe/erpnext))
 
 ## Compatibility
-ERPNextSwiss is tested against ERPNext v12. There is a compatibility branch v11 (for user who prefer the old desk).
+ERPNextSwiss is tested against ERPNext v12. There are compatibility branches for v11 (for user who prefer the old desk) and v13 (for daring users).
 
 ERPNextSwiss is also compatible with Dokos ([https://dokos.io](https://dokos.io))
 
@@ -58,29 +58,37 @@ In case you update from the sources and observe an error, make sure to update de
     * Payment export: allows to create payment files for banks (pain.001) from payment entries (paying)
     * QR invoices and ESR invoices: outgoing (sales invoices) as well as incoming (scan purchase invoices); QR invoice supports ESR/NON/SCOR
     * ZUGFeRD: fully electronic invoices.
-* Tax
+    * ZUGFeRD Wizard: read and interpret both ZUGFeRD and QR-invoices to purchase invoices
+* Taxes
     * Import monthly average exchange rates, daily exchange rates (ESTV)
-    * VAT declaration
+    * VAT declaration (with ESTV data transfer easyTax/ePortal)
     * Zefix integration
 * Human resources
     * Salary certificate ("Lohnausweis")
     * Seco overtime reporting (based on timesheet)
     * Seco monthly worktime (working hours and breaks) (based on timesheet)
     * Automatic settling of expenses and salary payments
+    * Import public holidays (region-dependent) into the Holidays List
 * General tools
     * Postal code lookup
     * Script-based data import
     * Large data import tools
     * Dynamic newsletter content
  * Interfaces
-    * Interface to ESTV
+    * Interface to ESTV: 
+        * read exchange rates
+        * monthly average rates
+        * transmit tax forms
     * Interface to abacus (export transaction data)
     * ISO 20022
     * ZUGFeRD
     * Interface to Zefix
     * Datatrans interface for payments
+    * Payrexx payment interface
     * EDI connector: allows to fully integrate EDI exchange (PRICAT, DESADV, ORDERS, SLSRPT, ...)
-
+    * NextCloud:
+        * Update contacts from ERPNext to NextCloud address book
+      
 ## Release notes
 Refer to [https://github.com/libracore/erpnextswiss/wiki/Release-Notes](https://github.com/libracore/erpnextswiss/wiki/Release-Notes)
 

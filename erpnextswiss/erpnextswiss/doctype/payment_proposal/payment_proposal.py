@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018-2023, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2018-2024, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
 
 from __future__ import unicode_literals
@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 import time
 from erpnextswiss.erpnextswiss.common_functions import get_building_number, get_street_name, get_pincode, get_city, get_primary_address
 import html          # used to escape xml content
-from frappe.utils import cint, get_url_to_form
+from frappe.utils import cint, get_url_to_form, rounded
 from unidecode import unidecode     # used to remove German/French-type special characters from bank identifieres
 
 PAYMENT_REMARKS = "From Payment Proposal {0}"
@@ -377,6 +377,78 @@ class PaymentProposal(Document):
         content = frappe.render_template('erpnextswiss/erpnextswiss/doctype/payment_proposal/pain-001.html', data)
         return { 'content': content }
     
+    def create_transferwise_file(self):
+        data = {
+            'payments': []
+        }
+        source_currency = frappe.get_cached_value("Account", self.pay_from_account, "currency")
+        for payment in self.payments:
+            data['payments'].append({
+                'recipient': payment.receiver,
+                'recipient_mail': "",
+                'reference': payment.reference,
+                'amount': rounded(payment.amount, 2),
+                'source_currency': source_currency,
+                'target_currency': ,
+                'iban': payment.iban.replace(" ", "")
+            })
+            payment_content = ""
+            payment_record = {
+                'id': "PMTINF-{0}-{1}".format(self.name, transaction_count),   # unique (in this file) identification for the payment ( e.g. PMTINF-01, PMTINF-PE-00005 )
+                'method': "TRF",             # payment method (TRF or TRA, no impact in Switzerland)
+                'batch': "true",             # batch booking (true or false; recommended true)
+                'required_execution_date': "{0}".format(payment.execution_date.split(" ")[0]),         # Requested Execution Date (e.g. 2010-02-22, remove time element)
+                'debtor': {                    # debitor (technically ignored, but recommended)  
+                    'name': html.escape(self.company),
+                    'account': "{0}".format(payment_account.iban.replace(" ", "")),
+                    'bic': "{0}".format(payment_account.bic)
+                },
+                'instruction_id': "INSTRID-{0}-{1}".format(self.name, transaction_count),          # instruction identification
+                'end_to_end_id': "{0}".format((payment.reference[:33] + '..') if len(payment.reference) > 35 else payment.reference.strip()),   # end-to-end identification (should be used and unique within B-level; payment entry name)
+                'currency': payment.currency,
+                'amount': round(payment.amount, 2),
+                'creditor': {
+                    'name': html.escape(payment.receiver),
+                    'address_line1': html.escape(payment.receiver_address_line1[:35]),
+                    'address_line2': html.escape(payment.receiver_address_line2[:35]),
+                    'country_code': frappe.get_value("Country", payment.receiver_country, "code").upper()
+                },
+                'is_salary': payment.is_salary
+            }
+            if payment.payment_type == "SEPA":
+                # service level code (e.g. SEPA)
+                payment_record['service_level'] = "SEPA"
+                payment_record['iban'] = payment.iban.replace(" ", "")
+                payment_record['reference'] = payment.reference
+            elif payment.payment_type == "ESR":
+                # Decision whether ESR or QRR
+                if 'CH' in payment.esr_participation_number:
+                    # It is a QRR
+                    payment_record['service_level'] = "QRR"                    # only internal information
+                    payment_record['esr_participation_number'] = payment.esr_participation_number.replace(" ", "")                    # handle esr_participation_number as QR-IBAN
+                    payment_record['esr_reference'] = payment.esr_reference.replace(" ", "")                    # handle esr_reference as QR-Reference
+                else:
+                    # proprietary (nothing or CH01 for ESR)            
+                    payment_record['local_instrument'] = "CH01"
+                    payment_record['service_level'] = "ESR"                    # only internal information
+                    payment_record['esr_participation_number'] = payment.esr_participation_number
+                    payment_record['esr_reference'] = payment.esr_reference.replace(" ", "")
+            else:
+                payment_record['service_level'] = "IBAN"
+                payment_record['iban'] = payment.iban.replace(" ", "")
+                payment_record['reference'] = payment.reference
+                payment_record['bic'] = (payment.bic or "").replace(" ", "")
+            # once the payment is extracted for payment, submit the record
+            transaction_count += 1
+            control_sum += round(payment.amount, 2)
+            data['payments'].append(payment_record)
+        data['transaction_count'] = transaction_count
+        data['control_sum'] = control_sum
+        
+        # render file
+        content = frappe.render_template('erpnextswiss/erpnextswiss/doctype/payment_proposal/pain-001.html', data)
+        return { 'content': content }
+        
     def add_creditor_info(self, payment):
         payment_content = ""
         # creditor information

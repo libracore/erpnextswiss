@@ -381,7 +381,7 @@ class PaymentProposal(Document):
         data = {
             'payments': []
         }
-        source_currency = frappe.get_cached_value("Account", self.pay_from_account, "currency")
+        source_currency = frappe.get_cached_value("Account", self.pay_from_account, "account_currency")
         for payment in self.payments:
             data['payments'].append({
                 'recipient': payment.receiver,

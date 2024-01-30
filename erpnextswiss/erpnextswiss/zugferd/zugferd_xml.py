@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018-2020, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2018-2024, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
 #
 #
@@ -9,6 +9,7 @@
 import frappe
 from erpnextswiss.erpnextswiss.common_functions import get_primary_address
 from frappe import _
+from frappe.utils import cint
 from bs4 import BeautifulSoup
 from datetime import datetime
 from facturx import check_facturx_xsd
@@ -60,7 +61,16 @@ def create_zugferd_xml(sales_invoice, verify=True):
             'total_tax': sinv.total_taxes_and_charges,
             'grand_total': (sinv.rounded_total or sinv.grand_total),
             'prepaid_amount': ((sinv.rounded_total or sinv.grand_total) - sinv.outstanding_amount),
-            'outstanding_amount': sinv.outstanding_amount
+            'outstanding_amount': sinv.outstanding_amount,
+            'po_no': html.escape(sinv.po_no) if sinv.po_no else None,
+            'supplier_contact_name': html.escape(frappe.get_value("User", sinv.owner, "full_name") or ""),
+            'supplier_contact_phone': html.escape(frappe.get_value("User", sinv.owner, "phone") or ""),
+            'supplier_contact_email': html.escape(sinv.owner),
+            'customer_contact_name': html.escape(sinv.contact_display or ""),
+            'customer_contact_phone': html.escape(sinv.contact_mobile or ""),
+            'customer_contact_email': html.escape(sinv.contact_email or ""),
+            'is_return': cint(sinv.is_return),
+            'iban': frappe.get_value("Account", sinv.debit_to, "iban")
         }
         data['items'] = []
         for item in sinv.items:

@@ -72,7 +72,7 @@ def get_data(filters):
             'py': v['py'] if 'py' in v else 0,
             'ytd': v['ytd'] if 'ytd' in v else 0,
             'budget': v['budget_fy'] if 'budget_fy' in v else 0,
-            'ytd_percent': (100 * (v['ytd'] if 'ytd' in v else 0) / v['budget_fy']) if 'budget_fy' in v else 0
+            'ytd_percent': (100 * (v['ytd'] if 'ytd' in v else 0) / v['budget_fy']) if 'budget_fy' in v and v['budget_fy'] != 0 else 0
         })
     
     return output

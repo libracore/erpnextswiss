@@ -1,0 +1,111 @@
+{
+ "creation": "2024-01-03 08:56:44.266406",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "host",
+  "enabled",
+  "verify_ssl",
+  "column_break_3",
+  "user",
+  "password",
+  "sec_contacts",
+  "sync_contacts",
+  "address_book"
+ ],
+ "fields": [
+  {
+   "description": "Something like https://cloud.example.com",
+   "fieldname": "host",
+   "fieldtype": "Data",
+   "label": "Host"
+  },
+  {
+   "default": "0",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled"
+  },
+  {
+   "fieldname": "column_break_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "user",
+   "fieldtype": "Data",
+   "label": "User"
+  },
+  {
+   "fieldname": "password",
+   "fieldtype": "Password",
+   "label": "Password"
+  },
+  {
+   "fieldname": "sec_contacts",
+   "fieldtype": "Section Break",
+   "label": "Contacts"
+  },
+  {
+   "default": "0",
+   "fieldname": "sync_contacts",
+   "fieldtype": "Check",
+   "label": "Sync Contacts to NextCloud"
+  },
+  {
+   "fieldname": "address_book",
+   "fieldtype": "Data",
+   "label": "Address Book"
+  },
+  {
+   "default": "0",
+   "fieldname": "verify_ssl",
+   "fieldtype": "Check",
+   "label": "Verify SSL"
+  }
+ ],
+ "issingle": 1,
+ "modified": "2024-01-04 19:39:57.496834",
+ "modified_by": "Administrator",
+ "module": "ERPNextSwiss",
+ "name": "NextCloud Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "Accounts Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "Sales User",
+   "share": 1
+  },
+  {
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "Purchase User",
+   "share": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

@@ -1,0 +1,38 @@
+{
+ "creation": "2023-01-16 23:30:29.414977",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "component",
+  "isnegative"
+ ],
+ "fields": [
+  {
+   "fieldname": "component",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Component",
+   "options": "Salary Component",
+   "reqd": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "is_negativ",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Is Negativ"
+  }
+ ],
+ "istable": 1,
+ "modified": "2023-01-16 23:50:26.368632",
+ "modified_by": "Administrator",
+ "module": "ERPNextSwiss",
+ "name": "Salary Component Link",
+ "owner": "Administrator",
+ "permissions": [],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

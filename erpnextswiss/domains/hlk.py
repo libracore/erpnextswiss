@@ -10,6 +10,14 @@ data = {
 				'label': 'Field Test'
 			}
 		],
+		'Item Group': [
+			{
+				'fieldname': 'bkp_katalog_version',
+				'fieldtype': 'Data',
+				'insert_after': 'is_group',
+				'label': 'BKP Katalog Version'
+			}
+		],
 		"Quotation": [
 			{
 				"fieldname": "introduction_template",

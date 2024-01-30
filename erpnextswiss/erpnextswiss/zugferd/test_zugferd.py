@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018-2020, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2018-2023, libracore (https://www.libracore.com) and contributors
 # See license.txt
 #
 # Bench tests:
 #  $ bench execute erpnextswiss.erpnextswiss.zugferd.zugferd_xml.create_zugferd_xml --kwargs "{'sales_invoice': 'SINV-00001'}"
 #  $ bench execute erpnextswiss.erpnextswiss.zugferd.test_zugferd.create_pdf
+#  $ bench execute erpnextswiss.erpnextswiss.zugferd.test_zugferd.read_pdf_from_file --kwargs "{'path': '/home/frappe/frappe-bench/sites/site1.local/public/files/zugferd_2p0_EN16931_Einfach.pdf'}"
+#
 from __future__ import unicode_literals
 
 import frappe
@@ -17,7 +19,7 @@ from erpnextswiss.erpnextswiss.zugferd.facturx.facturx import generate_facturx_f
 from PyPDF4 import PdfFileReader
 
 class TestZugferd(unittest.TestCase):
-	pass
+    pass
 
 
 def create_pdf ():
@@ -27,7 +29,7 @@ def create_pdf ():
     doc=None
     no_letterhead=0
     html = frappe.get_print(doctype, name, format, doc=doc, no_letterhead=no_letterhead)
-	
+    
     pdf = get_pdf(html)
     xml = create_zugferd_xml(name)
     

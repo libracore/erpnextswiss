@@ -54,8 +54,18 @@
     </ram:IncludedSupplyChainTradeLineItem>
 {%- endfor %}
     <ram:ApplicableHeaderTradeAgreement>
+      <ram:BuyerReference>{{ po_no or "undefined" }}</ram:BuyerReference>
       <ram:SellerTradeParty>
         <ram:Name>{{ company }}</ram:Name>
+        <ram:DefinedTradeContact>
+            <ram:PersonName>{{ supplier_contact_name }} </ram:PersonName>
+            <ram:TelephoneUniversalCommunication>
+                <ram:CompleteNumber>{{ supplier_contact_phone }}</ram:CompleteNumber>
+            </ram:TelephoneUniversalCommunication>
+            <ram:EmailURIUniversalCommunication>
+                <ram:URIID>{{ supplier_contact_email }}</ram:URIID>
+            </ram:EmailURIUniversalCommunication>
+        </ram:DefinedTradeContact>
         <ram:PostalTradeAddress>
           <ram:PostcodeCode>{{ company_address.pincode }}</ram:PostcodeCode>
           <ram:LineOne>{{ company_address.address_line1 }}</ram:LineOne>
@@ -70,6 +80,15 @@
         <ram:ID>{{ customer }}</ram:ID>
 {#-        <ram:GlobalID schemeID='0088'>4000001987658</ram:GlobalID> #}
         <ram:Name>{{ customer_name }}</ram:Name>
+        <ram:DefinedTradeContact>
+            <ram:PersonName>{{ customer_contact_name }}</ram:PersonName>
+            <ram:TelephoneUniversalCommunication>
+                <ram:CompleteNumber>{{ customer_contact_phone }}</ram:CompleteNumber>
+            </ram:TelephoneUniversalCommunication>
+            <ram:EmailURIUniversalCommunication>
+                <ram:URIID>{{ customer_contact_email }}</ram:URIID>
+            </ram:EmailURIUniversalCommunication>
+        </ram:DefinedTradeContact>
         <ram:PostalTradeAddress>
           <ram:PostcodeCode>{{ customer_address.pincode }}</ram:PostcodeCode>
           <ram:LineOne>{{ customer_address.address_line1 }}</ram:LineOne>
@@ -77,11 +96,24 @@
           <ram:CountryID>{{ customer_address.country_code }}</ram:CountryID>
         </ram:PostalTradeAddress>
       </ram:BuyerTradeParty>
+      {%- if po_no %}
+      <ram:BuyerOrderReferencedDocument>
+        <ram:IssuerAssignedID>{{ po_no }}</ram:IssuerAssignedID>
+      </ram:BuyerOrderReferencedDocument>
+      {%- endif %}
     </ram:ApplicableHeaderTradeAgreement>
     <ram:ApplicableHeaderTradeDelivery>
     </ram:ApplicableHeaderTradeDelivery>
     <ram:ApplicableHeaderTradeSettlement>
       <ram:InvoiceCurrencyCode>{{ currency }}</ram:InvoiceCurrencyCode>
+      <ram:SpecifiedTradeSettlementPaymentMeans>
+        <ram:TypeCode>{% if is_return %}1{% else %}30{% endif %}</ram:TypeCode>
+        {%- if not is_return %}
+        <ram:PayeePartyCreditorFinancialAccount>
+            <ram:IBANID>{{ iban }}</ram:IBANID>
+        </ram:PayeePartyCreditorFinancialAccount>
+        {%- endif %}
+      </ram:SpecifiedTradeSettlementPaymentMeans>
 {%- if taxes %}
   {%- for tax in taxes %}
       <ram:ApplicableTradeTax>

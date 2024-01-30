@@ -18,7 +18,8 @@ app_license = "AGPL"
 # app_include_css = "/assets/erpnextswiss/css/erpnextswiss.css"
 app_include_js = [
     "/assets/erpnextswiss/js/swiss_common.js",
-	"/assets/erpnextswiss/js/iban.js"
+    "/assets/erpnextswiss/js/iban.js",
+    "/assets/erpnextswiss/js/email.js"
 ]
 
 # include js, css files in header of web template
@@ -39,7 +40,8 @@ doctype_js = {
     "Fiscal Year":      "public/js/fiscal_year.js",
     "Supplier":         "public/js/supplier.js",
     "Customer":         "public/js/customer.js",
-    "Address":         "public/js/address.js"
+    "Address":          "public/js/address.js",
+    "Holiday List":     "public/js/holiday_list.js"
 }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
@@ -50,8 +52,13 @@ jenv = {
     "methods": [
         "get_tax_details:erpnextswiss.erpnextswiss.report.kontrolle_mwst.kontrolle_mwst.get_data",
         "get_account_sheets:erpnextswiss.erpnextswiss.finance.get_account_sheets",
+        "get_customer_ledger:erpnextswiss.erpnextswiss.finance.get_customer_ledger",
         "get_week_from_date:erpnextswiss.erpnextswiss.jinja.get_week_from_date",
-        "strip_html:erpnextswiss.erpnextswiss.jinja.strip_html"
+        "strip_html:erpnextswiss.erpnextswiss.jinja.strip_html",
+        "get_accounts_receivable:erpnextswiss.erpnextswiss.jinja.get_accounts_receivable",
+        "get_primary_company_address:erpnextswiss.scripts.crm_tools.get_primary_company_address",
+        "get_primary_customer_address:erpnextswiss.scripts.crm_tools.get_primary_customer_address",
+        "get_primary_supplier_address:erpnextswiss.scripts.crm_tools.get_primary_supplier_address"
     ]
 }
 
@@ -113,6 +120,12 @@ after_install = "erpnextswiss.setup.install.after_install"
 #         "on_trash": "method"
 #    }
 # }
+doc_events = {
+    "Contact": {
+        "on_update": "erpnextswiss.erpnextswiss.nextcloud.contacts.send_contact_to_nextcloud",
+        "on_trash": "erpnextswiss.erpnextswiss.nextcloud.contacts.delete_contact_from_nextcloud"
+    }
+}
 
 # Scheduled Tasks
 # ---------------

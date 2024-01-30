@@ -1,0 +1,31 @@
+{
+ "custom_fields": [],
+ "custom_perms": [],
+ "doctype": "Salary Certificate",
+ "property_setters": [
+  {
+   "_assign": null,
+   "_comments": null,
+   "_liked_by": null,
+   "_user_tags": null,
+   "creation": "2023-02-21 22:51:28.387477",
+   "default_value": null,
+   "doc_type": "Salary Certificate",
+   "docstatus": 0,
+   "doctype_or_field": "DocType",
+   "field_name": null,
+   "idx": 0,
+   "modified": "2023-02-21 22:51:28.387477",
+   "modified_by": "Administrator",
+   "name": "Salary Certificate-default_print_format",
+   "owner": "Administrator",
+   "parent": null,
+   "parentfield": null,
+   "parenttype": null,
+   "property": "default_print_format",
+   "property_type": "Data",
+   "value": "605.040.18N Form. 11"
+  }
+ ],
+ "sync_on_migrate": 1
+}

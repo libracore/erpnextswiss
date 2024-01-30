@@ -1,7 +1,23 @@
 frappe.ui.form.on('Quotation', {
     validate(frm) {
-        calc_valid_to_date(frm);
-        validate_hlk_element_allocation(frm);
+        // Diese Funktion prüft ob zum entsprechenden Dokument bereits ein BG-Job läuft und wenn ja blockiert Sie das Speichern oder weitere BG-Jobs.
+        frappe.call({
+        'method': "erpnextswiss.erpnextswiss.page.bkp_importer.utils.is_any_job_running",
+            'args': {
+                'doctype': "Quotation",
+                'docname': cur_frm.doc.name
+            },
+            'callback': function(res) {
+                var running_job = res.message;
+                if (running_job) {
+                    frappe.msgprint("Bitte warten Sie bis alle Hintergrundprozesse zu diesem Dokument abgeschlossen sind.");
+                    frappe.validated=false;
+                } else {
+                    calc_valid_to_date(frm);
+                    validate_hlk_element_allocation(frm);
+                }
+            }
+        });
     },
     refresh(frm) {
         frappe.call({
@@ -112,26 +128,42 @@ frappe.ui.form.on('Quotation', {
 })
 
 function transfer_special_discounts(frm) {
-    if (cur_frm.doc.special_discounts) {
-        var discounts = cur_frm.doc.special_discounts;
-        var total_discounts = 0;
-        discounts.forEach(function(entry) {
-            if (entry.discount_type == 'Percentage') {
-                var percentage_amount = 0;
-                if (entry.is_cumulative) {
-                    percentage_amount = (((cur_frm.doc.total - total_discounts) / 100) * entry.percentage);
-                } else {
-                    percentage_amount = ((cur_frm.doc.total / 100) * entry.percentage);
-                }
-                total_discounts += percentage_amount;
-                entry.discount = percentage_amount;
+    // Diese Funktion prüft ob zum entsprechenden Dokument bereits ein BG-Job läuft und wenn ja blockiert Sie das Speichern oder weitere BG-Jobs.
+    frappe.call({
+    'method': "erpnextswiss.erpnextswiss.page.bkp_importer.utils.is_any_job_running",
+        'args': {
+            'doctype': "Quotation",
+            'docname': cur_frm.doc.name
+        },
+        'callback': function(res) {
+            var running_job = res.message;
+            if (running_job) {
+                frappe.msgprint("Bitte warten Sie bis alle Hintergrundprozesse zu diesem Dokument abgeschlossen sind.");
             } else {
-                total_discounts += entry.discount;
+                // Das ist die eigentliche Funktion
+                if (cur_frm.doc.special_discounts) {
+                    var discounts = cur_frm.doc.special_discounts;
+                    var total_discounts = 0;
+                    discounts.forEach(function(entry) {
+                        if (entry.discount_type == 'Percentage') {
+                            var percentage_amount = 0;
+                            if (entry.is_cumulative) {
+                                percentage_amount = (((cur_frm.doc.total - total_discounts) / 100) * entry.percentage);
+                            } else {
+                                percentage_amount = ((cur_frm.doc.total / 100) * entry.percentage);
+                            }
+                            total_discounts += percentage_amount;
+                            entry.discount = percentage_amount;
+                        } else {
+                            total_discounts += entry.discount;
+                        }
+                    });
+                    cur_frm.set_value('apply_discount_on', 'Net Total');
+                    cur_frm.set_value('discount_amount', total_discounts);
+                }
             }
-        });
-        cur_frm.set_value('apply_discount_on', 'Net Total');
-        cur_frm.set_value('discount_amount', total_discounts);
-    }
+        }
+    });
 }
 
 function update_hlk_structur_organisation_rows(frm, data) {
@@ -164,53 +196,124 @@ function validate_hlk_element_allocation(frm) {
 }
 
 function calc_structur_organisation_totals(frm) {
-    if (!frm.doc.__islocal) {
-        frappe.dom.freeze(__("Calc HLK Totals..."));
-        frappe.call({
-            "method": "erpnextswiss.erpnextswiss.page.bkp_importer.utils.calc_structur_organisation_totals",
-            "args": {
-                "dt": "Quotation",
-                "dn": frm.doc.name
-            },
-            "async": false,
-            "callback": function(response) {
-                var jobname = response.message;
-                if (jobname) {
-                    let calc_refresher = setInterval(calc_refresher_handler, 3000, jobname);
-                    function calc_refresher_handler(jobname) {
-                        frappe.call({
-                        'method': "erpnextswiss.erpnextswiss.page.bkp_importer.utils.is_calc_job_running",
-                            'args': {
-                                'jobname': jobname
+    // Diese Funktion prüft ob zum entsprechenden Dokument bereits ein BG-Job läuft und wenn ja blockiert Sie das Speichern oder weitere BG-Jobs.
+    frappe.call({
+    'method': "erpnextswiss.erpnextswiss.page.bkp_importer.utils.is_any_job_running",
+        'args': {
+            'doctype': "Quotation",
+            'docname': cur_frm.doc.name
+        },
+        'callback': function(res) {
+            var running_job = res.message;
+            if (running_job) {
+                frappe.msgprint("Bitte warten Sie bis alle Hintergrundprozesse zu diesem Dokument abgeschlossen sind.");
+            } else {
+                // Das ist die eigentliche Funktion
+                if (!frm.doc.__islocal) {
+                    var hlk_structur_without_parent = check_hlk_structur_allocation(frm);
+                    if (hlk_structur_without_parent != '') {
+                        frappe.confirm(
+                            'Nachfolgende HLK Strukturen besitzen kein Eltern Element:' + hlk_structur_without_parent + '<br><br>Ist das korrekt und wollen Sie weiterfahren?',
+                            function(){
+                                // on yes
+                                sub_calc_structur_organisation_totals(frm)
                             },
-                            'callback': function(res) {
-                                if (res.message == 'refresh') {
-                                    clearInterval(calc_refresher);
-                                    frappe.dom.unfreeze();
-                                    cur_frm.reload_doc();
-                                }
+                            function(){
+                                // on no
+                                show_alert('Totalen Berechnung abgebrochen')
                             }
-                        });
+                        )
+                    } else {
+                        sub_calc_structur_organisation_totals(frm)
                     }
-                } else {
-                    frappe.dom.unfreeze();
                 }
             }
-        });
-    }
+        }
+    });
+}
+function sub_calc_structur_organisation_totals(frm) {
+    frappe.dom.freeze(__("Calc HLK Totals..."));
+    frappe.call({
+        "method": "erpnextswiss.erpnextswiss.page.bkp_importer.utils.calc_structur_organisation_totals",
+        "args": {
+            "dt": "Quotation",
+            "dn": frm.doc.name
+        },
+        "async": false,
+        "callback": function(response) {
+            var jobname = response.message;
+            if (jobname) {
+                let calc_refresher = setInterval(calc_refresher_handler, 3000, jobname);
+                function calc_refresher_handler(jobname) {
+                    frappe.call({
+                    'method': "erpnextswiss.erpnextswiss.page.bkp_importer.utils.is_calc_job_running",
+                        'args': {
+                            'jobname': jobname
+                        },
+                        'callback': function(res) {
+                            if (res.message == 'refresh') {
+                                clearInterval(calc_refresher);
+                                frappe.dom.unfreeze();
+                                cur_frm.reload_doc();
+                            }
+                        }
+                    });
+                }
+            } else {
+                frappe.dom.unfreeze();
+            }
+        }
+    });
 }
 
 function transfer_structur_organisation_discounts(frm) {
     if (!frm.doc.__islocal) {
+        // Diese Funktion prüft ob zum entsprechenden Dokument bereits ein BG-Job läuft und wenn ja blockiert Sie das Speichern oder weitere BG-Jobs.
         frappe.call({
-            "method": "erpnextswiss.erpnextswiss.page.bkp_importer.utils.transfer_structur_organisation_discounts",
-            "args": {
-                "dt": "Quotation",
-                "dn": frm.doc.name
+        'method': "erpnextswiss.erpnextswiss.page.bkp_importer.utils.is_any_job_running",
+            'args': {
+                'doctype': "Quotation",
+                'docname': cur_frm.doc.name
             },
-            "async": false,
-            "callback": function(response) {
-                calc_structur_organisation_totals(frm);
+            'callback': function(r) {
+                var running_job = r.message;
+                if (running_job) {
+                    frappe.msgprint("Bitte warten Sie bis alle Hintergrundprozesse zu diesem Dokument abgeschlossen sind.");
+                } else {
+                    // Das ist die eigentliche Funktion
+                    frappe.dom.freeze(__("Transferiere Rabatte..."));
+                    frappe.call({
+                        "method": "erpnextswiss.erpnextswiss.page.bkp_importer.utils.transfer_structur_organisation_discounts",
+                        "args": {
+                            "dt": "Quotation",
+                            "dn": frm.doc.name
+                        },
+                        "async": true,
+                        "callback": function(response) {
+                            var jobname = response.message;
+                            if (jobname) {
+                                let calc_refresher = setInterval(calc_refresher_handler, 3000, jobname);
+                                function calc_refresher_handler(jobname) {
+                                    frappe.call({
+                                    'method': "erpnextswiss.erpnextswiss.page.bkp_importer.utils.is_calc_job_running",
+                                        'args': {
+                                            'jobname': jobname
+                                        },
+                                        'callback': function(res) {
+                                            if (res.message == 'refresh') {
+                                                clearInterval(calc_refresher);
+                                                frappe.dom.unfreeze();
+                                                calc_structur_organisation_totals(frm);
+                                            }
+                                        }
+                                    });
+                                }
+                            } else {
+                                calc_structur_organisation_totals(frm);
+                            }
+                        }
+                    });
+                }
             }
         });
     }
@@ -220,8 +323,21 @@ function check_hlk_element_allocation(frm) {
     var feedback = '';
     var items = cur_frm.doc.items;
     items.forEach(function(item_entry) {
-        if (item_entry.hlk_element == null) {
+        if (item_entry.hlk_element.length < 1) {
             feedback = feedback + '<br>#' + String(item_entry.idx);
+        }
+    });
+    return feedback
+}
+
+function check_hlk_structur_allocation(frm) {
+    var feedback = '';
+    var items = cur_frm.doc.hlk_structur_organisation;
+    items.forEach(function(item_entry) {
+        if (item_entry.parent_element) {
+            if (item_entry.parent_element.length < 1) {
+                feedback = feedback + '<br>#' + String(item_entry.idx) + ': ' + item_entry.main_element;
+            }
         }
     });
     return feedback
@@ -243,33 +359,49 @@ function calc_valid_to_date(frm) {
 }
 
 function change_customer(frm) {
-    frappe.prompt([
-        {'fieldname': 'customer', 'fieldtype': 'Link', 'label': __('New Customer'), 'reqd': 1, 'options': 'Customer'},
-        {'fieldname': 'adress', 'fieldtype': 'Link', 'label': __('New Address'), 'reqd': 0, 'options': 'Address'},
-        {'fieldname': 'contact', 'fieldtype': 'Link', 'label': __('New Customer'), 'reqd': 0, 'options': 'Contact'}
-    ],
-    function(values){
-        var args = {
-            'dt': 'Quotation',
-            'record': cur_frm.doc.name,
-            'customer': values.customer
-        }
-        if (values.address) {
-            args["address"] = values.address
-        }
-        if (values.contact) {
-            args["contact"] = values.contact
-        }
-        frappe.call({
-            "method": "erpnextswiss.scripts.crm_tools.change_customer_without_impact_on_price",
-            "args": args,
-            "async": false,
-            "callback": function(response) {
-                cur_frm.reload_doc();
+    // Diese Funktion prüft ob zum entsprechenden Dokument bereits ein BG-Job läuft und wenn ja blockiert Sie das Speichern oder weitere BG-Jobs.
+    frappe.call({
+    'method': "erpnextswiss.erpnextswiss.page.bkp_importer.utils.is_any_job_running",
+        'args': {
+            'doctype': "Quotation",
+            'docname': cur_frm.doc.name
+        },
+        'callback': function(res) {
+            var running_job = res.message;
+            if (running_job) {
+                frappe.msgprint("Bitte warten Sie bis alle Hintergrundprozesse zu diesem Dokument abgeschlossen sind.");
+            } else {
+                // Das ist die eigentliche Funktion
+                frappe.prompt([
+                    {'fieldname': 'customer', 'fieldtype': 'Link', 'label': __('New Customer'), 'reqd': 1, 'options': 'Customer'},
+                    {'fieldname': 'adress', 'fieldtype': 'Link', 'label': __('New Address'), 'reqd': 0, 'options': 'Address'},
+                    {'fieldname': 'contact', 'fieldtype': 'Link', 'label': __('New Customer'), 'reqd': 0, 'options': 'Contact'}
+                ],
+                function(values){
+                    var args = {
+                        'dt': 'Quotation',
+                        'record': cur_frm.doc.name,
+                        'customer': values.customer
+                    }
+                    if (values.address) {
+                        args["address"] = values.address
+                    }
+                    if (values.contact) {
+                        args["contact"] = values.contact
+                    }
+                    frappe.call({
+                        "method": "erpnextswiss.scripts.crm_tools.change_customer_without_impact_on_price",
+                        "args": args,
+                        "async": false,
+                        "callback": function(response) {
+                            cur_frm.reload_doc();
+                        }
+                    });
+                },
+                __("Change Customer w/o impact on price"),
+                __('Change')
+                )
             }
-        });
-    },
-    __("Change Customer w/o impact on price"),
-    __('Change')
-    )
+        }
+    });
 }

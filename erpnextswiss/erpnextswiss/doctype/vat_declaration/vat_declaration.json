@@ -11,6 +11,7 @@
   "cmp_abbr",
   "column_break_1",
   "vat_type",
+  "letter_head",
   "section_break_period",
   "start_date",
   "column_break_2",
@@ -28,24 +29,41 @@
   "total_deductions",
   "taxable_revenue",
   "section_tax_calculation",
+  "normal_amount_2024",
+  "reduced_amount_2024",
+  "lodging_amount_2024",
   "normal_amount",
   "reduced_amount",
   "lodging_amount",
+  "amount_1_2024",
+  "amount_2_2024",
   "amount_1",
   "amount_2",
+  "additional_amount_2024",
   "additional_amount",
   "column_break_3",
+  "normal_rate_2024",
+  "reduced_rate_2024",
+  "lodging_rate_2024",
   "normal_rate",
   "reduced_rate",
   "lodging_rate",
+  "rate_1_2024",
+  "rate_2_2024",
   "rate_1",
   "rate_2",
   "column_break_4",
+  "normal_tax_2024",
+  "reduced_tax_2024",
+  "lodging_tax_2024",
   "normal_tax",
   "reduced_tax",
   "lodging_tax",
+  "tax_1_2024",
+  "tax_2_2024",
   "tax_1",
   "tax_2",
+  "additional_tax_2024",
   "additional_tax",
   "section_summary",
   "total_tax",
@@ -437,10 +455,139 @@
    "fieldtype": "Data",
    "hidden": 1,
    "label": "Company abbreviation"
+  },
+  {
+   "fetch_from": "company.default_letter_head",
+   "fetch_if_empty": 1,
+   "fieldname": "letter_head",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "Letter Head",
+   "options": "Letter Head"
+  },
+  {
+   "depends_on": "eval:doc.vat_type == 'effective'",
+   "fieldname": "normal_amount_2024",
+   "fieldtype": "Float",
+   "label": "Normal (303)",
+   "precision": "2"
+  },
+  {
+   "depends_on": "eval:doc.vat_type == 'effective'",
+   "fieldname": "reduced_amount_2024",
+   "fieldtype": "Float",
+   "label": "Reduced (313)",
+   "precision": "2"
+  },
+  {
+   "depends_on": "eval:doc.vat_type == 'effective'",
+   "fieldname": "lodging_amount_2024",
+   "fieldtype": "Float",
+   "label": "Lodging (343)",
+   "precision": "2"
+  },
+  {
+   "depends_on": "eval:doc.vat_type == 'flat'",
+   "fieldname": "amount_1_2024",
+   "fieldtype": "Float",
+   "label": "Amount 1 (323)",
+   "precision": "2"
+  },
+  {
+   "depends_on": "eval:doc.vat_type == 'flat'",
+   "fieldname": "amount_2_2024",
+   "fieldtype": "Float",
+   "label": "Amount 2 (333)",
+   "precision": "2"
+  },
+  {
+   "default": "8.1",
+   "depends_on": "eval:doc.vat_type == 'effective'",
+   "fieldname": "normal_rate_2024",
+   "fieldtype": "Percent",
+   "label": "Normal rate - 2024 (%)"
+  },
+  {
+   "default": "2.6",
+   "depends_on": "eval:doc.vat_type == 'effective'",
+   "fieldname": "reduced_rate_2024",
+   "fieldtype": "Percent",
+   "label": "Reduced rate - 2024 (%)"
+  },
+  {
+   "default": "3.8",
+   "depends_on": "eval:doc.vat_type == 'effective'",
+   "fieldname": "lodging_rate_2024",
+   "fieldtype": "Percent",
+   "label": "Lodging rate - 2024 (%)"
+  },
+  {
+   "depends_on": "eval:doc.vat_type == 'flat'",
+   "fieldname": "rate_1_2024",
+   "fieldtype": "Percent",
+   "label": "Rate 1 - 2024 (%)"
+  },
+  {
+   "depends_on": "eval:doc.vat_type == 'flat'",
+   "fieldname": "rate_2_2024",
+   "fieldtype": "Percent",
+   "label": "Rate 2 - 2024 (%)"
+  },
+  {
+   "fieldname": "normal_tax_2024",
+   "fieldtype": "Float",
+   "label": "Normal tax (300)",
+   "precision": "2",
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval:doc.vat_type == 'effective'",
+   "fieldname": "reduced_tax_2024",
+   "fieldtype": "Float",
+   "label": "Reduced tax (310)",
+   "precision": "2",
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval:doc.vat_type == 'effective'",
+   "fieldname": "lodging_tax_2024",
+   "fieldtype": "Float",
+   "label": "Lodging tax (340)",
+   "precision": "2",
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval:doc.vat_type == 'effective'",
+   "fieldname": "additional_tax_2024",
+   "fieldtype": "Float",
+   "label": "Additional tax (380)",
+   "precision": "2"
+  },
+  {
+   "depends_on": "eval:doc.vat_type == 'flat'",
+   "fieldname": "tax_1_2024",
+   "fieldtype": "Float",
+   "label": "Tax 1 (320)",
+   "precision": "2",
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval:doc.vat_type == 'flat'",
+   "fieldname": "tax_2_2024",
+   "fieldtype": "Float",
+   "label": "Tax 2 (330)",
+   "precision": "2",
+   "read_only": 1
+  },
+  {
+   "fieldname": "additional_amount_2024",
+   "fieldtype": "Float",
+   "label": "Additional (383)",
+   "precision": "2"
   }
  ],
  "is_submittable": 1,
- "modified": "2022-05-14 07:09:58.804507",
+ "modified": "2023-12-27 21:06:53.191523",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "VAT Declaration",

@@ -18,7 +18,7 @@
                     <EntryType>{%- if transaction.against_singles|len == 1 %}S{%- else %}C{%- endif %}</EntryType>
                     <Type>Normal</Type>
                     <DebitCredit>{{ transaction.debit_credit }}</DebitCredit>
-					<Client></Client>
+                    <Client></Client>
                     {%- if transaction.customer %}
                     <Client>{{ transaction.customer }}</Client>
                     {%- endif %}
@@ -66,7 +66,7 @@
                         <Currency>{{ against.currency }}</Currency>
                         <Amount>{{ "{:.2f}".format(against.amount) }}</Amount>
                     </AmountData>
-                    <KeyAmount>{{ "{:.2f}".format(against.amount) }}</KeyAmount>
+                    <KeyAmount>{{ "{:.2f}".format(against.key_amount or against.amount) }}</KeyAmount>
                     <Account>{{ against.account }}</Account>
                     {%- if transaction.tax_account %}
                     <TaxAccount>{{ transaction.tax_account }}</TaxAccount>
@@ -76,16 +76,28 @@
                     <Text1>{{ transaction.text1 }}</Text1>
                     <DocumentNumber>{{ short_reference }}</DocumentNumber>
                     <SelectionCode></SelectionCode>
-                    {%- if transaction.tax_account %}
+                    {%- if transaction.tax_code %}
                     <TaxData mode="SAVE">
-                        <TaxIncluded>I</TaxIncluded>
+                        <TaxIncluded>{%- if transaction.against_singles|len == 1 %}I{%- else %}E{%- endif %}</TaxIncluded>
                         <TaxType>1</TaxType>
                         <UseCode>1</UseCode>
+                        {%- if transaction.against_singles|len == 1 %}{%- set factor = (-1) %}{%- else %}{%- set factor = 1 %}{%- endif %}
                         <AmountData mode="SAVE">
-                            <Currency>{{ transaction.tax_currency }}</Currency>
-                            <Amount>0</Amount>
+                            <Currency>{{ against.currency }}</Currency>
+                            <Amount>
+                            {%- if against.currency == (transaction.key_currency or transaction.currency) -%}0{# hardcoded 0 otherwise abacus raises an error if doc currency = key currency #}
+                            {%- elif against.tax_amount or transaction.tax_rate == 0 -%}
+                                {{- "{:.2f}".format(((against.tax_amount or 0) * factor)) -}}
+                            {%- else -%}
+                                {{- "{:.2f}".format(((against.amount * (transaction.tax_rate or 0) / 100) * factor)) -}}
+                            {%- endif -%}
+                            </Amount>
                         </AmountData>
-                        <KeyAmount>{{ "{:.2f}".format(((transaction.tax_amount or 0) * (-1))) }}</KeyAmount>
+                        {%- if against.key_tax_amount or transaction.tax_rate == 0 %}
+                        <KeyAmount>{{ "{:.2f}".format(((against.key_tax_amount or 0) * factor)) }}</KeyAmount>
+                        {%- else %}
+                        <KeyAmount>{{ "{:.2f}".format(((against.key_amount * transaction.tax_rate / 100) * factor)) }}</KeyAmount>
+                        {%- endif %}
                         <TaxRate>{{ transaction.tax_rate or 0 }}</TaxRate>
                         <TaxCoefficient>100</TaxCoefficient>
                         <Country>CH</Country>

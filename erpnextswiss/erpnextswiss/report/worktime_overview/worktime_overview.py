@@ -73,7 +73,13 @@ def get_data_of_employee(filters):
     return data
     
 def get_data_of_all_employees(filters):
-    employees = frappe.db.sql("""SELECT `name`, `employee_name` FROM `tabEmployee` WHERE `company` = '{company}'""".format(company=filters.company), as_dict=True)
+    employees = frappe.db.sql("""
+        SELECT `name`, `employee_name` 
+        FROM `tabEmployee` 
+        WHERE 
+            `company` = "{company}"
+            AND (`relieving_date` IS NULL OR `relieving_date` >= "{start_date}")
+        ;""".format(company=filters.company, start_date=getdate(filters.from_date)), as_dict=True)
     data = []
     
     for _employee in employees:

@@ -93,6 +93,10 @@ def download_pricat(edi_file):
         content_segments.append("PIA+5+{item_code}:SA'".format(
             item_code=item.item_code[:35]
         ))
+        # additional information
+        content_segments.append("PIA+1+{item_group}:SA'".format(
+            item_group=(item.item_group or "")[:35]
+        ))
         # description
         content_segments.append("IMD+F+ANM+:::{item_name}:'".format(
             item_name=item.item_name
@@ -130,12 +134,12 @@ def download_pricat(edi_file):
         # quantity: minimum order
         content_segments.append("QTY+53:{min_qty}:{uom}'".format(
             min_qty=item.min_qty,
-            uom=get_uom_code(item_doc.get("stock_uom") or "PCE")
+            uom=get_uom_code(get_edi_unit(edi_con, item_doc.get("stock_uom") or "PCE"))
         ))
         # quantity: qty per pack
         content_segments.append("QTY+52:{min_qty}:{uom}'".format(
             min_qty=item.qty_per_pack,
-            uom=get_uom_code(item_doc.get("stock_uom") or "PCE")
+            uom=get_uom_code(get_edi_unit(edi_con, item_doc.get("stock_uom") or "PCE"))
         ))
         # availability date
         content_segments.append("DTM+44:20000101:102'")
@@ -236,7 +240,7 @@ def download_desadv(edi_file):
     # reference: order number
     if delivery_note.po_no:
         content_segments.append("RFF+VN:{po_no}'".format(
-            po_no=delivery_note.po_no
+            po_no=purify_string(delivery_note.po_no)
         ))
             
     # ### SG2
@@ -281,7 +285,7 @@ def download_desadv(edi_file):
         # quantity
         content_segments.append("QTY+12:{qty}:{uom}'".format(
             qty=item.qty,
-            uom=get_uom_code(item_doc.get("stock_uom") or "PCE")
+            uom=get_uom_code(get_edi_unit(edi_con, item_doc.get("stock_uom") or "PCE"))
         ))    
 
     # closing segment
@@ -456,7 +460,7 @@ def create_slsrpt(edi_file):
                     'barcode': item['barcode'],
                     'item_code': item['item_code'],
                     'qty': item['qty'],
-                    'rate': item['net_unit_rate'],
+                    'rate': item['net_unit_rate'] if 'net_unit_rate' in item else 0,
                     'gln': item['location_gln'],
                     'address': address
                 })
@@ -510,7 +514,8 @@ def create_orders(edi_file):
                 'shipping_address_name': get_address_from_gln(d['deliver_to']),
                 'delivery_date': delivery_date,
                 'po_no': d['reference'],
-                'territory': frappe.get_value("Customer", edi_con.customer, "territory")
+                'territory': frappe.get_value("Customer", edi_con.customer, "territory"),
+                'customer_group': frappe.get_value("Customer", edi_con.customer, "customer_group")
             })
             if 'currency' in data:
                 sales_order.currency = d['currency']
@@ -573,7 +578,7 @@ def parse_edi(segments):
         elif structure[0][0] == "BGM":
             # begin message
             try:
-                data[-1]['reference'] = structure[2][0]
+                data[-1]['reference'] = (structure[2][0] or "").replace("'", "")
                 data[-1]['action'] = structure[3][0]
             except:
                 data[-1]['action'] = 9          # default to add
@@ -633,3 +638,27 @@ def parse_edi(segments):
     
     return data
     
+def purify_string(s):
+    return (s or "").replace("\r", "").replace("\n", "")
+    
+def get_edi_unit(edi_connection, unit):
+    if type(edi_connection) == str:
+        edi_connection = frappe.get_doc("EDI Connection", edi_connection)
+    edi_unit = unit
+    if edi_connection.units:
+        for u in edi_connection.units:
+            if u.system_unit == unit:
+                edi_unit = u.edi_unit
+                break
+    return edi_unit
+    
+def get_system_unit(edi_connection, unit):
+    if type(edi_connection) == str:
+        edi_connection = frappe.get_doc("EDI Connection", edi_connection)
+    system_unit = unit
+    if edi_connection.units:
+        for u in edi_connection.units:
+            if u.edi_unit == unit:
+                system_unit = u.system_unit
+                break
+    return system_unit

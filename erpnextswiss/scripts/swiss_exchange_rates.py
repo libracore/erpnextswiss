@@ -107,7 +107,7 @@ def add_cross_rates(from_currency="USD", to_currency="EUR"):
         FROM `tabCurrency Exchange`
         WHERE 
             `from_currency` = "{f}"
-            `to_currency` = "CHF"
+            AND `to_currency` = "CHF"
         ORDER BY `date` DESC
         LIMIT 1;""".format(f=from_currency), as_dict=True)
     if len(from_rates) > 0:
@@ -120,7 +120,7 @@ def add_cross_rates(from_currency="USD", to_currency="EUR"):
         FROM `tabCurrency Exchange`
         WHERE 
             `from_currency` = "{f}"
-            `to_currency` = "CHF"
+            AND `to_currency` = "CHF"
         ORDER BY `date` DESC
         LIMIT 1;""".format(f=to_currency), as_dict=True)
     if len(to_rates) > 0:

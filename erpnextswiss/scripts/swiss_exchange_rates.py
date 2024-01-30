@@ -86,7 +86,7 @@ def add_inverted_rates(currencies=["EUR"]):
             FROM `tabCurrency Exchange`
             WHERE 
                 `from_currency` = "{f}"
-                `to_currency` = "{t}"
+                AND `to_currency` = "{t}"
             ORDER BY `date` DESC
             LIMIT 1;""".format(f=currency, t=from_currency), as_dict=True)
         if len(base_rates) > 0:

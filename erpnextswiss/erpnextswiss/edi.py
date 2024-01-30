@@ -93,6 +93,10 @@ def download_pricat(edi_file):
         content_segments.append("PIA+5+{item_code}:SA'".format(
             item_code=item.item_code[:35]
         ))
+        # additional information
+        content_segments.append("PIA+1+{item_group}:SA'".format(
+            item_group=(item.item_group or "")[:35]
+        ))
         # description
         content_segments.append("IMD+F+ANM+:::{item_name}:'".format(
             item_name=item.item_name

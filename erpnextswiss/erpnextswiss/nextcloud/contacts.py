@@ -38,6 +38,9 @@ def send_contact_to_nextcloud(contact, event=None, debug=False):
         ts = contact.modified.strftime("%Y%m%dT%H%M%SZ")
     contact_data['ts'] = ts
     
+    # add notes
+    contact_data['note'] = contact.get("remarks") or contact.get("notes") or contact.get("notizen")
+    
     vcard = frappe.render_template("erpnextswiss/erpnextswiss/nextcloud/vcard.html", contact_data)
     
     if debug:

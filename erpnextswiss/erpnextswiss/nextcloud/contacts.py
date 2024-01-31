@@ -42,7 +42,7 @@ def send_contact_to_nextcloud(contact, event=None, debug=False):
     contact_data['note'] = contact.get("remarks") or contact.get("notes") or contact.get("notizen")
     if contact_data['note']:
         # remove line breaks
-        contact_data['note'].replace("\n", "").replace("\r", "")
+        contact_data['note'] = contact_data['note'].replace("\n", "").replace("\r", "")
         
     vcard = frappe.render_template("erpnextswiss/erpnextswiss/nextcloud/vcard.html", contact_data)
     

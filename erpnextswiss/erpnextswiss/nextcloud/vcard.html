@@ -11,5 +11,8 @@ EMAIL;TYPE=WORK:{{ email.email_id or "" }}
 {%- for phone in phone_nos %}
 TEL;TYPE=WORK,VOICE;VALUE=UNKNOWN:{{ phone.phone }}
 {%- endfor %}
+{%- if note %}
+NOTE:{{ note }}
+{%- endif %}
 REV;VALUE=DATE-AND-OR-TIME:{{ ts }}
 END:VCARD

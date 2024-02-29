@@ -1,4 +1,4 @@
-# Copyright (c) 2022, libracore and contributors
+# Copyright (c) 2022-2024, libracore and contributors
 # For license information, please see license.txt
 #
 # This is the main EDI interaction file
@@ -97,6 +97,12 @@ def download_pricat(edi_file):
         content_segments.append("PIA+1+{item_group}:SA'".format(
             item_group=(item.item_group or "")[:35]
         ))
+        # item group information
+        item_group_doc = frappe.get_doc("Item Group", item.item_group)
+        if item_group_doc.edi_gd_code:
+            content_segments.append("PIA+1+{gd}:GD:BTE:9'".format(
+                gd=(item_group_doc.edi_gd_code or "")[:35]
+            ))
         # description
         content_segments.append("IMD+F+ANM+:::{item_name}:'".format(
             item_name=item.item_name

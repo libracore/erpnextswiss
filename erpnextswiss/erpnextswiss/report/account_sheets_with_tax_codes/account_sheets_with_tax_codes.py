@@ -155,7 +155,7 @@ def get_csv(company, from_date, to_date, from_account=None, to_account=None, cos
             if c.get("fieldtype") == "Currency":
                 value = "{0:.2f};".format(rounded(d.get(c.get('fieldname')) or 0, 2))
             else:
-                value = ("{0};".format(d.get(c.get('fieldname')) or "")).replace("\r", " ").replace("\n", " ")
+                value = ("{0};".format(d.get(c.get('fieldname')) or "")).replace("\r", " ").replace("\n", " ").replace(";", " ")
             output += value
         output += "\r\n"
         

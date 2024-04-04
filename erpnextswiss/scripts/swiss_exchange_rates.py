@@ -10,7 +10,7 @@
 #    $ bench execute erpnextswiss.scripts.swiss_exchange_rates.read_rates
 #    $ bench execute erpnextswiss.scripts.swiss_exchange_rates.read_rates --kwargs "{'currencies': ['EUR', 'USD', 'GBP']}"
 #    $ bench execute erpnextswiss.scripts.swiss_exchange_rates.add_inverted_rates --kwargs "{'currencies': ['EUR', 'USD', 'GBP']}"
-#    $ bench execute erpnextswiss.scripts.swiss_exchange_rates.add_cross_rates --kwargs "{'from_currency: 'USD', 'to_currency': 'EUR')"
+#    $ bench execute erpnextswiss.scripts.swiss_exchange_rates.add_cross_rates --kwargs "{'from_currency': 'USD', 'to_currency': 'EUR'}"
 #
 #    $ bench execute erpnextswiss.scripts.swiss_exchange_rates.read_daily_rates
 #    $ bench execute erpnextswiss.scripts.swiss_exchange_rates.read_daily_rates --kwargs "{'currencies': ['EUR', 'USD', 'GBP']}"

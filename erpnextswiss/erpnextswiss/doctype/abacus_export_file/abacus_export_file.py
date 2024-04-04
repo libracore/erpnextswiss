@@ -461,17 +461,19 @@ class AbacusExportFile(Document):
                 WHERE `tabPurchase Invoice`.`name` IN ({pinvs});""".format(pinvs=self.get_sql_list(pinvs))
         
         pinv_items = frappe.db.sql(sql_query, as_dict=True)
-        # create item entries
-        if item.supplier_name:
-            text2 = html.escape(item.supplier_name)
-        else:
-            text2 = ""
+
         for item in pinv_items:
+            # create item entries
             if item.taxes_and_charges:
                 tax_record = frappe.get_doc("Purchase Taxes and Charges Template", item.taxes_and_charges)
                 tax_code = tax_record.tax_code
             else:
                 tax_code = None
+            
+            if item.supplier_name:
+                text2 = html.escape(item.supplier_name)
+            else:
+                text2 = ""
             
             # find against accounts
             against_positions = []

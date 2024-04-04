@@ -102,7 +102,7 @@ def create_payment_reminders(company):
                     # get customer credit balance
                     debit_accounts = get_debit_accounts(company)
                     gl_records = get_customer_ledger(debit_accounts, customer)
-                    if len(gl_records) > 0 and gl_records[-1]['balance'] >= 0:
+                    if len(gl_records) > 0 and gl_records[-1]['balance'] >= 0.001:      # apply a threshold to prevent issues with python floating point operations
                         continue        # skip on balance
                         
                 now = datetime.now()

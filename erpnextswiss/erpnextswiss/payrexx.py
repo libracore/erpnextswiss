@@ -17,7 +17,7 @@ API_BASE = "https://api.payrexx.com/v1.0/"
 
 @frappe.whitelist()
 def create_payment(title, description, reference, purpose, amount, 
-    vat_rate, sku, currency, success_url):
+    vat_rate, sku, currency, success_url, expiry_date=None):
     post_data = {
         "title": title,
         "description": description,
@@ -32,6 +32,10 @@ def create_payment(title, description, reference, purpose, amount,
         "reservation": 0,
         "successRedirectUrl": success_url
     }
+    if expiry_date:
+        if type(expiry_date) == date:
+            expiry_date = expiry_date.strftime("%Y-%m-%d")
+        post_data['expirationDate'] = expiry_date
     data = urllib.parse.urlencode(post_data).encode('utf-8')
     settings = frappe.get_doc("Payrexx Settings", "Payrexx Settings")
     if not settings.payrexx_api_key:

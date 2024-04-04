@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018-2023, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2018-2024, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
 
 from __future__ import unicode_literals
@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 import time
 from erpnextswiss.erpnextswiss.common_functions import get_building_number, get_street_name, get_pincode, get_city, get_primary_address
 import html          # used to escape xml content
-from frappe.utils import cint, get_url_to_form
+from frappe.utils import cint, get_url_to_form, rounded
 from unidecode import unidecode     # used to remove German/French-type special characters from bank identifieres
 
 PAYMENT_REMARKS = "From Payment Proposal {0}"
@@ -377,6 +377,26 @@ class PaymentProposal(Document):
         content = frappe.render_template('erpnextswiss/erpnextswiss/doctype/payment_proposal/pain-001.html', data)
         return { 'content': content }
     
+    def create_wise_file(self):
+        data = {
+            'payments': []
+        }
+        source_currency = frappe.get_cached_value("Account", self.pay_from_account, "account_currency")
+        for payment in self.payments:
+            data['payments'].append({
+                'recipient': payment.receiver,
+                'recipient_mail': "",
+                'reference': payment.reference,
+                'amount': rounded(payment.amount, 2),
+                'source_currency': source_currency,
+                'target_currency': payment.currency,
+                'iban': payment.iban.replace(" ", "")
+            })
+
+        # render file
+        content = frappe.render_template('erpnextswiss/erpnextswiss/doctype/payment_proposal/transferwise_payments.html', data)
+        return { 'content': content }
+        
     def add_creditor_info(self, payment):
         payment_content = ""
         # creditor information

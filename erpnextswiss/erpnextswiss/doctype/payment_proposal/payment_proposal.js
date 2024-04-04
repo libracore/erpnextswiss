@@ -8,6 +8,9 @@ frappe.ui.form.on('Payment Proposal', {
              frm.add_custom_button(__("Download bank file"), function() {
                   generate_bank_file(frm);
              }).addClass("btn-primary");
+            frm.add_custom_button(__("Download Wise file"), function() {
+                  generate_wise_file(frm);
+             });
         } else if (frm.doc.docstatus == 0) {
              // add set payment date
              frm.add_custom_button(__("Set Payment Date"), function() {
@@ -58,6 +61,19 @@ function generate_bank_file(frm) {
                if (r.message) {
                     // prepare the xml file for download
                     download("payments.xml", r.message.content);
+               } 
+          }
+     });     
+}
+
+function generate_wise_file(frm) {
+     frappe.call({
+          'method': 'create_wise_file',
+          'doc': frm.doc,
+          'callback': function(r) {
+               if (r.message) {
+                    // prepare the xml file for download
+                    download("wise_payments.csv", r.message.content);
                } 
           }
      });     

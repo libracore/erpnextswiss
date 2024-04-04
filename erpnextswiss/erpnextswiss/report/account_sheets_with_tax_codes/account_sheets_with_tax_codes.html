@@ -1,0 +1,39 @@
+{% var first_page = true; %}
+{% for (var i = 0; i < data.length; i++ ) { %}
+    {% if (!data[i].date) { %}
+        <!-- this is an account head -->
+        {% if (first_page) { first_page = false; } else { %}
+            </table>
+            <div class="page-break"></div>
+        {% } %}
+        <h2>{%= data[i].remarks %}</h2>
+        <h4>{%= filters.company %}, 
+            {%= frappe.datetime.str_to_user(filters.from_date) %}..{%= frappe.datetime.str_to_user(filters.to_date) %}</h4>
+            
+        <table style="width: 100%; font-size: 9px; ">
+            <tr>
+                <th style="padding: 1px !important; width: 10%; ">{%= __("Date") %}</th>
+                <th style="padding: 1px !important; width: 10%; text-align: right; ">{%= __("Debit") %}</th>
+                <th style="padding: 1px !important; width: 10%; text-align: right; ">{%= __("Credit") %}</th>
+                <th style="padding: 1px !important; width: 10%; text-align: right; ">{%= __("Balance") %}</th>
+                <th style="padding: 1px !important; width: 10%; ">{%= __("Against") %}</th>
+                <th style="padding: 1px !important; width: 25%; ">{%= __("Remarks") %}</th>
+                <th style="padding: 1px !important; width: 10%; ">{%= __("Document") %}</th>
+                <th style="padding: 1px !important; width: 15%; ">{%= __("Tax Code") %}</th>
+            </tr>
+        
+    {% } else { %}
+        <!-- this is an entry -->
+        <tr>
+            <td style="padding: 1px !important; ">{%= frappe.datetime.str_to_user(data[i].date) %}</td>
+            <td style="padding: 1px !important; text-align: right; ">{%= format_currency(data[i].debit) %}</td>
+            <td style="padding: 1px !important; text-align: right; ">{%= format_currency(data[i].credit) %}</td>
+            <td style="padding: 1px !important; text-align: right; ">{%= format_currency(data[i].balance) %}</td>
+            <td style="padding: 1px !important; ">{%= (data[i].against) %}</td>
+            <td style="padding: 1px !important; ">{%= __(data[i].remarks) %}</td>
+            <td style="padding: 1px !important; ">{%= (data[i].voucher) %}</td>
+            <td style="padding: 1px !important; ">{%= (data[i].tax_code || "") %}</td>
+        </tr>
+    {% } %}
+{% } %}
+</table>

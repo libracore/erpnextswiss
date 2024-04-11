@@ -77,11 +77,11 @@ def create_payment_reminders(company):
         except:
             max_level = 3
         for customer in customers:
-            create_reminder_for_customer(customer.customer, company, auto_submit)
+            create_reminder_for_customer(customer.customer, company, auto_submit, max_level)
     return
 
 @frappe.whitelist()
-def create_reminder_for_customer(customer, company, auto_submit=False):
+def create_reminder_for_customer(customer, company, auto_submit=False, max_level=3):
     sql_query = ("""
         SELECT 
             `name`, 

@@ -82,6 +82,7 @@ def create_payment_reminders(company):
 
 @frappe.whitelist()
 def create_reminder_for_customer(customer, company, auto_submit=False, max_level=3):
+    payment_reminder_name = None
     sql_query = ("""
         SELECT 
             `name`, 
@@ -160,13 +161,14 @@ def create_reminder_for_customer(customer, company, auto_submit=False, max_level
         })
         try:
             reminder_record = new_reminder.insert(ignore_permissions=True)
+            payment_reminder_name = reminder_record.name
         except Exception as err:
             frappe.log_error(err, _("Unable to create payment reminder") )
         if int(auto_submit) == 1:
             reminder_record.update_reminder_levels()
             reminder_record.submit()
         frappe.db.commit()
-    return
+    return payment_reminder_name
 
 # this allows to submit multiple payment reminders at once
 @frappe.whitelist()

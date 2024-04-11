@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018-2022, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2018-2024, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
 
 from __future__ import unicode_literals
@@ -77,91 +77,97 @@ def create_payment_reminders(company):
         except:
             max_level = 3
         for customer in customers:
-            sql_query = ("""SELECT 
-                        `name`, 
-                        `due_date`, 
-                        `posting_date`, 
-                        `payment_reminder_level`, 
-                        `grand_total`, 
-                        `outstanding_amount` , 
-                        `currency`,
-                        `contact_email`
-                    FROM `tabSales Invoice` 
-                    WHERE `outstanding_amount` > 0 AND `customer` = "{customer}"
-                      AND `docstatus` = 1
-                      AND `enable_lsv` = 0
-                      AND (`due_date` < CURDATE())
-                      AND `company` = "{company}"
-                      AND ((`exclude_from_payment_reminder_until` IS NULL) OR (`exclude_from_payment_reminder_until` < CURDATE()));
-                    """.format(customer=customer.customer, company=company))
-            open_invoices = frappe.db.sql(sql_query, as_dict=True)
-            email = None
-            if open_invoices:
-                # check if this customer has an overall credit balance
-                if frappe.get_value("ERPNextSwiss Settings", "ERPNextSwiss Settings", "no_reminder_on_credit_balance"):
-                    # get customer credit balance
-                    debit_accounts = get_debit_accounts(company)
-                    gl_records = get_customer_ledger(debit_accounts, customer)
-                    if len(gl_records) > 0 and gl_records[-1]['balance'] >= 0.001:      # apply a threshold to prevent issues with python floating point operations
-                        continue        # skip on balance
-                        
-                now = datetime.now()
-                invoices = []
-                highest_level = 0
-                total_before_charges = 0
-                currency = None
-                for invoice in open_invoices:
-                    level = invoice.payment_reminder_level + 1
-                    if level > max_level:
-                        level = max_level
-                    new_invoice = { 
-                        'sales_invoice': invoice.name,
-                        'amount': invoice.grand_total,
-                        'outstanding_amount': invoice.outstanding_amount,
-                        'posting_date': invoice.posting_date,
-                        'due_date': invoice.due_date,
-                        'reminder_level': level
-                    }
-                    if level > highest_level:
-                        highest_level = level
-                    total_before_charges += invoice.outstanding_amount
-                    invoices.append(new_invoice)
-                    currency = invoice.currency
-                    if invoice.contact_email:
-                        email = invoice.contact_email
-                # find reminder charge
-                charge_matches = frappe.get_all("ERPNextSwiss Settings Payment Reminder Charge", 
-                    filters={ 'reminder_level': highest_level },
-                    fields=['reminder_charge'])
-                reminder_charge = 0
-                if charge_matches:
-                    reminder_charge = charge_matches[0]['reminder_charge']
-                new_reminder = frappe.get_doc({
-                    "doctype": "Payment Reminder",
-                    "customer": customer.customer,
-                    "date": "{year:04d}-{month:02d}-{day:02d}".format(
-                        year=now.year, month=now.month, day=now.day),
-                    "title": "{customer} {year:04d}-{month:02d}-{day:02d}".format(
-                        customer=customer.customer, year=now.year, month=now.month, day=now.day),
-                    "sales_invoices": invoices,
-                    'highest_level': highest_level,
-                    'total_before_charge': total_before_charges,
-                    'reminder_charge': reminder_charge,
-                    'total_with_charge': (total_before_charges + reminder_charge),
-                    'company': company,
-                    'currency': currency,
-                    'email': email
-                })
-                try:
-                    reminder_record = new_reminder.insert(ignore_permissions=True)
-                except Exception as err:
-                    frappe.log_error(err, _("Unable to create payment reminder") )
-                if int(auto_submit) == 1:
-                    reminder_record.update_reminder_levels()
-                    reminder_record.submit()
-                frappe.db.commit()
+            create_reminder_for_customer(customer.customer, company, auto_submit)
     return
 
+@frappe.whitelist()
+def create_reminder_for_customer(customer, company, auto_submit=False):
+    sql_query = ("""
+        SELECT 
+            `name`, 
+            `due_date`, 
+            `posting_date`, 
+            `payment_reminder_level`, 
+            `grand_total`, 
+            `outstanding_amount` , 
+            `currency`,
+            `contact_email`
+        FROM `tabSales Invoice` 
+        WHERE `outstanding_amount` > 0 AND `customer` = "{customer}"
+            AND `docstatus` = 1
+            AND `enable_lsv` = 0
+            AND (`due_date` < CURDATE())
+            AND `company` = "{company}"
+            AND ((`exclude_from_payment_reminder_until` IS NULL) OR (`exclude_from_payment_reminder_until` < CURDATE()));
+        """.format(customer=customer, company=company))
+    open_invoices = frappe.db.sql(sql_query, as_dict=True)
+    email = None
+    if open_invoices:
+        # check if this customer has an overall credit balance
+        if frappe.get_value("ERPNextSwiss Settings", "ERPNextSwiss Settings", "no_reminder_on_credit_balance"):
+            # get customer credit balance
+            debit_accounts = get_debit_accounts(company)
+            gl_records = get_customer_ledger(debit_accounts, customer)
+            if len(gl_records) > 0 and gl_records[-1]['balance'] >= 0.001:      # apply a threshold to prevent issues with python floating point operations
+                continue        # skip on balance
+                
+        now = datetime.now()
+        invoices = []
+        highest_level = 0
+        total_before_charges = 0
+        currency = None
+        for invoice in open_invoices:
+            level = invoice.payment_reminder_level + 1
+            if level > max_level:
+                level = max_level
+            new_invoice = { 
+                'sales_invoice': invoice.name,
+                'amount': invoice.grand_total,
+                'outstanding_amount': invoice.outstanding_amount,
+                'posting_date': invoice.posting_date,
+                'due_date': invoice.due_date,
+                'reminder_level': level
+            }
+            if level > highest_level:
+                highest_level = level
+            total_before_charges += invoice.outstanding_amount
+            invoices.append(new_invoice)
+            currency = invoice.currency
+            if invoice.contact_email:
+                email = invoice.contact_email
+        # find reminder charge
+        charge_matches = frappe.get_all("ERPNextSwiss Settings Payment Reminder Charge", 
+            filters={ 'reminder_level': highest_level },
+            fields=['reminder_charge'])
+        reminder_charge = 0
+        if charge_matches:
+            reminder_charge = charge_matches[0]['reminder_charge']
+        new_reminder = frappe.get_doc({
+            "doctype": "Payment Reminder",
+            "customer": customer,
+            "date": "{year:04d}-{month:02d}-{day:02d}".format(
+                year=now.year, month=now.month, day=now.day),
+            "title": "{customer} {year:04d}-{month:02d}-{day:02d}".format(
+                customer=customer, year=now.year, month=now.month, day=now.day),
+            "sales_invoices": invoices,
+            'highest_level': highest_level,
+            'total_before_charge': total_before_charges,
+            'reminder_charge': reminder_charge,
+            'total_with_charge': (total_before_charges + reminder_charge),
+            'company': company,
+            'currency': currency,
+            'email': email
+        })
+        try:
+            reminder_record = new_reminder.insert(ignore_permissions=True)
+        except Exception as err:
+            frappe.log_error(err, _("Unable to create payment reminder") )
+        if int(auto_submit) == 1:
+            reminder_record.update_reminder_levels()
+            reminder_record.submit()
+        frappe.db.commit()
+    return
+    
 # this allows to submit multiple payment reminders at once
 @frappe.whitelist()
 def bulk_submit(names):

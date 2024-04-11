@@ -11,6 +11,7 @@ from frappe.utils.data import add_days
 from erpnextswiss.erpnextswiss.finance import get_customer_ledger, get_debit_accounts
 from frappe.utils.background_jobs import enqueue
 from frappe import _
+from frappe.utils import cint
 
 class PaymentReminder(Document):
     # this will apply all payment reminder levels and blocking days (as exclude_from_payment_reminder_until) in the sales invoices
@@ -82,6 +83,7 @@ def create_payment_reminders(company):
 
 @frappe.whitelist()
 def create_reminder_for_customer(customer, company, auto_submit=False, max_level=3):
+    max_level = cint(max_level)
     payment_reminder_name = None
     sql_query = ("""
         SELECT 

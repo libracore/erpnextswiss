@@ -161,7 +161,13 @@ def create_reminder_for_customer(customer, company, auto_submit=False, max_level
             'currency': currency,
             'email': email
         })
+        flag_enabled_customer = False
         try:
+            # in case the customer is disabled: briefly enable to allow document creation
+            if cint(frappe.get_value("Customer", customer, "disabled")):
+                # note: we directly access the DB, because set_value with update_modified=False will still create 2 unwanted timeline entries
+                frappe.db.sql("""UPDATE `tabCustomer` SET `disabled` = 0 WHERE `name` = "{customer}";""".format(customer=customer))
+                flag_enabled_customer = True
             reminder_record = new_reminder.insert(ignore_permissions=True)
             payment_reminder_name = reminder_record.name
         except Exception as err:
@@ -169,6 +175,8 @@ def create_reminder_for_customer(customer, company, auto_submit=False, max_level
         if int(auto_submit) == 1:
             reminder_record.update_reminder_levels()
             reminder_record.submit()
+        if flag_enabled_customer:
+            frappe.db.sql("""UPDATE `tabCustomer` SET `disabled` = 1 WHERE `name` = "{customer}";""".format(customer=customer))
         frappe.db.commit()
     return payment_reminder_name
 

@@ -9,6 +9,7 @@
  *  attach_document_print   true/false, default true
  *  txt                     message string
  *  check_all_attachments   true/false, default false
+ *  replace_template        true/false, default false, if false, template is prepended, otherwise, the template replaces the content
  * 
  */
 
@@ -202,7 +203,7 @@ frappe.erpnextswiss.MailComposer = Class.extend({
 
     setup_email_template: function() {
         var me = this;
-
+        
         this.dialog.fields_dict["email_template"].df.onchange = () => {
             var email_template = me.dialog.fields_dict.email_template.get_value();
 
@@ -223,8 +224,12 @@ frappe.erpnextswiss.MailComposer = Class.extend({
                     content = [reply.message, "<br>", content];
                 }
 
-                content_field.set_value(content.join(''));
-
+                if (me.replace_template) {
+                    content_field.set_value(reply.message);
+                } else {
+                    content_field.set_value(content.join(''));
+                }
+                
                 subject_field.set_value(reply.subject);
 
                 me.reply_added = email_template;
@@ -436,10 +441,10 @@ frappe.erpnextswiss.MailComposer = Class.extend({
                 f.check_attachments = check_attachments;
                 
                 $(repl('<p class="checkbox">'
-                    +	'<label><span><input type="checkbox" data-file-name="%(name)s" %(check_attachments)s></input></span>'
-                    +		'<span class="small">%(file_name)s</span>'
-                    +	' <a href="%(file_url)s" target="_blank" class="text-muted small">'
-                    +		'<i class="fa fa-share" style="vertical-align: middle; margin-left: 3px;"></i>'
+                    +   '<label><span><input type="checkbox" data-file-name="%(name)s" %(check_attachments)s></input></span>'
+                    +       '<span class="small">%(file_name)s</span>'
+                    +   ' <a href="%(file_url)s" target="_blank" class="text-muted small">'
+                    +       '<i class="fa fa-share" style="vertical-align: middle; margin-left: 3px;"></i>'
                     + '</label></p>', f))
                     .appendTo(attach)
             });

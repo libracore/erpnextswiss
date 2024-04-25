@@ -107,11 +107,12 @@
    "fieldname": "balances",
    "fieldtype": "Table",
    "label": "Balances",
-   "options": "Abacus Export File Account Balance"
+   "options": "Abacus Export File Account Balance",
+   "read_only": 1
   }
  ],
  "is_submittable": 1,
- "modified": "2024-04-25 09:25:56.965902",
+ "modified": "2024-04-25 09:28:36.562630",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "Abacus Export File",

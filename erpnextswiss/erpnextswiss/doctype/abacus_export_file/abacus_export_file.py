@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2017-2023, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2017-2024, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
 
 from __future__ import unicode_literals
@@ -12,7 +12,12 @@ from frappe.utils.data import rounded
 
 class AbacusExportFile(Document):
     def submit(self):
-        self.get_transactions()
+        if cint(self.aggregated):
+            # aggregated method: do not pick and mark records (based on general ledger)
+            self.get_account_balances()
+        else:
+            # transaction-based 
+            self.get_transactions()
         return
     
     def on_cancel(self):
@@ -178,6 +183,39 @@ class AbacusExportFile(Document):
             return frappe.get_value("Account", account_name, "account_number")
         else:
             return None
+    
+    # aggregation by accounts
+    def get_account_balances(self):
+        # for each account, compute period balance (see trial balance)
+        sql_query = """
+            SELECT
+                `tabGL Entry`.`account`,
+                `tabAccount`.`account_number`, 
+                SUM(`tabGL Entry`.`debit`) AS `total_debit`,
+                SUM(`tabGL Entry`.`credit`) AS `total_credit`
+            FROM `tabGL Entry`
+            LEFT JOIN `tabAccount` ON `tabAccount`.`name` = `tabGL Entry`.`account`
+            WHERE
+                `tabAccount`.`company` = "{company}"
+                AND `tabGL Entry`.`posting_date` BETWEEN "{from_date}" AND "{to_date}"
+            GROUP BY `tabGL Entry`.`account`
+            ORDER BY `tabAccount`.`name` ASC;
+        """.format(company=self.company, from_date=self.from_date, to_date=self.to_date)
+        
+        balances = frappe.db.sql(sql_query, as_dict=True)
+        for balance in balances:
+            self.append("balances", {
+                'account': balance.get("account"),
+                'account_number': balance.get("account_number"),
+                'debit': balance.get("total_debit"),
+                'credit': balance.get("total_credit"),
+                'balance': balance.get("total_debit") - balance.get("total_credit")
+            })
+        
+        # apply
+        self.save()
+        
+        return
         
     # prepare transfer file
     def render_transfer_file(self, restrict_currencies=None):
@@ -203,153 +241,37 @@ class AbacusExportFile(Document):
     # get aggregated transactions 
     def get_aggregated_transactions(self):
         transactions = []
-        sinvs = self.get_docs([ref.__dict__ for ref in self.references], "Sales Invoice")
-        sql_query = """SELECT `tabSales Invoice`.`name`, 
-                  `tabSales Invoice`.`posting_date`, 
-                  `tabSales Invoice`.`currency`, 
-                  SUM(`tabSales Invoice`.`base_grand_total`) AS `debit`, 
-                  `tabSales Invoice`.`debit_to`,
-                  SUM(`tabSales Invoice`.`base_net_total`) AS `income`, 
-                  `tabSales Invoice Item`.`income_account`,  
-                  SUM(`tabSales Invoice`.`total_taxes_and_charges`) AS `tax`, 
-                  `tabSales Taxes and Charges`.`account_head`,
-                  `tabSales Invoice`.`taxes_and_charges`,
-                  `tabSales Taxes and Charges`.`rate`,
-                  CONCAT(IFNULL(`tabSales Invoice`.`debit_to`, ""),
-                    IFNULL(`tabSales Invoice Item`.`income_account`, ""),  
-                    IFNULL(`tabSales Taxes and Charges`.`account_head`, "")
-                  ) AS `key`
-                FROM `tabSales Invoice`
-                LEFT JOIN `tabSales Invoice Item` ON `tabSales Invoice`.`name` = `tabSales Invoice Item`.`parent`
-                LEFT JOIN `tabSales Taxes and Charges` ON `tabSales Invoice`.`name` = `tabSales Taxes and Charges`.`parent`
-                WHERE `tabSales Invoice`.`name` IN ({sinvs})
-                GROUP BY `key`""".format(sinvs=self.get_sql_list(sinvs))
-        base_currency = frappe.get_value("Company", self.company, "default_currency")
-        sinv_items = frappe.db.sql(sql_query, as_dict=True)
-        for item in sinv_items:
-            if item.taxes_and_charges:
-                tax_record = frappe.get_doc("Sales Taxes and Charges Template", item.taxes_and_charges)
-                tax_code = tax_record.tax_code
-            else:
-                tax_code = None
-            # create content
-            transactions.append({
-                'account': self.get_account_number(item.debit_to), 
-                'amount': rounded(item.debit, 2), 
-                'against_singles': [{
-                    'account': self.get_account_number(item.income_account),
-                    'amount': rounded(item.income, 2),
-                    'currency': item.currency
-                }],
-                'debit_credit': "D", 
-                'date': self.to_date, 
-                'currency': item.currency, 
-                'tax_account': self.get_account_number(item.account_head) or None, 
-                'tax_amount': rounded(item.tax, 2) if item.tax else None, 
-                'tax_rate': rounded(item.rate, 2) if item.rate else 0, 
-                'tax_code': tax_code or "313", 
-                'tax_currency': base_currency,
-                'text1': item.name
+        
+        # first account is the collective account, following will be against accounts; prevent index issue on empty periods
+        if len(self.balances) < 2:
+            return transactions
+        
+        # compile split-account records
+        against_singles = []
+        for balance in self.balances[1:]:
+            against_singles.append({
+                'account': balance.get('account_number'),
+                'amount': rounded(balance.get('balance'), 2),
+                'currency': self.currency
             })
         
-        pinvs = self.get_docs([ref.__dict__ for ref in self.references], "Purchase Invoice")
-        sql_query = """SELECT `tabPurchase Invoice`.`name`, 
-              `tabPurchase Invoice`.`posting_date`, 
-              `tabPurchase Invoice`.`currency`, 
-              SUM(`tabPurchase Invoice`.`base_grand_total`) AS `credit`, 
-              `tabPurchase Invoice`.`credit_to`,
-              SUM(`tabPurchase Invoice`.`base_net_total`) AS `expense`, 
-              `tabPurchase Invoice Item`.`expense_account`,  
-              SUM(`tabPurchase Invoice`.`base_total_taxes_and_charges`) AS `tax`, 
-              `tabPurchase Taxes and Charges`.`account_head`,
-              `tabPurchase Invoice`.`taxes_and_charges`,
-              `tabPurchase Taxes and Charges`.`rate`,
-              CONCAT(IFNULL(`tabPurchase Invoice`.`credit_to`, ""),
-                IFNULL(`tabPurchase Invoice Item`.`expense_account`, ""),  
-                IFNULL(`tabPurchase Taxes and Charges`.`account_head`, "")
-              ) AS `key`
-            FROM `tabPurchase Invoice`
-            LEFT JOIN `tabPurchase Invoice Item` ON `tabPurchase Invoice`.`name` = `tabPurchase Invoice Item`.`parent`
-            LEFT JOIN `tabPurchase Taxes and Charges` ON `tabPurchase Invoice`.`name` = `tabPurchase Taxes and Charges`.`parent`
-            WHERE `tabPurchase Invoice`.`name` IN ({pinvs})
-            GROUP BY `key`""".format(pinvs=self.get_sql_list(pinvs))
-        
-        pinv_items = frappe.db.sql(sql_query, as_dict=True)
-        # create item entries
-        for item in pinv_items:
-            if item.taxes_and_charges:
-                tax_record = frappe.get_doc("Purchase Taxes and Charges Template", item.taxes_and_charges)
-                tax_code = tax_record.tax_code
-            else:
-                tax_code = None
-            # create content
-            transactions.append({
-                'account': self.get_account_number(item.credit_to), 
-                'amount': rounded(item.credit, 2), 
-                'against_singles': [{
-                    'account': self.get_account_number(item.expense_account),
-                    'amount': rounded(item.expense, 2),
-                    'currency': item.currency
-                }],
-                'debit_credit': "C", 
-                'date': self.to_date, 
-                'currency': item.currency, 
-                'tax_account': self.get_account_number(item.account_head) or None, 
-                'tax_amount': rounded(item.tax, 2) if item.tax else None, 
-                'tax_rate': rounded(item.rate, 2) if item.rate else 0, 
-                'tax_currency': base_currency,
-                'tax_code': tax_code or "313", 
-                'text1': item.name
-            })
-            
-        # add payment entry transactions
-        pes = self.get_docs([ref.__dict__ for ref in self.references], "Payment Entry")
-        sql_query = """SELECT `tabPayment Entry`.`name`,
-                  `tabPayment Entry`.`posting_date`,
-                  `tabPayment Entry`.`paid_from_account_currency` AS `currency`,
-                  SUM(`tabPayment Entry`.`paid_amount`) AS `amount`, 
-                  `tabPayment Entry`.`paid_from`,
-                  `tabPayment Entry`.`paid_to`,
-                  CONCAT(IFNULL(`tabPayment Entry`.`paid_from`, ""),
-                    IFNULL(`tabPayment Entry`.`paid_to`, "")
-                  ) AS `key`
-                FROM `tabPayment Entry`
-                WHERE `tabPayment Entry`.`name` IN ({pes})
-                GROUP BY `key`
-            """.format(pes=self.get_sql_list(pes))
-
-        pe_items = frappe.db.sql(sql_query, as_dict=True)
-        
-        # create item entries
-        for item in pe_items:
-            pe_record = frappe.get_doc("Payment Entry", item.name)
-            # create content
-            transaction = {
-                'account': self.get_account_number(item.paid_from), 
-                'amount': rounded(item.amount, 2), 
-                'against_singles': [{
-                    'account': self.get_account_number(item.paid_to),
-                    'amount': rounded(item.amount, 2),
-                    'currency': pe_record.paid_to_account_currency
-                }],
-                'debit_credit': "C", 
-                'date': self.to_date, 
-                'currency': pe_record.paid_from_account_currency, 
-                'tax_account': None, 
-                'tax_amount': None, 
-                'tax_rate': 0, 
-                'tax_code': None, 
-                'text1': item.name
-            }
-            # append deductions
-            for deduction in pe_record.deductions:
-                transaction['against_singles'].append({
-                    'account': self.get_account_number(deduction.account),
-                    'amount': rounded(deduction.amount, 2),
-                    'currency': item.currency                
-                })
-            # insert transaction
-            transactions.append(transaction)        
+        # create transaction data
+        transactions.append({
+            'account': self.balances[0].get('account_number'), 
+            'amount': rounded(self.balances[0].get('balance'), 2), 
+            'against_singles': against_singles,
+            'debit_credit': "D", 
+            'date': self.to_date, 
+            'currency': self.currency, 
+            'tax_account': None, 
+            'tax_amount': None, 
+            'tax_rate': 0, 
+            'tax_code': None, 
+            'tax_currency': self.currency,
+            'text1': "Aggregated {0}".format(self.name),
+            'exchange_rate': 1
+        })
+    
         return transactions
 
 

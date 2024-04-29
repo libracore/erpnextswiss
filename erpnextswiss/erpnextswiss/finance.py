@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018-2023, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2018-2024, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
 import frappe
 from frappe import _
 from frappe.utils.background_jobs import enqueue
 from frappe.utils.file_manager import save_file, remove_all
 from erpnext.setup.utils import get_exchange_rate as get_core_exchange_rate
+from frappe.utils import rounded
 
 """ Jinja hook to create account sheets """
 def get_account_sheets(fiscal_year, company=None):
@@ -160,3 +161,70 @@ def get_debit_accounts(company):
     for a in frappe.get_all("Account", filters={'account_type': 'Receivable', 'disabled': 0, 'company': company}, fields=['name']):
         accounts.append(a.get("name"))
     return accounts
+
+"""
+This function will combine a split booking into booking pairs of debit/credit
+"""
+def get_booking_pairs(voucher_type, voucher_no):
+    # get bookings
+    gl_entries = frappe.db.sql("""
+        SELECT
+            `name`,
+            `account`,
+            `debit`,
+            `debit_in_account_currency`,
+            `credit`,
+            `credit_in_account_currency`
+        FROM `tabGL Entry`
+        WHERE `voucher_type` = "{voucher_type}" AND `voucher_no` = "{voucher_no}"
+        ORDER BY `debit` DESC, `credit` ASC;
+        """.format(voucher_type=voucher_type, voucher_no=voucher_no), as_dict=True)
+        
+    # verify totals
+    totals = {
+        'total_debit': 0,
+        'total_credit': 0
+    }
+    for g in gl_entries:
+        totals['total_debit'] += g['debit']
+        totals['total_credit'] += g['credit']
+    if totals['total_debit'] != totals['total_credit']:
+        frappe.throw( _("Debit and credit not equal in {0}").format(voucher_no), _("Total validation failed") )
+        
+    # allocated debit to credit and build pairs
+    booking_pairs = {}
+    for d in gl_entries:
+        if not d['debit'] and not d['credit']:
+            exchange_rate = 1
+        else:
+            exchange_rate = d['debit_in_account_currency'] / d['debit'] if d['debit'] else d['credit_in_account_currency'] / d['credit']
+        for c in range((len(gl_entries) - 1), (-1), -1):
+            if d['debit'] == 0:
+                # this debit is allocated
+                continue
+            else:
+                key = "{0}:{1}".format(d['account'], gl_entries[c]['account'])
+                if d['debit'] <= gl_entries[c]['credit']:
+                    # completely allocate debit
+                    if key in booking_pairs:
+                        booking_pairs[key]['amount'] += d['debit']
+                    else:
+                        booking_pairs[key] = {'amount': d['debit'], 'exchange_rate': exchange_rate}
+                    d['debit'] = 0
+                    gl_entries[c]['credit'] -= d['debit']
+                else:
+                    # partially allocate debit with complete credit
+                    if key in booking_pairs:
+                        booking_pairs[key]['amount'] += gl_entries[c]['credit']
+                    else:
+                        booking_pairs[key] = {'amount': gl_entries[c]['credit'], 'exchange_rate': exchange_rate}
+                    d['debit'] -= gl_entries[c]['credit']
+                    gl_entries[c]['credit'] = 0
+    
+    # round 
+    for k, v in booking_pairs.items():
+        booking_pairs[k]['amount'] = rounded(v['amount'], 2)
+        booking_pairs[k]['foreign_amount'] = rounded((v['exchange_rate'] * v['amount']), 2)
+    
+    return booking_pairs
+    

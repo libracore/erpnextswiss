@@ -327,6 +327,7 @@ class AbacusExportFile(Document):
             # determine tax rate
             tax_rate = debit_account_doc.tax_rate or credit_account_doc.tax_rate or 0
             tax_account = None
+            tax_code = None
             if tax_rate:
                 tax_accounts = frappe.get_all("Account", 
                     filters={
@@ -338,6 +339,16 @@ class AbacusExportFile(Document):
                 )
                 if len(tax_accounts) > 0:
                     tax_account = tax_accounts[0]['name']
+                tax_templates = frappe.db.sql("""
+                    SELECT `tabSales Taxes and Charges Template`.`tax_code`
+                    FROM `tabSales Taxes and Charges`
+                    LEFT JOIN `tabSales Taxes and Charges Template` ON `tabSales Taxes and Charges`.`parent` = `tabSales Taxes and Charges Template`.`name`
+                    WHERE
+                        `tabSales Taxes and Charges`.`parenttype` = "Sales Taxes and Charges Template"
+                        AND `tabSales Taxes and Charges`.`rate` = {tax_rate};
+                    """.format(tax_rate=tax_rate), as_dict=True)
+                if len(tax_templates) > 0:
+                    tax_code = tax_templates[0]['tax_code']
                     
             net_amount = rounded(v.get('amount'), 2)
             tax_amount = rounded((net_amount * (tax_rate / 100)), 2)
@@ -370,7 +381,7 @@ class AbacusExportFile(Document):
                 'tax_account': self.get_account_number(tax_account), 
                 'tax_amount': tax_amount, 
                 'tax_rate': tax_rate, 
-                'tax_code': None, 
+                'tax_code': tax_code, 
                 'tax_currency': self.currency,
                 'text1': "Aggregated {0} ({1}. {2})".format(k, tax_rate, tax_amount)
             })

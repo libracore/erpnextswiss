@@ -9,6 +9,7 @@ import html          # used to escape xml content
 import ast
 from frappe.utils import cint
 from frappe.utils.data import rounded
+from erpnextswiss.erpnextswiss.finance import get_booking_pairs
 
 class AbacusExportFile(Document):
     def submit(self):
@@ -246,6 +247,7 @@ class AbacusExportFile(Document):
         if len(self.balances) < 2:
             return transactions
         
+        """ Method: export as opening balance with a balance per account
         # compile split-account records
         against_singles = []
         for balance in self.balances[1:]:
@@ -271,7 +273,110 @@ class AbacusExportFile(Document):
             'text1': "Aggregated {0}".format(self.name),
             'exchange_rate': 1
         })
-    
+        """
+        
+        """ Method: generate booking pairs """
+        vouchers = frappe.db.sql("""
+            SELECT `voucher_type`, `voucher_no`
+            FROM `tabGL Entry`
+            WHERE 
+                `tabGL Entry`.`company` = "{company}"
+                AND `tabGL Entry`.`posting_date` BETWEEN "{from_date}" AND "{to_date}"
+            GROUP BY `tabGL Entry`.`voucher_no`;
+            """.format(company=self.company, from_date=self.from_date, to_date=self.to_date), as_dict=True)
+        
+        # structure: key is "account|account", values is a dict with {'amount', 'exchange_rate', 'foreign_amount?}
+        aggregates_booking_pairs = {}
+        
+        f = open("/tmp/booking_pairs.csv", "w")
+        f.write("{0};{1};{2};{3};{4}\n".format(
+                    "debit_account", 
+                    "credit_account", 
+                    "amount", 
+                    "foreign_amount",
+                    "voucher_no"))
+        for voucher in vouchers:
+            new_booking_pairs = get_booking_pairs(voucher['voucher_type'], voucher['voucher_no'])
+            
+            for k, v in new_booking_pairs.items():
+                if k not in aggregates_booking_pairs:
+                    aggregates_booking_pairs[k] = v
+                else:
+                    aggregates_booking_pairs[k]['amount'] += v['amount']
+                    aggregates_booking_pairs[k]['foreign_amount'] += v['foreign_amount']
+        
+                # for debug only
+                f.write("{0};{1};{2};{3};{4}\n".format(
+                    v.get("debit_account"), 
+                    v.get("credit_account"), 
+                    v.get("amount"), 
+                    v.get("foreign_amount"),
+                    voucher.get("voucher_no")))
+                
+        f.close()
+        
+        # create transaction data
+        for k, v in aggregates_booking_pairs.items():
+            # determine if one account is a tax account
+            debit_account_doc = frappe.get_doc("Account", v.get('debit_account'))
+            credit_account_doc = frappe.get_doc("Account", v.get('credit_account'))
+            if debit_account_doc.account_type == "Tax" or credit_account_doc.account_type == "Tax":
+                # skip tax accunt records (will be integrated
+                continue
+                
+            # determine tax rate
+            tax_rate = debit_account_doc.tax_rate or credit_account_doc.tax_rate or 0
+            tax_account = None
+            if tax_rate:
+                tax_accounts = frappe.get_all("Account", 
+                    filters={
+                        'company': self.company,
+                        'account_type': 'Tax',
+                        'tax_rate': tax_rate
+                    },
+                    fields=['name']
+                )
+                if len(tax_accounts) > 0:
+                    tax_account = tax_accounts[0]['name']
+                    
+            net_amount = rounded(v.get('amount'), 2)
+            tax_amount = rounded((net_amount * (tax_rate / 100)), 2)
+            gross_amount = rounded((net_amount + tax_amount), 2)
+            
+            foreign_gross_amount = rounded((gross_amount * v.get('exchange_rate')), 2)
+            foreign_net_amount = rounded((v.get('amount') * v.get('exchange_rate')), 2)
+            foreign_tax_amount = foreign_gross_amount - foreign_net_amount
+            
+            # determine foreign currency
+            foreign_currency = debit_account_doc.account_currency \
+                if debit_account_doc.account_currency != self.currency \
+                else credit_account_doc.account_currency
+                
+            transactions.append({
+                'account': self.get_account_number(v.get('debit_account')), 
+                'amount': foreign_gross_amount, 
+                'key_amount': gross_amount,
+                'exchange_rate': v.get('exchange_rate'),
+                'against_singles': [{
+                    'account': self.get_account_number(v.get('credit_account')),
+                    'amount': foreign_net_amount,
+                    'key_amount': net_amount,
+                    'currency': self.currency
+                }],
+                'debit_credit': "D", 
+                'date': self.to_date, 
+                'currency': foreign_currency, 
+                'key_currency': self.currency,
+                'tax_account': self.get_account_number(tax_account), 
+                'tax_amount': tax_amount, 
+                'tax_rate': tax_rate, 
+                'tax_code': None, 
+                'tax_currency': self.currency,
+                'text1': "Aggregated {0} ({1}. {2})".format(k, tax_rate, tax_amount)
+            })
+        
+        # note account1|account2 and account2|account1 are recorded separately
+        
         return transactions
 
 

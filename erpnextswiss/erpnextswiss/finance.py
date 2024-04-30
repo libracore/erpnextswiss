@@ -188,7 +188,7 @@ def get_booking_pairs(voucher_type, voucher_no):
     for g in gl_entries:
         totals['total_debit'] += g['debit']
         totals['total_credit'] += g['credit']
-    if totals['total_debit'] != totals['total_credit']:
+    if rounded(totals['total_debit'], 2) != rounded(totals['total_credit'], 2):
         frappe.throw( _("Debit and credit not equal in {0}").format(voucher_no), _("Total validation failed") )
         
     # allocated debit to credit and build pairs
@@ -203,21 +203,28 @@ def get_booking_pairs(voucher_type, voucher_no):
                 # this debit is allocated
                 continue
             else:
-                key = "{0}:{1}".format(d['account'], gl_entries[c]['account'])
+                # extend exchange rate
+                if exchange_rate == 1:
+                    if not gl_entries[c]['debit'] and not gl_entries[c]['credit']:
+                        exchange_rate = 1
+                    else:
+                        exchange_rate = gl_entries[c]['debit_in_account_currency'] / gl_entries[c]['debit'] if gl_entries[c]['debit'] else gl_entries[c]['credit_in_account_currency'] / gl_entries[c]['credit']
+                key = "{0}|{1}".format(d['account'], gl_entries[c]['account'])
+                if key not in booking_pairs:
+                    booking_pairs[key] = {
+                        'amount': 0, 
+                        'exchange_rate': exchange_rate,
+                        'debit_account': d['account'],
+                        'credit_account': gl_entries[c]['account']
+                    }
                 if d['debit'] <= gl_entries[c]['credit']:
                     # completely allocate debit
-                    if key in booking_pairs:
-                        booking_pairs[key]['amount'] += d['debit']
-                    else:
-                        booking_pairs[key] = {'amount': d['debit'], 'exchange_rate': exchange_rate}
+                    booking_pairs[key]['amount'] += d['debit']
                     d['debit'] = 0
                     gl_entries[c]['credit'] -= d['debit']
                 else:
                     # partially allocate debit with complete credit
-                    if key in booking_pairs:
-                        booking_pairs[key]['amount'] += gl_entries[c]['credit']
-                    else:
-                        booking_pairs[key] = {'amount': gl_entries[c]['credit'], 'exchange_rate': exchange_rate}
+                    booking_pairs[key]['amount'] += gl_entries[c]['credit']
                     d['debit'] -= gl_entries[c]['credit']
                     gl_entries[c]['credit'] = 0
     

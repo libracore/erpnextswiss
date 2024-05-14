@@ -1,0 +1,61 @@
+{
+ "creation": "2024-04-25 09:22:16.716411",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "account",
+  "account_number",
+  "debit",
+  "credit",
+  "balance"
+ ],
+ "fields": [
+  {
+   "fieldname": "account",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Account",
+   "options": "Account",
+   "reqd": 1
+  },
+  {
+   "fieldname": "debit",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Debit",
+   "options": "currency"
+  },
+  {
+   "fieldname": "credit",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Credit",
+   "options": "currency"
+  },
+  {
+   "fieldname": "balance",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Balance",
+   "options": "currency"
+  },
+  {
+   "fieldname": "account_number",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Account Number"
+  }
+ ],
+ "istable": 1,
+ "modified": "2024-04-25 09:37:41.677204",
+ "modified_by": "Administrator",
+ "module": "ERPNextSwiss",
+ "name": "Abacus Export File Account Balance",
+ "owner": "Administrator",
+ "permissions": [],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

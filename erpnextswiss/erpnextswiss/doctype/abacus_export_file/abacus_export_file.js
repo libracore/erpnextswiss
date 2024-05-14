@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, libracore (https://www.libracore.com) and contributors
+// Copyright (c) 2017-2024, libracore (https://www.libracore.com) and contributors
 // For license information, please see license.txt
 
 frappe.ui.form.on('Abacus Export File', {
@@ -7,9 +7,9 @@ frappe.ui.form.on('Abacus Export File', {
         if (frm.doc.docstatus == 1) {
             frm.add_custom_button(__('Download'), function() {
                 frappe.call({
-                    method:"render_transfer_file",
-                    doc: frm.doc,
-                    callback: function(r) {
+                    'method': "render_transfer_file",
+                    'doc': frm.doc,
+                    'callback': function(r) {
                         if (r.message) {
                             // prepare the xml file for download
                             console.log(r.message.content);

@@ -1,3 +1,17 @@
+/*
+ * Available arguments
+ *  doc                     document, e.g. cur_frm.doc
+ *  frm                     form, e.g. cur_frm
+ *  subject                 subject string, "Hello"
+ *  recipients              recipient string
+ *  cc                      cc string
+ *  bcc                     bcc string
+ *  attach_document_print   true/false, default true
+ *  txt                     message string
+ *  check_all_attachments   true/false, default false
+ * 
+ */
+
 frappe.provide('frappe.erpnextswiss.MailComposer');
 frappe.erpnextswiss.MailComposer = Class.extend({
     init: function(opts) {
@@ -402,7 +416,11 @@ frappe.erpnextswiss.MailComposer = Class.extend({
     render_attach:function(){
         var fields = this.dialog.fields_dict;
         var attach = $(fields.select_attachments.wrapper).find(".attach-list").empty();
-
+        var check_attachments = "";
+        if (this.check_all_attachments) {
+            check_attachments = " checked ";
+        }
+        
         var files = [];
         if (this.attachments && this.attachments.length) {
             files = files.concat(this.attachments);
@@ -415,9 +433,10 @@ frappe.erpnextswiss.MailComposer = Class.extend({
             $.each(files, function(i, f) {
                 if (!f.file_name) return;
                 f.file_url = frappe.urllib.get_full_url(f.file_url);
-
+                f.check_attachments = check_attachments;
+                
                 $(repl('<p class="checkbox">'
-                    +	'<label><span><input type="checkbox" data-file-name="%(name)s"></input></span>'
+                    +	'<label><span><input type="checkbox" data-file-name="%(name)s" %(check_attachments)s></input></span>'
                     +		'<span class="small">%(file_name)s</span>'
                     +	' <a href="%(file_url)s" target="_blank" class="text-muted small">'
                     +		'<i class="fa fa-share" style="vertical-align: middle; margin-left: 3px;"></i>'

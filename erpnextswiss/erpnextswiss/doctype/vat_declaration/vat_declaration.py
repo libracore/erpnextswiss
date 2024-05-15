@@ -29,11 +29,17 @@ class VATDeclaration(Document):
             'z230': self.non_taxable_services,
             'z235': self.losses,
             'z302': self.normal_amount,
+            'z303': self.normal_amount_2024,
             'z312': self.reduced_amount,
+            'z313': self.reduced_amount_2024,
             'z322': self.amount_1,
+            'z323': self.amount_1_2024,
             'z332': self.amount_2,
+            'z333': self.amount_2_2024,
             'z342': self.lodging_amount,
+            'z343': self.lodging_amount_2024,
             'z382': self.additional_amount,
+            'z383': self.additional_amount_2024,
             'z400': self.pretax_material,
             'z405': self.pretax_investments,
             'z410': self.missing_pretax,
@@ -44,7 +50,9 @@ class VATDeclaration(Document):
             'z910': self.donations,
             'acquisition_rate': 7.7 if self.start_date < "2024-01-01" else 8.1,
             'rate1': self.rate_1,
+            'rate1_2024': self.rate_1,
             'rate2': self.rate_2,
+            'rate2_2024': self.rate_2
         }
         # render file
         if self.vat_type == "flat":

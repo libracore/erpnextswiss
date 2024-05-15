@@ -1,0 +1,135 @@
+{
+ "creation": "2023-10-19 10:58:46.690779",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "section_testing",
+  "test_connectionipstring",
+  "test_connectionipport",
+  "test_integratorid",
+  "cb_1",
+  "test_autocommit",
+  "section_productiv",
+  "connectionipstring",
+  "connectionipport",
+  "integratorid",
+  "pos_id",
+  "cb_2",
+  "autocommit",
+  "section_printer",
+  "printouts",
+  "printer_ip"
+ ],
+ "fields": [
+  {
+   "fieldname": "connectionipstring",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Connection IP"
+  },
+  {
+   "fieldname": "connectionipport",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Connection Port"
+  },
+  {
+   "fieldname": "integratorid",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Integrator ID"
+  },
+  {
+   "fieldname": "section_testing",
+   "fieldtype": "Section Break",
+   "label": "Testing"
+  },
+  {
+   "fieldname": "test_connectionipstring",
+   "fieldtype": "Data",
+   "label": "Connection IP"
+  },
+  {
+   "fieldname": "test_connectionipport",
+   "fieldtype": "Int",
+   "label": "Connection Port"
+  },
+  {
+   "fieldname": "test_integratorid",
+   "fieldtype": "Data",
+   "label": "Integrator ID"
+  },
+  {
+   "fieldname": "section_productiv",
+   "fieldtype": "Section Break",
+   "label": "Productiv"
+  },
+  {
+   "fieldname": "cb_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "test_autocommit",
+   "fieldtype": "Check",
+   "label": "Auto Commit"
+  },
+  {
+   "fieldname": "cb_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "autocommit",
+   "fieldtype": "Check",
+   "label": "Auto Commit"
+  },
+  {
+   "fieldname": "section_printer",
+   "fieldtype": "Section Break",
+   "label": "Printouts"
+  },
+  {
+   "depends_on": "eval:doc.printouts",
+   "description": "Needed to print Shift-Activations and Daily-Closings",
+   "fieldname": "printer_ip",
+   "fieldtype": "Data",
+   "label": "Printer IP"
+  },
+  {
+   "default": "0",
+   "fieldname": "printouts",
+   "fieldtype": "Check",
+   "label": "Enable Printouts"
+  },
+  {
+   "description": "E.g.: ECR-01",
+   "fieldname": "pos_id",
+   "fieldtype": "Data",
+   "label": "POS ID"
+  }
+ ],
+ "issingle": 1,
+ "modified": "2023-10-24 11:22:51.841464",
+ "modified_by": "Administrator",
+ "module": "ERPNextSwiss",
+ "name": "Worldline TIM",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

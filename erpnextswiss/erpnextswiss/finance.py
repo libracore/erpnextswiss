@@ -123,7 +123,8 @@ def get_customer_ledger(accounts, customer, in_account_currency=False):
         SELECT
             `tabGL Entry`.`posting_date` AS `posting_date`,
             {currency_selector} AS `amount`,
-            `tabGL Entry`.`voucher_no` AS `voucher_no`
+            `tabGL Entry`.`voucher_no` AS `voucher_no`,
+            `tabGL Entry`.`voucher_type` AS `voucher_type`
         FROM `tabGL Entry`
         LEFT JOIN `tabPayment Entry` ON `tabPayment Entry`.`name` = `tabGL Entry`.`voucher_no`
         WHERE 

@@ -73,6 +73,18 @@ frappe.ui.form.on('VAT Declaration', {
         }
     },
     // add change handlers for tax positions
+    'normal_amount_2024': function(frm) { update_tax_amounts(frm) },
+    'reduced_amount_2024': function(frm) { update_tax_amounts(frm) },
+    'lodging_amount_2024': function(frm) { update_tax_amounts(frm) },
+    'additional_amount_2024': function(frm) { update_tax_amounts(frm) },
+    'amount_1_2024': function(frm) { update_tax_amounts(frm) },
+    'amount_2_2024': function(frm) { update_tax_amounts(frm) },
+    'rate_1_2024': function(frm) { update_tax_amounts(frm) },
+    'rate_2_2024': function(frm) { update_tax_amounts(frm) },
+    'normal_rate_2024': function(frm) { update_tax_amounts(frm) },
+    'reduced_rate_2024': function(frm) { update_tax_amounts(frm) },
+    'lodging_rate_2024': function(frm) { update_tax_amounts(frm) },
+    'additional_tax_2024': function(frm) { update_tax_amounts(frm) },
     'normal_amount': function(frm) { update_tax_amounts(frm) },
     'reduced_amount': function(frm) { update_tax_amounts(frm) },
     'lodging_amount': function(frm) { update_tax_amounts(frm) },
@@ -114,14 +126,21 @@ function get_values(frm) {
     get_total(frm, "viewVAT_235", 'losses');
     // Tax calculation
     if (frm.doc.vat_type == "effective") {
+        get_total(frm, "viewVAT_303", 'normal_amount_2024');
+        get_total(frm, "viewVAT_313", 'reduced_amount_2024');
+        get_total(frm, "viewVAT_343", 'lodging_amount_2024');
         get_total(frm, "viewVAT_302", 'normal_amount');
         get_total(frm, "viewVAT_312", 'reduced_amount');
         get_total(frm, "viewVAT_342", 'lodging_amount');
     }
     else {
+        get_total(frm, "viewVAT_323", 'amount_1_2024');
+        get_total(frm, "viewVAT_333", 'amount_2_2024');
         get_total(frm, "viewVAT_322", 'amount_1');
         get_total(frm, "viewVAT_332", 'amount_2');
     }
+    get_total(frm, "viewVAT_383", 'additional_amount_2024');
+    get_tax(frm, "viewVAT_383", 'additional_tax_2024');
     get_total(frm, "viewVAT_382", 'additional_amount');
     get_tax(frm, "viewVAT_382", 'additional_tax');
     // Pretaxes
@@ -141,13 +160,26 @@ function recalculate(frm) {
 
 function update_tax_amounts(frm) {
     // effective tax: tax rate on net amount
+    var normal_tax_2024 = frm.doc.normal_amount_2024 * (frm.doc.normal_rate_2024 / 100);
+    var reduced_tax_2024 = frm.doc.reduced_amount_2024 * (frm.doc.reduced_rate_2024 / 100);
+    var lodging_tax_2024 = frm.doc.lodging_amount_2024 * (frm.doc.lodging_rate_2024 / 100);
     var normal_tax = frm.doc.normal_amount * (frm.doc.normal_rate / 100);
     var reduced_tax = frm.doc.reduced_amount * (frm.doc.reduced_rate / 100);
     var lodging_tax = frm.doc.lodging_amount * (frm.doc.lodging_rate / 100);
     // saldo tax: rate on gross amount
+    var tax_1_2024 = frm.doc.amount_1_2024  * (frm.doc.rate_1_2024 / 100);
+    var tax_2_2024 = frm.doc.amount_2_2024 * (frm.doc.rate_2_2024 / 100);
     var tax_1 = frm.doc.amount_1  * (frm.doc.rate_1 / 100);
     var tax_2 = frm.doc.amount_2 * (frm.doc.rate_2 / 100);
-    var total_tax = normal_tax + reduced_tax + lodging_tax + tax_1 + tax_2 + frm.doc.additional_tax;
+    var total_tax = normal_tax_2024 + reduced_tax_2024 + lodging_tax_2024 
+        + tax_1_2024 + tax_2_2024 + frm.doc.additional_tax_2024 
+        + normal_tax + reduced_tax + lodging_tax + tax_1 + tax_2 + frm.doc.additional_tax;
+    // set values
+    frm.set_value('normal_tax_2024', normal_tax_2024);
+    frm.set_value('reduced_tax_2024', reduced_tax_2024);
+    frm.set_value('lodging_tax_2024', lodging_tax_2024);
+    frm.set_value('tax_1_2024', tax_1_2024);
+    frm.set_value('tax_2_2024', tax_2_2024);
     frm.set_value('normal_tax', normal_tax);
     frm.set_value('reduced_tax', reduced_tax);
     frm.set_value('lodging_tax', lodging_tax);

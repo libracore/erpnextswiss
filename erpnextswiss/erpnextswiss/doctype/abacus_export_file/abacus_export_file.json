@@ -51,6 +51,7 @@
    "depends_on": "eval:doc.aggregated==0",
    "fieldname": "section_transactions",
    "fieldtype": "Section Break",
+   "hidden": 1,
    "label": "Transactions"
   },
   {
@@ -112,7 +113,7 @@
   }
  ],
  "is_submittable": 1,
- "modified": "2024-04-25 09:28:36.562630",
+ "modified": "2024-05-16 10:14:22.268401",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "Abacus Export File",

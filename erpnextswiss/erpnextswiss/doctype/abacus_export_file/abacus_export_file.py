@@ -743,7 +743,10 @@ def compare_result_xml(docname, xml_content):
     export = {}
     for t in export_transactions:
         try:
-            export[t['id']] = t.entry.collectiveinformation.text1.get_text()
+            export[t['id']] = {
+                'document': t.entry.collectiveinformation.text1.get_text(),
+                'date': t.entry.collectiveinformation.entrydate.get_text()
+            }
         except Exception as err:
             print("Transaction {0} has {1}".format(t['id'], err))
     
@@ -770,11 +773,15 @@ def compare_result_xml(docname, xml_content):
     # extend the error list with doctypes and docnames
     for e in errors:
         try:
-            e['document'] = export[e['id']]
+            e['document'] = export[e['id']]['document']
+            e['date'] = export[e['id']]['date']
             e['doctype'] = doctype_map[e['document']]
+            
         except Exception as err:
             e['document'] = "Not found"
             e['doctype'] = None
+            e['date'] = None
+
             
     # render the output into a dialog
     output_dialog = frappe.render_template("erpnextswiss/erpnextswiss/doctype/abacus_export_file/compare_result_dialog.html", {'errors': errors})

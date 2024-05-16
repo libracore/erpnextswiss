@@ -87,6 +87,7 @@ function compare_result(frm) {
     });
     d.fields_dict.ht.$wrapper.html("<input type='file' id='result_xml' />");
     d.show();
+    
 }
 
 
@@ -97,8 +98,33 @@ function compare_result_xml(xml_content) {
             'docname': cur_frm.doc.name,
             'xml_content': xml_content
         },
+        'freeze': true,
+        'freeze_message': __("Evaluating result file... hang tight..."),
         'callback': function(response) {
-            frappe.msgprint(response.message, __("Comparison"));
+            var d = new frappe.ui.Dialog({
+                'fields': [
+                    {'fieldname': 'ht', 'fieldtype': 'HTML'}
+                ],
+                'primary_action': function(){
+                    navigator.clipboard.writeText(response.message);
+                },
+                'primary_action_label': __("Copy"),
+                'secondary_action': function(){
+                    d.hide();
+                },
+                'secondary_action_label': __("Close"),
+                'title': __("Comparison")
+            });
+            d.fields_dict.ht.$wrapper.html(response.message);
+            d.show();
+            
+            // hack: increase dialog width
+            setTimeout(function () {
+                var modals = document.getElementsByClassName("modal-dialog");
+                if (modals.length > 0) {
+                    modals[modals.length - 1].style.width = "1000px";
+                }
+            }, 300);
         }
     });
 }

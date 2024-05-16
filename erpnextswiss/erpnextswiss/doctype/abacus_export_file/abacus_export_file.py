@@ -10,6 +10,8 @@ import ast
 from frappe.utils import cint
 from frappe.utils.data import rounded
 from erpnextswiss.erpnextswiss.finance import get_booking_pairs
+from frappe import _
+from bs4 import BeautifulSoup
 
 class AbacusExportFile(Document):
     def submit(self):
@@ -723,9 +725,54 @@ Compare a result file against the export xml to identify errors and take action
 """
 @frappe.whitelist()
 def compare_result_xml(docname, xml_content):
+    # get the transaction xml file
+    if not frappe.db.exists("Abacus Export File", docname):
+        frappe.throw( _("Invalid Abacus File reference"), _("Error") )
+        
+    doc = frappe.get_doc("Abacus Export File", docname)
+    transaction_xml = doc.render_transfer_file().get('content')
     
-    findings = {'doc': xml_content}
+    # load both transfer file and result into BeautifulSoups
+    # parse original transaction file
+    transaction_soup = BeautifulSoup(transaction_xml, 'lxml')
+
+    # find transactions
+    export_transactions = transaction_soup.find_all('transaction')
+
+    # extract id and text1 (=document number)
+    export = {}
+    for t in export_transactions:
+        try:
+            export[t['id']] = t.entry.collectiveinformation.text1.get_text()
+        except Exception as err:
+            print("Transaction {0} has {1}".format(t['id'], err))
     
-    output_dialog = frappe.render_template("erpnextswiss/erpnextswiss/doctype/abacus_export_file/compare_result_dialog.html", findings)
+    # parse result file
+    result_soup = BeautifulSoup(xml_content, 'lxml')
+
+    # find transactions
+    result_transactions = result_soup.find_all('transaction')
+
+    # for each transaction, export ID and error message
+    errors = []
+    for t in result_transactions:
+        errors.append({
+            'id': t['id'],
+            'error': t.messages.message.get_text()
+        })
+        
+    # create a lookup table from document names to doctypes
+    doctype_map = {}
+    if doc.references:
+        for r in doc.references:
+            doctype_map[r.get('dn')] = r.get('dt')
+    
+    # extend the error list with doctypes and docnames
+    for e in errors:
+        e['document'] = export[e['id']]
+        d['doctype'] = doctype_mape[e['document']]
+    
+    # render the output into a dialog
+    output_dialog = frappe.render_template("erpnextswiss/erpnextswiss/doctype/abacus_export_file/compare_result_dialog.html", {'errors': errors})
 
     return output_dialog

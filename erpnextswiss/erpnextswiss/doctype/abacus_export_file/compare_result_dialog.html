@@ -1,7 +1,7 @@
 <table style="table">
     {% for e in errors %}
     <tr>
-        <td><a href="/desk#Form/{{ e.doctype }}/{{document}">{{ e.document }}</a></td>
+        <td><a href="/desk#Form/{{ e.doctype }}/{{ e.document }}">{{ e.document }}</a></td>
         <td>{{ e.error }}</td>
     </tr>
     {% endfor %}

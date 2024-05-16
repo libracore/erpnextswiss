@@ -769,9 +769,13 @@ def compare_result_xml(docname, xml_content):
     
     # extend the error list with doctypes and docnames
     for e in errors:
-        e['document'] = export[e['id']]
-        d['doctype'] = doctype_mape[e['document']]
-    
+        try:
+            e['document'] = export[e['id']]
+            e['doctype'] = doctype_map[e['document']]
+        except Exception as err:
+            e['document'] = "Not found"
+            e['doctype'] = None
+            
     # render the output into a dialog
     output_dialog = frappe.render_template("erpnextswiss/erpnextswiss/doctype/abacus_export_file/compare_result_dialog.html", {'errors': errors})
 

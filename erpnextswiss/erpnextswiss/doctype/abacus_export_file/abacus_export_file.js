@@ -103,16 +103,19 @@ function compare_result_xml(xml_content) {
         'callback': function(response) {
             var d = new frappe.ui.Dialog({
                 'fields': [
-                    {'fieldname': 'ht', 'fieldtype': 'HTML'}
+                    {
+                        'fieldname': 'ht', 
+                        'fieldtype': 'HTML'
+                    }
                 ],
                 'primary_action': function(){
-                    navigator.clipboard.writeText(response.message);
+                    navigator.clipboard.writeText(response.message).then(function() {
+                        frappe.show_alert( __("HTML copied to clipboard") );
+                      }, function() {
+                         frappe.show_alert( __("Clipboard access failed") );
+                    });
                 },
                 'primary_action_label': __("Copy"),
-                'secondary_action': function(){
-                    d.hide();
-                },
-                'secondary_action_label': __("Close"),
                 'title': __("Comparison")
             });
             d.fields_dict.ht.$wrapper.html(response.message);

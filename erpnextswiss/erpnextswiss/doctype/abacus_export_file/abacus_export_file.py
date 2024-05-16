@@ -716,3 +716,16 @@ def totalise_key_currency(tx):
         tx['against_singles'][-1]['key_tax_amount'] = rounded((tx['against_singles'][-1].get("key_tax_amount") or 0 ) + delta, 2)
         
     return tx
+
+
+"""
+Compare a result file against the export xml to identify errors and take action
+"""
+@frappe.whitelist()
+def compare_result_xml(docname, xml_content):
+    
+    findings = {'doc': xml_content}
+    
+    output_dialog = frappe.render_template("erpnextswiss/erpnextswiss/doctype/abacus_export_file/compare_result_dialog.html", findings)
+
+    return output_dialog

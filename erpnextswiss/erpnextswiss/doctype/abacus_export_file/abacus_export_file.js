@@ -18,6 +18,10 @@ frappe.ui.form.on('Abacus Export File', {
                     }
                 });
             }).addClass("btn-primary");
+            
+            frm.add_custom_button(__('Compare Result'), function() {
+                compare_result(frm);
+            });
         }
         // reset flag function for system managers
         if (frappe.user.has_role("System Manager")) {
@@ -42,4 +46,59 @@ function download(filename, content) {
     document.body.appendChild(element);
     element.click();
     document.body.removeChild(element);
+}
+
+function compare_result(frm) {
+    var d = new frappe.ui.Dialog({
+        'fields': [
+            {'fieldname': 'ht', 'fieldtype': 'HTML'}
+        ],
+        'primary_action': function(){
+            // read the file
+            var xml_file = document.getElementById("result_xml").files[0];
+            if (xml_file.name.toLowerCase().endsWith(".xml")) {
+                var xml_content = "";
+                
+                if (xml_file) {
+                
+                    var reader = new FileReader();
+                    reader.onload = function (event) {
+                        xml_content = event.target.result;
+                        
+                        compare_result_xml(xml_content);
+                        
+                        // hide dialog
+                        d.hide();
+                    }
+                    reader.onerror = function (event) {
+                        frappe.msgprint( __("Error reading file"), __("Error") );
+                    }
+                    
+                    reader.readAsText(xml_file, "ANSI");
+                } else {
+                    frappe.msgprint( __("Please select a file"), __("Validation"));
+                }
+            } else {
+                frappe.msgprint( __("Please provide an Abacus Result XML file"), __("Validation"));
+            }
+        },
+        'primary_action_label': __('Compare'),
+        'title': __("Abacus Result File")
+    });
+    d.fields_dict.ht.$wrapper.html("<input type='file' id='result_xml' />");
+    d.show();
+}
+
+
+function compare_result_xml(xml_content) {
+    frappe.call({
+        'method': 'erpnextswiss.erpnextswiss.doctype.abacus_export_file.abacus_export_file.compare_result_xml',
+        'args': {
+            'docname': cur_frm.doc.name,
+            'xml_content': xml_content
+        },
+        'callback': function(response) {
+            frappe.msgprint(response.message, __("Comparison"));
+        }
+    });
 }

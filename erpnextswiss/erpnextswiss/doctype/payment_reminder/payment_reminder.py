@@ -94,7 +94,8 @@ def create_reminder_for_customer(customer, company, auto_submit=False, max_level
             `grand_total`, 
             `outstanding_amount` , 
             `currency`,
-            `contact_email`
+            `contact_email`,
+            `debit_to`
         FROM `tabSales Invoice` 
         WHERE `outstanding_amount` > 0 AND `customer` = "{customer}"
             AND `docstatus` = 1
@@ -127,6 +128,7 @@ def create_reminder_for_customer(customer, company, auto_submit=False, max_level
                 'sales_invoice': invoice.name,
                 'amount': invoice.grand_total,
                 'outstanding_amount': invoice.outstanding_amount,
+                'debit_account': invoice.debit_to,
                 'posting_date': invoice.posting_date,
                 'due_date': invoice.due_date,
                 'reminder_level': level

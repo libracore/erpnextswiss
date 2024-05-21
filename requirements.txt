@@ -4,3 +4,4 @@ factur-x
 unidecode
 opencv-python
 pymupdf
+fintech

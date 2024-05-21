@@ -432,3 +432,11 @@ DocType: ZUGFeRD Wizard,This invoice cannot be interpreted automatically.,Diese 
 DocType: ZUGFeRD Wizard,Import successful,Import erfolgreich
 DocType: ZUGFeRD Wizard,Creating invoice...,Rechnung erstellen...
 DocType: ZUGFeRD Wizard,Reading invoice...,Rechnung lesen...
+DocType: ebics Connection,ebics Connection,ebics-Verbindung
+DocType: ebics Connection,Configuration prepared,Konfiguration vorbereitet
+DocType: ebics Connection,Keys created,Schlüssel erzeugt
+DocType: ebics Connection,Signature sent,Signatur übermittelt
+DocType: ebics Connection,Keys sent,Schlüssel übermittelt
+DocType: ebics Connection,INI Letter created,INI-Letter erzeugt
+DocType: ebics Connection,Public keys downloaded,Öffentlicher Schlüssel heruntergeladen
+DocType: ebics Connection,Account activated,Verbindung aktiviert

@@ -204,6 +204,12 @@ def get_data():
                        "name": "ZUGFeRD Settings",
                        "label": _("ZUGFeRD Settings"),
                        "description": _("ZUGFeRD Settings")                   
+                    },
+                    {
+                       "type": "doctype",
+                       "name": "ebics Connection",
+                       "label": _("ebics Connection"),
+                       "description": _("ebics Connection")                   
                     }
             ]
         },

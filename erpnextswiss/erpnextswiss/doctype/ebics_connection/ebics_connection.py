@@ -8,7 +8,8 @@ from frappe.model.document import Document
 import os
 import fintech
 fintech.register()
-from fintech.ebics import EbicsKeyRing, EbicsBank, EbicsUser, EbicsClient
+from fintech.ebics import EbicsKeyRing, EbicsBank, EbicsUser, EbicsClient, BusinessTransactionFormat
+#from fintech.sepa import Account, SEPACreditTransfer
 from frappe import _
 from frappe.utils.file_manager import save_file
 
@@ -55,7 +56,6 @@ class ebicsConnection(Document):
         return client
         
     def create_keys(self):
-        frappe.log_error("create keys")
         try:
             keyring = EbicsKeyRing(keys=self.get_keys_file_name(), passphrase=self.key_password)
             bank = EbicsBank(keyring=keyring, hostid=self.host_id, url=self.url)
@@ -132,3 +132,37 @@ class ebicsConnection(Document):
         except Exception as err:
             frappe.throw( "{0}".format(err), _("Error") )
         return
+
+@frappe.whitelist()
+def execute_payment(ebics_connection, payment_proposal):
+    conn = frappe.get_doc("ebics Connection", ebics_connection)
+    payment = frappe.get_doc("Payment Proposal", payment_proposal)
+    
+    # ebics v3.0 BTU/BTD
+    CCT = BusinessTransactionFormat(
+        service='SCT',
+        msg_name='pain.001'
+    )
+    
+    # generate content
+    xml_transaction = payment.create_bank_file()['content']
+    
+    # upload data using v3.0 (H005)
+    data = conn.BTD(CCT, xml_transaction)
+    
+    return
+    
+        
+def get_transactions(ebics_connection, from_date, to_date):
+    conn = frappe.get_doc("ebics Connection", ebics_connection)
+    
+    # ebics v3.0 BTU/BTD
+    C53 = BusinessTransactionFormat(
+        service='EOP',
+        msg_name='camt.053'
+    )
+    
+    # download data using v3.0 (H005)
+    data = conn.BTD(C53, from_date, to_date)
+    
+    return

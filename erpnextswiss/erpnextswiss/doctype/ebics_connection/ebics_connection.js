@@ -5,7 +5,7 @@ frappe.ui.form.on('ebics Connection', {
     refresh: function(frm) {
         if (!frm.doc.__islocal) {
             if (frm.doc.activated) {
-                cur_frm.dashboard.add_comment( __("This ebics connection is activated.") );
+                cur_frm.dashboard.add_comment( __("This ebics connection is activated."), 'green', true);
             } else {
                 frm.add_custom_button( __("Activation Wizard"), function() {
                     activation_wizard(frm);

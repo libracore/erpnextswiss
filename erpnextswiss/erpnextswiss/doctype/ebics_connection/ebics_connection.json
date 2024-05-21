@@ -6,7 +6,6 @@
  "engine": "InnoDB",
  "field_order": [
   "title",
-  "sec_bank",
   "host_id",
   "url",
   "col_user",
@@ -30,11 +29,6 @@
    "label": "Title",
    "reqd": 1,
    "unique": 1
-  },
-  {
-   "fieldname": "sec_bank",
-   "fieldtype": "Section Break",
-   "label": "Bank"
   },
   {
    "bold": 1,
@@ -118,7 +112,7 @@
    "label": "Key password"
   }
  ],
- "modified": "2024-05-21 14:34:51.330983",
+ "modified": "2024-05-21 20:34:29.471694",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "ebics Connection",

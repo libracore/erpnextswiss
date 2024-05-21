@@ -450,3 +450,4 @@ DocType: ebics Connection,"Click next to create the INI letter, sign and send it
 DocType: ebics Connection,"Once you have received the confirmation from the bank, click next to download the public keys.","Nachdem Sie die Betsätigung der Bank erhalten haben, klicken Sie weiter um die öffentlichen Schlüssel herunter zu laden."
 DocType: ebics Connection,Click next to activate this connection.,Weiter klicken um die Verbindung zu aktivieren
 DocType: ebics Connection,All set.,Alles bereit
+DocType: ebics Connection,Transmit by ebics,Per ebics übertragen

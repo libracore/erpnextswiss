@@ -148,7 +148,7 @@ def execute_payment(ebics_connection, payment_proposal):
     xml_transaction = payment.create_bank_file()['content']
     
     # upload data using v3.0 (H005)
-    data = conn.BTD(CCT, xml_transaction)
+    data = conn.get_client.BTD(CCT, xml_transaction)
     
     return
     
@@ -163,6 +163,6 @@ def get_transactions(ebics_connection, from_date, to_date):
     )
     
     # download data using v3.0 (H005)
-    data = conn.BTD(C53, from_date, to_date)
+    data = conn.get_client.BTD(C53, from_date, to_date)
     
     return

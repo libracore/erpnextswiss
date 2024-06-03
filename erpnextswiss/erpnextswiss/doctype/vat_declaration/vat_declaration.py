@@ -9,6 +9,7 @@ from frappe import _
 from datetime import datetime
 
 class VATDeclaration(Document):
+    @frappe.whitelist()
     def create_transfer_file(self):
         tax_id = frappe.get_value("Company", self.company, "tax_id")
         if not tax_id or len(tax_id) < 12:

@@ -50,7 +50,7 @@ doctype_js = {
 # adding Jinja environments
 jinja = {
     "methods": [
-        "get_tax_details:erpnextswiss.erpnextswiss.report.kontrolle_mwst.kontrolle_mwst.get_data",
+        "erpnextswiss.erpnextswiss.report.kontrolle_mwst.kontrolle_mwst.get_data",
         "erpnextswiss.erpnextswiss.finance.get_account_sheets",
         "erpnextswiss.erpnextswiss.finance.get_customer_ledger",
         "erpnextswiss.erpnextswiss.jinja.get_week_from_date",

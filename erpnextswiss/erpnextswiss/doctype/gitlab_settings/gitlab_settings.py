@@ -142,9 +142,7 @@ def create_new_issue(**kwargs):
     issue_object.milestone_id = kwargs['milestone_id'] if 'milestone_id' in kwargs else 0
     issue_object.due_date = kwargs['due_date'] if 'due_date' in kwargs else ''
     
-    gitlab_settings.post_new_issue(issue_object)
-
-    return
+    return gitlab_settings.post_new_issue(issue_object)
 
 @frappe.whitelist()
 def edit_issue(**kwargs):
@@ -184,6 +182,4 @@ def edit_issue(**kwargs):
     if 'weight' in kwargs:
         issue_object.weight = kwargs['weight']
     
-    gitlab_settings.put_edit_issue(issue_object)
-
-    return
+    return gitlab_settings.put_edit_issue(issue_object)

@@ -89,7 +89,7 @@ class GitLabSettings(Document):
         
         response = requests.post(url, headers=headers, json=data)
         if response.status_code == 201:
-            return response.json()['iid']
+            return response.json()
         else:
             frappe.log_error(message="{0}\n\n{1}".format(str(response.status_code), str(response.json())) , title="GitLab: Create Issue failed")
             return
@@ -108,7 +108,7 @@ class GitLabSettings(Document):
         
         response = requests.put(url, headers=headers, json=data)
         if response.status_code == 200:
-            return response.json()['iid']
+            return response.json()
         else:
             frappe.log_error(message="{0}\n\n{1}".format(str(response.status_code), str(response.json())) , title="GitLab: Update Issue failed")
             return

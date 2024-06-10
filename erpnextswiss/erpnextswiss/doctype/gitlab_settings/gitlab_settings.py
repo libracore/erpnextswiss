@@ -123,6 +123,7 @@ def ObjectToJSON(object):
 def ObjectToURL(object):
     return urllib.parse.urlencode(object.__dict__)
 
+@frappe.whitelist()
 def create_new_issue(**kwargs):
     gitlab_settings = frappe.get_doc("GitLab Settings", "GitLab Settings")
     
@@ -145,6 +146,7 @@ def create_new_issue(**kwargs):
 
     return
 
+@frappe.whitelist()
 def edit_issue(**kwargs):
     gitlab_settings = frappe.get_doc("GitLab Settings", "GitLab Settings")
     issue_object = edit_issue_object()

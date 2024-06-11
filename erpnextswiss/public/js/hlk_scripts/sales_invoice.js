@@ -9,23 +9,23 @@ frappe.ui.form.on('Sales Invoice', {
             "callback": function(response) {
                 var item_group_for_structur_element_filter = response.message;
                 frm.fields_dict['hlk_structur_organisation'].grid.get_field('main_element').get_query = function(doc, cdt, cdn) {
-                    return {    
+                    return {
                         filters:[
                             ['item_group', '=', item_group_for_structur_element_filter]
                         ]
                     }
                 };
-                
+
                 frm.fields_dict['hlk_structur_organisation'].grid.get_field('parent_element').get_query = function(doc, cdt, cdn) {
-                    return {    
+                    return {
                         filters:[
                             ['item_group', '=', item_group_for_structur_element_filter]
                         ]
                     }
                 };
-                
+
                 frm.fields_dict['items'].grid.get_field('hlk_element').get_query = function(doc, cdt, cdn) {
-                    return {    
+                    return {
                         filters:[
                             ['item_group', '=', item_group_for_structur_element_filter]
                         ]
@@ -33,7 +33,7 @@ frappe.ui.form.on('Sales Invoice', {
                 };
             }
         });
-        
+
         cur_frm.fields_dict['introduction_template'].get_query = function(doc) {
              return {
                  filters: {
@@ -42,7 +42,7 @@ frappe.ui.form.on('Sales Invoice', {
                  }
              }
         };
-        
+
         cur_frm.fields_dict['closing_text_template'].get_query = function(doc) {
              return {
                  filters: {
@@ -51,7 +51,7 @@ frappe.ui.form.on('Sales Invoice', {
                  }
              }
         };
-        
+
         if (!frm.doc.__islocal && cur_frm.doc.docstatus != '1') {
             if (!cur_frm.custom_buttons[__("Transfer HLK Discounts")]) {
                 frm.add_custom_button(__("Transfer HLK Discounts"), function() {
@@ -81,7 +81,7 @@ frappe.ui.form.on('Sales Invoice', {
                 }, __("HLK Tools"));
             }
         }
-        
+
         if (frm.doc.__islocal) {
             frm.add_custom_button(__("Remove Zero Positions"), function() {
                 remove_zero_positions(frm);
@@ -94,7 +94,6 @@ frappe.ui.form.on('Sales Invoice', {
                 remove_zero_positions(frm);
             }, __("HLK Tools"));
         }
-    }
 })
 
 function recalc_special_discounts(frm) {

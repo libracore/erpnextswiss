@@ -34,9 +34,9 @@ def get_data(doctype, from_date=None, to_date=None):
     if doctype == "Sales Order":
         return get_sales_order_data(from_date, to_date)
     elif doctype == "Delivery Note":
-        return get_sales_order_data(from_date, to_date)
-    elif doctype == "Delivery Note":
-        return get_sales_order_data(from_date, to_date)
+        return get_delivery_note_data(from_date, to_date)
+    elif doctype == "Sales Invoice":
+        return get_sales_invoice_data(from_date, to_date)
     else:
         # fallback: return list
         return frappe.db.sql("""SELECT * FROM `tab{doctype};""".format(doctype=doctype), as_dict=True)
@@ -58,9 +58,9 @@ def has_report_permission(doctype):
 def get_sales_order_data(from_date=None, to_date=None):
     conditions = ""
     if from_date:
-        conditions += """ `tabSales Order`.`transaction_date` >= "{from_date}" """.format(from_date=from_date)
+        conditions += """ AND `tabSales Order`.`transaction_date` >= "{from_date}" """.format(from_date=from_date)
     if to_date:
-        conditions += """ `tabSales Order`.`transaction_date` <= "{to_date}" """.format(to_date=to_date)
+        conditions += """ AND `tabSales Order`.`transaction_date` <= "{to_date}" """.format(to_date=to_date)
         
     sql_query = """
         SELECT 
@@ -81,9 +81,9 @@ def get_sales_order_data(from_date=None, to_date=None):
 def get_delivery_note_data(from_date=None, to_date=None):
     conditions = ""
     if from_date:
-        conditions += """ `tabDelivery Note`.`posting_date` >= "{from_date}" """.format(from_date=from_date)
+        conditions += """ AND `tabDelivery Note`.`posting_date` >= "{from_date}" """.format(from_date=from_date)
     if to_date:
-        conditions += """ `tabDelivery Note`.`posting_date` <= "{to_date}" """.format(to_date=to_date)
+        conditions += """ AND `tabDelivery Note`.`posting_date` <= "{to_date}" """.format(to_date=to_date)
         
     sql_query = """
         SELECT 
@@ -104,9 +104,9 @@ def get_delivery_note_data(from_date=None, to_date=None):
 def get_sales_invoice_data(from_date=None, to_date=None):
     conditions = ""
     if from_date:
-        conditions += """ `tabSales Order`.`posting_date` >= "{from_date}" """.format(from_date=from_date)
+        conditions += """ AND `tabSales Invoice`.`posting_date` >= "{from_date}" """.format(from_date=from_date)
     if to_date:
-        conditions += """ `tabSales Order`.`posting_date` <= "{to_date}" """.format(to_date=to_date)
+        conditions += """ AND `tabSales Invoice`.`posting_date` <= "{to_date}" """.format(to_date=to_date)
         
     sql_query = """
         SELECT 

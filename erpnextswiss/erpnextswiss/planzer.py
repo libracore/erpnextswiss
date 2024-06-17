@@ -63,7 +63,8 @@ def create_shipment(shipment_name, debug=False):
         'pickup_to_time': ("{0}".format(shipment.pickup_to))[0:8],
         'account_id': settings.account_id,
         'customer_no': settings.customer_no,
-        'department_no': settings.department_no
+        'department_no': settings.department_no,
+        'options': []
     }
     sender_contact = None
     if shipment.pickup_contact_name:            # note: the pickup_contact_person is a User
@@ -136,6 +137,14 @@ def create_shipment(shipment_name, debug=False):
         delivery_note = dn.delivery_note
     delivery_date = frappe.get_value("Delivery Note", delivery_note, 'posting_date')
     data['delivery_date'] = delivery_date.strftime("%d.%m.%Y")
+    # options from carrier service
+    if shipment.carrier_service:
+        for s in shipment.carrier_service.split(","):
+            data['options'].append({'service_level_code': s.strip()})
+    else:
+        # default if no service specified
+        data['options'].append({'service_level_code': "2020003"})
+    
     # render file
     content = frappe.render_template("erpnextswiss/templates/xml/planzer_shipment.html", data)
     

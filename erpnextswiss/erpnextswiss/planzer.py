@@ -182,7 +182,7 @@ def get_planzer_barcode(shipment_name):
     )
     return barcode
     
-def get_planer_qr_code(shipment_name):
+def get_planzer_qr_code(shipment_name):
     qr_code = "{barcode}{blank}8888888".format(
         barcode=get_planzer_barcode(shipment_name),
         blank=" " * 41

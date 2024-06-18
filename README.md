@@ -88,7 +88,10 @@ In case you update from the sources and observe an error, make sure to update de
     * EDI connector: allows to fully integrate EDI exchange (PRICAT, DESADV, ORDERS, SLSRPT, ...)
     * NextCloud:
         * Update contacts from ERPNext to NextCloud address book
-      
+    * Interface to Planzer logistics
+ * Business Intelligence
+    * Data Provider for Looker Studio (refer to the libracore Connector to connect to your data)
+
 ## Release notes
 Refer to [https://github.com/libracore/erpnextswiss/wiki/Release-Notes](https://github.com/libracore/erpnextswiss/wiki/Release-Notes)
 

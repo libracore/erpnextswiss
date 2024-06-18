@@ -22,24 +22,33 @@ SENSITIVE_DOCTYPES = [
 ]
 
 @frappe.whitelist()
-def get_data(doctype, from_date=None, to_date=None):
+def get_data(doctype, from_date=None, to_date=None, fields=None):
     # check access permission: token, user needs to have Report permission on this doctype
     if not has_report_permission(doctype):
         return {'error': 'No permission based on role model (report)'}
     # prevent sensitive doctypes from being accessed through Looker
     if doctype in SENSITIVE_DOCTYPES:
         return {'error': 'Access to sensitive doctype blocked.'}
+    
+    # prepare fields filter
+    fields_filter = "*"
+    if fields:
+        if type(fields) == str:
+            fields=fields.split(",")
+        fields_filter = "`{0}`".format("`, `".join(fields))
         
     if doctype == "Sales Order":
-        return get_sales_order_data(from_date, to_date)
+        data = get_sales_order_data(from_date, to_date, fields_filter)
     elif doctype == "Delivery Note":
-        return get_delivery_note_data(from_date, to_date)
+        data = get_delivery_note_data(from_date, to_date, fields_filter)
     elif doctype == "Sales Invoice":
-        return get_sales_invoice_data(from_date, to_date)
+        data = get_sales_invoice_data(from_date, to_date, fields_filter)
     else:
         # fallback: return list
-        return frappe.db.sql("""SELECT * FROM `tab{doctype};""".format(doctype=doctype), as_dict=True)
+        data = frappe.db.sql("""SELECT {fields} FROM `tab{doctype};""".format(doctype=doctype, fields=fields_filter), as_dict=True)
 
+    return data
+    
 """
 Get all roles with report permission for a doctype
 """
@@ -78,7 +87,7 @@ def has_report_permission(doctype):
             
     return report_permission
     
-def get_sales_order_data(from_date=None, to_date=None):
+def get_sales_order_data(from_date=None, to_date=None, fields_filter="*"):
     conditions = ""
     if from_date:
         conditions += """ AND `tabSales Order`.`transaction_date` >= "{from_date}" """.format(from_date=from_date)
@@ -86,22 +95,25 @@ def get_sales_order_data(from_date=None, to_date=None):
         conditions += """ AND `tabSales Order`.`transaction_date` <= "{to_date}" """.format(to_date=to_date)
         
     sql_query = """
-        SELECT 
-            `tabSales Order`.*, 
-            `tabCustomer`.`customer_group` AS `customer_customer_group`,
-            `tabCustomer`.`territory` AS `customer_territory`
-        FROM `tabSales Order`
-        LEFT JOIN `tabCustomer` ON `tabCustomer`.`name` = `tabSales Order`.`customer`
-        WHERE 
-            `tabSales Order`.`docstatus` = 1
-            {conditions}
-        ;""".format(conditions=conditions)
+        SELECT {fields}
+        FROM (
+            SELECT 
+                `tabSales Order`.*, 
+                `tabCustomer`.`customer_group` AS `customer_customer_group`,
+                `tabCustomer`.`territory` AS `customer_territory`
+            FROM `tabSales Order`
+            LEFT JOIN `tabCustomer` ON `tabCustomer`.`name` = `tabSales Order`.`customer`
+            WHERE 
+                `tabSales Order`.`docstatus` = 1
+                {conditions}
+        ) AS `raw`
+        ;""".format(conditions=conditions, fields=fields_filter)
         
     data = frappe.db.sql(sql_query, as_dict=True)
     
     return data
         
-def get_delivery_note_data(from_date=None, to_date=None):
+def get_delivery_note_data(from_date=None, to_date=None, fields_filter="*"):
     conditions = ""
     if from_date:
         conditions += """ AND `tabDelivery Note`.`posting_date` >= "{from_date}" """.format(from_date=from_date)
@@ -109,22 +121,25 @@ def get_delivery_note_data(from_date=None, to_date=None):
         conditions += """ AND `tabDelivery Note`.`posting_date` <= "{to_date}" """.format(to_date=to_date)
         
     sql_query = """
-        SELECT 
-            `tabDelivery Note`.*, 
-            `tabCustomer`.`customer_group` AS `customer_customer_group`,
-            `tabCustomer`.`territory` AS `customer_territory`
-        FROM `tabDelivery Note`
-        LEFT JOIN `tabCustomer` ON `tabCustomer`.`name` = `tabDelivery Note`.`customer`
-        WHERE 
-            `tabDelivery Note`.`docstatus` = 1
-            {conditions}
-        ;""".format(conditions=conditions)
+        SELECT {fields}
+        FROM (
+            SELECT 
+                `tabDelivery Note`.*, 
+                `tabCustomer`.`customer_group` AS `customer_customer_group`,
+                `tabCustomer`.`territory` AS `customer_territory`
+            FROM `tabDelivery Note`
+            LEFT JOIN `tabCustomer` ON `tabCustomer`.`name` = `tabDelivery Note`.`customer`
+            WHERE 
+                `tabDelivery Note`.`docstatus` = 1
+                {conditions}
+        ) AS `raw`
+        ;""".format(conditions=conditions, fields=fields_filter)
         
     data = frappe.db.sql(sql_query, as_dict=True)
     
     return data
     
-def get_sales_invoice_data(from_date=None, to_date=None):
+def get_sales_invoice_data(from_date=None, to_date=None, fields_filter="*"):
     conditions = ""
     if from_date:
         conditions += """ AND `tabSales Invoice`.`posting_date` >= "{from_date}" """.format(from_date=from_date)
@@ -132,16 +147,19 @@ def get_sales_invoice_data(from_date=None, to_date=None):
         conditions += """ AND `tabSales Invoice`.`posting_date` <= "{to_date}" """.format(to_date=to_date)
         
     sql_query = """
-        SELECT 
-            `tabSales Invoice`.*, 
-            `tabCustomer`.`customer_group` AS `customer_customer_group`,
-            `tabCustomer`.`territory` AS `customer_territory`
-        FROM `tabSales Invoice`
-        LEFT JOIN `tabCustomer` ON `tabCustomer`.`name` = `tabSales Invoice`.`customer`
-        WHERE 
-            `tabSales Invoice`.`docstatus` = 1
-            {conditions}
-        ;""".format(conditions=conditions)
+        SELECT {fields}
+        FROM (
+            SELECT 
+                `tabSales Invoice`.*, 
+                `tabCustomer`.`customer_group` AS `customer_customer_group`,
+                `tabCustomer`.`territory` AS `customer_territory`
+            FROM `tabSales Invoice`
+            LEFT JOIN `tabCustomer` ON `tabCustomer`.`name` = `tabSales Invoice`.`customer`
+            WHERE 
+                `tabSales Invoice`.`docstatus` = 1
+                {conditions}
+        ) AS `raw`
+        ;""".format(conditions=conditions, fields=fields_filter)
         
     data = frappe.db.sql(sql_query, as_dict=True)
     

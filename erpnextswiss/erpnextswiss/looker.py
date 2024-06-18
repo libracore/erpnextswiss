@@ -5,6 +5,7 @@
 #
 import frappe
 from frappe.utils import cint 
+import urllib
 
 SENSITIVE_DOCTYPES = [
     'User', 
@@ -29,6 +30,8 @@ def get_data(doctype, from_date=None, to_date=None, fields=None):
     # prevent sensitive doctypes from being accessed through Looker
     if doctype in SENSITIVE_DOCTYPES:
         return {'error': 'Access to sensitive doctype blocked.'}
+    # unquote url-decoded doctype
+    doctype = urllib.parse.unquote(doctype)
     
     # prepare fields filter
     fields_filter = "*"

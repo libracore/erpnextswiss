@@ -4,7 +4,6 @@
 # Data provider for Google Looker Studio / libracore looker connector
 #
 import frappe
-from frappe.core.page.permission_manager.permission_manager import get_permissions
 from frappe.utils import cint 
 
 SENSITIVE_DOCTYPES = [
@@ -40,16 +39,40 @@ def get_data(doctype, from_date=None, to_date=None):
     else:
         # fallback: return list
         return frappe.db.sql("""SELECT * FROM `tab{doctype};""".format(doctype=doctype), as_dict=True)
+
+"""
+Get all roles with report permission for a doctype
+"""
+def get_report_permissions(doctype):
+    role_permissions = frappe.db.sql("""
+        SELECT `role`
+        FROM `tabDocPerm`
+        WHERE 
+            `parent` = "{doctype}" 
+            AND `parenttype` = "DocType"
+            AND `report` = 1
+        UNION SELECT `role`
+        FROM `tabCustom DocPerm`
+        WHERE 
+            `parent` = "{doctype}" 
+            AND `parenttype` = "DocType"
+            AND `report` = 1
+        ;""".format(doctype=doctype), as_dict=True)
+    roles = []
+    for r in role_permissions:
+        roles.append(r['role'])
         
+    return roles
+    
 def has_report_permission(doctype):
     # get roles for current user
     roles = frappe.get_roles()
     # get all permissions on this doctype
-    permissions = get_permissions(doctype)
+    roles_with_report_permissions = get_report_permissions(doctype)
     # check if the current user has a role with report access
     report_permission = False
-    for p in permissions:
-        if p['role'] in roles and cint(p['report']) == 1:
+    for p in roles_with_report_permissions:
+        if p in roles:
             report_permission = True
             break
             

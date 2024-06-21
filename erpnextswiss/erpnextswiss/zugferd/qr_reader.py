@@ -28,9 +28,10 @@ def find_qr_content_from_pdf(filename):
     has_zxingcpp = False
     try:
         import zxingcpp
+        has_zxingcpp = True
     except:
         pass
-
+    
     # read by page
     for page in pdf_file:
         # get the page as image

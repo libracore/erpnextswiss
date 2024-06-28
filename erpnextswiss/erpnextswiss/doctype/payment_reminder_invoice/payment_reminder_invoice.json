@@ -10,6 +10,8 @@
   "column_main",
   "currency",
   "amount",
+  "debit_account",
+  "debit_currency",
   "outstanding_amount",
   "reminder_level"
  ],
@@ -52,7 +54,7 @@
    "fieldname": "outstanding_amount",
    "fieldtype": "Currency",
    "label": "Outstanding Amount",
-   "options": "currency"
+   "options": "debit_currency"
   },
   {
    "fieldname": "reminder_level",
@@ -67,10 +69,25 @@
    "hidden": 1,
    "label": "Currency",
    "options": "Currency"
+  },
+  {
+   "fieldname": "debit_account",
+   "fieldtype": "Link",
+   "label": "Debit Account",
+   "options": "Account",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "debit_account.account_currency",
+   "fieldname": "debit_currency",
+   "fieldtype": "Link",
+   "label": "Debit Currency",
+   "options": "Currency",
+   "read_only": 1
   }
  ],
  "istable": 1,
- "modified": "2022-01-10 22:29:29.313468",
+ "modified": "2024-04-19 18:02:34.371422",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "Payment Reminder Invoice",

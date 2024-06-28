@@ -100,6 +100,8 @@ def get_data(filters):
                 remarks = "{0}...".format(position['remarks'][:30])
             else:
                 remarks = position['remarks']
+            # replace line feed (for export)
+            remarks = remarks.replace("\n", "") if remarks else ""
             data.append({
                 'date': position['posting_date'], 
                 'debit': position['debit'],

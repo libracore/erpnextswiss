@@ -206,6 +206,7 @@ DocType: ERPNextSwiss Settings,Numeric-only debtor reference matching,Rein-numer
 DocType: ERPNextSwiss Settings,Uses only the numeric part of a sales invoice number for matching,Verwendet nur den numerischen Teil der Rechnugnsreferenz zum Abgleich
 DocType: ERPNextSwiss Settings,Debug Mode,Debug-Modus
 DocType: ERPNextSwiss Settings,No Reminder on Credit Balance,Keine Mahnung bei Kundenguthaben
+DocType: ERPNextSwiss Settings,Ignore special characters,Spezialzeichen ignorieren
 DocType: Contract,Contract,Vertrag
 DocType: Contract,Contracts,Verträge
 DocType: ERPNextSwiss Settings,Automated Payments,Automatische Zahlungsabwicklung

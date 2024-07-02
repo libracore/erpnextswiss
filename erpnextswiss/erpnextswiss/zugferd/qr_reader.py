@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018-2023, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2018-2024, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
 #
 #
@@ -13,6 +13,10 @@ import frappe
 from frappe.utils import flt
 from datetime import date
 
+settings = {
+    'dpi': 300
+}
+
 @frappe.whitelist()
 def find_qr_content_from_pdf(filename):
     codes = []
@@ -20,11 +24,19 @@ def find_qr_content_from_pdf(filename):
     # open PDF file
     pdf_file = fitz.open(filename)
 
+    # try to load zxing-cpp for improved reading performance
+    has_zxingcpp = False
+    try:
+        import zxingcpp
+        has_zxingcpp = True
+    except:
+        pass
+    
     # read by page
     for page in pdf_file:
         # get the page as image
         try:
-            pix = page.get_pixmap(dpi=200)
+            pix = page.get_pixmap(dpi=settings['dpi'])
         except:
             pix = page.getPixmap(matrix=fitz.Matrix(2, 2))                  # fall back to v1.16.18
         # cv2 reader
@@ -40,11 +52,19 @@ def find_qr_content_from_pdf(filename):
         top, bottom, left, right = [150]*4
         img_with_border = cv2.copyMakeBorder(img, top, bottom, left, right, cv2.BORDER_CONSTANT, value=color)
 
-        retval, decoded_info, points, straight_qrcode = qcd.detectAndDecodeMulti(img_with_border)
+        if has_zxingcpp:
+            for result in zxingcpp.read_barcodes(img_with_border):
+                code = result.text
+                if code:
+                    codes.append(code)
 
-        if retval and len(decoded_info) > 0:
-            code = decoded_info[0]
-            codes.append(code)
+        else:
+            # use classic CV2/QrCodeDetector
+            retval, decoded_info, points, straight_qrcode = qcd.detectAndDecodeMulti(img_with_border)
+
+            if retval and len(decoded_info) > 0:
+                code = decoded_info[0]
+                codes.append(code)
     
     # if codes are found, you can leave here; otherwise, go to image-wise parsing
     if len(codes) > 0:

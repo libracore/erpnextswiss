@@ -252,6 +252,12 @@ def get_data():
                        "name": "Worldline TIM",
                        "label": _("Worldline TIM"),
                        "description": _("Worldline TIM")                   
+                    },
+                    {
+                       "type": "doctype",
+                       "name": "GitLab Settings",
+                       "label": _("GitLab"),
+                       "description": _("GitLab")                   
                     }
             ]
         },

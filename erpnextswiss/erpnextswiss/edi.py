@@ -398,6 +398,9 @@ def parse_communication(edi_file, communication):
     for a in attachments:
         f = frappe.get_doc("File", a['name'])
         content = f.get_content()
+        # check if content has line feeds
+        if content and not "\n" in content:
+            content = content.replace("'", "'\n")
         edi.filename = f.file_name
         edi.content = content
         edi.save(ignore_permissions=True)

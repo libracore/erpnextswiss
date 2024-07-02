@@ -569,6 +569,10 @@ def read_camt_transactions(transaction_entries, account, settings, debug=False):
                                     if get_numeric_only_reference(sinv['name']) in transaction_reference: 
                                         # matched numeric part and customer name
                                         is_match = True
+                                elif cint(settings.ignore_special_characters) == 1:
+                                    if remove_special_characters(sinv['name']) in remove_special_characters(transaction_reference):
+                                        # matched without special characters
+                                        is_match = True
 
                                 if is_match:
                                     invoice_matches.append(sinv['name'])
@@ -855,3 +859,7 @@ def get_numeric_only_reference(s):
         if c.isdigit():
             n += c
     return n
+
+def remove_special_characters(s):
+    return (s or "").replace(" ", "").replace("-", "")
+    

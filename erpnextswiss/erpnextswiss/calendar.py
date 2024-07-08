@@ -1,4 +1,4 @@
-# Copyright (c) 2023, libracore and Contributors
+# Copyright (c) 2023-2024, libracore and Contributors
 # License: GNU General Public License v3. See license.txt
 #
 #
@@ -45,7 +45,7 @@ REGIONS = {
     'ZG': '2860'
 }
 
-HOST = "https://www.feiertagskalender.ch/index.php"
+HOST = "https://feiertagskalender.ch/index.php"
 
 @frappe.whitelist()
 def parse_holidays(region, year):

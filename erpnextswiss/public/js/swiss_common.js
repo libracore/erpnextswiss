@@ -319,3 +319,30 @@ function get_week(date) {
     return 1 + Math.ceil((n1stThursday - date) / 604800000);
 }
 
+// this will allow to remove the links on an asset, so that the documents can be cancelled
+function unlink_asset(force=false) {
+    if ((cur_frm.doc.doctype === "Asset") 
+        && (!cur_frm.doc.__islocal) 
+        &&((cur_frm.doc.docstatus === 0) || (force))) {
+        frappe.confirm(
+            __('Are you sure you want to unlink {0}?').replace("{0}", cur_frm.doc.name),
+            function(){
+                // on yes
+                frappe.call({
+                    'method': 'erpnextswiss.scripts.asset_tools.unlink_asset',
+                    'args': {
+                        'asset_name': cur_frm.doc.name
+                    },
+                    'callback': function(response) {
+                        cur_frm.reload_doc();
+                    }
+                });
+            },
+            function(){
+                // on no
+            }
+        )
+    } else {
+        frappe.mgsprint( __("Cannot unlink this document") );
+    }
+}

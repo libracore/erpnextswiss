@@ -6,6 +6,8 @@
 # https://www.libracore.com or https://github.com/libracore
 #
 
+import frappe
+
 """
 This function will allow to unlink an asset from PREC and PINV, because otherwise there is a dead-link
 

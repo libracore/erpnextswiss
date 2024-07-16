@@ -41,7 +41,8 @@ doctype_js = {
     "Supplier":         "public/js/supplier.js",
     "Customer":         "public/js/customer.js",
     "Address":          "public/js/address.js",
-    "Holiday List":     "public/js/holiday_list.js"
+    "Holiday List":     "public/js/holiday_list.js",
+    "Shipment":         "public/js/shipment.js"
 }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}

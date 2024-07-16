@@ -434,6 +434,8 @@ DocType: ZUGFeRD Wizard,Import successful,Import erfolgreich
 DocType: ZUGFeRD Wizard,Creating invoice...,Rechnung erstellen...
 DocType: ZUGFeRD Wizard,Reading invoice...,Rechnung lesen...
 DocType: Planzer Settings,Planzer Settings,Planzer-Einstellungen
+DocType: Planzer Settings,Shipment transmitted,Sendung übermittelt
+DocType: Planzer Settings,"If this is marked, submitting a Shipment will transfer it through the Planzer interface","Wenn diese Option aktiviert ist, wird eine Sendung beim Buchen automatisch an Planzer übertragen"
 DocType: ebics Connection,ebics Connection,ebics-Verbindung
 DocType: ebics Connection,Configuration prepared,Konfiguration vorbereitet
 DocType: ebics Connection,Keys created,Schlüssel erzeugt

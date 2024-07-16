@@ -16,6 +16,9 @@ def create_shipment(shipment_name, debug=False):
         
     # prepare data structure
     settings = frappe.get_doc("Planzer Settings", "Planzer Settings")
+    if not cint(settings.enabled):
+        return
+        
     shipment = frappe.get_doc("Shipment", shipment_name)
     sender_address = frappe.get_doc("Address", shipment.pickup_address_name)
     receiver_address = frappe.get_doc("Address", shipment.delivery_address_name)
@@ -175,7 +178,7 @@ def create_shipment(shipment_name, debug=False):
     })
     log.insert(ignore_permissions=True)
     
-    return
+    return _("Shipment transmitted")
 
 def upload_shipment_file(file_name, target_path):
     settings = frappe.get_doc("Planzer Settings", "Planzer Settings")

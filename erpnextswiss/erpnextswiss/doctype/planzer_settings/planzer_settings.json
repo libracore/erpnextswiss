@@ -8,7 +8,10 @@
   "customer_no",
   "department_no",
   "col_main",
-  "host"
+  "host",
+  "username",
+  "password",
+  "enabled"
  ],
  "fields": [
   {
@@ -31,13 +34,32 @@
    "fieldtype": "Column Break"
   },
   {
+   "default": "lobplalb02.planzer.ch",
+   "description": "Typically lobplalb02.planzer.ch for PROD and lobplatestlb02.planzer.ch for TEST",
    "fieldname": "host",
    "fieldtype": "Data",
    "label": "Host"
+  },
+  {
+   "fieldname": "username",
+   "fieldtype": "Data",
+   "label": "User"
+  },
+  {
+   "fieldname": "password",
+   "fieldtype": "Password",
+   "label": "Password"
+  },
+  {
+   "default": "0",
+   "description": "If this is marked, submitting a Shipment will transfer it through the Planzer interface",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled"
   }
  ],
  "issingle": 1,
- "modified": "2024-06-17 10:29:05.659809",
+ "modified": "2024-07-16 21:14:54.199341",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "Planzer Settings",

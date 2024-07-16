@@ -7,6 +7,7 @@ from frappe.utils import cint
 import os
 import codecs
 from datetime import datetime
+import pysftp
 
 @frappe.whitelist()
 def create_shipment(shipment_name, debug=False):
@@ -159,7 +160,8 @@ def create_shipment(shipment_name, debug=False):
     f.close()
 
     # move to server
-    
+    upload_shipment_file(local_file, "Eingang")
+
     # remove temporary file
     if not debug:
         os.remove(local_file)
@@ -174,6 +176,35 @@ def create_shipment(shipment_name, debug=False):
     log.insert(ignore_permissions=True)
     
     return
+
+def upload_shipment_file(file_name, target_path):
+    settings = frappe.get_doc("Planzer Settings", "Planzer Settings")
+    if not settings.host or not settings.username or not settings.password:
+        frappe.throw( _("Planzer Settings are missing connection details (host, username, password)") )
+
+    try:
+        with connect_sftp(settings) as sftp:
+            with sftp.cd(target_path):          # e.g. "Eingang"
+                sftp.put(local_file)            # upload file
+                
+    except Exception as err:
+        frappe.log_error( err, "Planzer Upload Shipment File Failed")
+        
+    return
+
+def connect_sftp(settings):
+    cnopts = pysftp.CnOpts()
+    cnopts.hostkeys = settings.get('host_keys') or None        # keep or None to push None instead of ""  
+    
+    connection = pysftp.Connection(
+            settings.hos, 
+            port=settings.get('port') or 22,
+            username=settings.get('user'), 
+            password=get_decrypted_password(settings.get('doctype'), settings.get('name'), 'password', False),
+            cnopts=cnopts
+        )
+    
+    return connection
 
 """
 Extract the numeric part of the shipment

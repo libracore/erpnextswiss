@@ -203,7 +203,7 @@ def connect_sftp(settings):
     connection = pysftp.Connection(
             settings.get('host'), 
             port=settings.get('port') or 22,
-            username=settings.get('user'), 
+            username=settings.get('username'), 
             password=get_decrypted_password(settings.get('doctype'), settings.get('name'), 'password', False),
             cnopts=cnopts
         )

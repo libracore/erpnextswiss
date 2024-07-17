@@ -200,7 +200,7 @@ def connect_sftp(settings):
     cnopts.hostkeys = settings.get('host_keys') or None        # keep or None to push None instead of ""  
     
     connection = pysftp.Connection(
-            settings.hos, 
+            settings.get('host'), 
             port=settings.get('port') or 22,
             username=settings.get('user'), 
             password=get_decrypted_password(settings.get('doctype'), settings.get('name'), 'password', False),

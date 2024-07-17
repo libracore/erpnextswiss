@@ -189,7 +189,7 @@ def upload_shipment_file(file_name, target_path):
     try:
         with connect_sftp(settings) as sftp:
             with sftp.cd(target_path):          # e.g. "Eingang"
-                sftp.put(local_file)            # upload file
+                sftp.put(file_name)            # upload file
                 
     except Exception as err:
         frappe.log_error( err, "Planzer Upload Shipment File Failed")

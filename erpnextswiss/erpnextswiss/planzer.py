@@ -4,6 +4,7 @@
 import frappe
 from frappe import _
 from frappe.utils import cint
+from frappe.utils.password import get_decrypted_password
 import os
 import codecs
 from datetime import datetime

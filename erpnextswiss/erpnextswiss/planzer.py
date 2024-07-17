@@ -229,6 +229,6 @@ def get_planzer_barcode(shipment_name):
 def get_planzer_qr_code(shipment_name):
     qr_code = "{barcode}{blank}8888888".format(
         barcode=get_planzer_barcode(shipment_name),
-        blank=" " * 41
+        blank=" " * 42
     )
     return qr_code

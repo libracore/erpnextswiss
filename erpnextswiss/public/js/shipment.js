@@ -7,7 +7,7 @@ frappe.ui.form.on('Shipment', {
             },
             'callback': function(response) {
                 if (response.message) {
-                    frappe.showalert( response.message );
+                    show_alert( response.message );
                 }
             }
         });

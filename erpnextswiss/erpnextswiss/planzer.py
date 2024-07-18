@@ -118,8 +118,8 @@ def create_shipment(shipment_name, debug=False):
             data['receiver'].update({
                 'receiver_type': "P",
                 'salutation': receiver.salutation,
-                'first_name': receiver.get("first_name") or receiver.get("full_name"),
-                'last_name': receiver.get("last_name")
+                'first_name': receiver.get("first_name") or receiver_contact.first_name or receiver.get("full_name"),
+                'last_name': receiver.get("last_name") or receiver_contact.last_name
             })
     else:
         frappe.throw( _("Not supported shipping type (other than Customer)") )
@@ -141,7 +141,11 @@ def create_shipment(shipment_name, debug=False):
     for dn in shipment.shipment_delivery_note:
         delivery_note = dn.delivery_note
     delivery_date = frappe.get_value("Delivery Note", delivery_note, 'posting_date')
-    data['delivery_date'] = delivery_date.strftime("%d.%m.%Y")
+    if delivery_date > shipment.pickup_date:            # delivery cannot be before pickup
+        data['delivery_date'] = delivery_date.strftime("%d.%m.%Y")
+    else:
+        data['delivery_date'] = shipment.pickup_date.strftime("%d.%m.%Y")
+        
     # options from carrier service
     if shipment.carrier_service:
         for s in shipment.carrier_service.split(","):

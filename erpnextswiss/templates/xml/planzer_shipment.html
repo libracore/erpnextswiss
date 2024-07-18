@@ -33,8 +33,8 @@ A1;{# 1 #}
 {{- sender.contact_email_notification or "B" }};{# 33 - inactive #}
 {{- sender.contact_language or "de" }};{# 34 #}
 {{- pickup_date or "" }};{# 35 - dd.mm.yyyy #}
-{{- pickup_from_time or "" }};{# 36 - HH:MM:ss #}
-{{- pickup_to_time or "" }};{# 37 - HH:MM:ss #}
+{{- (pickup_from_time or "").replace(":", ".") }};{# 36 - HH:MM:ss #}
+{{- (pickup_to_time or "").replace(":", ".") }};{# 37 - HH:MM:ss #}
 {{- receiver.receiver_type or "" }};{# 38 #}
 {{- (receiver.salutation or "")[0:1] }};{# 39 #}
 {{- receiver.first_name or "" }};{# 40 #}

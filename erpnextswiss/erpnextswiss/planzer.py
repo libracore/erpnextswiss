@@ -7,7 +7,7 @@ from frappe.utils import cint
 from frappe.utils.password import get_decrypted_password
 import os
 import codecs
-from datetime import datetime
+from datetime import datetime, timedelta
 import pysftp
 
 @frappe.whitelist()
@@ -144,7 +144,7 @@ def create_shipment(shipment_name, debug=False):
     if delivery_date > shipment.pickup_date:            # delivery cannot be before pickup
         data['delivery_date'] = delivery_date.strftime("%d.%m.%Y")
     else:
-        data['delivery_date'] = shipment.pickup_date.strftime("%d.%m.%Y")
+        data['delivery_date'] = (shipment.pickup_date + timedelta(days=1)).strftime("%d.%m.%Y")
         
     # options from carrier service
     if shipment.carrier_service:

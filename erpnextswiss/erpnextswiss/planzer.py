@@ -23,6 +23,7 @@ def create_shipment(shipment_name, debug=False):
     shipment = frappe.get_doc("Shipment", shipment_name)
     sender_address = frappe.get_doc("Address", shipment.pickup_address_name)
     receiver_address = frappe.get_doc("Address", shipment.delivery_address_name)
+    delivery_note = frappe.get_doc("Delivery Note", shipment.shipment_delivery_note[0].delivery_note)
     data = {
         'sender': {
             'sender_type': "G",
@@ -69,7 +70,8 @@ def create_shipment(shipment_name, debug=False):
         'account_id': settings.account_id,
         'customer_no': settings.customer_no,
         'department_no': settings.department_no,
-        'options': []
+        'options': [],
+        'reference': delivery_note.po_no or delivery_note.name
     }
     sender_contact = None
     if shipment.pickup_contact_name:            # note: the pickup_contact_person is a User

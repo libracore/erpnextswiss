@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2017-2023, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2017-2024, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
 
 from __future__ import unicode_literals
@@ -9,6 +9,7 @@ from frappe import _
 from datetime import datetime
 
 class VATDeclaration(Document):
+    @frappe.whitelist()
     def create_transfer_file(self):
         tax_id = frappe.get_value("Company", self.company, "tax_id")
         if not tax_id or len(tax_id) < 12:

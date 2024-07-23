@@ -98,8 +98,8 @@ def create_shipment(shipment_name, debug=False):
         
         data['receiver'].update({
             'contact_salutation': receiver_contact.salutation,
-            'contact_first_name': receiver_contact.first_name,
-            'contact_last_name': receiver_contact.last_name,
+            'contact_first_name': receiver_address.get("woocommerce_first_name") or receiver_contact.first_name,
+            'contact_last_name': receiver_address.get("woocommerce_last_name") or receiver_contact.last_name,
             'contact_instruction': shipment.get('instruction'),
             'contact_phone': receiver_contact.phone,
             'contact_mobile': receiver_contact.mobile_no,

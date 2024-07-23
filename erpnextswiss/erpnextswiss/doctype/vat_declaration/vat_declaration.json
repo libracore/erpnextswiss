@@ -534,6 +534,7 @@
    "label": "Rate 2 - 2024 (%)"
   },
   {
+   "depends_on": "eval:doc.vat_type == 'effective'",
    "fieldname": "normal_tax_2024",
    "fieldtype": "Float",
    "label": "Normal tax (300)",

@@ -71,7 +71,7 @@ Extracts the relevant content for a purchase invoice from a ZUGFeRD XML
 def get_content_from_zugferd(zugferd_xml, debug=False):
     soup = BeautifulSoup(zugferd_xml, 'lxml')
     # dict for invoice
-    invoice = {}
+    invoice = {'source': 'ZUGFeRD'}
   
     # seller information
     seller = soup.find('ram:sellertradeparty')

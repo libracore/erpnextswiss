@@ -139,7 +139,7 @@ def get_content_from_qr(qr_codes, default_tax, default_item):
     return None
         
 def read_swiss_qr(code, default_tax, default_item):
-    invoice = {}
+    invoice = {'source': 'QR'}
     
     code = code.replace("\r", "")          # remove windows line endings
     lines = code.split("\n")

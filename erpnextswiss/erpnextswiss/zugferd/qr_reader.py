@@ -135,7 +135,10 @@ def get_content_from_qr(qr_codes, default_tax, default_item):
         if code.startswith("SPC"):
             invoice = read_swiss_qr(code, default_tax, default_item)
             return invoice
-    
+        elif code.startswith("BCD"):
+            invoice = read_eu_qr(code, default_tax, default_item)
+            return invoice
+            
     return None
         
 def read_swiss_qr(code, default_tax, default_item):
@@ -242,3 +245,86 @@ def read_swiss_qr(code, default_tax, default_item):
     else:
         return None
     
+def read_eu_qr(code, default_tax, default_item):
+    invoice = {'source': 'QR'}
+    
+    code = code.replace("\r", "")          # remove windows line endings
+    lines = code.split("\n")
+    settings = frappe.get_doc("ERPNextSwiss Settings", "ERPNextSwiss Settings")
+    
+    if len(lines) >= 11:
+        invoice['supplier_name'] = lines[5]
+        invoice['iban'] = lines[6] 
+        invoice['supplier_al'] = None
+        invoice['supplier_pincode'] = None
+        invoice['supplier_city'] = None
+        invoice['supplier_country'] = None
+        invoice['supplier_globalid'] = None
+        supplier_match_by_iban = frappe.db.sql("""
+            SELECT `name`, `tax_id`
+            FROM `tabSupplier` 
+            WHERE REPLACE(`iban`, " ", "") = "{iban}";""".format(iban=invoice['iban']), as_dict=True)
+        if len(supplier_match_by_iban) > 0:
+            # matched by tax id
+            invoice['supplier'] = supplier_match_by_iban[0]['name']
+            invoice['supplier_taxid'] = supplier_match_by_iban[0].get('tax_id')
+        else:
+            supplier_match_by_name = frappe.get_all("Supplier", 
+                                        filters={'supplier_name': invoice['supplier_name']},
+                                        fields=['name'])   
+            if len(supplier_match_by_name) > 0:
+                # matched by supplier name
+                invoice['supplier'] = supplier_match_by_name[0]['name']  
+                invoice['supplier_taxid'] = supplier_match_by_name[0].get('tax_id')
+            else:
+                # need to insert new supplier
+                invoice['supplier'] = None
+                invoice['supplier_taxid'] = None
+                
+        # posting date not provided by QR: use default as date
+        today = date.today()
+        invoice['posting_date'] = today.strftime("%Y-%m-%d")
+        invoice['due_date'] = today.strftime("%Y-%m-%d")
+        
+        invoice['terms'] = None
+        invoice['doc_id'] = lines[10]
+         
+        invoice['currency'] = lines[7][0:3]
+        
+        tax_template = frappe.get_doc("Purchase Taxes and Charges Template", default_tax)
+        if len(tax_template.taxes) > 0:
+            tax_rate = tax_template.taxes[0].rate
+        else:
+            tax_rate = 0    
+            # default is not applicable: settings.scanning_default_tax_rate or 7.7, use no tax
+        invoice['tax_rate'] = tax_rate
+        invoice['tax_template'] = default_tax
+        
+        grand_total = flt(lines[7][3:])
+        net_total = round(grand_total / ((100 + tax_rate)/100), 2)
+        
+        invoice['line_total'] = net_total
+        invoice['total_taxes'] = grand_total - net_total
+        invoice['grand_total'] = grand_total
+        
+        # try to fetch a default item from the supplier
+        if frappe.db.exists("Supplier", invoice['supplier']):
+            supplier_item = frappe.get_doc("Supplier", invoice['supplier']).get('default_item')
+            if supplier_item:
+                default_item = supplier_item
+                
+        # collect items: not provided by QR
+        invoice['items'] = [
+            {
+                'net_price': net_total,
+                'qty': 1,
+                'seller_item_code': None,
+                'item_name': frappe.get_cached_value("Item", default_item, "item_name"),
+                'item_code': default_item
+            }
+        ]
+        
+        return invoice
+        
+    else:
+        return None

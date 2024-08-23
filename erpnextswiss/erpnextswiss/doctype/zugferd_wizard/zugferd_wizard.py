@@ -24,7 +24,7 @@ class ZUGFeRDWizard(Document):
             # zugferd failed, fall back to qr-reader
             qr_content = find_qr_content_from_pdf(file_path)
             if qr_content:
-                invoice = get_content_from_qr(qr_content, self.default_tax, self.default_item)
+                invoice = get_content_from_qr(qr_content, self.default_tax, self.default_item, self.company)
         # render html
         if invoice:
             return self.render_invoice(invoice)
@@ -95,13 +95,15 @@ class ZUGFeRDWizard(Document):
             'doctype': 'Purchase Invoice',
             'company': self.company,
             'supplier': invoice.get('supplier'),
-            'due_date': invoice.get('due_date'),
             'currency': invoice.get('currency'),
             'bill_no': invoice.get('doc_id'),
-            'bill_date': invoice.get('posting_date'),
             'terms': invoice.get('terms')
         })
-        
+        if invoice.get('source') != 'QR' or cint(settings.get('ignore_bill_date')) == 0:
+            pinv_doc.bill_date = invoice.get('posting_date')
+        if invoice.get('source') != 'QR' or cint(settings.get('ignore_due_date')) == 0:
+            pinv_doc.due_date = invoice.get('due_date')
+            
         if invoice.get('esr_reference'):
             pinv_doc.esr_reference_number = invoice.get('esr_reference')
             pinv_doc.payment_type = "ESR"
@@ -160,6 +162,7 @@ class ZUGFeRDWizard(Document):
                 'rate': flt(item.get("net_price"))
             })
         
+        pinv_doc.flags.ignore_mandatory = True
         pinv_doc.insert()
         frappe.db.commit()
         

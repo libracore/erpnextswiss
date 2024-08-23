@@ -54,13 +54,15 @@
   "tax_46",
   "tax_73",
   "tax_84",
+  "sec_total_revenue",
+  "col_total_revenue",
+  "total_revenue_tax",
   "sec_add",
   "amount_42",
   "amount_60",
   "amount_21",
   "amount_45",
   "col_add",
-  "total_revenue_tax",
   "sec_pretax",
   "pretax_placeholder",
   "col_pretax",
@@ -479,10 +481,19 @@
    "hidden": 1,
    "label": "Letter Head",
    "options": "Letter Head"
+  },
+  {
+   "fieldname": "sec_total_revenue",
+   "fieldtype": "Section Break",
+   "label": "Total Revenue"
+  },
+  {
+   "fieldname": "col_total_revenue",
+   "fieldtype": "Column Break"
   }
  ],
  "is_submittable": 1,
- "modified": "2023-03-16 16:47:52.966616",
+ "modified": "2024-06-28 11:52:00.309153",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "VAT Declaration DE",

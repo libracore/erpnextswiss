@@ -10,12 +10,15 @@
   "to_date",
   "column_head",
   "company",
+  "currency",
   "aggregated",
   "debtors_only",
   "exclude_zero_sum_txs",
   "amended_from",
   "section_transactions",
-  "references"
+  "references",
+  "sec_acc_bal",
+  "balances"
  ],
  "fields": [
   {
@@ -45,8 +48,10 @@
    "reqd": 1
   },
   {
+   "depends_on": "eval:doc.aggregated==0",
    "fieldname": "section_transactions",
    "fieldtype": "Section Break",
+   "hidden": 1,
    "label": "Transactions"
   },
   {
@@ -73,6 +78,7 @@
   },
   {
    "default": "0",
+   "depends_on": "eval:doc.aggregated==0",
    "fieldname": "debtors_only",
    "fieldtype": "Check",
    "label": "Debtors only"
@@ -83,10 +89,31 @@
    "fieldname": "exclude_zero_sum_txs",
    "fieldtype": "Check",
    "label": "Exclude zero-sum invoices"
+  },
+  {
+   "fetch_from": "company.default_currency",
+   "fieldname": "currency",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "Currency",
+   "options": "Currency"
+  },
+  {
+   "depends_on": "eval:doc.aggregated==1",
+   "fieldname": "sec_acc_bal",
+   "fieldtype": "Section Break",
+   "label": "Account Balances"
+  },
+  {
+   "fieldname": "balances",
+   "fieldtype": "Table",
+   "label": "Balances",
+   "options": "Abacus Export File Account Balance",
+   "read_only": 1
   }
  ],
  "is_submittable": 1,
- "modified": "2023-09-12 10:43:20.377585",
+ "modified": "2024-05-16 10:14:22.268401",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "Abacus Export File",

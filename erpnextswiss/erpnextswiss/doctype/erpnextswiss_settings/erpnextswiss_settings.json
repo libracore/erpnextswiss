@@ -26,6 +26,7 @@
   "always_use_entry_transaction_type",
   "auto_process_matches",
   "numeric_only_debtor_matching",
+  "ignore_special_characters",
   "debug_mode",
   "iban_check_mandatory",
   "bank_import_section",
@@ -129,6 +130,7 @@
    "options": "Account"
   },
   {
+   "collapsible": 1,
    "fieldname": "bank_import_section",
    "fieldtype": "Section Break",
    "label": "Bank Import"
@@ -289,10 +291,16 @@
    "fieldname": "no_reminder_on_credit_balance",
    "fieldtype": "Check",
    "label": "No Reminder on Credit Balance"
+  },
+  {
+   "default": "0",
+   "fieldname": "ignore_special_characters",
+   "fieldtype": "Check",
+   "label": "Ignore special characters"
   }
  ],
  "issingle": 1,
- "modified": "2023-09-04 15:14:35.307749",
+ "modified": "2024-07-25 11:56:16.805214",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "ERPNextSwiss Settings",

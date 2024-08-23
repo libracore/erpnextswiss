@@ -31,8 +31,12 @@
 # Updated 19 April 2021
 # Please validate your results with NAVREF on-line service: http://www.swisstopo.admin.ch/internet/swisstopo/en/home/apps/calc/navref.html (difference ~ 1-2m)
 
+# Updated 2024 by libracore AG to resolve elevation data (height above sea level)
+
 import math
 import frappe
+import requests
+from frappe.utils import flt
 
 class GPSConverter(object):
     '''
@@ -271,3 +275,19 @@ def get_swisstopo_url_from_pincode(pincode, zoom=12, language="de"):
     else:
         url = get_swisstopo_url_from_gps(47.4967528982669, 8.73430829109435, zoom, language)
     return url
+
+@frappe.whitelist()
+def get_height_above_sea_level(x, y):
+    response = requests.get("https://api3.geo.admin.ch/rest/services/height?easting={x}&northing={y}".format(x=x, y=y))
+    if response.status_code == 200:
+        return flt(response.json().get('height'))
+    else:
+        return 0
+    
+@frappe.whitelist()
+def get_height_above_sea_level_gps(lat, lng):
+    converter = GPSConverter()
+    y = int(converter.WGStoLV95North(lat, lng))
+    x = int(converter.WGSToLV95East(lat, lng))
+    elevation = get_height_above_sea_level(x, y)
+    return elevation

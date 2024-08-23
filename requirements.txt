@@ -5,3 +5,4 @@ unidecode
 opencv-python
 pymupdf
 pysftp
+icalendar

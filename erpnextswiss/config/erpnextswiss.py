@@ -259,7 +259,12 @@ def get_data():
                        "label": _("Abacus Export"),
                        "description": _("Abacus Export")                   
                     },
-                    
+                    {
+                       "type": "doctype",
+                       "name": "CalDav Feed",
+                       "label": _("CalDav Feed"),
+                       "description": _("CalDav Feed")                   
+                    }
             ]
         },
         {

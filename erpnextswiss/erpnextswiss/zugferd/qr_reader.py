@@ -349,6 +349,8 @@ def find_tax_from_supplier(company, supplier, default_tax):
                         supplier_tax = a.get("default_tax_template")
                     elif a.get("tax_template"):
                         supplier_tax = a.get("tax_template")
+                    elif a.get("default_purchase_taxes_and_charges"):
+                        supplier_tax = a.get("default_purchase_taxes_and_charges")
     
     if supplier_tax:
         return supplier_tax

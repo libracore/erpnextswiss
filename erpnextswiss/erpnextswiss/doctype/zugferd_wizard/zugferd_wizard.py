@@ -24,7 +24,7 @@ class ZUGFeRDWizard(Document):
             # zugferd failed, fall back to qr-reader
             qr_content = find_qr_content_from_pdf(file_path)
             if qr_content:
-                invoice = get_content_from_qr(qr_content, self.default_tax, self.default_item)
+                invoice = get_content_from_qr(qr_content, self.default_tax, self.default_item, self.company)
         # render html
         if invoice:
             return self.render_invoice(invoice)

@@ -89,6 +89,7 @@ In case you update from the sources and observe an error, make sure to update de
     * NextCloud:
         * Update contacts from ERPNext to NextCloud address book
     * Interface to Planzer logistics
+    * CalDav-feed for CRM (Lead/Customer) and ToDos
  * Business Intelligence
     * Data Provider for Looker Studio (refer to the libracore Connector to connect to your data)
  * Productivity

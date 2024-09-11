@@ -1,0 +1,109 @@
+{
+ "creation": "2024-08-23 15:06:53.730284",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "sec_crm",
+  "crm_feed_enabled",
+  "col_crm_1",
+  "crm_source",
+  "crm_source_field",
+  "col_crm_2",
+  "crm_secret",
+  "sec_todo",
+  "todo_feed_enabled",
+  "col_todo_1",
+  "col_todo_2",
+  "todo_secret"
+ ],
+ "fields": [
+  {
+   "fieldname": "sec_crm",
+   "fieldtype": "Section Break",
+   "label": "CRM"
+  },
+  {
+   "default": "0",
+   "fieldname": "crm_feed_enabled",
+   "fieldtype": "Check",
+   "label": "Enabled"
+  },
+  {
+   "fieldname": "col_crm_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Lead",
+   "description": "Target needs to have a contact_date or follow_up field",
+   "fieldname": "crm_source",
+   "fieldtype": "Select",
+   "label": "Source",
+   "options": "Lead\nCustomer"
+  },
+  {
+   "fieldname": "col_crm_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "crm_secret",
+   "fieldtype": "Data",
+   "label": "Secret"
+  },
+  {
+   "default": "contact_date",
+   "fieldname": "crm_source_field",
+   "fieldtype": "Data",
+   "label": "Source Field"
+  },
+  {
+   "fieldname": "sec_todo",
+   "fieldtype": "Section Break",
+   "label": "ToDos"
+  },
+  {
+   "default": "0",
+   "fieldname": "todo_feed_enabled",
+   "fieldtype": "Check",
+   "label": "Enabled"
+  },
+  {
+   "fieldname": "col_todo_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "col_todo_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "todo_secret",
+   "fieldtype": "Data",
+   "label": "Secret"
+  }
+ ],
+ "issingle": 1,
+ "modified": "2024-08-23 15:39:08.580982",
+ "modified_by": "Administrator",
+ "module": "ERPNextSwiss",
+ "name": "CalDav Feed",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "Sales User"
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

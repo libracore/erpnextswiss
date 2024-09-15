@@ -466,8 +466,10 @@ def read_camt_transactions(transaction_entries, account, settings, debug=False):
                                 if len(payment_instruction_fields) > 3:
                                     # revision in payment proposal
                                     payment_proposal_id = "{0}-{1}".format(payment_instruction_fields[1], payment_instruction_fields[2])
-                                else:
+                                elif len(payment_instruction_fields) > 1:
                                     payment_proposal_id = payment_instruction_fields[1]
+                                else:
+                                    payment_proposal_id = None
                                 # find original instruction record
                                 payment_proposal_payments = frappe.get_all("Payment Proposal Payment", 
                                     filters={'parent': payment_proposal_id, 'idx': payment_instruction_row},

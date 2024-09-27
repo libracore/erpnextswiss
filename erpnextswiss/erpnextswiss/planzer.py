@@ -154,7 +154,7 @@ def create_shipment(shipment_name, debug=False):
             data['options'].append({'service_level_code': s.strip()})
     else:
         # default if no service specified
-        data['options'].append({'service_level_code': "2020003"})
+        data['options'].append({'service_level_code': ""})  # do not fall to default service level code 2020003
     
     # render file
     content = frappe.render_template("erpnextswiss/templates/xml/planzer_shipment.html", data)

@@ -9,7 +9,7 @@ import frappe
 from frappe.utils.pdf import get_pdf
 from frappe.utils import flt
 from erpnextswiss.erpnextswiss.zugferd.zugferd_xml import create_zugferd_xml
-from facturx import generate_facturx_from_binary, get_facturx_xml_from_pdf, check_facturx_xsd, generate_facturx_from_file
+from facturx import generate_from_binary, get_facturx_xml_from_pdf, xml_check_xsd, generate_facturx_from_file
 from datetime import datetime, date
 from bs4 import BeautifulSoup
 
@@ -31,7 +31,7 @@ def create_zugferd_pdf(docname, verify=True, format=None, doc=None, doctype="Sal
         xml = create_zugferd_xml(docname)
         
         if xml: 
-            facturx_pdf = generate_facturx_from_binary(pdf, xml.encode('utf-8'))  ## Unicode strings with encoding declaration are not supported. Please use bytes input or XML fragments without declaration.
+            facturx_pdf = generate_from_binary(pdf, xml.encode('utf-8'))  ## Unicode strings with encoding declaration are not supported. Please use bytes input or XML fragments without declaration.
             return facturx_pdf
         else:
             # failed to generate xml, fallback

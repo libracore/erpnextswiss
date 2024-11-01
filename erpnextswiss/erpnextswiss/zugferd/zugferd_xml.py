@@ -12,7 +12,7 @@ from frappe import _
 from frappe.utils import cint
 from bs4 import BeautifulSoup
 from datetime import datetime
-from facturx import check_facturx_xsd
+from facturx import xml_check_xsd
 from erpnextswiss.erpnextswiss.zugferd.codelist import get_unit_code
 import html          # used to escape xml content
 
@@ -142,7 +142,7 @@ def create_zugferd_xml(sales_invoice, verify=True):
         # verify the generated xml
         if verify:
             try:
-                if not check_facturx_xsd(facturx_xml=xml.encode('utf-8')):
+                if not xml_check_xsd(facturx_xml=xml.encode('utf-8')):
                     frappe.log_error( _("XML validation failed for {0}").format(sales_invoice), "ZUGFeRD")
                     return None
             except Exception as err:

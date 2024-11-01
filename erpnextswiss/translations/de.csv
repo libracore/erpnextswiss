@@ -211,6 +211,7 @@ DocType: Contract,Contract,Vertrag
 DocType: Contract,Contracts,Verträge
 DocType: ERPNextSwiss Settings,Automated Payments,Automatische Zahlungsabwicklung
 DocType: ERPNextSwiss Settings,Planning Period (Days),Planungszeitraum (Tage)
+DocType: ERPNextSwiss Settings,Reminder Minimum Threshold,Grenzwert für Mahnungen (ab Betrag)
 DocType: Payment Reminder,Payment Reminder,Mahnung
 DocType: Payment Reminder,Payment Reminder Level,Mahnungsstufe
 DocType: Payment Reminder,Exclude From Payment Reminder Until,Von Mahnungsläufen ausschliessen bis

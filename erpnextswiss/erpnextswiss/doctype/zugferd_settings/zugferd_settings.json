@@ -7,7 +7,10 @@
   "section_items",
   "item_group",
   "sec_defaults",
-  "defaults"
+  "defaults",
+  "sec_general",
+  "ignore_bill_date",
+  "ignore_due_date"
  ],
  "fields": [
   {
@@ -33,10 +36,27 @@
    "fieldtype": "Table",
    "label": "Default Values",
    "options": "ZUGFeRD Default Value"
+  },
+  {
+   "fieldname": "sec_general",
+   "fieldtype": "Section Break",
+   "label": "General"
+  },
+  {
+   "default": "0",
+   "fieldname": "ignore_bill_date",
+   "fieldtype": "Check",
+   "label": "Ignore bill date on QR"
+  },
+  {
+   "default": "0",
+   "fieldname": "ignore_due_date",
+   "fieldtype": "Check",
+   "label": "Ignore due date on QR"
   }
  ],
  "issingle": 1,
- "modified": "2023-04-23 20:12:26.696700",
+ "modified": "2024-07-24 12:28:27.154519",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "ZUGFeRD Settings",

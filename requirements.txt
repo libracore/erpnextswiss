@@ -4,3 +4,5 @@ factur-x
 unidecode
 opencv-python
 pymupdf
+pysftp
+icalendar

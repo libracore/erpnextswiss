@@ -458,12 +458,18 @@ def read_camt_transactions(transaction_entries, account, settings, debug=False):
                         if payment_instruction_id:
                             try:
                                 payment_instruction_fields = payment_instruction_id.split("-")
-                                payment_instruction_row = int(payment_instruction_fields[-1]) + 1
+                                try:
+                                    payment_instruction_row = int(payment_instruction_fields[-1]) + 1
+                                except:
+                                    # invalid payment instruction id (cannot parse, e.g. on LSV or foreign pain.001 source) - no match
+                                    payment_instruction_row = None
                                 if len(payment_instruction_fields) > 3:
                                     # revision in payment proposal
                                     payment_proposal_id = "{0}-{1}".format(payment_instruction_fields[1], payment_instruction_fields[2])
-                                else:
+                                elif len(payment_instruction_fields) > 1:
                                     payment_proposal_id = payment_instruction_fields[1]
+                                else:
+                                    payment_proposal_id = None
                                 # find original instruction record
                                 payment_proposal_payments = frappe.get_all("Payment Proposal Payment", 
                                     filters={'parent': payment_proposal_id, 'idx': payment_instruction_row},
@@ -568,6 +574,10 @@ def read_camt_transactions(transaction_entries, account, settings, debug=False):
                                     # allow the numeric part matching
                                     if get_numeric_only_reference(sinv['name']) in transaction_reference: 
                                         # matched numeric part and customer name
+                                        is_match = True
+                                elif cint(settings.ignore_special_characters) == 1:
+                                    if remove_special_characters(sinv['name']) in remove_special_characters(transaction_reference):
+                                        # matched without special characters
                                         is_match = True
 
                                 if is_match:
@@ -855,3 +865,7 @@ def get_numeric_only_reference(s):
         if c.isdigit():
             n += c
     return n
+
+def remove_special_characters(s):
+    return (s or "").replace(" ", "").replace("-", "")
+    

@@ -2,10 +2,8 @@
 #
 # item_tools.py
 #
-# Copyright (C) libracore, 2017-2018
+# Copyright (C) libracore, 2017-2024
 # https://www.libracore.com or https://github.com/libracore
-#
-# For information on ERPNext, refer to https://erpnext.org/
 #
 # Execute with $ bench execute erpnextswiss.scripts.item_tools.<function>
 #

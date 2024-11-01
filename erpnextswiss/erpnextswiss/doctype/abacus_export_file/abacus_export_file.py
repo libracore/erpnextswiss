@@ -781,9 +781,26 @@ def compare_result_xml(docname, xml_content):
             e['document'] = "Not found"
             e['doctype'] = None
             e['date'] = None
-
             
     # render the output into a dialog
     output_dialog = frappe.render_template("erpnextswiss/erpnextswiss/doctype/abacus_export_file/compare_result_dialog.html", {'errors': errors})
 
     return output_dialog
+
+
+"""
+Download the xml content
+"""
+@frappe.whitelist()
+def download_xml(docname):
+    # get the transaction xml file
+    if not frappe.db.exists("Abacus Export File", docname):
+        frappe.throw( _("Invalid Abacus File reference"), _("Error") )
+        
+    doc = frappe.get_doc("Abacus Export File", docname)
+    transaction_xml = doc.render_transfer_file().get('content')
+    
+    # return download
+    frappe.local.response.filename = "{name}.xml".format(name=docname.replace(" ", "-").replace("/", "-"))
+    frappe.local.response.filecontent = transaction_xml
+    frappe.local.response.type = "download"

@@ -142,7 +142,7 @@ def create_zugferd_xml(sales_invoice, verify=True):
         # verify the generated xml
         if verify:
             try:
-                if not xml_check_xsd(facturx_xml=xml.encode('utf-8')):
+                if not xml_check_xsd(xml=xml.encode('utf-8')):
                     frappe.log_error( _("XML validation failed for {0}").format(sales_invoice), "ZUGFeRD")
                     return None
             except Exception as err:

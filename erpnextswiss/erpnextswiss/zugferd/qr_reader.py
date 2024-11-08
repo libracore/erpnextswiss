@@ -293,9 +293,9 @@ def read_eu_qr(code, default_tax, default_item, company):
         
         # try to fetch a default tax template from the supplier
         default_tax = find_tax_from_supplier(company, invoice.get('supplier'), default_tax)
-                
-        tax_template = frappe.get_doc("Purchase Taxes and Charges Template", default_tax)
-        if len(tax_template.taxes) > 0:
+            
+        tax_template = frappe.get_doc("Purchase Taxes and Charges Template", default_tax) if default_tax else {}
+        if len(tax_template.get('taxes') or []) > 0:
             tax_rate = tax_template.taxes[0].rate
         else:
             tax_rate = 0    

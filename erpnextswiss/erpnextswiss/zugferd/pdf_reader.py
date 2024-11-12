@@ -65,19 +65,30 @@ def find_supplier_from_pdf(pdf_file):
         return supplier_name_hits[0]
     
 def build_supplier_maps():
-    suppliers = frappe.db.sql("""
+    supplier_register = frappe.db.sql("""
+        SELECT `name`, `supplier_name`
+        FROM `tabSupplier`
+        WHERE `disabled` = 0
+          AND `supplier_name` IS NOT NULL
+          AND `supplier_name` != "";
+        """, as_dict=True)
+        
+    supplier_names = {}
+    for s in supplier_register:
+        if s['supplier_name'] not in supplier_names:
+            supplier_names[s['supplier_name']] = s['name']
+    
+    tax_register = frappe.db.sql("""
         SELECT `name`, `tax_id`, `supplier_name`
         FROM `tabSupplier`
         WHERE `disabled` = 0
           AND `tax_id` IS NOT NULL
-          AND `supplier_name` IS NOT NULL;
+          AND `tax_id` != "";
         """, as_dict=True)
-        
-    tax_ids, supplier_names = {}, {}
-    for s in suppliers:
-        if s['supplier_name'] not in tax_ids:
-            supplier_names[s['supplier_name']] = s['name']
+    
+    tax_ids = {}
+    for s in tax_register:
         if s['tax_id'] not in tax_ids:
             tax_ids[s['tax_id']] = s['name']
-    
+            
     return tax_ids, supplier_names

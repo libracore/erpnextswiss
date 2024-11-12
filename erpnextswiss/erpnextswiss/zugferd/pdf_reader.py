@@ -14,9 +14,9 @@ import frappe
 #def read_image(filename):
 #    content_str = pytesseract.image_to_string(Image.open(filename), lang="deu")
 
-def find_supplier_from_pdf(pdf_file):
+def find_supplier_from_pdf(pdf_file, company=None):
     # prepare supplier lists
-    tax_ids, supplier_names = build_supplier_maps()
+    tax_ids, supplier_names = build_supplier_maps(company)
     
     # read pdf
     with fitz.open(pdf_file) as doc:
@@ -64,7 +64,17 @@ def find_supplier_from_pdf(pdf_file):
     else:
         return supplier_name_hits[0]
     
-def build_supplier_maps():
+def build_supplier_maps(company=None):
+    if company:
+        if type(company) == str:
+            exclude_name = company
+            exclude_tax_id = frappe.get_value("Company", company, "tax_id")
+        else:
+            frappe.throw("Please provide the company ID as a string as a parameter")
+    else:
+        exclude_name = None
+        exclude_tax_id = None
+        
     supplier_register = frappe.db.sql("""
         SELECT `name`, `supplier_name`
         FROM `tabSupplier`
@@ -75,7 +85,7 @@ def build_supplier_maps():
         
     supplier_names = {}
     for s in supplier_register:
-        if s['supplier_name'] not in supplier_names:
+        if s['supplier_name'] not in supplier_names and s['supplier_name'] != exclude_name:
             supplier_names[s['supplier_name']] = s['name']
     
     tax_register = frappe.db.sql("""
@@ -88,7 +98,7 @@ def build_supplier_maps():
     
     tax_ids = {}
     for s in tax_register:
-        if s['tax_id'] not in tax_ids:
+        if s['tax_id'] not in tax_ids and s['tax_id'] != exclude_tax_id:
             tax_ids[s['tax_id']] = s['name']
             
     return tax_ids, supplier_names

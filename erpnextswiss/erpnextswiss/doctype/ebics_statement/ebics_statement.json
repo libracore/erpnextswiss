@@ -5,17 +5,22 @@
  "engine": "InnoDB",
  "field_order": [
   "ebics_connection",
+  "file_name",
   "account",
   "col_head",
   "date",
+  "ending_balance",
   "sec_transactions",
-  "transactions"
+  "transactions",
+  "sec_content",
+  "xml_content"
  ],
  "fields": [
   {
    "fieldname": "ebics_connection",
    "fieldtype": "Link",
    "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "ebics Connection",
    "options": "ebics Connection",
    "read_only": 1,
@@ -29,10 +34,10 @@
    "fieldname": "account",
    "fieldtype": "Link",
    "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Bank Account",
    "options": "Account",
-   "read_only": 1,
-   "reqd": 1
+   "read_only": 1
   },
   {
    "fieldname": "sec_transactions",
@@ -42,6 +47,8 @@
   {
    "fieldname": "date",
    "fieldtype": "Date",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Date",
    "read_only": 1
   },
@@ -51,9 +58,33 @@
    "label": "Transactions",
    "options": "ebics Statement Transaction",
    "read_only": 1
+  },
+  {
+   "fieldname": "file_name",
+   "fieldtype": "Data",
+   "label": "File name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "ending_balance",
+   "fieldtype": "Currency",
+   "label": "Ending Balance",
+   "read_only": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "sec_content",
+   "fieldtype": "Section Break",
+   "label": "Content"
+  },
+  {
+   "fieldname": "xml_content",
+   "fieldtype": "Code",
+   "label": "XML Content",
+   "read_only": 1
   }
  ],
- "modified": "2024-05-21 21:17:39.936995",
+ "modified": "2024-11-12 21:50:46.786184",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "ebics Statement",

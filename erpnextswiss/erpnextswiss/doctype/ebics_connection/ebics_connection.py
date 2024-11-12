@@ -12,6 +12,7 @@ from fintech.ebics import EbicsKeyRing, EbicsBank, EbicsUser, EbicsClient, Busin
 #from fintech.sepa import Account, SEPACreditTransfer
 from frappe import _
 from frappe.utils.file_manager import save_file
+from frappe.utils.password import get_decrypted_password
 
 class ebicsConnection(Document):
     def get_activation_wizard(self):
@@ -49,7 +50,8 @@ class ebicsConnection(Document):
         return full_keys_file_path
 
     def get_client(self):
-        keyring = EbicsKeyRing(keys=self.get_keys_file_name(), passphrase=self.key_password)
+        passphrase = get_decrypted_password("ebics Connection", self.name, "key_password", False)
+        keyring = EbicsKeyRing(keys=self.get_keys_file_name(), passphrase=passphrase)
         bank = EbicsBank(keyring=keyring, hostid=self.host_id, url=self.url)
         user = EbicsUser(keyring=keyring, partnerid=self.partner_id, userid=self.user_id)
         client = EbicsClient(bank, user)
@@ -57,7 +59,8 @@ class ebicsConnection(Document):
         
     def create_keys(self):
         try:
-            keyring = EbicsKeyRing(keys=self.get_keys_file_name(), passphrase=self.key_password)
+            passphrase = get_decrypted_password("ebics Connection", self.name, "key_password", False)
+            keyring = EbicsKeyRing(keys=self.get_keys_file_name(), passphrase=passphrase)
             bank = EbicsBank(keyring=keyring, hostid=self.host_id, url=self.url)
             user = EbicsUser(keyring=keyring, partnerid=self.partner_id, userid=self.user_id)
             user.create_keys(keyversion='A006', bitlength=2048)
@@ -91,7 +94,8 @@ class ebicsConnection(Document):
         try:
             # create ini letter
             file_name = "/tmp/ini_letter.pdf"
-            keyring = EbicsKeyRing(keys=self.get_keys_file_name(), passphrase=self.key_password)
+            passphrase = get_decrypted_password("ebics Connection", self.name, "key_password", False)
+            keyring = EbicsKeyRing(keys=self.get_keys_file_name(), passphrase=passphrase)
             user = EbicsUser(keyring=keyring, partnerid=self.partner_id, userid=self.user_id)
             user.create_ini_letter(bankname=self.title, path=file_name)
             # load ini pdf
@@ -123,7 +127,8 @@ class ebicsConnection(Document):
         
     def activate_account(self):
         try:
-            keyring = EbicsKeyRing(keys=self.get_keys_file_name(), passphrase=self.key_password)
+            passphrase = get_decrypted_password("ebics Connection", self.name, "key_password", False)
+            keyring = EbicsKeyRing(keys=self.get_keys_file_name(), passphrase=passphrase)
             bank = EbicsBank(keyring=keyring, hostid=self.host_id, url=self.url)
             bank.activate_keys()
             self.activated = 1
@@ -133,36 +138,49 @@ class ebicsConnection(Document):
             frappe.throw( "{0}".format(err), _("Error") )
         return
 
-@frappe.whitelist()
-def execute_payment(ebics_connection, payment_proposal):
-    conn = frappe.get_doc("ebics Connection", ebics_connection)
-    payment = frappe.get_doc("Payment Proposal", payment_proposal)
-    
-    # ebics v3.0 BTU/BTD
-    CCT = BusinessTransactionFormat(
-        service='SCT',
-        msg_name='pain.001'
-    )
-    
-    # generate content
-    xml_transaction = payment.create_bank_file()['content']
-    
-    # upload data using v3.0 (H005)
-    data = conn.get_client.BTD(CCT, xml_transaction)
-    
-    return
-    
+    @frappe.whitelist()
+    def execute_payment(self, payment_proposal):
+        payment = frappe.get_doc("Payment Proposal", payment_proposal)
         
-def get_transactions(ebics_connection, from_date, to_date):
-    conn = frappe.get_doc("ebics Connection", ebics_connection)
-    
-    # ebics v3.0 BTU/BTD
-    C53 = BusinessTransactionFormat(
-        service='EOP',
-        msg_name='camt.053'
-    )
-    
-    # download data using v3.0 (H005)
-    data = conn.get_client.BTD(C53, from_date, to_date)
-    
-    return
+        # ebics v3.0 BTU/BTD
+        CCT = BusinessTransactionFormat(
+            service='SCT',
+            msg_name='pain.001'
+        )
+        
+        # generate content
+        xml_transaction = payment.create_bank_file()['content']
+        
+        # upload data using v3.0 (H005)
+        data = conn.get_client.BTD(CCT, xml_transaction)
+        
+        return
+        
+            
+    def get_transactions(self, date):
+        try:
+            client = self.get_client()
+            data = client.Z53(
+                start=date,                     # should be in YYYY-MM-DD
+                end=date,
+            )
+            client.confirm_download()
+            
+            # check data
+            if len(data) > 0:
+                # there should be one node for each account for this day
+                for account, content in data.items():
+                    stmt = frappe.get_doc({
+                        'doctype': 'ebics Statement',
+                        'ebics_connection': self.name,
+                        'file_name': account,
+                        'xml_content': content,
+                        'date': date
+                    })
+                    stmt.insert()
+                    frappe.db.commit()
+                    
+        except Exception as err:
+            frappe.throw( "{0}".format(err), _("Error") )
+        return
+

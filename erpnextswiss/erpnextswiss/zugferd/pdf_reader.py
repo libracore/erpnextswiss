@@ -76,7 +76,7 @@ def build_supplier_maps():
     tax_ids, supplier_names = {}, {}
     for s in suppliers:
         if s['supplier_name'] not in tax_ids:
-            tax_ids[s['supplier_name']] = s['name']
+            supplier_names[s['supplier_name']] = s['name']
         if s['tax_id'] not in tax_ids:
             tax_ids[s['tax_id']] = s['name']
     

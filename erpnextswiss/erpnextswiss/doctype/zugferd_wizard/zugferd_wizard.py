@@ -24,7 +24,7 @@ class ZUGFeRDWizard(Document):
             # zugferd failed, fall back to qr-reader
             qr_content = find_qr_content_from_pdf(file_path)
             if qr_content:
-                invoice = get_content_from_qr(qr_content, self.default_tax, self.default_item)
+                invoice = get_content_from_qr(qr_content, self.default_tax, self.default_item, self.company)
         # render html
         if invoice:
             return self.render_invoice(invoice)
@@ -95,29 +95,38 @@ class ZUGFeRDWizard(Document):
             'doctype': 'Purchase Invoice',
             'company': self.company,
             'supplier': invoice.get('supplier'),
-            'due_date': invoice.get('due_date'),
             'currency': invoice.get('currency'),
             'bill_no': invoice.get('doc_id'),
-            'bill_date': invoice.get('posting_date'),
             'terms': invoice.get('terms')
         })
-        
+        if invoice.get('source') != 'QR' or cint(settings.get('ignore_bill_date')) == 0:
+            pinv_doc.bill_date = invoice.get('posting_date')
+        if invoice.get('source') != 'QR' or cint(settings.get('ignore_due_date')) == 0:
+            pinv_doc.due_date = invoice.get('due_date')
+            
         if invoice.get('esr_reference'):
             pinv_doc.esr_reference_number = invoice.get('esr_reference')
             pinv_doc.payment_type = "ESR"
             
         # find taxes and charges
-        taxes_and_charges_template = frappe.db.sql("""
-            SELECT `tabPurchase Taxes and Charges Template`.`name`
-            FROM `tabPurchase Taxes and Charges`
-            LEFT JOIN `tabPurchase Taxes and Charges Template` ON `tabPurchase Taxes and Charges Template`.`name` = `tabPurchase Taxes and Charges`.`parent`
-            WHERE 
-                `tabPurchase Taxes and Charges Template`.`company` = "{company}"
-                AND `tabPurchase Taxes and Charges`.`rate` = {tax_rate}
-            ;""".format(company=self.company, tax_rate=flt(invoice.get('tax_rate'))), as_dict=True)
-        if len(taxes_and_charges_template) > 0:
-            pinv_doc.taxes_and_charges = taxes_and_charges_template[0]['name']
-            taxes_template = frappe.get_doc("Purchase Taxes and Charges Template", taxes_and_charges_template[0]['name'])
+        if invoice.get('tax_template'):
+            # the reader should already have identified the best tax template (supplier default, form)
+            tax_template_name = invoice.get('tax_template')
+        else:
+            # find by rate
+            taxes_and_charges_template = frappe.db.sql("""
+                SELECT `tabPurchase Taxes and Charges Template`.`name`
+                FROM `tabPurchase Taxes and Charges`
+                LEFT JOIN `tabPurchase Taxes and Charges Template` ON `tabPurchase Taxes and Charges Template`.`name` = `tabPurchase Taxes and Charges`.`parent`
+                WHERE 
+                    `tabPurchase Taxes and Charges Template`.`company` = "{company}"
+                    AND `tabPurchase Taxes and Charges`.`rate` = {tax_rate}
+                ;""".format(company=self.company, tax_rate=flt(invoice.get('tax_rate'))), as_dict=True)
+            if len(taxes_and_charges_template) > 0:
+                tax_template_name =taxes_and_charges_template[0]['name']
+        if tax_template_name:
+            pinv_doc.taxes_and_charges = tax_template_name
+            taxes_template = frappe.get_doc("Purchase Taxes and Charges Template", tax_template_name)
             for t in taxes_template.taxes:
                 pinv_doc.append("taxes", t)
                 
@@ -160,6 +169,7 @@ class ZUGFeRDWizard(Document):
                 'rate': flt(item.get("net_price"))
             })
         
+        pinv_doc.flags.ignore_mandatory = True
         pinv_doc.insert()
         frappe.db.commit()
         

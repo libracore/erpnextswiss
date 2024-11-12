@@ -225,6 +225,12 @@ def get_data():
                     },
                     {
                        "type": "doctype",
+                       "name": "Planzer Settings",
+                       "label": _("Planzer Settings"),
+                       "description": _("Planzer Settings")                   
+                    },
+                    {
+                       "type": "doctype",
                        "name": "Datatrans Settings",
                        "label": _("Datatrans Settings"),
                        "description": _("Datatrans Settings")                   
@@ -234,6 +240,18 @@ def get_data():
                        "name": "Payrexx Settings",
                        "label": _("Payrexx Settings"),
                        "description": _("Payrexx Settings")                   
+                    },
+                    {
+                       "type": "doctype",
+                       "name": "Worldline TIM",
+                       "label": _("Worldline TIM"),
+                       "description": _("Worldline TIM")                   
+                    },
+                    {
+                       "type": "doctype",
+                       "name": "GitLab Settings",
+                       "label": _("GitLab"),
+                       "description": _("GitLab")                   
                     },
                     {
                        "type": "doctype",
@@ -249,15 +267,9 @@ def get_data():
                     },
                     {
                        "type": "doctype",
-                       "name": "Worldline TIM",
-                       "label": _("Worldline TIM"),
-                       "description": _("Worldline TIM")                   
-                    },
-                    {
-                       "type": "doctype",
-                       "name": "GitLab Settings",
-                       "label": _("GitLab"),
-                       "description": _("GitLab")                   
+                       "name": "CalDav Feed",
+                       "label": _("CalDav Feed"),
+                       "description": _("CalDav Feed")                   
                     }
             ]
         },

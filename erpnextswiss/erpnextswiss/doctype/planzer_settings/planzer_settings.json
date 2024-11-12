@@ -1,0 +1,83 @@
+{
+ "creation": "2024-06-17 10:29:05.659809",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "account_id",
+  "customer_no",
+  "department_no",
+  "col_main",
+  "host",
+  "username",
+  "password",
+  "enabled"
+ ],
+ "fields": [
+  {
+   "fieldname": "account_id",
+   "fieldtype": "Data",
+   "label": "Account ID"
+  },
+  {
+   "fieldname": "customer_no",
+   "fieldtype": "Data",
+   "label": "Customer No"
+  },
+  {
+   "fieldname": "department_no",
+   "fieldtype": "Data",
+   "label": "Department No"
+  },
+  {
+   "fieldname": "col_main",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "lobplalb02.planzer.ch",
+   "description": "Typically lobplalb02.planzer.ch for PROD and lobplatestlb02.planzer.ch for TEST",
+   "fieldname": "host",
+   "fieldtype": "Data",
+   "label": "Host"
+  },
+  {
+   "fieldname": "username",
+   "fieldtype": "Data",
+   "label": "User"
+  },
+  {
+   "fieldname": "password",
+   "fieldtype": "Password",
+   "label": "Password"
+  },
+  {
+   "default": "0",
+   "description": "If this is marked, submitting a Shipment will transfer it through the Planzer interface",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled"
+  }
+ ],
+ "issingle": 1,
+ "modified": "2024-07-16 21:14:54.199341",
+ "modified_by": "Administrator",
+ "module": "ERPNextSwiss",
+ "name": "Planzer Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

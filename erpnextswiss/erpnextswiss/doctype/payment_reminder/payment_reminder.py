@@ -11,7 +11,7 @@ from frappe.utils.data import add_days
 from erpnextswiss.erpnextswiss.finance import get_customer_ledger, get_debit_accounts
 from frappe.utils.background_jobs import enqueue
 from frappe import _
-from frappe.utils import cint
+from frappe.utils import cint, flt
 
 class PaymentReminder(Document):
     # this will apply all payment reminder levels and blocking days (as exclude_from_payment_reminder_until) in the sales invoices
@@ -163,6 +163,9 @@ def create_reminder_for_customer(customer, company, auto_submit=False, max_level
             'currency': currency,
             'email': email
         })
+        # only create a payment reminder if the total is above the threshold (if set in the ERPNextSwiss Settings)
+        if total_before_charges < flt(frappe.get_cached_value("ERPNextSwiss Settings", "ERPNextSwiss Settings", "reminder_min_threshold")):
+            return None
         flag_enabled_customer = False
         try:
             # in case the customer is disabled: briefly enable to allow document creation

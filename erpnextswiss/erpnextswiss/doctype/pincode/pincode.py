@@ -48,7 +48,7 @@ def import_pincodes(content):
             fields=['name'])
         bfsnr = ""
         if 'bfsnr' in field_index:
-            bfsnr = field_index['bfsnr'] or ""
+            bfsnr = element[field_index['bfsnr']] or ""
         if not db_pincodes:
             # pincode is not in the database, create
             try:

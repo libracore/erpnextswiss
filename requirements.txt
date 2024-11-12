@@ -5,3 +5,5 @@ unidecode
 opencv-python
 pymupdf
 fintech
+pysftp
+icalendar

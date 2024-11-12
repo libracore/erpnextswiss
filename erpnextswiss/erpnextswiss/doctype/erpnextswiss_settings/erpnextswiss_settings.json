@@ -10,6 +10,7 @@
   "section_payment_reminder",
   "payment_reminder_auto_submit",
   "no_reminder_on_credit_balance",
+  "reminder_min_threshold",
   "column_payment_reminder",
   "payment_reminder_charges",
   "payment_reminder_level_blocking_period",
@@ -130,6 +131,7 @@
    "options": "Account"
   },
   {
+   "collapsible": 1,
    "fieldname": "bank_import_section",
    "fieldtype": "Section Break",
    "label": "Bank Import"
@@ -296,10 +298,16 @@
    "fieldname": "ignore_special_characters",
    "fieldtype": "Check",
    "label": "Ignore special characters"
+  },
+  {
+   "default": "0",
+   "fieldname": "reminder_min_threshold",
+   "fieldtype": "Currency",
+   "label": "Reminder Minimum Threshold"
   }
  ],
  "issingle": 1,
- "modified": "2024-07-02 13:53:12.650951",
+ "modified": "2024-11-12 09:53:44.297641",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "ERPNextSwiss Settings",

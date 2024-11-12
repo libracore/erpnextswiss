@@ -6,17 +6,15 @@ frappe.ui.form.on('Abacus Export File', {
         // download button for submitted documents
         if (frm.doc.docstatus == 1) {
             frm.add_custom_button(__('Download'), function() {
-                frappe.call({
-                    'method': "render_transfer_file",
-                    'doc': frm.doc,
-                    'callback': function(r) {
-                        if (r.message) {
-                            // prepare the xml file for download
-                            console.log(r.message.content);
-                            download("transfer.xml", r.message.content);
-                        } 
-                    }
-                });
+                var url = "/api/method/erpnextswiss.erpnextswiss.doctype.abacus_export_file.abacus_export_file.download_xml"  
+                        + "?docname=" + encodeURIComponent(frm.doc.name);
+                var w = window.open(
+                     frappe.urllib.get_full_url(url)
+                );
+                if (!w) {
+                    frappe.msgprint(__("Please enable pop-ups")); return;
+                }
+
             }).addClass("btn-primary");
             
             frm.add_custom_button(__('Compare Result'), function() {
@@ -37,16 +35,6 @@ frappe.ui.form.on('Abacus Export File', {
         }
     }
 });
-
-function download(filename, content) {
-    var element = document.createElement('a');
-    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(content));
-    element.setAttribute('download', filename);
-    element.style.display = 'none';
-    document.body.appendChild(element);
-    element.click();
-    document.body.removeChild(element);
-}
 
 function compare_result(frm) {
     var d = new frappe.ui.Dialog({

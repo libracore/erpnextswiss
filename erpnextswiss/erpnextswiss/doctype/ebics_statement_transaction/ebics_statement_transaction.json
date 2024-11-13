@@ -179,11 +179,12 @@
    "fieldname": "status",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "Status"
+   "label": "Status",
+   "translatable": 1
   }
  ],
  "istable": 1,
- "modified": "2024-11-13 16:50:12.115344",
+ "modified": "2024-11-13 16:53:41.850771",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "ebics Statement Transaction",

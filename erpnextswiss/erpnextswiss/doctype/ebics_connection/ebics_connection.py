@@ -156,7 +156,7 @@ class ebicsConnection(Document):
         return
         
             
-    def get_transactions(self, date):
+    def get_transactions(self, date, debug=False):
         try:
             client = self.get_client()
             data = client.Z53(
@@ -178,8 +178,23 @@ class ebicsConnection(Document):
                         'company': self.company
                     })
                     stmt.insert()
+                    if debug:
+                        print("Inserted {0}".format(account))
                     frappe.db.commit()
+                    # process data
+                    if debug:
+                        print("Parsing data...")
+                    stmt.parse_content()
+                    if debug:
+                        print("Processing transactions...")
+                    stmt.process_transactions()
                     
+        except fintech.ebics.EbicsFunctionalError as err:
+            if "{0}".format(err) == "EBICS_NO_DOWNLOAD_DATA_AVAILABLE":
+                # this is not a problem, simply no data
+                pass
+            else:
+                frappe.log_error("{0}".format(err), _("ebics Interface Error") )
         except Exception as err:
             frappe.throw( "{0}".format(err), _("Error") )
         return

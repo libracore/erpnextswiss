@@ -6,7 +6,7 @@ import frappe
 from frappe.model.document import Document
 from erpnextswiss.erpnextswiss.page.bank_wizard.bank_wizard import read_camt053_meta, read_camt053, make_payment_entry, get_default_accounts
 from frappe import _
-import json
+import ast
 
 class ebicsStatement(Document):
     def parse_content(self):
@@ -31,7 +31,8 @@ class ebicsStatement(Document):
         print("{0}".format(account_matches))
         if len(account_matches) > 0:
             self.account = account_matches[0]['name']
-        
+            self.transactions = []
+            
             # read transactions (only if account is available)
             transactions = read_camt053(self.xml_content, self.account)
             
@@ -45,7 +46,7 @@ class ebicsStatement(Document):
                 if transaction.get("expense_matches"):
                     transaction['expense_matches'] = "{0}".format(transaction.get("expense_matches"))
                 
-                transactions['status'] = "Pending"
+                transaction['status'] = "Pending"
                 
                 self.append("transactions", transaction)
                 
@@ -66,7 +67,7 @@ class ebicsStatement(Document):
         
         for t in self.transactions:
             # if matched amount equals the transaction amount, create and submit payment
-            if t.matched_amount == t.amount and t.party_match:
+            if t.status == "Pending" and not t.payment_entry and t.matched_amount == t.amount and (t.party_match or t.employee_match):
                 payment = {
                     'amount': t.amount,
                     'date': t.date,
@@ -75,17 +76,30 @@ class ebicsStatement(Document):
                 }
                 if t.credit_debit == "DBIT":
                     # outflow: purchase invoice or expense
-                    payment.update({
-                        'paid_from': self.account,
-                        'paid_to': default_accounts.get('payable_account'),
-                        'type': "Pay",
-                        'party_type': "Supplier",
-                        'party': t.party_match,
-                        'references': json.loads(t.invoice_matches),
-                        'remarks': "{0}, {1}, {2}".format(t.transaction_reference or "", t.party_name or "", t.party_address or ""),
-                        'auto_submit': 1,
-                        'company': self.company
-                    })
+                    if t.invoice_matches:
+                        payment.update({
+                            'paid_from': self.account,
+                            'paid_to': default_accounts.get('payable_account'),
+                            'type': "Pay",
+                            'party_type': "Supplier",
+                            'party': t.party_match,
+                            'references': t.invoice_matches,            # note: string will be parsed in make_payment_entry
+                            'remarks': "{0}, {1}, {2}".format(t.transaction_reference or "", t.party_name or "", t.party_address or ""),
+                            'auto_submit': 1,
+                            'company': self.company
+                        })
+                    elif t.expense_matches:
+                        payment.update({
+                            'paid_from': self.account,
+                            'paid_to': default_accounts.get('payable_account'),
+                            'type': "Pay",
+                            'party_type': "Employee",
+                            'party': t.employee_match,
+                            'references': t.expense_matches,            # note: string will be parsed in make_payment_entry
+                            'remarks': "{0}, {1}, {2}".format(t.transaction_reference or "", t.party_name or "", t.party_address or ""),
+                            'auto_submit': 1,
+                            'company': self.company
+                        })
                 else:
                     # inflow: debtor
                     payment.update({
@@ -94,12 +108,22 @@ class ebicsStatement(Document):
                         'type': "Receive",
                         'party_type': "Customer",
                         'party': t.party_match,
-                        'references': json.loads(t.invoice_matches),
+                        'references': t.invoice_matches,            # note: string will be parsed in make_payment_entry
                         'remarks': "{0}, {1}, {2}".format(t.transaction_reference or "", t.party_name or "", t.party_address or ""),
                         'auto_submit': 1,
                         'company': self.company
                     })
                 
-                make_payment_entry(payment)
-                
+                try:
+                    payment = make_payment_entry(**payment)
+                    t.payment_entry = payment.get('payment_entry')
+                    t.status = "Completed"
+                except Exception as err:
+                    t.status == "Error"
+                    t.remarks = "{0}".format(err)
+        
+        # save
+        self.save()
+        frappe.db.commit()
+        
         return

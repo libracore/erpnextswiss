@@ -848,7 +848,7 @@ def make_payment_entry(amount, date, reference_no, paid_from=None, paid_to=None,
             matched_entry.save()
         matched_entry.submit()
         frappe.db.commit()
-    return get_url_to_form("Payment Entry", new_entry.name)
+    return {'link': get_url_to_form("Payment Entry", new_entry.name), 'payment_entry': new_entry.name}
 
 # creates the reference record in a payment entry
 def create_reference(payment_entry, invoice_reference, invoice_type="Sales Invoice"):

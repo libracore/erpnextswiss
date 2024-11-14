@@ -28,7 +28,8 @@
   "sec_references",
   "payment_entry",
   "col_references",
-  "status"
+  "status",
+  "remarks"
  ],
  "fields": [
   {
@@ -180,11 +181,18 @@
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Status",
+   "read_only": 1,
    "translatable": 1
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Small Text",
+   "label": "Remarks",
+   "read_only": 1
   }
  ],
  "istable": 1,
- "modified": "2024-11-13 16:53:41.850771",
+ "modified": "2024-11-14 09:18:33.468643",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "ebics Statement Transaction",

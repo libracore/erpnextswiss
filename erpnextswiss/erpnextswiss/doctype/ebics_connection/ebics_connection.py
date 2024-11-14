@@ -174,7 +174,8 @@ class ebicsConnection(Document):
                         'ebics_connection': self.name,
                         'file_name': account,
                         'xml_content': content,
-                        'date': date
+                        'date': date,
+                        'company': self.company
                     })
                     stmt.insert()
                     frappe.db.commit()

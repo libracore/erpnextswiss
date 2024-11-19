@@ -9,6 +9,21 @@ from frappe import _
 import ast
 
 class ebicsStatement(Document):
+    def before_save(self):
+        if self.status != "Completed":
+            self.update_status_from_transactions()
+        return
+        
+    def update_status_from_transactions(self):
+        all_completed = True
+        for t in self.transactions:
+            if t.status != "Completed":
+                all_completed = False
+                break
+        if all_completed:
+            self.status = "Completed"
+        return
+        
     def parse_content(self):
         """
         Read the xml content and parse into the doctype record
@@ -127,3 +142,4 @@ class ebicsStatement(Document):
         frappe.db.commit()
         
         return
+

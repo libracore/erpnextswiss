@@ -13,6 +13,7 @@
   "opening_balance",
   "closing_balance",
   "currency",
+  "status",
   "sec_transactions",
   "transactions",
   "sec_content",
@@ -108,9 +109,19 @@
    "label": "Company",
    "options": "Company",
    "read_only": 1
+  },
+  {
+   "default": "Pending",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "Pending\nError\nCompleted",
+   "read_only": 1
   }
  ],
- "modified": "2024-11-13 17:11:03.593697",
+ "modified": "2024-11-19 17:44:36.372131",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "ebics Statement",

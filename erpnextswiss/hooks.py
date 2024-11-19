@@ -19,7 +19,8 @@ app_license = "AGPL"
 app_include_js = [
     "/assets/erpnextswiss/js/swiss_common.js",
     "/assets/erpnextswiss/js/iban.js",
-    "/assets/erpnextswiss/js/email.js"
+    "/assets/erpnextswiss/js/email.js",
+    "assets/js/erpnextswiss_templates.min.js"
 ]
 
 # include js, css files in header of web template

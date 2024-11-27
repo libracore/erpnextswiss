@@ -81,6 +81,7 @@ In case you update from the sources and observe an error, make sure to update de
         * transmit tax forms
     * Interface to abacus (export transaction data)
     * ISO 20022
+    * EBICS: electronic banking internet communication standard, allows to fully automate bank integration
     * ZUGFeRD
     * Interface to Zefix
     * Datatrans interface for payments

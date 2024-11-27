@@ -65,7 +65,7 @@ class ebicsConnection(Document):
         keyring = EbicsKeyRing(keys=self.get_keys_file_name(), passphrase=passphrase)
         bank = EbicsBank(keyring=keyring, hostid=self.host_id, url=self.url)
         user = EbicsUser(keyring=keyring, partnerid=self.partner_id, userid=self.user_id)
-        client = EbicsClient(bank, user)
+        client = EbicsClient(bank, user, version=self.ebics_version)
         return client
         
     def create_keys(self):
@@ -79,6 +79,26 @@ class ebicsConnection(Document):
             frappe.throw( "{0}".format(err), _("Error") )
         return
 
+    def create_certificate(self):
+        try:
+            passphrase = get_decrypted_password("ebics Connection", self.name, "key_password", False)
+            keyring = EbicsKeyRing(keys=self.get_keys_file_name(), passphrase=passphrase)
+            user = EbicsUser(keyring=keyring, partnerid=self.partner_id, userid=self.user_id)
+            x509_dn = {
+                'commonName': '{0} ebics'.format(self.company or "libracore ERP"),
+                'organizationName': (self.company or "libracore ERP"),
+                'organizationalUnitName': 'Administration',
+                'countryName': 'CH',
+                'stateOrProvinceName': 'ZH',
+                'localityName': 'Winterthur',
+                'emailAddress': 'info@libracore.com'
+            }
+            user.create_certificates(validity_period=5, **x509_dn)
+            
+        except Exception as err:
+            frappe.throw( "{0}".format(err), _("Error") )
+        return
+        
     def send_signature(self):
         try:
             client = self.get_client()
@@ -155,15 +175,17 @@ class ebicsConnection(Document):
         
         # ebics v3.0 BTU/BTD
         CCT = BusinessTransactionFormat(
-            service='SCT',
-            msg_name='pain.001'
+            service='MCT',
+            msg_name='pain.001',
+            scope='CH'
         )
         
         # generate content
         xml_transaction = payment.create_bank_file()['content']
         
         # upload data using v3.0 (H005)
-        data = conn.get_client.BTD(CCT, xml_transaction)
+        client = self.get_client()
+        data = client.BTD(CCT, xml_transaction)
         
         return
         
@@ -174,10 +196,23 @@ class ebicsConnection(Document):
 
         try:
             client = self.get_client()
-            data = client.Z53(
-                start=date,                     # should be in YYYY-MM-DD
-                end=date,
-            )
+            if self.ebics_version == "H005":
+                # ebics v3.0 BTU/BTD
+                C53 = BusinessTransactionFormat(
+                    service='EOP',
+                    msg_name='camt.053',
+                    scope='CH',
+                    container='ZIP'
+                )
+
+                # download data using v3.0 (H005)
+                data = client.BTD(C53, date, date)
+            else:
+                # use version 2.5
+                data = client.Z53(
+                    start=date,                     # should be in YYYY-MM-DD
+                    end=date,
+                )
             client.confirm_download()
             
             # check data

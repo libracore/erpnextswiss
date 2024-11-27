@@ -8,6 +8,7 @@
   "title",
   "host_id",
   "url",
+  "ebics_version",
   "col_user",
   "partner_id",
   "user_id",
@@ -135,9 +136,16 @@
    "fieldname": "enable_sync",
    "fieldtype": "Check",
    "label": "Enable Sync"
+  },
+  {
+   "default": "H004",
+   "fieldname": "ebics_version",
+   "fieldtype": "Select",
+   "label": "Version",
+   "options": "H004\nH005"
   }
  ],
- "modified": "2024-11-27 10:22:52.710551",
+ "modified": "2024-11-27 10:48:40.432257",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "ebics Connection",

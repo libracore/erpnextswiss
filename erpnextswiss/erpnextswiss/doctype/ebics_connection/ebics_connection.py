@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # Copyright (c) 2024, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
+#
 
 import frappe
 from frappe.model.document import Document
@@ -12,8 +13,19 @@ from fintech.ebics import EbicsKeyRing, EbicsBank, EbicsUser, EbicsClient, Busin
 from frappe import _
 from frappe.utils.file_manager import save_file
 from frappe.utils.password import get_decrypted_password
+from datetime import datetime
 
 class ebicsConnection(Document):
+    def before_save(self):
+        # make sure synced_until is in date format
+        if self.synced_until and not type(self.synced_until) == datetime.date:
+            if type(self.synced_until) == str:
+                self.synced_until = datetime.strptime(self.synced_until, "%Y-%m-%d").date()
+            elif type(self.synced_until) == datetime.datetime:
+                self.synced_until =self.synced_until.date()
+                
+        return
+        
     def get_activation_wizard(self):
         # determine configuration stage
         if (not self.host_id) or (not self.url) or (not self.partner_id) or (not self.user_id) or (not self.key_password):
@@ -157,6 +169,9 @@ class ebicsConnection(Document):
         
             
     def get_transactions(self, date, debug=False):
+        if type(date) == date or type(date) == datetime:
+            date = date.strftime("%Y-%m-%d")
+
         try:
             client = self.get_client()
             data = client.Z53(
@@ -188,6 +203,12 @@ class ebicsConnection(Document):
                     if debug:
                         print("Processing transactions...")
                     stmt.process_transactions()
+                
+                # update sync date
+                if not self.synced_until or self.synced_until < datetime.strptime(date, "%Y-%m-%d").date():
+                    self.synced_until = date
+                    self.save()
+                    frappe.db.commit()
                     
         except fintech.ebics.EbicsFunctionalError as err:
             if "{0}".format(err) == "EBICS_NO_DOWNLOAD_DATA_AVAILABLE":
@@ -198,4 +219,3 @@ class ebicsConnection(Document):
         except Exception as err:
             frappe.throw( "{0}".format(err), _("Error") )
         return
-

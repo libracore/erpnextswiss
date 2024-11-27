@@ -47,6 +47,7 @@ class ebicsStatement(Document):
         if len(account_matches) > 0:
             self.account = account_matches[0]['name']
             self.transactions = []
+            self.status = "Pending"             # reset status: transaction being added
             
             # read transactions (only if account is available)
             transactions = read_camt053(self.xml_content, self.account)

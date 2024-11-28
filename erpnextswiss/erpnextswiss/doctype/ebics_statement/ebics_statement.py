@@ -142,5 +142,28 @@ class ebicsStatement(Document):
         self.save()
         frappe.db.commit()
         
+        # run post-processing triggers
+        self.post_process()
+        
         return
 
+    def post_process(self):
+        """
+        Use this hook to add post processing actions, i.e. custom matching
+        
+        Add in your custom hooks.py:
+            doc_events = {
+                "ebics Statement": {
+                    "post_process": "myapp.mymodule.ebics.post_process_ebics"
+                }
+            }
+        """
+        events = frappe.get_hooks("doc_events")
+        if events:
+            ebics_events = events.get('ebics Statement')
+            if ebics_events:
+                post_processing_hooks = ebics_events.get('post_process')
+                for hook in post_processing_hooks:
+                    frappe.call(hook, self, "post_process")
+                    
+        return

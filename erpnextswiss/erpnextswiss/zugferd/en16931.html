@@ -54,7 +54,7 @@
     </ram:IncludedSupplyChainTradeLineItem>
 {%- endfor %}
     <ram:ApplicableHeaderTradeAgreement>
-      <ram:BuyerReference>{{ po_no or "undefined" }}</ram:BuyerReference>
+      <ram:BuyerReference>{{ buyer_reference or po_no or "undefined" }}</ram:BuyerReference>
       <ram:SellerTradeParty>
         <ram:Name>{{ company }}</ram:Name>
         <ram:DefinedTradeContact>

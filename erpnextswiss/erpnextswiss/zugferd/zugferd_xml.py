@@ -25,6 +25,7 @@ def create_zugferd_xml(sales_invoice, verify=True):
     try:
         # get original document
         sinv = frappe.get_doc("Sales Invoice", sales_invoice)
+        customer = frappe.get_doc("Customer", sinv.customer)
         company = frappe.get_doc("Company", sinv.company)
         # compile notes
         notes = []
@@ -62,7 +63,8 @@ def create_zugferd_xml(sales_invoice, verify=True):
             'grand_total': (sinv.rounded_total or sinv.grand_total),
             'prepaid_amount': ((sinv.rounded_total or sinv.grand_total) - sinv.outstanding_amount),
             'outstanding_amount': sinv.outstanding_amount,
-            'po_no': html.escape(sinv.po_no) if sinv.po_no else None,
+            'buyer_reference': html.escape(customer.get('leitweg_id') or customer.get('invoice_network_id') or ""),
+            'po_no': html.escape(sinv.po_no or ""),
             'supplier_contact_name': html.escape(frappe.get_value("User", sinv.owner, "full_name") or ""),
             'supplier_contact_phone': html.escape(frappe.get_value("User", sinv.owner, "phone") or ""),
             'supplier_contact_email': html.escape(sinv.owner),

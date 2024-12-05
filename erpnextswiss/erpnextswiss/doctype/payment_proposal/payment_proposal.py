@@ -50,6 +50,8 @@ class PaymentProposal(Document):
         return
         
     def on_submit(self):
+        if (len(self.purchase_invoices) + len(self.expenses) + len(self.salaries)) == 0:
+            frappe.throw( _("No transactions found. You can remove this entry.") )
         # clean payments (to prevent accumulation on re-submit)
         self.payments = []
         # create the aggregated payment table

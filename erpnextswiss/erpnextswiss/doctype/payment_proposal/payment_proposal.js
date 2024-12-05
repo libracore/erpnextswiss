@@ -15,19 +15,33 @@ frappe.ui.form.on('Payment Proposal', {
             frappe.call({
                 'method': 'frappe.client.get_list',
                 'args': {
-                    'doctype': 'ebics Connection',
+                    'doctype': 'ebics Statement',
                     'filters': {
-                        'bank_account': frm.doc.pay_from_account,
-                        'activated': 1
+                        'account': frm.doc.pay_from_account
                     },
-                    'fields': ['name']
+                    'fields': ['name', 'ebics_connection']
                 },
                 'callback': function(response) {
                     if (response.message.length > 0) {
-                        locals.ebics_connection = response.message[0]['name'];
-                        frm.add_custom_button(__("Transmit by ebics"), function() {
-                            transmit_ebics(frm);
-                        }).addClass("btn-success");
+                        frappe.call({
+                            'method': 'frappe.client.get_list',
+                            'args': {
+                                'doctype': 'ebics Connection',
+                                'filters': {
+                                    'name': response.message[0]['ebics_connection'],
+                                    'activated': 1
+                                },
+                                'fields': ['name']
+                            },
+                            'callback': function(response) {
+                                if (response.message.length > 0) {
+                                    locals.ebics_connection = response.message[0]['name'];
+                                    frm.add_custom_button(__("Transmit by ebics"), function() {
+                                        transmit_ebics(frm);
+                                    }).addClass("btn-success");
+                                }
+                            }
+                        });
                     }
                 }
             });

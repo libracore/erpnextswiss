@@ -12,6 +12,7 @@ from erpnextswiss.erpnextswiss.zugferd.zugferd_xml import create_zugferd_xml
 from facturx import generate_from_binary, get_facturx_xml_from_pdf, xml_check_xsd, generate_facturx_from_file
 from datetime import datetime, date
 from bs4 import BeautifulSoup
+from frappe import _
 
 """
 Creates an XML file from a sales invoice
@@ -59,8 +60,13 @@ def download_zugferd_xml(sales_invoice_name):
 def get_xml(path):
     with open(path, "rb") as file:
         pdf = file.read()
+    
+    try:
+        xml_filename, xml_content = get_facturx_xml_from_pdf(pdf)
+    except Exception as err:
+        frappe.log_error(err, _("Reading zugferd xml failed") )
+        xml_content = None
         
-    xml_filename, xml_content = get_facturx_xml_from_pdf(pdf)
     return xml_content
 
 """

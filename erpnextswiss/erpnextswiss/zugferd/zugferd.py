@@ -7,7 +7,7 @@
 
 import frappe
 from frappe.utils.pdf import get_pdf
-from frappe.utils import flt
+from frappe.utils import flt, cint
 from erpnextswiss.erpnextswiss.zugferd.zugferd_xml import create_zugferd_xml
 from facturx import generate_from_binary, get_facturx_xml_from_pdf, xml_check_xsd, generate_facturx_from_file
 from datetime import datetime, date
@@ -64,7 +64,9 @@ def get_xml(path):
     try:
         xml_filename, xml_content = get_facturx_xml_from_pdf(pdf)
     except Exception as err:
-        frappe.log_error(err, _("Reading zugferd xml failed") )
+        # only report error log in debug mode (zugferd wizard and batch processing use this as first cascade, so failing to read zugferd because a file does not have an xml part is not necessarily an error)
+        if cint(frappe.get_value("ERPNextSwiss Settings", "ERPNextSwiss Settings", "debug_mode")):
+            frappe.log_error("{0}<br>{1}".format(path, err), _("Reading zugferd xml failed") )
         xml_content = None
         
     return xml_content

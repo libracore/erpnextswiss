@@ -10,6 +10,7 @@ import time
 import html          # used to escape xml content
 from frappe import _
 from frappe.utils.data import get_url_to_form
+import unicodedata
 
 class DirectDebitProposal(Document):
     def validate(self):
@@ -222,11 +223,14 @@ class DirectDebitProposal(Document):
             content += make_line(" </DrctDbtTx>")
             content += make_line(" <DbtrAgt>")
             content += make_line("  <FinInstnId>")
-            content += make_line("    <BIC>{0}</BIC>".format(customer.bic))
+            if xml_version == "09":
+                content += make_line("    <Othr><Id>NOTPROVIDED</Id></Othr>")
+            else:
+                content += make_line("    <BIC>{0}</BIC>".format(customer.bic))
             content += make_line("  </FinInstnId>")
             content += make_line(" </DbtrAgt>")
             content += make_line(" <Dbtr>")
-            content += make_line("  <Nm>{0}</Nm>".format(html.escape(customer.customer_name)))
+            content += make_line("  <Nm>{0}</Nm>".format(html.escape(unicodedata.normalize('NFKD', customer.customer_name))))
             content += make_line(" </Dbtr>")
             content += make_line(" <DbtrAcct>")
             content += make_line("  <Id>")

@@ -44,7 +44,7 @@
       <ram:SpecifiedLineTradeSettlement>
         <ram:ApplicableTradeTax>
           <ram:TypeCode>VAT</ram:TypeCode>
-          <ram:CategoryCode>S</ram:CategoryCode>
+          <ram:CategoryCode>{{ tax_code or "S" }}</ram:CategoryCode>
           <ram:RateApplicablePercent>{{ "{:.2f}".format(overall_tax_rate_percent) }}</ram:RateApplicablePercent>
         </ram:ApplicableTradeTax>
         <ram:SpecifiedTradeSettlementLineMonetarySummation>
@@ -124,8 +124,14 @@
       <ram:ApplicableTradeTax>
         <ram:CalculatedAmount>{{ "{:.2f}".format(tax.tax_amount) }}</ram:CalculatedAmount>
         <ram:TypeCode>VAT</ram:TypeCode>
-        <ram:BasisAmount>{{ "{:.2f}".format(tax.net_amount) }}</ram:BasisAmount>
-        <ram:CategoryCode>S</ram:CategoryCode>
+        {%- if tax_code == "AE" %}
+          <ram:ExemptionReason>Reverse Charge</ram:ExemptionReason>
+        {% endif -%}
+        <ram:BasisAmount>{{ "{:.2f}".format(tax.net_amount or net_total) }}</ram:BasisAmount>
+        <ram:CategoryCode>{{ tax_code or "S" }}</ram:CategoryCode>
+        {%- if tax_code == "AE" %}
+          <ram:ExemptionReasonCode>VATEX-EU-AE</ram:ExemptionReasonCode>
+        {% endif -%}
         <ram:RateApplicablePercent>{{ "{:.2f}".format(tax.rate) }}</ram:RateApplicablePercent>
       </ram:ApplicableTradeTax>
   {%- endfor %}
@@ -134,7 +140,7 @@
         <ram:CalculatedAmount>0</ram:CalculatedAmount>
         <ram:TypeCode>VAT</ram:TypeCode>
         <ram:BasisAmount>0</ram:BasisAmount>
-        <ram:CategoryCode>S</ram:CategoryCode>
+        <ram:CategoryCode>{{ tax_code or "S" }}</ram:CategoryCode>
         <ram:RateApplicablePercent>0</ram:RateApplicablePercent>                       
       </ram:ApplicableTradeTax>
 {%- endif %}

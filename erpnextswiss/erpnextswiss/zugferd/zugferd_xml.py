@@ -73,7 +73,8 @@ def create_zugferd_xml(sales_invoice, verify=True):
             'customer_contact_phone': html.escape(sinv.contact_mobile or ""),
             'customer_contact_email': html.escape(sinv.contact_email or ""),
             'is_return': cint(sinv.is_return),
-            'iban': frappe.get_value("Account", sinv.debit_to, "iban")
+            'iban': frappe.get_value("Account", sinv.debit_to, "iban"),
+            'tax_code': frappe.get_doc("Sales Taxes and Charges Template", sinv.taxes_and_charges).get("tax_code") if sinv.taxes_and_charges else "S"
         }
         data['items'] = []
         for item in sinv.items:

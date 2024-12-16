@@ -139,8 +139,14 @@
       <ram:ApplicableTradeTax>
         <ram:CalculatedAmount>0</ram:CalculatedAmount>
         <ram:TypeCode>VAT</ram:TypeCode>
-        <ram:BasisAmount>0</ram:BasisAmount>
+        {%- if tax_code == "AE" %}
+          <ram:ExemptionReason>Reverse Charge</ram:ExemptionReason>
+        {% endif -%}
+        <ram:BasisAmount>{{ "{:.2f}".format(net_total) }}</ram:BasisAmount>
         <ram:CategoryCode>{{ tax_code or "S" }}</ram:CategoryCode>
+        {%- if tax_code == "AE" %}
+          <ram:ExemptionReasonCode>VATEX-EU-AE</ram:ExemptionReasonCode>
+        {% endif -%}
         <ram:RateApplicablePercent>0</ram:RateApplicablePercent>                       
       </ram:ApplicableTradeTax>
 {%- endif %}

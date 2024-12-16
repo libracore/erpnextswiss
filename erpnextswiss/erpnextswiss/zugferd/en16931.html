@@ -95,9 +95,11 @@
           <ram:CityName>{{ customer_address.city }}</ram:CityName>
           <ram:CountryID>{{ customer_address.country_code }}</ram:CountryID>
         </ram:PostalTradeAddress>
+        {% if customer_tax_id -%}
         <ram:SpecifiedTaxRegistration>
           <ram:ID schemeID='VA'>{{ customer_tax_id }}</ram:ID>
         </ram:SpecifiedTaxRegistration>
+        {%- endif %}
       </ram:BuyerTradeParty>
       {%- if po_no %}
       <ram:BuyerOrderReferencedDocument>

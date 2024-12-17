@@ -44,7 +44,7 @@
       <ram:SpecifiedLineTradeSettlement>
         <ram:ApplicableTradeTax>
           <ram:TypeCode>VAT</ram:TypeCode>
-          <ram:CategoryCode>{{ tax_code or "S" }}</ram:CategoryCode>
+          <ram:CategoryCode>{{ tax_category or "S" }}</ram:CategoryCode>
           <ram:RateApplicablePercent>{{ "{:.2f}".format(overall_tax_rate_percent) }}</ram:RateApplicablePercent>
         </ram:ApplicableTradeTax>
         <ram:SpecifiedTradeSettlementLineMonetarySummation>
@@ -124,12 +124,12 @@
       <ram:ApplicableTradeTax>
         <ram:CalculatedAmount>{{ "{:.2f}".format(tax.tax_amount) }}</ram:CalculatedAmount>
         <ram:TypeCode>VAT</ram:TypeCode>
-        {%- if tax_code == "AE" %}
+        {%- if tax_category == "AE" %}
           <ram:ExemptionReason>Reverse Charge</ram:ExemptionReason>
         {% endif -%}
         <ram:BasisAmount>{{ "{:.2f}".format(tax.net_amount or net_total) }}</ram:BasisAmount>
-        <ram:CategoryCode>{{ tax_code or "S" }}</ram:CategoryCode>
-        {%- if tax_code == "AE" %}
+        <ram:CategoryCode>{{ tax_category or "S" }}</ram:CategoryCode>
+        {%- if tax_category == "AE" %}
           <ram:ExemptionReasonCode>VATEX-EU-AE</ram:ExemptionReasonCode>
         {% endif -%}
         <ram:RateApplicablePercent>{{ "{:.2f}".format(tax.rate) }}</ram:RateApplicablePercent>
@@ -139,12 +139,12 @@
       <ram:ApplicableTradeTax>
         <ram:CalculatedAmount>0</ram:CalculatedAmount>
         <ram:TypeCode>VAT</ram:TypeCode>
-        {%- if tax_code == "AE" %}
+        {%- if tax_category == "AE" %}
           <ram:ExemptionReason>Reverse Charge</ram:ExemptionReason>
         {% endif -%}
         <ram:BasisAmount>{{ "{:.2f}".format(net_total) }}</ram:BasisAmount>
-        <ram:CategoryCode>{{ tax_code or "S" }}</ram:CategoryCode>
-        {%- if tax_code == "AE" %}
+        <ram:CategoryCode>{{ tax_category or "S" }}</ram:CategoryCode>
+        {%- if tax_category == "AE" %}
           <ram:ExemptionReasonCode>VATEX-EU-AE</ram:ExemptionReasonCode>
         {% endif -%}
         <ram:RateApplicablePercent>0</ram:RateApplicablePercent>                       

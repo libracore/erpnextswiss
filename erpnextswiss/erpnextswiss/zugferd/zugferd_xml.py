@@ -43,6 +43,7 @@ def create_zugferd_xml(sales_invoice, verify=True):
                     title=sinv.title, number=sinv.name, date=sinv.posting_date))
             })
         # compile xml content
+        owner = frappe.get_doc("User", sinv.owner)
         data = {
             'name': html.escape(sinv.name),
             'issue_date': "{year:04d}{month:02d}{day:02d}".format(
@@ -66,9 +67,9 @@ def create_zugferd_xml(sales_invoice, verify=True):
             'outstanding_amount': sinv.outstanding_amount,
             'buyer_reference': html.escape(customer.get('leitweg_id') or customer.get('invoice_network_id') or ""),
             'po_no': html.escape(sinv.po_no or ""),
-            'supplier_contact_name': html.escape(frappe.get_value("User", sinv.owner, "full_name") or ""),
-            'supplier_contact_phone': html.escape(frappe.get_value("User", sinv.owner, "phone") or ""),
-            'supplier_contact_email': html.escape(sinv.owner),
+            'supplier_contact_name': html.escape(owner.get("full_name") or ""),
+            'supplier_contact_phone': html.escape(owner.get("phone") or ""),
+            'supplier_contact_email': html.escape(owner.get("email") or ""),
             'customer_contact_name': html.escape(sinv.contact_display or ""),
             'customer_contact_phone': html.escape(sinv.contact_mobile or ""),
             'customer_contact_email': html.escape(sinv.contact_email or ""),

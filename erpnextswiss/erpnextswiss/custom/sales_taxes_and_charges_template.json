@@ -138,7 +138,7 @@
    "modified_by": "Administrator",
    "name": "Sales Taxes and Charges Template-tax_category",
    "no_copy": 0,
-   "options": "AE: Reverse Charge\nE: Tax Exempt\nZ: Zero-Tax Goods\nO: Services without Tax\nIC: Innercommunal Taxes\nS: Standard Tax",
+   "options": "S: Standard Tax\nAE: Reverse Charge\nE: Tax Exempt\nZ: Zero-Tax Goods\nO: Services without Tax\nG: Export outside EU\nK: Innercommunal Taxes\nL: IGIC (Kanarische Inseln)\nM: IPSI (Ceuta/Melilla)",
    "owner": "Administrator",
    "parent": null,
    "parentfield": null,

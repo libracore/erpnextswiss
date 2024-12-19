@@ -9,7 +9,11 @@ import frappe
 from frappe.utils.pdf import get_pdf
 from frappe.utils import flt, cint
 from erpnextswiss.erpnextswiss.zugferd.zugferd_xml import create_zugferd_xml
-from facturx import generate_from_binary, get_facturx_xml_from_pdf, xml_check_xsd, generate_facturx_from_file
+from facturx import generate_from_binary, get_facturx_xml_from_pdf, generate_facturx_from_file
+try:            # factur-x v3.0 onwards
+    from facturx import xml_check_xsd
+except:         # factur-x before v3.0 
+    from facturx import check_facturx_xsd as xml_check_xsd
 from datetime import datetime, date
 from bs4 import BeautifulSoup
 from frappe import _

@@ -12,7 +12,10 @@ from frappe import _
 from frappe.utils import cint
 from bs4 import BeautifulSoup
 from datetime import datetime
-from erpnextswiss.erpnextswiss.zugferd.zugferd import xml_check_xsd
+try:            # factur-x v3.0 onwards
+    from facturx import xml_check_xsd
+except:         # factur-x before v3.0 
+    from facturx import check_facturx_xsd as xml_check_xsd
 from erpnextswiss.erpnextswiss.zugferd.codelist import get_unit_code
 import html          # used to escape xml content
 

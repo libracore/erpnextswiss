@@ -93,11 +93,24 @@ class PaymentProposal(Document):
                         # run as individual payment (not aggregated)
                         supl = frappe.get_doc("Supplier", supplier)
                         addr = frappe.get_doc("Address", address)
-                        self.add_payment(supl.supplier_name, supl.iban, payment_type,
-                            addr.address_line1, "{0} {1}".format(addr.pincode, addr.city), addr.country,
-                            this_amount, currency, purchase_invoice.external_reference, skonto_date or due_date, 
-                            purchase_invoice.esr_reference, purchase_invoice.esr_participation_number, bic=supl.bic,
-                            receiver_id=supl.name)
+                        self.add_payment(
+                            receiver_name=supl.supplier_name, 
+                            iban=supl.iban, 
+                            payment_type=payment_type,
+                            address_line1=addr.address_line1, 
+                            address_line2="{0} {1}".format(addr.pincode, addr.city), 
+                            country=addr.country,
+                            pincode=addr.pincode,
+                            city=addr.city,
+                            amount=this_amount, 
+                            currency=currency, 
+                            reference=purchase_invoice.external_reference, 
+                            execution_date=skonto_date or due_date, 
+                            esr_reference=purchase_invoice.esr_reference, 
+                            esr_participation_number=purchase_invoice.esr_participation_number, 
+                            bic=supl.bic,
+                            receiver_id=supl.name
+                        )
                         total += this_amount
                     else:
                         amount += this_amount
@@ -119,9 +132,22 @@ class PaymentProposal(Document):
                 addr = frappe.get_doc("Address", address)
                 if payment_type == "ESR":           # prevent if last invoice was by ESR, but others are also present -> pay as IBAN
                     payment_type = "IBAN"
-                self.add_payment(supl.supplier_name, supl.iban, payment_type,
-                    addr.address_line1, "{0} {1}".format(addr.pincode, addr.city), addr.country, addr.pincode, addr.city,
-                    amount, currency, " ".join(references), exec_date, bic=supl.bic, receiver_id=supl.name)
+                self.add_payment(
+                    receiver_name=supl.supplier_name, 
+                    iban=supl.iban, 
+                    payment_type=payment_type,
+                    address_line1=addr.address_line1, 
+                    address_line2="{0} {1}".format(addr.pincode, addr.city), 
+                    country=addr.country, 
+                    pincode=addr.pincode, 
+                    city=addr.city,
+                    amount=amount, 
+                    currency=currency, 
+                    reference=" ".join(references), 
+                    execution_date=exec_date, 
+                    bic=supl.bic, 
+                    receiver_id=supl.name
+                )
                 total += amount
         # collect employees
         employees = []
@@ -155,9 +181,20 @@ class PaymentProposal(Document):
             address_lines = (emp.permanent_address or "").split("\n")
             plz_city = address_lines[1].split(" ")
             cntry = frappe.get_value("Company", emp.company, "country")
-            self.add_payment(emp.employee_name, emp.bank_ac_no, "IBAN",
-                address_lines[0], address_lines[1], cntry, plz_city[0], plz_city[1],
-                amount, currency, " ".join(references), self.date)
+            self.add_payment(
+                receiver_name=emp.employee_name, 
+                iban=emp.bank_ac_no, 
+                payment_type="IBAN",
+                address_line1=address_lines[0], 
+                address_line2=address_lines[1], 
+                country=cntry, 
+                pincode=plz_city[0], 
+                city=plz_city[1],
+                amount=amount, 
+                currency=currency, 
+                reference=" ".join(references), 
+                execution_date=self.date
+            )
             total += amount
         # add salaries
         for salary in self.salaries:
@@ -177,10 +214,21 @@ class PaymentProposal(Document):
             address_lines = emp.permanent_address.split("\n")
             plz_city = address_lines[1].split(" ")
             cntry = frappe.get_value("Company", emp.company, "country")
-            self.add_payment(emp.employee_name, emp.bank_ac_no, "IBAN",
-                address_lines[0], address_lines[1], cntry, plz_city[0], plz_city[1],
-                salary.amount, account_currency, (unidecode(salary.salary_slip))[-35:], salary.target_date,
-                is_salary=1)
+            self.add_payment(
+                receiver_name=emp.employee_name, 
+                iban=emp.bank_ac_no, 
+                payment_type="IBAN",
+                address_line1=address_lines[0], 
+                address_line2=address_lines[1], 
+                country=cntry, 
+                pincode=plz_city[0], 
+                city=plz_city[1],
+                amount=salary.amount, 
+                currency=account_currency, 
+                reference=(unidecode(salary.salary_slip))[-35:], 
+                execution_date=salary.target_date,
+                is_salary=1
+            )
             total += salary.amount
         # update total
         self.total = total

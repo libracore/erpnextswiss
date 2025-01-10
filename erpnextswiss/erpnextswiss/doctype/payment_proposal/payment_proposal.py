@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018-2024, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2018-2025, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
 
 from __future__ import unicode_literals
@@ -8,7 +8,7 @@ from frappe.model.document import Document
 from frappe import _
 from datetime import datetime, timedelta
 import time
-from erpnextswiss.erpnextswiss.common_functions import get_building_number, get_street_name, get_pincode, get_city, get_primary_address
+from erpnextswiss.erpnextswiss.common_functions import get_building_number, get_street_name, get_pincode, get_city, get_primary_address, split_address_to_street_and_building
 import html          # used to escape xml content
 from frappe.utils import cint, get_url_to_form, rounded
 from unidecode import unidecode     # used to remove German/French-type special characters from bank identifieres
@@ -366,6 +366,8 @@ class PaymentProposal(Document):
             # crop lines if required (length limitation)
             data['company']['address_line1'] = data['company']['address_line1'][:35]
             data['company']['address_line2'] = data['company']['address_line2'][:35]
+            data['company']['street'] = html.escape(get_street_name(data['company']['address_line1'])[:35])
+            data['company']['building'] = html.escape(get_building_number(data['company']['address_line1'])[:5])
             data['company']['pincode'] = data['company']['pincode'][:16]
             data['company']['city'] = data['company']['city'][:35]
         ### Payment Information (PmtInf, B-Level)
@@ -397,6 +399,8 @@ class PaymentProposal(Document):
                     'name': html.escape(payment.receiver),
                     'address_line1': html.escape(payment.receiver_address_line1[:35]),
                     'address_line2': html.escape(payment.receiver_address_line2[:35]),
+                    'street': html.escape(get_street_name(payment.receiver_address_line1)[:35]),
+                    'building': html.escape(get_building_number(payment.receiver_address_line1)[:5]),
                     'country_code': frappe.get_value("Country", payment.receiver_country, "code").upper(),
                     'pincode': html.escape((payment.receiver_pincode or "")[:16]),
                     'city': html.escape((payment.receiver_city or "")[:35])

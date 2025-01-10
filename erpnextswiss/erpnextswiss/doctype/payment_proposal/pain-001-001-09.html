@@ -33,10 +33,13 @@
         <Nm>{{ company.name }}</Nm>
         {%- if company.address_line1 %}
         <PstlAdr>
-            <PstCd>{{ company.pincode }}</PstCd>
-            <TwnNm>{{ company.city }}</TwnNm>
-            <Ctry>{{ company.country_code }}</Ctry>
-            <AdrLine>{{ company.address_line1 }}</AdrLine>
+          <StrtNm>{{ company.street }}</StrtNm>
+          <BldgNb>{{ company.building }}</BldgNb>
+          <PstCd>{{ company.pincode }}</PstCd>
+          <TwnNm>{{ company.city }}</TwnNm>
+          <Ctry>{{ company.country_code }}</Ctry>
+          <AdrLine>{{ company.address_line1 }}</AdrLine>
+          {#- <AdrLine>{{ company.address_line1 }}</AdrLine> ONLY AFTER 2015-11 #}
         </PstlAdr>
         {%- endif %}
       </Dbtr>
@@ -76,10 +79,13 @@
         <Cdtr>
           <Nm>{{ payment.creditor.name }}</Nm>
           <PstlAdr>
+            <StrtNm>{{ payment.creditor.street }}</StrtNm>
+            <BldgNb>{{ payment.creditor.building }}</BldgNb>
             <PstCd>{{ payment.creditor.pincode }}</PstCd>
             <TwnNm>{{ payment.creditor.city }}</TwnNm>
             <Ctry>{{ payment.creditor.country_code }}</Ctry>
             <AdrLine>{{ payment.creditor.address_line1 }}</AdrLine>
+            {#- <AdrLine>{{ payment.creditor.address_line1 }}</AdrLine>ONLY AFTER 2015-11 #}
           </PstlAdr>
         </Cdtr>
         {%- if payment.service_level == "SEPA" %}

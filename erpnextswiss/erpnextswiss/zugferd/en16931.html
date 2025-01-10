@@ -34,9 +34,9 @@
         <ram:Name>{{ item.item_name }}</ram:Name>
       </ram:SpecifiedTradeProduct>
       <ram:SpecifiedLineTradeAgreement>
-        {# <ram:GrossPriceProductTradePrice>
-          <ram:ChargeAmount>{{ "{:.2f}".format(item.price_list_rate) }}</ram:ChargeAmount>
-        </ram:GrossPriceProductTradePrice> -#}
+        <ram:GrossPriceProductTradePrice>
+          <ram:ChargeAmount>{{ "{:.2f}".format(item.price_list_rate or item.rate) }}</ram:ChargeAmount>
+        </ram:GrossPriceProductTradePrice>
         <ram:NetPriceProductTradePrice>
           <ram:ChargeAmount>{{ "{:.2f}".format(item.rate) }}</ram:ChargeAmount>
         </ram:NetPriceProductTradePrice>

@@ -171,7 +171,7 @@ def get_off_days(from_date, to_date, company, employee=None):
     year = getdate(from_date).strftime("%Y")
 
     check_leave_application = False
-    if employee and frappe.get_doc("ERPNextSwiss Settings", "ERPNextSwiss Settings").vacation_hours_based_on == 'Leave Application':
+    if employee and frappe.get_doc("Worktime Settings", "Worktime Settings").vacation_hours_based_on == 'Leave Application':
         check_leave_application = True
     
     holiday_lists = frappe.db.sql("""SELECT `year`, `public_holiday_list` FROM `tabPublic Holiday List` WHERE `year` = '{year}' AND `company` = '{company}' LIMIT 1""".format(year=year, company=company), as_dict=True)

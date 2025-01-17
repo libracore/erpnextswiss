@@ -48,10 +48,7 @@
   "sec_invoicing",
   "service_item",
   "col_invoicing",
-  "invoice_method",
-  "section_worktime_overview",
-  "vacation_hours_based_on",
-  "leave_application_note"
+  "invoice_method"
  ],
  "fields": [
   {
@@ -307,28 +304,10 @@
    "fieldname": "reminder_min_threshold",
    "fieldtype": "Currency",
    "label": "Reminder Minimum Threshold"
-  },
-  {
-   "fieldname": "section_worktime_overview",
-   "fieldtype": "Section Break",
-   "label": "Worktime Overview"
-  },
-  {
-   "default": "Timesheet",
-   "fieldname": "vacation_hours_based_on",
-   "fieldtype": "Select",
-   "label": "Consideration of vacation hours based on",
-   "options": "Timesheet\nLeave Application"
-  },
-  {
-   "depends_on": "eval:doc.vacation_hours_based_on=='Leave Application'",
-   "fieldname": "leave_application_note",
-   "fieldtype": "HTML",
-   "options": "<p>Only Leave types that are not marked as 'Is Leave Without Pay' are included.</p>"
   }
  ],
  "issingle": 1,
- "modified": "2025-01-13 15:48:44.590015",
+ "modified": "2025-01-17 09:02:30.124019",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "ERPNextSwiss Settings",

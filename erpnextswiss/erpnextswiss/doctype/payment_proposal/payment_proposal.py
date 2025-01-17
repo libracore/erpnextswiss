@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018-2024, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2018-2025, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
 
 from __future__ import unicode_literals
@@ -8,7 +8,7 @@ from frappe.model.document import Document
 from frappe import _
 from datetime import datetime, timedelta
 import time
-from erpnextswiss.erpnextswiss.common_functions import get_building_number, get_street_name, get_pincode, get_city, get_primary_address
+from erpnextswiss.erpnextswiss.common_functions import get_building_number, get_street_name, get_pincode, get_city, get_primary_address, split_address_to_street_and_building
 import html          # used to escape xml content
 from frappe.utils import cint, get_url_to_form, rounded
 from unidecode import unidecode     # used to remove German/French-type special characters from bank identifieres
@@ -50,6 +50,8 @@ class PaymentProposal(Document):
         return
         
     def on_submit(self):
+        if (len(self.purchase_invoices) + len(self.expenses) + len(self.salaries)) == 0:
+            frappe.throw( _("No transactions found. You can remove this entry.") )
         # clean payments (to prevent accumulation on re-submit)
         self.payments = []
         # create the aggregated payment table
@@ -91,11 +93,24 @@ class PaymentProposal(Document):
                         # run as individual payment (not aggregated)
                         supl = frappe.get_doc("Supplier", supplier)
                         addr = frappe.get_doc("Address", address)
-                        self.add_payment(supl.supplier_name, supl.iban, payment_type,
-                            addr.address_line1, "{0} {1}".format(addr.pincode, addr.city), addr.country,
-                            this_amount, currency, purchase_invoice.external_reference, skonto_date or due_date, 
-                            purchase_invoice.esr_reference, purchase_invoice.esr_participation_number, bic=supl.bic,
-                            receiver_id=supl.name)
+                        self.add_payment(
+                            receiver_name=supl.supplier_name, 
+                            iban=supl.iban, 
+                            payment_type=payment_type,
+                            address_line1=addr.address_line1, 
+                            address_line2="{0} {1}".format(addr.pincode, addr.city), 
+                            country=addr.country,
+                            pincode=addr.pincode,
+                            city=addr.city,
+                            amount=this_amount, 
+                            currency=currency, 
+                            reference=purchase_invoice.external_reference, 
+                            execution_date=skonto_date or due_date, 
+                            esr_reference=purchase_invoice.esr_reference, 
+                            esr_participation_number=purchase_invoice.esr_participation_number, 
+                            bic=supl.bic,
+                            receiver_id=supl.name
+                        )
                         total += this_amount
                     else:
                         amount += this_amount
@@ -117,9 +132,22 @@ class PaymentProposal(Document):
                 addr = frappe.get_doc("Address", address)
                 if payment_type == "ESR":           # prevent if last invoice was by ESR, but others are also present -> pay as IBAN
                     payment_type = "IBAN"
-                self.add_payment(supl.supplier_name, supl.iban, payment_type,
-                    addr.address_line1, "{0} {1}".format(addr.pincode, addr.city), addr.country,
-                    amount, currency, " ".join(references), exec_date, bic=supl.bic, receiver_id=supl.name)
+                self.add_payment(
+                    receiver_name=supl.supplier_name, 
+                    iban=supl.iban, 
+                    payment_type=payment_type,
+                    address_line1=addr.address_line1, 
+                    address_line2="{0} {1}".format(addr.pincode, addr.city), 
+                    country=addr.country, 
+                    pincode=addr.pincode, 
+                    city=addr.city,
+                    amount=amount, 
+                    currency=currency, 
+                    reference=" ".join(references), 
+                    execution_date=exec_date, 
+                    bic=supl.bic, 
+                    receiver_id=supl.name
+                )
                 total += amount
         # collect employees
         employees = []
@@ -150,11 +178,23 @@ class PaymentProposal(Document):
             emp = frappe.get_doc("Employee", employee)
             if not emp.permanent_address:
                 frappe.throw( _("Employee <a href=\"/desk#Form/Employee/{0}\">{0}</a> has no address.").format(emp.name) )
-            address_lines = emp.permanent_address.split("\n")
+            address_lines = (emp.permanent_address or "").split("\n")
+            plz_city = address_lines[1].split(" ")
             cntry = frappe.get_value("Company", emp.company, "country")
-            self.add_payment(emp.employee_name, emp.bank_ac_no, "IBAN",
-                address_lines[0], address_lines[1], cntry,
-                amount, currency, " ".join(references), self.date)
+            self.add_payment(
+                receiver_name=emp.employee_name, 
+                iban=emp.bank_ac_no, 
+                payment_type="IBAN",
+                address_line1=address_lines[0], 
+                address_line2=address_lines[1], 
+                country=cntry, 
+                pincode=plz_city[0], 
+                city=plz_city[1],
+                amount=amount, 
+                currency=currency, 
+                reference=" ".join(references), 
+                execution_date=self.date
+            )
             total += amount
         # add salaries
         for salary in self.salaries:
@@ -172,11 +212,23 @@ class PaymentProposal(Document):
             if not emp.permanent_address:
                 frappe.throw( _("Employee <a href=\"/desk#Form/Employee/{0}\">{0}</a> has no address.").format(emp.name) )
             address_lines = emp.permanent_address.split("\n")
+            plz_city = address_lines[1].split(" ")
             cntry = frappe.get_value("Company", emp.company, "country")
-            self.add_payment(emp.employee_name, emp.bank_ac_no, "IBAN",
-                address_lines[0], address_lines[1], cntry,
-                salary.amount, account_currency, (unidecode(salary.salary_slip))[-35:], salary.target_date,
-                is_salary=1)
+            self.add_payment(
+                receiver_name=emp.employee_name, 
+                iban=emp.bank_ac_no, 
+                payment_type="IBAN",
+                address_line1=address_lines[0], 
+                address_line2=address_lines[1], 
+                country=cntry, 
+                pincode=plz_city[0], 
+                city=plz_city[1],
+                amount=salary.amount, 
+                currency=account_currency, 
+                reference=(unidecode(salary.salary_slip))[-35:], 
+                execution_date=salary.target_date,
+                is_salary=1
+            )
             total += salary.amount
         # update total
         self.total = total
@@ -217,7 +269,7 @@ class PaymentProposal(Document):
         return
     
     def add_payment(self, receiver_name, iban, payment_type, address_line1, 
-        address_line2, country, amount, currency, reference, execution_date, 
+        address_line2, country, pincode, city, amount, currency, reference, execution_date, 
         esr_reference=None, esr_participation_number=None, bic=None, is_salary=0,
         receiver_id=None):
             # prepare payment date
@@ -237,6 +289,8 @@ class PaymentProposal(Document):
                 'payment_type': payment_type,
                 'receiver_address_line1': address_line1,
                 'receiver_address_line2': address_line2,
+                'receiver_pincode': pincode,
+                'receiver_city': city,
                 'receiver_country': country,    
                 'amount': amount,
                 'currency': currency,
@@ -307,9 +361,15 @@ class PaymentProposal(Document):
             data['company']['address_line1'] = html.escape(company_address.address_line1)
             data['company']['address_line2'] = "{0} {1}".format(html.escape(company_address.pincode), html.escape(company_address.city))
             data['company']['country_code'] = company_address['country_code']
+            data['company']['pincode'] = html.escape(company_address.pincode)
+            data['company']['city'] = html.escape(company_address.city)
             # crop lines if required (length limitation)
             data['company']['address_line1'] = data['company']['address_line1'][:35]
             data['company']['address_line2'] = data['company']['address_line2'][:35]
+            data['company']['street'] = html.escape(get_street_name(data['company']['address_line1'])[:35])
+            data['company']['building'] = html.escape(get_building_number(data['company']['address_line1'])[:5])
+            data['company']['pincode'] = data['company']['pincode'][:16]
+            data['company']['city'] = data['company']['city'][:35]
         ### Payment Information (PmtInf, B-Level)
         # payment information records (1 .. 99'999)
         payment_account = frappe.get_doc('Account', self.pay_from_account)
@@ -339,7 +399,11 @@ class PaymentProposal(Document):
                     'name': html.escape(payment.receiver),
                     'address_line1': html.escape(payment.receiver_address_line1[:35]),
                     'address_line2': html.escape(payment.receiver_address_line2[:35]),
-                    'country_code': frappe.get_value("Country", payment.receiver_country, "code").upper()
+                    'street': html.escape(get_street_name(payment.receiver_address_line1)[:35]),
+                    'building': html.escape(get_building_number(payment.receiver_address_line1)[:5]),
+                    'country_code': frappe.get_value("Country", payment.receiver_country, "code").upper(),
+                    'pincode': html.escape((payment.receiver_pincode or "")[:16]),
+                    'city': html.escape((payment.receiver_city or "")[:35])
                 },
                 'is_salary': payment.is_salary
             }
@@ -374,7 +438,15 @@ class PaymentProposal(Document):
         data['control_sum'] = control_sum
         
         # render file
-        content = frappe.render_template('erpnextswiss/erpnextswiss/doctype/payment_proposal/pain-001.html', data)
+        single_payment = cint(self.get("single_payment"))
+        if data['xml_version'] == "09" and not single_payment:
+            content = frappe.render_template('erpnextswiss/erpnextswiss/doctype/payment_proposal/pain-001-001-09.html', data)
+        elif data['xml_version'] == "09" and single_payment:
+            content = frappe.render_template('erpnextswiss/erpnextswiss/doctype/payment_proposal/pain-001-001-09_single_payment.html', data)
+        elif single_payment:
+            content = frappe.render_template('erpnextswiss/erpnextswiss/doctype/payment_proposal/pain-001_single_payment.html', data)
+        else:
+            content = frappe.render_template('erpnextswiss/erpnextswiss/doctype/payment_proposal/pain-001.html', data)
         return { 'content': content }
     
     def create_wise_file(self):

@@ -211,7 +211,19 @@ def get_data():
             "label": _("Integrations"),
             "icon": "octicon octicon-git-compare",
             "items": [
-                   {
+                    {
+                       "type": "doctype",
+                       "name": "ebics Connection",
+                       "label": _("ebics Connection"),
+                       "description": _("ebics Connection")                   
+                    },
+                    {
+                       "type": "doctype",
+                       "name": "ebics Statement",
+                       "label": _("ebics Statement"),
+                       "description": _("ebics Statement")                   
+                    },
+                    {
                        "type": "doctype",
                        "name": "ZUGFeRD Wizard",
                        "label": _("ZUGFeRD Wizard"),

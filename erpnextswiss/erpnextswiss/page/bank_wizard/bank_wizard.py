@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2017-2023, libracore and contributors
+# Copyright (c) 2017-2024, libracore and contributors
 # License: AGPL v3. See LICENCE
 
-from __future__ import unicode_literals
 import frappe
 from frappe import throw, _
 import hashlib
@@ -10,7 +9,7 @@ import json
 from bs4 import BeautifulSoup
 import ast
 import six
-from frappe.utils import cint
+from frappe.utils import cint, flt
 from frappe.utils.data import get_url_to_form
 
 # this function tries to match the amount to an open sales invoice
@@ -199,6 +198,31 @@ def get_payable_account(company=None, employee=False):
 def get_first_company():
     companies = frappe.get_all("Company", filters=None, fields=['name'])
     return companies[0]['name']
+
+"""
+Interpret meta information of the camt.053 record
+
+Input: camt.053-xml-string
+Output: meta-dict
+"""
+def read_camt053_meta(content):
+    soup = BeautifulSoup(content, 'lxml')
+    meta = {
+        'iban': soup.document.bktocstmrstmt.stmt.acct.id.iban.get_text(),
+        'electronic_sequence_number': soup.document.bktocstmrstmt.stmt.elctrncseqnb.get_text(),
+        'msgid': soup.document.bktocstmrstmt.stmt.id.get_text(),
+        'currency': soup.document.bktocstmrstmt.stmt.acct.ccy.get_text()
+    }
+    # find balances
+    balances = soup.find_all('bal')
+    for balance in balances:
+        balance_soup = BeautifulSoup(str(balance), 'lxml')
+        if balance_soup.tp.cdorprtry.cd.get_text() == "OPBD":
+            meta['opening_balance'] = float(balance_soup.amt.get_text())
+        elif balance_soup.tp.cdorprtry.cd.get_text() == "CLBD":
+            meta['closing_balance'] = float(balance_soup.amt.get_text())
+            
+    return meta
 
 @frappe.whitelist()
 def read_camt053(content, account):
@@ -824,7 +848,7 @@ def make_payment_entry(amount, date, reference_no, paid_from=None, paid_to=None,
             matched_entry.save()
         matched_entry.submit()
         frappe.db.commit()
-    return get_url_to_form("Payment Entry", new_entry.name)
+    return {'link': get_url_to_form("Payment Entry", new_entry.name), 'payment_entry': new_entry.name}
 
 # creates the reference record in a payment entry
 def create_reference(payment_entry, invoice_reference, invoice_type="Sales Invoice"):

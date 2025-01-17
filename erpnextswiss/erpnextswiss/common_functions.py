@@ -21,7 +21,17 @@ def get_street_name(address_line):
         return " ".join(parts[:-1])
     else:
         return address_line
-        
+
+# split address line into street and building
+def split_address_to_street_and_building(address_line):
+    parts = address_line.split(" ")
+    if len(parts) > 1:
+        street = " ".join(parts[:-1])
+        building = parts[-1]
+        return street, building
+    else:
+        return address_line, ""
+
 # get pincode from address line
 def get_pincode(address_line):
     parts = address_line.strip().split(" ")

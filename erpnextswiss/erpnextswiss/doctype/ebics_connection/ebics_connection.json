@@ -1,0 +1,192 @@
+{
+ "autoname": "field:title",
+ "creation": "2024-05-21 12:12:19.674480",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "title",
+  "host_id",
+  "url",
+  "ebics_version",
+  "col_user",
+  "partner_id",
+  "user_id",
+  "col_account",
+  "company",
+  "key_password",
+  "sec_sync",
+  "synced_until",
+  "col_sync",
+  "enable_sync",
+  "sec_states",
+  "ini_sent",
+  "hia_sent",
+  "ini_letter_created",
+  "hpb_downloaded",
+  "activated"
+ ],
+ "fields": [
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Title",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "bold": 1,
+   "fieldname": "host_id",
+   "fieldtype": "Data",
+   "label": "Host ID"
+  },
+  {
+   "bold": 1,
+   "fieldname": "url",
+   "fieldtype": "Data",
+   "label": "URL"
+  },
+  {
+   "fieldname": "col_user",
+   "fieldtype": "Column Break"
+  },
+  {
+   "bold": 1,
+   "fieldname": "partner_id",
+   "fieldtype": "Data",
+   "label": "Partner ID"
+  },
+  {
+   "bold": 1,
+   "fieldname": "user_id",
+   "fieldtype": "Data",
+   "label": "User ID"
+  },
+  {
+   "fieldname": "col_account",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "sec_states",
+   "fieldtype": "Section Break",
+   "hidden": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "ini_sent",
+   "fieldtype": "Check",
+   "label": "Signature sent"
+  },
+  {
+   "default": "0",
+   "fieldname": "hia_sent",
+   "fieldtype": "Check",
+   "label": "Keys sent"
+  },
+  {
+   "default": "0",
+   "fieldname": "ini_letter_created",
+   "fieldtype": "Check",
+   "label": "Ini Letter created"
+  },
+  {
+   "default": "0",
+   "fieldname": "hpb_downloaded",
+   "fieldtype": "Check",
+   "label": "Public keys downloaded"
+  },
+  {
+   "default": "0",
+   "fieldname": "activated",
+   "fieldtype": "Check",
+   "label": "Account activated"
+  },
+  {
+   "bold": 1,
+   "fieldname": "key_password",
+   "fieldtype": "Password",
+   "label": "Key password"
+  },
+  {
+   "fieldname": "sec_sync",
+   "fieldtype": "Section Break",
+   "label": "Sync"
+  },
+  {
+   "fieldname": "synced_until",
+   "fieldtype": "Date",
+   "label": "Synced until",
+   "read_only": 1
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "fieldname": "col_sync",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_sync",
+   "fieldtype": "Check",
+   "label": "Enable Sync"
+  },
+  {
+   "default": "H004",
+   "fieldname": "ebics_version",
+   "fieldtype": "Select",
+   "label": "Version",
+   "options": "H004\nH005"
+  }
+ ],
+ "modified": "2024-11-27 10:48:40.432257",
+ "modified_by": "Administrator",
+ "module": "ERPNextSwiss",
+ "name": "ebics Connection",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Accounts Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Accounts User",
+   "share": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "title_field": "title",
+ "track_changes": 1
+}

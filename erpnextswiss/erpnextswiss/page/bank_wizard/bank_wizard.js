@@ -497,7 +497,7 @@ frappe.bank_wizard = {
             callback: function(r)
             {
                 // open new record in a separate tab
-                window.open(r.message, '_blank');
+                window.open(r.message.link, '_blank');
                 frappe.bank_wizard.close_entry(txid);
             }
         });    

@@ -143,11 +143,11 @@
    "options": "BankImport Bank"
   },
   {
-   "default": "03",
+   "default": "09",
    "fieldname": "xml_version",
    "fieldtype": "Select",
    "label": "XML-Version",
-   "options": "03\n05\n03CH02"
+   "options": "09\n03\n05\n03CH02"
   },
   {
    "fieldname": "invoice_code_line_scanning_section",
@@ -307,7 +307,7 @@
   }
  ],
  "issingle": 1,
- "modified": "2024-11-01 12:04:44.297641",
+ "modified": "2024-12-12 15:38:32.331894",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "ERPNextSwiss Settings",

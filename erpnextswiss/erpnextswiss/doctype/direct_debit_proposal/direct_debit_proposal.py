@@ -10,6 +10,7 @@ import time
 import html          # used to escape xml content
 from frappe import _
 from frappe.utils.data import get_url_to_form
+import unicodedata
 
 class DirectDebitProposal(Document):
     def validate(self):
@@ -124,8 +125,11 @@ class DirectDebitProposal(Document):
         content = make_line("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
         # define xml template reference
         # load namespace based on banking region
+        xml_version = frappe.get_value("ERPNextSwiss Settings", "ERPNextSwiss Settings", "xml_version")
         banking_region = frappe.get_value("ERPNextSwiss Settings", "ERPNextSwiss Settings", "banking_region")
-        if banking_region == "AT":
+        if xml_version == "09":
+            content += make_line("<Document xmlns=\"urn:iso:std:iso:20022:tech:xsd:pain.008.001.08\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"\">")
+        elif banking_region == "AT":
             content += make_line("<Document xmlns=\"urn:iso:std:iso:20022:tech:xsd:pain.008.001.02\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"\">")
         else:
             content += make_line("<Document xmlns=\"http://www.six-interbank-clearing.com/de/pain.008.001.03.ch.02.xsd\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.six-interbank-clearing.com/de/pain.008.001.03.ch.02.xsd  pain.008.001.03.ch.02.xsd\">")
@@ -219,11 +223,14 @@ class DirectDebitProposal(Document):
             content += make_line(" </DrctDbtTx>")
             content += make_line(" <DbtrAgt>")
             content += make_line("  <FinInstnId>")
-            content += make_line("    <BIC>{0}</BIC>".format(customer.bic))
+            if xml_version == "09":
+                content += make_line("    <Othr><Id>NOTPROVIDED</Id></Othr>")
+            else:
+                content += make_line("    <BIC>{0}</BIC>".format(customer.bic))
             content += make_line("  </FinInstnId>")
             content += make_line(" </DbtrAgt>")
             content += make_line(" <Dbtr>")
-            content += make_line("  <Nm>{0}</Nm>".format(html.escape(customer.customer_name)))
+            content += make_line("  <Nm>{0}</Nm>".format(html.escape(unicodedata.normalize('NFKD', customer.customer_name))))
             content += make_line(" </Dbtr>")
             content += make_line(" <DbtrAcct>")
             content += make_line("  <Id>")

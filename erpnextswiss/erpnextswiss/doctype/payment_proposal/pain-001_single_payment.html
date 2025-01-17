@@ -24,16 +24,16 @@
       </InitgPty>
     </GrpHdr>
     <PmtInf>
-      <PmtInfId>{{ payment.id }}</PmtInfId>
-      <PmtMtd>{{ payment.method }}</PmtMtd>
-      {%- if payment.service_level == "SEPA" %}
+      <PmtInfId>{{ payments[0].id }}</PmtInfId>
+      <PmtMtd>{{ payments[0].method }}</PmtMtd>
+      {%- if payments[0].service_level == "SEPA" %}
       <PmtTpInf>
         <SvcLvl><Cd>SEPA</Cd></SvcLvl>
       </PmtTpInf>
       {%- else %}
-      <BtchBookg>{{ payment.batch }}</BtchBookg>
+      <BtchBookg>{{ payments[0].batch }}</BtchBookg>
       {%- endif %}
-      {%- if xml_region == "CH" and payment.is_salary and not payment.service_level == "SEPA" %}{# CH only: salary information #}
+      {%- if xml_region == "CH" and payments[0].is_salary and not payments[0].service_level == "SEPA" %}{# CH only: salary information #}
       <PmtTpInf>
         <CtgyPurp>
           <Cd>SALA</Cd>
@@ -42,7 +42,7 @@
       {%- endif %}
       <NbOfTxs>{{ "{:d}".format(transaction_count) }}</NbOfTxs>
       <CtrlSum>{{ "{:.2f}".format(control_sum) }}</CtrlSum>
-      <ReqdExctnDt>{{ payment.required_execution_date }}</ReqdExctnDt>
+      <ReqdExctnDt>{{ payments[0].required_execution_date }}</ReqdExctnDt>
       <Dbtr>
         <Nm>{{ company.name }}</Nm>
         {%- if company.address_line1 %}
@@ -57,7 +57,7 @@
         <Id>
           <IBAN>{{ company.iban }}</IBAN>
         </Id>
-        {%- if xml_region == "CH" and payment.is_salary %}{# CH only: salary information: confidential #}
+        {%- if xml_region == "CH" and payments[0].is_salary %}{# CH only: salary information: confidential #}
         <Tp><Prtry>NOA</Prtry></Tp>
         {%- endif %}
       </DbtrAcct>

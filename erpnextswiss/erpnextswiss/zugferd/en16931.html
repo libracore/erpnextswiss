@@ -121,6 +121,13 @@
       {%- endif %}
     </ram:ApplicableHeaderTradeAgreement>
     <ram:ApplicableHeaderTradeDelivery>
+        {#- implemented but not correct according to EN16931 {% if delivery_date -%}
+        <ram:ActualDeliverySupplyChainEvent>
+            <ram:OccurenceDateTime>
+                <udt:DateTimeString>{{ delivery_date }}</udt:DateTimeString>
+            </ram:OccurenceDateTime>
+        </ram:ActualDeliverySupplyChainEvent>
+        {% endif -%} -#}
     </ram:ApplicableHeaderTradeDelivery>
     <ram:ApplicableHeaderTradeSettlement>
       <ram:InvoiceCurrencyCode>{{ currency }}</ram:InvoiceCurrencyCode>

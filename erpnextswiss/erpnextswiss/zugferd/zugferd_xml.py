@@ -85,6 +85,7 @@ def create_zugferd_xml(sales_invoice, verify=True):
             _tax_category = _taxes.get("tax_category")
             data['tax_category'] = (_tax_category or "S").split(':')[0]
         data['items'] = []
+        data['delivery_notes'] = []
         for item in sinv.items:
             item_data = {
                 'idx': item.idx,
@@ -98,8 +99,14 @@ def create_zugferd_xml(sales_invoice, verify=True):
                 'amount': item.amount
             }
             data['items'].append(item_data)
+            if item.delivery_note and item.delivery_note not in data['delivery_notes']:
+                data['delivery_notes'].append(item.delivery_note)
 
-
+        # determine delivery date
+        if data['delivery_notes']:
+            _delivery_date = frappe.get_value("Delivery Note", data['delivery_notes'][0], 'posting_date')
+            data['delivery_date'] = _delivery_date.strftime("%Y%m%d")
+        
         if sinv.taxes and sinv.taxes[0].rate:
             data['overall_tax_rate_percent'] = sinv.taxes[0].rate
             data['taxes'] = []

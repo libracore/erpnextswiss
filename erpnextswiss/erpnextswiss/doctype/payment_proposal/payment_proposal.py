@@ -438,8 +438,13 @@ class PaymentProposal(Document):
         data['control_sum'] = control_sum
         
         # render file
-        if data['xml_version'] == "09":
+        single_payment = cint(self.get("single_payment"))
+        if data['xml_version'] == "09" and not single_payment:
             content = frappe.render_template('erpnextswiss/erpnextswiss/doctype/payment_proposal/pain-001-001-09.html', data)
+        elif data['xml_version'] == "09" and single_payment:
+            content = frappe.render_template('erpnextswiss/erpnextswiss/doctype/payment_proposal/pain-001-001-09_single_payment.html', data)
+        elif single_payment:
+            content = frappe.render_template('erpnextswiss/erpnextswiss/doctype/payment_proposal/pain-001_single_payment.html', data)
         else:
             content = frappe.render_template('erpnextswiss/erpnextswiss/doctype/payment_proposal/pain-001.html', data)
         return { 'content': content }

@@ -6,7 +6,9 @@
  "field_order": [
   "daily_hours",
   "public_holidays",
-  "activity_type_determination"
+  "activity_type_determination",
+  "vacation_hours_based_on",
+  "leave_application_note"
  ],
  "fields": [
   {
@@ -27,10 +29,23 @@
    "fieldtype": "Table",
    "label": "Activity Type Determination",
    "options": "Activity Type Determination"
+  },
+  {
+   "default": "Timesheet",
+   "fieldname": "vacation_hours_based_on",
+   "fieldtype": "Select",
+   "label": "Consideration of vacation hours based on",
+   "options": "Timesheet\nLeave Application"
+  },
+  {
+   "depends_on": "eval:doc.vacation_hours_based_on=='Leave Application'",
+   "fieldname": "leave_application_note",
+   "fieldtype": "HTML",
+   "options": "<p>Only Leave types that are not marked as 'Is Leave Without Pay' are included.</p>"
   }
  ],
  "issingle": 1,
- "modified": "2021-06-10 16:46:57.811903",
+ "modified": "2025-01-17 09:00:14.072818",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "Worktime Settings",

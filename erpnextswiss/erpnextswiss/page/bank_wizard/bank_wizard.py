@@ -11,6 +11,7 @@ import ast
 import six
 from frappe.utils import cint, flt
 from frappe.utils.data import get_url_to_form
+from erpnext.setup.utils import get_exchange_rate
 
 # this function tries to match the amount to an open sales invoice
 #
@@ -763,6 +764,15 @@ def make_payment_entry(amount, date, reference_no, paid_from=None, paid_to=None,
             company = frappe.get_value("Account", paid_from, "company")
         elif paid_to:
             company = frappe.get_value("Account", paid_to, "company")
+    # prepare to verify exchange rates
+    company_currency = frappe.get_value("Company", company, "default_currency")
+    if type == "Receive":
+        account_currency = frappe.get_value("Account", paid_to, "account_currency")
+    else:
+        account_currency = frappe.get_value("Account", paid_from, "account_currency")
+    if account_currency != company_currency and exchange_rate == 1:
+        # re-evaluate exchange rate
+        exchange_rate = get_exchange_rate(from_currency=account_currency, to_currency=company_currency, transaction_date=date)
     if type == "Receive":
         # receive
         payment_entry = frappe.get_doc({

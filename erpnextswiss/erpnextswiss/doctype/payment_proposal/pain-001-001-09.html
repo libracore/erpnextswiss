@@ -28,6 +28,8 @@
         </CtgyPurp>
       </PmtTpInf>
       {%- endif %}
+      <NbOfTxs>1</NbOfTxs>{# note: this is only a patch for VoBA #}
+      <CtrlSum>{{ "{:.2f}".format(payment.amount) }}</CtrlSum>{# note: this is only a patch for VoBA #}
       <ReqdExctnDt><Dt>{{ payment.required_execution_date }}</Dt></ReqdExctnDt>
       <Dbtr>
         <Nm>{{ company.name }}</Nm>
@@ -52,7 +54,7 @@
       </DbtrAcct>
       <DbtrAgt>
           <FinInstnId>
-              <Othr><Id>NOTPROVIDED</Id></Othr>
+              <BICFI>{{ company.bic }}</BICFI>
           </FinInstnId>
       </DbtrAgt>
       <CdtTrfTxInf>
@@ -76,7 +78,7 @@
         </CdtrAgt>
         {%- endif %}
         <Cdtr>
-          <Nm>{{ payment.creditor.name }}</Nm>
+          <Nm>{{ payment.creditor.name[:70] }}</Nm>
           <PstlAdr>
             <StrtNm>{{ payment.creditor.street }}</StrtNm>
             <BldgNb>{{ payment.creditor.building }}</BldgNb>
@@ -87,7 +89,7 @@
           </PstlAdr>
         </Cdtr>
         {%- if payment.service_level == "SEPA" %}
-        {#- SEPA bapyment block #}
+        {#- SEPA payment block #}
         <CdtrAcct>
           <Id>
             <IBAN>{{ payment.iban }}</IBAN>

@@ -373,11 +373,11 @@ class PaymentProposal(Document):
         ### Payment Information (PmtInf, B-Level)
         # payment information records (1 .. 99'999)
         payment_account = frappe.get_doc('Account', self.pay_from_account)
-        if not payment_account:
-            frappe.throw( _("{0}: no account IBAN found ({1})".format(
-                payment.references, self.pay_from_account) ) )
+        if not payment_account.iban or not payment_account.bic:
+            frappe.throw( _("Account {0} is missing IBAN and/or BIC".format(
+                self.pay_from_account.references) ) )
         data['company']['iban'] = "{0}".format(payment_account.iban.replace(" ", ""))
-        data['company']['bic'] = payment_account.bic
+        data['company']['bic'] = "{0}".format(payment_account.bic.replace(" ", ""))
         data['payments'] = []
         for payment in self.payments:
             payment_content = ""

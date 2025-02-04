@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018-2024, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2018-2025, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
 #
 #
@@ -131,7 +131,10 @@ def get_content_from_zugferd(zugferd_xml, debug=False):
         invoice['due_date'] = today.strftime("%Y-%m-%d")
 
     document_context = soup.find('rsm:exchangeddocument')
-    invoice['terms'] = document_context.find('ram:content').string
+    if document_context.find('ram:content'):
+        invoice['terms'] = document_context.find('ram:content').string
+    else:
+        invoice['terms'] = None         # if no content is provided, set to None
     
     doc_id = document_context.find('ram:id').string
     invoice['doc_id'] = doc_id

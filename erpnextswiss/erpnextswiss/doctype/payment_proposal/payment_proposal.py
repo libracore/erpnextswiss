@@ -490,7 +490,25 @@ class PaymentProposal(Document):
         payment_content += make_line("          </PstlAdr>")
         payment_content += make_line("        </Cdtr>") 
         return payment_content
-
+        
+    @frappe.whitelist()
+    def has_active_ebics_connection(self):
+        statements = frappe.db.sql("""
+            SELECT `ebics_connection` 
+            FROM `tabebics Statement`
+            WHERE `account` = "{account}"
+            ORDER BY `created` DESC;
+            """.format(account=self.pay_from_account), as_dict=True)
+        if len(statements) > 0:
+            connections = frappe.db.sql("""
+            SELECT `activated`, `name` 
+            FROM `tabebics Connection`
+            WHERE `name` = "{conn}";
+            """.format(conn=statements[0]['ebics_connection']), as_dict=True)
+            if len(connections) > 0:
+                return connections[0]['name']
+        return 0
+        
 # this function will create a new payment proposal
 @frappe.whitelist()
 def create_payment_proposal(date=None, company=None, currency=None):

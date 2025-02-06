@@ -497,7 +497,7 @@ class PaymentProposal(Document):
             SELECT `ebics_connection` 
             FROM `tabebics Statement`
             WHERE `account` = "{account}"
-            ORDER BY `created` DESC;
+            ORDER BY `creation` DESC;
             """.format(account=self.pay_from_account), as_dict=True)
         if len(statements) > 0:
             connections = frappe.db.sql("""

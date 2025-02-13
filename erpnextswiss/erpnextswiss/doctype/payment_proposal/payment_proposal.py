@@ -614,6 +614,7 @@ def create_payment_proposal(date=None, company=None, currency=None):
                     LEFT JOIN `tabCompany` ON `tabSalary Slip`.`company` = `tabCompany`.`name`
                     WHERE `tabSalary Slip`.`docstatus` = 1 
                       AND `tabSalary Slip`.`is_proposed` = 0
+                      AND `tabSalary Slip`.`net_pay` > 0
                       AND `tabSalary Slip`.`company` = '{company}';""".format(company=company))
         salary_slips = frappe.db.sql(sql_query, as_dict=True)          
         # append salary slips

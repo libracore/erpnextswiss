@@ -375,7 +375,7 @@ class PaymentProposal(Document):
         payment_account = frappe.get_doc('Account', self.pay_from_account)
         if not payment_account.iban or not payment_account.bic:
             frappe.throw( _("Account {0} is missing IBAN and/or BIC".format(
-                self.pay_from_account.references) ) )
+                self.pay_from_account) ) )
         data['company']['iban'] = "{0}".format(payment_account.iban.replace(" ", ""))
         data['company']['bic'] = "{0}".format(payment_account.bic.replace(" ", ""))
         data['payments'] = []

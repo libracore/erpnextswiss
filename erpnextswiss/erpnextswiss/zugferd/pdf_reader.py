@@ -77,7 +77,7 @@ def find_supplier_from_pdf(pdf_file, company=None, debug=False):
         return supplier_tax_id_hits[0]
     else:
         if debug:
-            print("INFO: Happy go lucky: first supplier name matched supplier {0} ({1})".format(supplier_name_hits[0]), supplier_name_hits)
+            print("INFO: Happy go lucky: first supplier name matched supplier {0} ({1})".format(supplier_name_hits[0], supplier_name_hits))
         return supplier_name_hits[0]
     
 def build_supplier_maps(company=None):

@@ -57,6 +57,8 @@ def create_zugferd_xml(sales_invoice, verify=True):
             'customer': html.escape(sinv.customer),
             'customer_name': html.escape(sinv.customer_name),
             'customer_tax_id': html.escape(sinv.tax_id or ""),
+            'delivery_date': "{year:04d}{month:02d}{day:02d}".format(
+                year=sinv.delivery_date.year or sinv.posting_date.year, month=sinv.delivery_date.month or sinv.posting_date.month, day=sinv.delivery_date.day or sinv.posting_date.day),
             'currency': sinv.currency,
             'payment_terms': html.escape(sinv.payment_terms_template or ""),
             'due_date': "{year:04d}{month:02d}{day:02d}".format(

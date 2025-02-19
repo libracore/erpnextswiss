@@ -47,7 +47,7 @@ def create_zugferd_xml(sales_invoice, verify=True):
             })
         # compile xml content
         owner = frappe.get_doc("User", sinv.owner)
-        delivery_date = sinv.delivery_date or sinv.posting_date
+        delivery_date = sinv.get('delivery_date') or sinv.get('posting_date')
         data = {
             'name': html.escape(sinv.name),
             'issue_date': "{year:04d}{month:02d}{day:02d}".format(

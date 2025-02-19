@@ -121,6 +121,11 @@
       {%- endif %}
     </ram:ApplicableHeaderTradeAgreement>
     <ram:ApplicableHeaderTradeDelivery>
+      <ram:ActualDeliverySupplyChainEvent>
+        <ram:OccurrenceDateTime>
+          <udt:DateTimeString format='102'>{{ delivery_date }}</udt:DateTimeString>
+        </ram:OccurrenceDateTime>
+      </ram:ActualDeliverySupplyChainEvent>
     </ram:ApplicableHeaderTradeDelivery>
     <ram:ApplicableHeaderTradeSettlement>
       <ram:InvoiceCurrencyCode>{{ currency }}</ram:InvoiceCurrencyCode>
@@ -139,11 +144,15 @@
         <ram:TypeCode>VAT</ram:TypeCode>
         {%- if tax_category == "AE" %}
           <ram:ExemptionReason>Reverse Charge</ram:ExemptionReason>
+        {%- elif tax_category == "E" %}
+          <ram:ExemptionReason>Not subject to VAT</ram:ExemptionReason>
         {% endif -%}
         <ram:BasisAmount>{{ "{:.2f}".format(tax.net_amount or net_total) }}</ram:BasisAmount>
         <ram:CategoryCode>{{ tax_category or "S" }}</ram:CategoryCode>
         {%- if tax_category == "AE" %}
           <ram:ExemptionReasonCode>VATEX-EU-AE</ram:ExemptionReasonCode>
+        {%- elif tax_category == "E" %}
+          <ram:ExemptionReasonCode>VATEX-EU-O</ram:ExemptionReasonCode>
         {% endif -%}
         <ram:RateApplicablePercent>{{ "{:.2f}".format(tax.rate) }}</ram:RateApplicablePercent>
       </ram:ApplicableTradeTax>

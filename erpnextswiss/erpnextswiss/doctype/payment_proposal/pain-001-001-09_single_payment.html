@@ -35,7 +35,7 @@
         {%- if company.address_line1 %}
         <PstlAdr>
           <StrtNm>{{ company.street }}</StrtNm>
-          <BldgNb>{{ company.building }}</BldgNb>
+          <BldgNb>{% if company.building %}{{ company.building }}{% else %}0{% endif %}</BldgNb>
           <PstCd>{{ company.pincode }}</PstCd>
           <TwnNm>{{ company.city }}</TwnNm>
           <Ctry>{{ company.country_code }}</Ctry>
@@ -81,7 +81,7 @@
           <Nm>{{ payment.creditor.name }}</Nm>
           <PstlAdr>
             <StrtNm>{{ payment.creditor.street }}</StrtNm>
-            <BldgNb>{{ payment.creditor.building }}</BldgNb>
+            <BldgNb>{% if payment.creditor.building %}{{ payment.creditor.building }}{% else %}0{% endif %}</BldgNb>
             <PstCd>{{ payment.creditor.pincode }}</PstCd>
             <TwnNm>{{ payment.creditor.city }}</TwnNm>
             <Ctry>{{ payment.creditor.country_code }}</Ctry>

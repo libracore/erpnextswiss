@@ -21,6 +21,8 @@
       {%- else %}
       <BtchBookg>{{ payment.batch }}</BtchBookg>
       {%- endif %}
+      <NbOfTxs>1</NbOfTxs>{# note: this is only a patch for VoBA #}
+      <CtrlSum>{{ "{:.2f}".format(payment.amount) }}</CtrlSum>{# note: this is only a patch for VoBA #}
       {%- if xml_region == "CH" and payment.is_salary and not payment.service_level == "SEPA" %}{# CH only: salary information #}
       <PmtTpInf>
         <CtgyPurp>
@@ -28,8 +30,6 @@
         </CtgyPurp>
       </PmtTpInf>
       {%- endif %}
-      <NbOfTxs>1</NbOfTxs>{# note: this is only a patch for VoBA #}
-      <CtrlSum>{{ "{:.2f}".format(payment.amount) }}</CtrlSum>{# note: this is only a patch for VoBA #}
       <ReqdExctnDt><Dt>{{ payment.required_execution_date }}</Dt></ReqdExctnDt>
       <Dbtr>
         <Nm>{{ company.name }}</Nm>

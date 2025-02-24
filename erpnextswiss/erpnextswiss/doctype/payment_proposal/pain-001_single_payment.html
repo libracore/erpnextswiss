@@ -33,6 +33,8 @@
       {%- else %}
       <BtchBookg>{{ payments[0].batch }}</BtchBookg>
       {%- endif %}
+      <NbOfTxs>{{ "{:d}".format(transaction_count) }}</NbOfTxs>
+      <CtrlSum>{{ "{:.2f}".format(control_sum) }}</CtrlSum>
       {%- if xml_region == "CH" and payments[0].is_salary and not payments[0].service_level == "SEPA" %}{# CH only: salary information #}
       <PmtTpInf>
         <CtgyPurp>
@@ -40,8 +42,6 @@
         </CtgyPurp>
       </PmtTpInf>
       {%- endif %}
-      <NbOfTxs>{{ "{:d}".format(transaction_count) }}</NbOfTxs>
-      <CtrlSum>{{ "{:.2f}".format(control_sum) }}</CtrlSum>
       <ReqdExctnDt>{{ payments[0].required_execution_date }}</ReqdExctnDt>
       <Dbtr>
         <Nm>{{ company.name }}</Nm>

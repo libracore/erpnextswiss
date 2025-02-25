@@ -93,6 +93,7 @@ def create_zugferd_xml(sales_invoice, verify=True):
                 'idx': item.idx,
                 'item_code': html.escape(item.item_code),
                 'item_name': html.escape(item.item_name),
+                'description': html.escape(item.description),
                 'barcode': item.barcode,
                 'price_list_rate': item.price_list_rate,
                 'rate': item.rate,

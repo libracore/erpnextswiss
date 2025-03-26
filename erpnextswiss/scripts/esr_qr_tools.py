@@ -25,6 +25,7 @@ def get_supplier_based_on_esr(participant):
             return {
                 'error': False,
                 'supplier': supplier[0].name,
+                'supplier_name': supplier[0].supplier_name,
                 'more_than_one_supplier': False
             }
     else:

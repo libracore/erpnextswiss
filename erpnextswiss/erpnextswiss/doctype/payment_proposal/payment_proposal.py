@@ -183,16 +183,17 @@ class PaymentProposal(Document):
             cntry = frappe.get_value("Company", emp.company, "country")
             self.add_payment(
                 receiver_name=emp.employee_name, 
-                iban=emp.bank_ac_no, 
+                iban=emp.bank_ac_no,
+                bic=emp.bic or '',
                 payment_type="IBAN",
-                address_line1=address_lines[0], 
-                address_line2=address_lines[1], 
-                country=cntry, 
-                pincode=plz_city[0], 
+                address_line1=address_lines[0],
+                address_line2=address_lines[1],
+                country=cntry,
+                pincode=plz_city[0],
                 city=plz_city[1],
-                amount=amount, 
-                currency=currency, 
-                reference=" ".join(references), 
+                amount=amount,
+                currency=currency,
+                reference=" ".join(references),
                 execution_date=self.date
             )
             total += amount
@@ -216,16 +217,17 @@ class PaymentProposal(Document):
             cntry = frappe.get_value("Company", emp.company, "country")
             self.add_payment(
                 receiver_name=emp.employee_name, 
-                iban=emp.bank_ac_no, 
+                iban=emp.bank_ac_no,
+                bic=emp.bic or '',
                 payment_type="IBAN",
-                address_line1=address_lines[0], 
-                address_line2=address_lines[1], 
-                country=cntry, 
-                pincode=plz_city[0], 
+                address_line1=address_lines[0],
+                address_line2=address_lines[1],
+                country=cntry,
+                pincode=plz_city[0],
                 city=plz_city[1],
-                amount=salary.amount, 
-                currency=account_currency, 
-                reference=(unidecode(salary.salary_slip))[-35:], 
+                amount=salary.amount,
+                currency=account_currency,
+                reference=(unidecode(salary.salary_slip))[-35:],
                 execution_date=salary.target_date,
                 is_salary=1
             )

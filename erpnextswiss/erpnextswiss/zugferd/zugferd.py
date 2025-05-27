@@ -164,7 +164,7 @@ def get_content_from_zugferd(zugferd_xml, debug=False):
         _item = {
             'net_price': item.find('ram:netpriceproducttradeprice').find('ram:chargeamount').string, # if item.find('ram:netpriceproducttradeprice') else 0,
             'qty': flt(item.find('ram:billedquantity').string) if item.find('ram:billedquantity') else 0,
-            'seller_item_code': item.find('ram:sellerassignedid').string,
+            'seller_item_code': item.find('ram:sellerassignedid').string if item.find('ram:sellerassignedid') else None,
             'item_name': item.find('ram:name').string,
             'item_code': None
         }

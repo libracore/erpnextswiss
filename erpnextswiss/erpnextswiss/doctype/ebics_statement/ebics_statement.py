@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2024, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2024-2025, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
 
 import frappe
@@ -39,13 +39,14 @@ class ebicsStatement(Document):
             'closing_balance': meta.get('closing_balance')
         })
         account_matches = frappe.db.sql("""
-            SELECT `name`
+            SELECT `name`, `company`
             FROM `tabAccount`
             WHERE `iban` = "{iban}" AND `account_type` = "Bank";
             """.format(iban=meta.get('iban')), as_dict=True)
         print("{0}".format(account_matches))
         if len(account_matches) > 0:
             self.account = account_matches[0]['name']
+            self.company = account_matches[0]['company']
             self.transactions = []
             self.status = "Pending"             # reset status: transaction being added
             

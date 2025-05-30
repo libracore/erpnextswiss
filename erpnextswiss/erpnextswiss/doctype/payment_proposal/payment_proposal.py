@@ -120,6 +120,7 @@ class PaymentProposal(Document):
                     invoice.save()
                     # create payment on intermediate
                     if self.use_intermediate == 1:
+                        
                         self.create_payment("Supplier", supplier, 
                             "Purchase Invoice", purchase_invoice.purchase_invoice, exec_date,
                             purchase_invoice.amount, self.company)
@@ -307,8 +308,12 @@ class PaymentProposal(Document):
     def create_payment(self, party_type, party_name, 
                             reference_type, reference_name, date,
                             amount, company):
+        intermediate_currency = frappe.get_cached_value("Account", self.intermediate_account, 'account_currency')
         if reference_type == "Purchase Invoice":
             credit_to = frappe.get_value(reference_type, reference_name, "credit_to")
+            # if the document is in a foreign currency, calculate to expected value
+            if frappe.get_value(reference_type, reference_name, "currency") != intermediate_currency:
+                amount = rounded(amount * frappe.get_value(reference_type, reference_name, "conversion_rate"), 2)
         elif reference_type == "Expense Claim":
             credit_to = frappe.get_value(reference_type, reference_name, "payable_account")
         elif reference_type == "Expense Claim":

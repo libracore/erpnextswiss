@@ -260,9 +260,18 @@ def read_camt053(content, account):
     # transactions
     entries = soup.find_all('ntry')
     transactions = read_camt_transactions(entries, account, settings)
+    html = render_transactions(transactions)
     
-    return { 'transactions': transactions } 
+    return { 'transactions': transactions, 'html': html } 
+
+@frappe.whitelist()
+def render_transactions(transactions):
+    if type(transactions) == str:
+        transactions = json.loads(transactions)
     
+    html = frappe.render_template('erpnextswiss/erpnextswiss/page/bank_wizard/transaction_table.html', { 'transactions': transactions }  )
+    return html
+
 def read_camt_transactions(transaction_entries, account, settings, debug=False):
     company = frappe.get_value("Account", account, "company")
     txns = []

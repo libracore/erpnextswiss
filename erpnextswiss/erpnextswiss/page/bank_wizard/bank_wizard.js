@@ -98,13 +98,13 @@ frappe.bank_wizard = {
             },
             callback: function(r) {
                 if (r.message) {
-                    try {
+                    //try {
                         frappe.show_alert( r.message.transactions.length +  __(" transactions found") );
                         frappe.bank_wizard.render_response(r.message);
-                    } catch {
-                        frappe.msgprint( "An error occurred while parsing. Please check the log files." );
-                        frappe.bank_wizard.end_wait();
-                    }
+                    //} catch {
+                    //    frappe.msgprint( "An error occurred while parsing. Please check the log files." );
+                    //    frappe.bank_wizard.end_wait();
+                    //}
                 } 
             }
         });
@@ -195,8 +195,8 @@ frappe.bank_wizard = {
     
         // display the transactions as table
         var container = document.getElementById("table_placeholder");
-        var content = frappe.render_template('transaction_table', message);
-        container.innerHTML = content;
+        // var content = frappe.render_template('transaction_table', message);
+        container.innerHTML = message.html;
     
         // attach button handlers
         var bank_account = document.getElementById("bank_account").value;

@@ -1,21 +1,22 @@
-<table  class="table">
+<table class="table">
     <tr>
-        <th>{{ __("Date") }}</th>
-        <th>{{ __("Amount") }}</th>
-        <th>{{ __("Party") }}</th>
-        <th>{{ __("Reference") }}</th>
-        <th>{{ __("Action") }}</th>
+        <th style="width: 100px; ">{{ _("Date") }}</th>
+        <th style="width: 125px; text-align: right; " >{{ _("Amount") }}</th>
+        <th>{{ _("Party") }}</th>
+        <th>{{ _("Reference") }}</th>
+        <th>{{ _("Action") }}</th>
     </tr>
     {% for transaction in transactions %}
     <tr id="row-transaction-{{ transaction.txid }}">
-        <td>{{ transaction.date }}</td>
-        <td>
+        <td>{{ frappe.utils.get_datetime(transaction.date).strftime("%d.%m.%Y") }}</td>
+        <td style="text-align: right; " >
+            
             {% if transaction.credit_debit == "DBIT" %}
                 <span class="octicon octicon-repo-pull"></span>
             {% else %}
                 <span class="octicon octicon-repo-push"></span>
             {% endif %}
-            {{ transaction.currency }} {{ transaction.amount }}
+            {{ transaction.currency }} {{ "{:,.2f}".format(transaction.amount or 0).replace(",", "`") }}
         </td>
         <td>{{ transaction.party_name }}{% if transaction.party_address %}<br> {{ transaction.party_address }}{% endif %}</td>
         <td>{{ transaction.transaction_reference }}</td>
@@ -31,32 +32,32 @@
              {% endif %}
             {% endif %}
             {% if transaction.invoice_matches %}
-             <button type="submit" class="btn btn-xs btn-success" id="btn-close-pinv-{{ transaction.txid }}">{{ __("Purchase Invoice") }}</button>
+             <button type="submit" class="btn btn-xs btn-success" id="btn-close-pinv-{{ transaction.txid }}">{{ _("Purchase Invoice") }}</button>
             {% endif %}
             {% if transaction.party_match %}
-             <button type="submit" class="btn btn-xs btn-warning" id="btn-close-supplier-{{ transaction.txid }}">{{ __("Supplier") }}</button>
+             <button type="submit" class="btn btn-xs btn-warning" id="btn-close-supplier-{{ transaction.txid }}">{{ _("Supplier") }}</button>
             {% endif %}
             {% if transaction.expense_matches %}
-             <button type="submit" class="btn btn-xs btn-success" id="btn-close-exp-{{ transaction.txid }}">{{ __("Expense Claim") }}</button>
+             <button type="submit" class="btn btn-xs btn-success" id="btn-close-exp-{{ transaction.txid }}">{{ _("Expense Claim") }}</button>
             {% endif %}
             {% if transaction.employee_match %}
-             <button type="submit" class="btn btn-xs btn-warning" id="btn-close-employee-{{ transaction.txid }}">{{ __("Employee") }}</button>
+             <button type="submit" class="btn btn-xs btn-warning" id="btn-close-employee-{{ transaction.txid }}">{{ _("Employee") }}</button>
             {% endif %}
-            <button type="submit" class="btn btn-xs btn-default" id="btn-close-payable-{{ transaction.txid }}">{{ __("Payables") }}</button>
+            <button type="submit" class="btn btn-xs btn-default" id="btn-close-payable-{{ transaction.txid }}">{{ _("Payables") }}</button>
           {% else %}
             <!-- Customer -->
             {% if transaction.amount == transaction.matched_amount %}
              <button type="submit" class="btn btn-xs btn-primary" id="btn-quick-sinv-{{ transaction.txid }}">&rArr;</button>
             {% endif %}
             {% if transaction.invoice_matches %}
-             <button type="submit" class="btn btn-xs btn-success" id="btn-close-sinv-{{ transaction.txid }}">{{ __("Sales Invoice") }}</button>
+             <button type="submit" class="btn btn-xs btn-success" id="btn-close-sinv-{{ transaction.txid }}">{{ _("Sales Invoice") }}</button>
             {% endif %}
             {% if transaction.party_match %}
-             <button type="submit" class="btn btn-xs btn-warning" id="btn-close-customer-{{ transaction.txid }}">{{ __("Customer") }}</button>
+             <button type="submit" class="btn btn-xs btn-warning" id="btn-close-customer-{{ transaction.txid }}">{{ _("Customer") }}</button>
             {% endif %}
-            <button type="submit" class="btn btn-xs btn-default" id="btn-close-receivable-{{ transaction.txid }}">{{ __("Receivables") }}</button>
+            <button type="submit" class="btn btn-xs btn-default" id="btn-close-receivable-{{ transaction.txid }}">{{ _("Receivables") }}</button>
           {% endif %}
-          <button type="submit" class="btn btn-xs btn-default" id="btn-close-intermediate-{{ transaction.txid }}">{{ __("Intermediate") }}</button>
+          <button type="submit" class="btn btn-xs btn-default" id="btn-close-intermediate-{{ transaction.txid }}">{{ _("Intermediate") }}</button>
         </td>
     </tr>
     {% endfor %}

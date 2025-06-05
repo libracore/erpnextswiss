@@ -235,6 +235,12 @@ class ebicsConnection(Document):
                     if debug:
                         print("Parsing data...")
                     stmt.parse_content()
+                    
+                    # if there are no transactions: drop file
+                    if len(stmt.transactions) == 0:
+                        stmt.delete()
+                        continue
+                        
                     if debug:
                         print("Processing transactions...")
                     stmt.process_transactions()

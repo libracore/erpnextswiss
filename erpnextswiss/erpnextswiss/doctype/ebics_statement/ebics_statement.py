@@ -24,7 +24,7 @@ class ebicsStatement(Document):
             self.status = "Completed"
         return
         
-    def parse_content(self):
+    def parse_content(self, debug=False):
         """
         Read the xml content and parse into the doctype record
         """
@@ -50,13 +50,31 @@ class ebicsStatement(Document):
             self.transactions = []
             self.status = "Pending"             # reset status: transaction being added
             
-            # read transactions (only if account is available)
+            # read transactions (only if account is available) - note: transactions that are already recorded as payment entry are supressed
             transactions = read_camt053(self.xml_content, self.account)
             
-            print("Txns: {0}".format(transactions))
+            if debug:
+                print("Txns: {0}".format(transactions))
             # read transactions into the child table
             for transaction in transactions.get('transactions'):
-                print("{0}".format(transaction))
+                if debug:
+                    print("{0}".format(transaction))
+                # verify that this unique ID has not already been imported (happens do to the licence block in fintech)
+                duplicates = frappe.db.sql("""
+                    SELECT `name`
+                    FROM `tabebics Statement Transaction`
+                    WHERE `unique_reference` = %(ref)s
+                      AND `date` = %(date)s
+                      AND `parent` != %(stmt)s;""",
+                    {
+                        'ref': transaction.get("unique_reference"),
+                        'date': transaction.get("date"),
+                        'stmt': self.name
+                    },
+                    as_dict=True
+                )
+                if len(duplicates) > 0:
+                    continue                # skip, this transaction has 
                 # stringify lists to store them in child table
                 if transaction.get("invoice_matches"):
                     transaction['invoice_matches'] = "{0}".format(transaction.get("invoice_matches"))

@@ -21,6 +21,7 @@
   "banking_region",
   "xml_version",
   "enable_salary_payment",
+  "use_unidecode",
   "section_bank_wizard",
   "intermediate_account",
   "column_bank_wizard",
@@ -304,10 +305,16 @@
    "fieldname": "reminder_min_threshold",
    "fieldtype": "Currency",
    "label": "Reminder Minimum Threshold"
+  },
+  {
+   "default": "0",
+   "fieldname": "use_unidecode",
+   "fieldtype": "Check",
+   "label": "Use unidecoded formats"
   }
  ],
  "issingle": 1,
- "modified": "2025-01-17 09:02:30.124019",
+ "modified": "2025-06-20 22:25:23.239750",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "ERPNextSwiss Settings",

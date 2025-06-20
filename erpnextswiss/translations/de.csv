@@ -410,6 +410,7 @@ Report: Account Sheets,Account Sheets,Kontenblätter
 Report: Account Sheets with Tax Codes,Account Sheets with Tax Codes,Kontenblätter mit Steuercodes
 DocType: ERPNextSwiss Settings,Blocking period in days,Sperrfrist in Tagen
 DocType: ERPNextSwiss Settings,Payment Reminder Level Blocking Period,Mahnstufen Sperrfristen
+DocType: ERPNextSwiss Settings,Use unidecoded formats,Unidecodierte Formate verwenden
 Report: Budget Control,Budget Control,Budgetkontrolle
 Report: Service Invoicing,Service Invoicing,Dienstleistungsabrechnug
 Report: Service Invoicing,Create invoice,Rechnung erstellen

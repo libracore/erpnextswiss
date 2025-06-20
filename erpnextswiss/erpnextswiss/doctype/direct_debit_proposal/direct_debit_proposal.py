@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018-2023, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2018-2025, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
 
 from __future__ import unicode_literals
@@ -10,7 +10,8 @@ import time
 import html          # used to escape xml content
 from frappe import _
 from frappe.utils.data import get_url_to_form
-import unicodedata
+from frappe.utils import cint
+from unidecode import unidecode
 
 class DirectDebitProposal(Document):
     def validate(self):
@@ -125,8 +126,9 @@ class DirectDebitProposal(Document):
         content = make_line("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
         # define xml template reference
         # load namespace based on banking region
-        xml_version = frappe.get_value("ERPNextSwiss Settings", "ERPNextSwiss Settings", "xml_version")
-        banking_region = frappe.get_value("ERPNextSwiss Settings", "ERPNextSwiss Settings", "banking_region")
+        settings = frappe.get_doc("ERPNextSwiss Settings", "ERPNextSwiss Settings")
+        xml_version = settings.get("xml_version")
+        banking_region = settings.get("banking_region")
         if xml_version == "09":
             content += make_line("<Document xmlns=\"urn:iso:std:iso:20022:tech:xsd:pain.008.001.08\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"urn:iso:std:iso:20022:tech:xsd:pain.008.001.08 pain.008.001.08.xsd\">")
         elif banking_region == "AT":
@@ -230,7 +232,7 @@ class DirectDebitProposal(Document):
             content += make_line("  </FinInstnId>")
             content += make_line(" </DbtrAgt>")
             content += make_line(" <Dbtr>")
-            content += make_line("  <Nm>{0}</Nm>".format(html.escape(unicodedata.normalize('NFKD', customer.customer_name))))
+            content += make_line("  <Nm>{0}</Nm>".format(html.escape(customer.customer_name)))
             content += make_line(" </Dbtr>")
             content += make_line(" <DbtrAcct>")
             content += make_line("  <Id>")
@@ -249,6 +251,10 @@ class DirectDebitProposal(Document):
         # insert control numbers
         content = content.replace(transaction_count_identifier, "{0}".format(transaction_count))
         content = content.replace(control_sum_identifier, "{:.2f}".format(control_sum))
+        
+        # use unicode if enabled (this will decode utf-8 to ascii)
+        if cint(settings.get("use_unidecode")) == 1:
+            content = unidecode(content)
         
         return { 'content': content }
     pass

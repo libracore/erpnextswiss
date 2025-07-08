@@ -177,12 +177,20 @@
         <ram:TypeCode>VAT</ram:TypeCode>
         {%- if tax_category == "AE" %}
           <ram:ExemptionReason>Reverse Charge</ram:ExemptionReason>
-        {% endif -%}
+        {%- elif tax_category == "E" %}
+          <ram:ExemptionReason>Not subject to VAT</ram:ExemptionReason>
+        {%- elif tax_category == "K" %}
+          <ram:ExemptionReason>Intra-community supply</ram:ExemptionReason>
+        {%- endif %}
         <ram:BasisAmount>{{ "{:.2f}".format(net_total) }}</ram:BasisAmount>
         <ram:CategoryCode>{{ tax_category or "S" }}</ram:CategoryCode>
         {%- if tax_category == "AE" %}
           <ram:ExemptionReasonCode>VATEX-EU-AE</ram:ExemptionReasonCode>
-        {% endif -%}
+        {%- elif tax_category == "E" %}
+          <ram:ExemptionReasonCode>VATEX-EU-O</ram:ExemptionReasonCode>
+        {%- elif tax_category == "K" %}
+          <ram:ExemptionReasonCode>VATEX-EU-IC</ram:ExemptionReasonCode>
+        {%- endif %}
         <ram:RateApplicablePercent>0</ram:RateApplicablePercent>                       
       </ram:ApplicableTradeTax>
 {%- endif %}

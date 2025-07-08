@@ -151,7 +151,25 @@ def create_zugferd_xml(sales_invoice, verify=True):
                 'pincode': "",
                 'city': "",
                 'country_code': "CH"
-            }            
+            }
+        shipping_address = frappe.get_doc("Address", sinv.shipping_address_name)
+        if shipping_address:
+            shipping_country_code = frappe.get_value("Country", shipping_address.country, "code").upper()
+            data['shipping_address'] = {
+                'address_line1': html.escape(shipping_address.address_line1 or ""),
+                'address_line2': html.escape(shipping_address.address_line2 or ""),
+                'pincode': html.escape(shipping_address.pincode or ""),
+                'city': html.escape(shipping_address.city or ""),
+                'country_code': shipping_country_code or "CH"
+            }
+        else:
+            data['shipping_address'] = {
+                'address_line1': "",
+                'address_line2': "",
+                'pincode': "",
+                'city': "",
+                'country_code': "CH"
+            }         
 
         xml = frappe.render_template('erpnextswiss/erpnextswiss/zugferd/en16931.html', data)
         

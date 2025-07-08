@@ -122,6 +122,15 @@
       {%- endif %}
     </ram:ApplicableHeaderTradeAgreement>
     <ram:ApplicableHeaderTradeDelivery>
+      <ram:ShipToTradeParty>
+        <ram:Name>{{ customer_name }}</ram:Name>
+        <ram:PostalTradeAddress>
+          <ram:PostcodeCode>{{ shipping_address.pincode }}</ram:PostcodeCode>
+          <ram:LineOne>{{ shipping_address.address_line1 }}</ram:LineOne>
+          <ram:CityName>{{ shipping_address.city }}</ram:CityName>
+          <ram:CountryID>{{ shipping_address.country_code }}</ram:CountryID>
+        </ram:PostalTradeAddress>
+      </ram:ShipToTradeParty>
       <ram:ActualDeliverySupplyChainEvent>
         <ram:OccurrenceDateTime>
           <udt:DateTimeString format='102'>{{ delivery_date }}</udt:DateTimeString>
@@ -147,14 +156,18 @@
           <ram:ExemptionReason>Reverse Charge</ram:ExemptionReason>
         {%- elif tax_category == "E" %}
           <ram:ExemptionReason>Not subject to VAT</ram:ExemptionReason>
-        {% endif -%}
+        {%- elif tax_category == "K" %}
+          <ram:ExemptionReason>Intra-community supply</ram:ExemptionReason>
+        {%- endif %}
         <ram:BasisAmount>{{ "{:.2f}".format(tax.net_amount or net_total) }}</ram:BasisAmount>
         <ram:CategoryCode>{{ tax_category or "S" }}</ram:CategoryCode>
         {%- if tax_category == "AE" %}
           <ram:ExemptionReasonCode>VATEX-EU-AE</ram:ExemptionReasonCode>
         {%- elif tax_category == "E" %}
           <ram:ExemptionReasonCode>VATEX-EU-O</ram:ExemptionReasonCode>
-        {% endif -%}
+        {%- elif tax_category == "K" %}
+          <ram:ExemptionReasonCode>VATEX-EU-IC</ram:ExemptionReasonCode>
+        {%- endif %}
         <ram:RateApplicablePercent>{{ "{:.2f}".format(tax.rate) }}</ram:RateApplicablePercent>
       </ram:ApplicableTradeTax>
   {%- endfor %}

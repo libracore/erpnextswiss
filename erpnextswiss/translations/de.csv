@@ -206,10 +206,12 @@ DocType: ERPNextSwiss Settings,Numeric-only debtor reference matching,Rein-numer
 DocType: ERPNextSwiss Settings,Uses only the numeric part of a sales invoice number for matching,Verwendet nur den numerischen Teil der Rechnugnsreferenz zum Abgleich
 DocType: ERPNextSwiss Settings,Debug Mode,Debug-Modus
 DocType: ERPNextSwiss Settings,No Reminder on Credit Balance,Keine Mahnung bei Kundenguthaben
+DocType: ERPNextSwiss Settings,Ignore special characters,Spezialzeichen ignorieren
 DocType: Contract,Contract,Vertrag
 DocType: Contract,Contracts,Verträge
 DocType: ERPNextSwiss Settings,Automated Payments,Automatische Zahlungsabwicklung
 DocType: ERPNextSwiss Settings,Planning Period (Days),Planungszeitraum (Tage)
+DocType: ERPNextSwiss Settings,Reminder Minimum Threshold,Grenzwert für Mahnungen (ab Betrag)
 DocType: Payment Reminder,Payment Reminder,Mahnung
 DocType: Payment Reminder,Payment Reminder Level,Mahnungsstufe
 DocType: Payment Reminder,Exclude From Payment Reminder Until,Von Mahnungsläufen ausschliessen bis
@@ -271,6 +273,7 @@ DocType: Payment Proposal,Overview,Übersicht
 DocType: Payment Proposal,Target date,Zieldatum
 DocType: Payment Proposal,Employee name,Mitarbeitername
 DocType: Payment Proposal,Include Payments Until,Fälligkeiten einschliessen bis
+DocType: Payment Proposal,Execute as one single payment,Als eine einzige Zahlung ausführen
 Page: Bank Wizard,Bank Wizard,Bankassistent
 Page: Bank Wizard,Transaction matched,Zahlung zugewiesen
 Page: Bank Wizard, transactions found, Zahlungen gefunden
@@ -404,8 +407,10 @@ DocType: Worktime Settings,Carryover and Payouts,Überträge und Auszahlungen
 Report: Monthly Worktime,Monthly Worktime,Arbeitszeit im Monat
 Report: Annual Salary Sheet,Annual Salary Sheet,Jahreslohnzettel
 Report: Account Sheets,Account Sheets,Kontenblätter
+Report: Account Sheets with Tax Codes,Account Sheets with Tax Codes,Kontenblätter mit Steuercodes
 DocType: ERPNextSwiss Settings,Blocking period in days,Sperrfrist in Tagen
 DocType: ERPNextSwiss Settings,Payment Reminder Level Blocking Period,Mahnstufen Sperrfristen
+DocType: ERPNextSwiss Settings,Use unidecoded formats,Unidecodierte Formate verwenden
 Report: Budget Control,Budget Control,Budgetkontrolle
 Report: Service Invoicing,Service Invoicing,Dienstleistungsabrechnug
 Report: Service Invoicing,Create invoice,Rechnung erstellen
@@ -431,3 +436,27 @@ DocType: ZUGFeRD Wizard,This invoice cannot be interpreted automatically.,Diese 
 DocType: ZUGFeRD Wizard,Import successful,Import erfolgreich
 DocType: ZUGFeRD Wizard,Creating invoice...,Rechnung erstellen...
 DocType: ZUGFeRD Wizard,Reading invoice...,Rechnung lesen...
+DocType: ZUGFeRD Wizard,Ignore bill date on QR,Rechnungsdatum bei QR-Rechnungen ignorieren
+DocType: ZUGFeRD Wizard,Ignore due date on QR,Fälligkeitsdatum bei QR-Rechnungen ignorieren
+DocType: Planzer Settings,Planzer Settings,Planzer-Einstellungen
+DocType: Planzer Settings,Shipment transmitted,Sendung übermittelt
+DocType: Planzer Settings,"If this is marked, submitting a Shipment will transfer it through the Planzer interface","Wenn diese Option aktiviert ist, wird eine Sendung beim Buchen automatisch an Planzer übertragen"
+DocType: ebics Connection,ebics Connection,ebics-Verbindung
+DocType: ebics Connection,Configuration prepared,Konfiguration vorbereitet
+DocType: ebics Connection,Keys created,Schlüssel erzeugt
+DocType: ebics Connection,Signature sent,Signatur übermittelt
+DocType: ebics Connection,Keys sent,Schlüssel übermittelt
+DocType: ebics Connection,INI Letter created,INI-Letter erzeugt
+DocType: ebics Connection,Public keys downloaded,Öffentlicher Schlüssel heruntergeladen
+DocType: ebics Connection,Account activated,Verbindung aktiviert
+DocType: ebics Connection,This ebics connection is activated.,Diese ebics-Verbindung ist aktiviert.
+DocType: ebics Connection,Activation Wizard,Aktivierungs-Assistent
+DocType: ebics Connection,Please fill in the configuration fields of the connection.,Bitte füllen Sie das Konfigurations-Formular aus.
+DocType: ebics Connection,Click next to create keys.,Weiter klicken um die Schlüssel zu erzeugen.
+DocType: ebics Connection,Click next to send the signature to the bank.,Weiter klicken um die Signatur zu übermitteln.
+DocType: ebics Connection,Click next to send the keys to the bank.,Weiter klicken umd die Schlüssel zu übertragen.
+DocType: ebics Connection,"Click next to create the INI letter, sign and send it to the bank.","Weiter klicken um den Ini-Brief zu erstellen, den Sie dann unterzeichnen und an die Bank senden."
+DocType: ebics Connection,"Once you have received the confirmation from the bank, click next to download the public keys.","Nachdem Sie die Betsätigung der Bank erhalten haben, klicken Sie weiter um die öffentlichen Schlüssel herunter zu laden."
+DocType: ebics Connection,Click next to activate this connection.,Weiter klicken um die Verbindung zu aktivieren
+DocType: ebics Connection,All set.,Alles bereit
+DocType: ebics Connection,Transmit by ebics,Per ebics übertragen

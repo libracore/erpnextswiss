@@ -1,13 +1,29 @@
-// Copyright (c) 2018-2023, libracore (https://www.libracore.com) and contributors
+// Copyright (c) 2018-2024, libracore (https://www.libracore.com) and contributors
 // For license information, please see license.txt
 
 frappe.ui.form.on('Payment Proposal', {
      refresh: function(frm) {
         if (frm.doc.docstatus == 1) {
-             // add download pain.001 button on submitted record
-             frm.add_custom_button(__("Download bank file"), function() {
-                  generate_bank_file(frm);
-             }).addClass("btn-primary");
+            // add download pain.001 button on submitted record
+            frm.add_custom_button(__("Download bank file"), function() {
+                generate_bank_file(frm);
+            }).addClass("btn-primary");
+            frm.add_custom_button(__("Download Wise file"), function() {
+                generate_wise_file(frm);
+            });
+            // check if this account has an active ebic connection
+            frappe.call({
+                'method': 'has_active_ebics_connection',
+                'doc': frm.doc,
+                'callback': function(response) {
+                    if (response.message.toString() !== "0") {
+                        locals.ebics_connection = response.message[0]['name'];
+                        frm.add_custom_button(__("Transmit by ebics"), function() {
+                            transmit_ebics(frm);
+                        }).addClass("btn-success");
+                    }
+                }
+            });
         } else if (frm.doc.docstatus == 0) {
              // add set payment date
              frm.add_custom_button(__("Set Payment Date"), function() {
@@ -58,6 +74,19 @@ function generate_bank_file(frm) {
                if (r.message) {
                     // prepare the xml file for download
                     download("payments.xml", r.message.content);
+               } 
+          }
+     });     
+}
+
+function generate_wise_file(frm) {
+     frappe.call({
+          'method': 'create_wise_file',
+          'doc': frm.doc,
+          'callback': function(r) {
+               if (r.message) {
+                    // prepare the xml file for download
+                    download("wise_payments.csv", r.message.content);
                } 
           }
      });     
@@ -120,4 +149,17 @@ function recalculate_total(frm) {
         total += frm.doc.expenses[i].amount
     }
     cur_frm.set_value('total', total);
+}
+
+function transmit_ebics(frm) {
+    frappe.call({
+        'method': 'erpnextswiss.erpnextswiss.doctype.ebics_conncetion.ebics_connection.execute_payment',
+        'args': {
+            'ebics_connection': locals.ebics_connection,
+            'payment_proposal': frm.doc.name
+        },
+        'callback': function (response) {
+            frappe.msgprint( __("Payments transferred using ebics") );
+        }
+    });
 }

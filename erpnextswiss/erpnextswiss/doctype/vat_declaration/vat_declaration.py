@@ -16,7 +16,7 @@ class VATDeclaration(Document):
             frappe.throw( _("Tax ID/UID missing or invalid. Please configure for company {0}.").format(self.company) )
             
         data = {
-            'uid': tax_id[3:].replace(".", "").replace("-", ""),
+            'uid': (tax_id[3:].replace(".", "").replace("-", "")).strip(),
             'company': self.company,
             'generation_datetime': datetime.now(),
             'from_date': self.start_date,

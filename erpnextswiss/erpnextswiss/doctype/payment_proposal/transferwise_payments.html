@@ -1,0 +1,4 @@
+name,recipientEmail,paymentReference,receiverType,amountCurrency,amount,sourceCurrency,targetCurrency,IBAN
+{% for p in payments -%}
+"{{ p.recipient }}","{{ p.recipient_mail }}","{{ p.reference }}","INSTITUTION","source","{{ p.amount }}","{{ p.source_currency }}","{{ p.target_currency }}","{{ p.iban }}"
+{% endfor %}

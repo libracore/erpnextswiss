@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pain.001.001.09" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="">
+  <CstmrCdtTrfInitn>
+    <GrpHdr>
+      <MsgId>{{ msgid }}</MsgId>
+      <CreDtTm>{{ date }}</CreDtTm>
+      <NbOfTxs>{{ "{:d}".format(transaction_count) }}</NbOfTxs>
+      <CtrlSum>{{ "{:.2f}".format(control_sum) }}</CtrlSum>
+      <InitgPty>
+        <Nm>{{ company.name }}</Nm>
+      </InitgPty>
+    </GrpHdr>
+    <PmtInf>
+      <PmtInfId>{{ payments[0].id }}</PmtInfId>
+      <PmtMtd>{{ payments[0].method }}</PmtMtd>
+      {%- if payments[0].service_level == "SEPA" %}
+      <PmtTpInf>
+        <SvcLvl><Cd>SEPA</Cd></SvcLvl>
+      </PmtTpInf>
+      {%- else %}
+      <BtchBookg>{{ payments[0].batch }}</BtchBookg>
+      <NbOfTxs>{{ "{:d}".format(transaction_count) }}</NbOfTxs>
+      <CtrlSum>{{ "{:.2f}".format(control_sum) }}</CtrlSum>
+      {%- endif %}
+      {%- if xml_region == "CH" and payments[0].is_salary and not payments[0].service_level == "SEPA" %}{# CH only: salary information #}
+      <PmtTpInf>
+        <CtgyPurp>
+          <Cd>SALA</Cd>
+        </CtgyPurp>
+      </PmtTpInf>
+      {%- endif %}
+      <ReqdExctnDt><Dt>{{ payments[0].required_execution_date }}</Dt></ReqdExctnDt>
+      <Dbtr>
+        <Nm>{{ company.name }}</Nm>
+        {%- if company.address_line1 %}
+        <PstlAdr>
+          <StrtNm>{{ company.street }}</StrtNm>
+          <BldgNb>{% if company.building %}{{ company.building }}{% else %}0{% endif %}</BldgNb>
+          <PstCd>{{ company.pincode }}</PstCd>
+          <TwnNm>{{ company.city }}</TwnNm>
+          <Ctry>{{ company.country_code }}</Ctry>
+          {#- <AdrLine>{{ company.address_line1 }}</AdrLine> ONLY AFTER 2015-11 #}
+        </PstlAdr>
+        {%- endif %}
+      </Dbtr>
+      <DbtrAcct>
+        <Id>
+          <IBAN>{{ company.iban }}</IBAN>
+        </Id>
+        {%- if xml_region == "CH" and payments[0].is_salary %}{# CH only: salary information: confidential #}
+        <Tp><Prtry>NOA</Prtry></Tp>
+        {%- endif %}
+      </DbtrAcct>
+      <DbtrAgt>
+          <FinInstnId>
+              <Othr><Id>NOTPROVIDED</Id></Othr>
+          </FinInstnId>
+      </DbtrAgt>
+      {%- for payment in payments %}
+      <CdtTrfTxInf>
+        <PmtId>
+          {%- if xml_region == "CH" %}{# CH only: instruction ID mandatory #}
+          <InstrId>{{ payment.id }}</InstrId>
+          {%- endif %}
+          <EndToEndId>{{ payment.end_to_end_id }}</EndToEndId>
+        </PmtId>
+        {%- if payment.service_level == "ESR" %}
+        <PmtTpInf>
+          <LclInstrm><Prtry>CH01</Prtry></LclInstrm>
+        </PmtTpInf>
+        {%- endif %}
+        <Amt>
+          <InstdAmt Ccy="{{ payment.currency }}">{{ "{:.2f}".format(payment.amount) }}</InstdAmt>
+        </Amt>
+        {%- if payment.service_level == "IBAN" and xml_region == "CH" and payment.iban[0:2] != "CH" and payment.currency != "EUR" %}{# type 6 payment for USD #}
+        <CdtrAgt>
+            <FinInstnId><BIC>{{ payment.bic }}</BIC></FinInstnId>
+        </CdtrAgt>
+        {%- endif %}
+        <Cdtr>
+          <Nm>{{ payment.creditor.name }}</Nm>
+          <PstlAdr>
+            <StrtNm>{{ payment.creditor.street }}</StrtNm>
+            <BldgNb>{% if payment.creditor.building %}{{ payment.creditor.building }}{% else %}0{% endif %}</BldgNb>
+            <PstCd>{{ payment.creditor.pincode }}</PstCd>
+            <TwnNm>{{ payment.creditor.city }}</TwnNm>
+            <Ctry>{{ payment.creditor.country_code }}</Ctry>
+            {#- <AdrLine>{{ payment.creditor.address_line1 }}</AdrLine>ONLY AFTER 2015-11 #}
+          </PstlAdr>
+        </Cdtr>
+        {%- if payment.service_level == "SEPA" %}
+        {#- SEPA bapyment block #}
+        <CdtrAcct>
+          <Id>
+            <IBAN>{{ payment.iban }}</IBAN>
+          </Id>
+        </CdtrAcct>
+        <RmtInf>
+          <Ustrd>{{ payment.reference }}</Ustrd>
+        </RmtInf>
+        {%- elif payment.service_level == "ESR" %}
+        {#- ESR payment block #}
+        <CdtrAcct>
+        <Id><Othr><Id>{{ payment.esr_participation_number }}</Id></Othr></Id>
+        </CdtrAcct>
+        <RmtInf><Strd><CdtrRefInf><Ref>{{ payment.esr_reference }}</Ref></CdtrRefInf></Strd></RmtInf>
+        {%- elif payment.service_level == "QRR" %}
+        {#- QRR payment block #}
+        <CdtrAcct>
+        <Id><IBAN>{{ payment.esr_participation_number }}</IBAN></Id>
+        </CdtrAcct>
+        <RmtInf><Strd><CdtrRefInf><Tp><CdOrPrtry><Prtry>QRR</Prtry></CdOrPrtry></Tp><Ref>{{ payment.esr_reference }}</Ref></CdtrRefInf></Strd></RmtInf>
+        {%- else %}
+        {#- IBAN payment block #}
+        <CdtrAcct>
+          <Id>
+            <IBAN>{{ payment.iban }}</IBAN>
+          </Id>
+        </CdtrAcct>
+        <RmtInf>
+          <Ustrd>{{ payment.reference }}</Ustrd>
+        </RmtInf>        
+        {%- endif %}
+      </CdtTrfTxInf>
+      {%- endfor %}
+    </PmtInf>
+  </CstmrCdtTrfInitn>
+</Document>

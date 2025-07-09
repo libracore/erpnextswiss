@@ -9,6 +9,8 @@
   "receiver_address_line1",
   "receiver_address_line2",
   "receiver_country",
+  "receiver_pincode",
+  "receiver_city",
   "column_transaction_details",
   "iban",
   "amount",
@@ -123,10 +125,20 @@
    "fieldtype": "Data",
    "hidden": 1,
    "label": "Receiver ID"
+  },
+  {
+   "fieldname": "receiver_pincode",
+   "fieldtype": "Data",
+   "label": "Receiver Pincode"
+  },
+  {
+   "fieldname": "receiver_city",
+   "fieldtype": "Data",
+   "label": "Receiver City"
   }
  ],
  "istable": 1,
- "modified": "2021-12-27 08:51:27.725771",
+ "modified": "2024-12-12 16:48:17.253368",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "Payment Proposal Payment",

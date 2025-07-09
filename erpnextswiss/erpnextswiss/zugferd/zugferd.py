@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018-2024, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2018-2025, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
 #
 #
@@ -7,11 +7,16 @@
 
 import frappe
 from frappe.utils.pdf import get_pdf
-from frappe.utils import flt
+from frappe.utils import flt, cint
 from erpnextswiss.erpnextswiss.zugferd.zugferd_xml import create_zugferd_xml
-from facturx import generate_facturx_from_binary, get_facturx_xml_from_pdf, check_facturx_xsd, generate_facturx_from_file
+from facturx import generate_from_binary, get_facturx_xml_from_pdf, generate_facturx_from_file
+try:            # factur-x v3.0 onwards
+    from facturx import xml_check_xsd
+except:         # factur-x before v3.0 
+    from facturx import check_facturx_xsd as xml_check_xsd
 from datetime import datetime, date
 from bs4 import BeautifulSoup
+from frappe import _
 
 """
 Creates an XML file from a sales invoice
@@ -31,7 +36,7 @@ def create_zugferd_pdf(docname, verify=True, format=None, doc=None, doctype="Sal
         xml = create_zugferd_xml(docname)
         
         if xml: 
-            facturx_pdf = generate_facturx_from_binary(pdf, xml.encode('utf-8'))  ## Unicode strings with encoding declaration are not supported. Please use bytes input or XML fragments without declaration.
+            facturx_pdf = generate_from_binary(pdf, xml.encode('utf-8'))  ## Unicode strings with encoding declaration are not supported. Please use bytes input or XML fragments without declaration.
             return facturx_pdf
         else:
             # failed to generate xml, fallback
@@ -59,8 +64,15 @@ def download_zugferd_xml(sales_invoice_name):
 def get_xml(path):
     with open(path, "rb") as file:
         pdf = file.read()
+    
+    try:
+        xml_filename, xml_content = get_facturx_xml_from_pdf(pdf)
+    except Exception as err:
+        # only report error log in debug mode (zugferd wizard and batch processing use this as first cascade, so failing to read zugferd because a file does not have an xml part is not necessarily an error)
+        if cint(frappe.get_value("ERPNextSwiss Settings", "ERPNextSwiss Settings", "debug_mode")):
+            frappe.log_error("{0}<br>{1}".format(path, err), _("Reading zugferd xml failed") )
+        xml_content = None
         
-    xml_filename, xml_content = get_facturx_xml_from_pdf(pdf)
     return xml_content
 
 """
@@ -71,7 +83,7 @@ Extracts the relevant content for a purchase invoice from a ZUGFeRD XML
 def get_content_from_zugferd(zugferd_xml, debug=False):
     soup = BeautifulSoup(zugferd_xml, 'lxml')
     # dict for invoice
-    invoice = {}
+    invoice = {'source': 'ZUGFeRD'}
   
     # seller information
     seller = soup.find('ram:sellertradeparty')
@@ -119,7 +131,10 @@ def get_content_from_zugferd(zugferd_xml, debug=False):
         invoice['due_date'] = today.strftime("%Y-%m-%d")
 
     document_context = soup.find('rsm:exchangeddocument')
-    invoice['terms'] = document_context.find('ram:content').string
+    if document_context.find('ram:content'):
+        invoice['terms'] = document_context.find('ram:content').string
+    else:
+        invoice['terms'] = None         # if no content is provided, set to None
     
     doc_id = document_context.find('ram:id').string
     invoice['doc_id'] = doc_id
@@ -149,7 +164,7 @@ def get_content_from_zugferd(zugferd_xml, debug=False):
         _item = {
             'net_price': item.find('ram:netpriceproducttradeprice').find('ram:chargeamount').string, # if item.find('ram:netpriceproducttradeprice') else 0,
             'qty': flt(item.find('ram:billedquantity').string) if item.find('ram:billedquantity') else 0,
-            'seller_item_code': item.find('ram:sellerassignedid').string,
+            'seller_item_code': item.find('ram:sellerassignedid').string if item.find('ram:sellerassignedid') else None,
             'item_name': item.find('ram:name').string,
             'item_code': None
         }

@@ -1,4 +1,4 @@
-# Copyright (c) 2022, libracore and contributors
+# Copyright (c) 2022-2024, libracore and contributors
 # For license information, please see license.txt
 
 from __future__ import unicode_literals
@@ -32,47 +32,88 @@ def get_columns():
     ]
     
 def get_data(filters):
-    entries = get_invoiceable_entries(from_date=filters.from_date, to_date=filters.to_date, customer=filters.customer)
+    entries = get_invoiceable_entries(from_date=filters.from_date, to_date=filters.to_date, customer=filters.customer, company=filters.company)
     
-    # find customers
-    customers = []
-    for e in entries:
-        if e.customer not in customers:
-            customers.append(e.customer)
-    
-    # create grouped entries
-    output = []
-    for c in customers:
-        details = []
-        total_h = 0
-        total_amount = 0
-        customer_name = None
+    # different aggregation types
+    if filters.get("group_by") == "Customer":
+        # find customers
+        customers = []
         for e in entries:
-            if e.customer == c:
-                total_h += e.hours or 0
-                total_amount += ((e.qty or 1) * (e.rate or 0))
-                customer_name = e.customer_name
-                details.append(e)
-                
-        # insert customer row
-        prefix = ""
-        if "natascha" in frappe.session.user:
-            prefix = "&#129412; "
-        output.append({
-            'customer': c,
-            'customer_name': customer_name,
-            'hours': total_h,
-            'qty': 1,
-            'rate': total_amount,
-            'action': prefix + _('Create invoice'),
-            'indent': 0
-        })
-        for d in details:
-            output.append(d)
-            
+            if e.customer not in customers:
+                customers.append(e.customer)
+        
+        # create grouped entries
+        output = []
+        for c in customers:
+            details = []
+            total_h = 0
+            total_amount = 0
+            customer_name = None
+            for e in entries:
+                if e.customer == c:
+                    total_h += e.hours or 0
+                    total_amount += ((e.qty or 1) * (e.rate or 0))
+                    customer_name = e.customer_name
+                    details.append(e)
+                    
+            # insert customer row
+            prefix = ""
+            if "natascha" in frappe.session.user:
+                prefix = "&#129412; "
+            output.append({
+                'customer': c,
+                'customer_name': customer_name,
+                'hours': total_h,
+                'qty': 1,
+                'rate': total_amount,
+                'action': prefix + _('Create invoice'),
+                'indent': 0
+            })
+            for d in details:
+                output.append(d)
+    else:
+        # group by project
+        # find projects
+        projects = []
+        for e in entries:
+            if e.project not in projects:
+                projects.append(e.project)
+        
+        # create grouped entries
+        output = []
+        for p in projects:
+            details = []
+            total_h = 0
+            total_amount = 0
+            customer_name = None
+            customer = None
+            for e in entries:
+                if e.project == p:
+                    total_h += e.hours or 0
+                    total_amount += ((e.qty or 1) * (e.rate or 0))
+                    customer_name = e.customer_name
+                    customer = e.customer
+                    details.append(e)
+                    
+            # insert customer row
+            prefix = ""
+            if "natascha" in frappe.session.user:
+                prefix = "&#129412; "
+            output.append({
+                'customer': customer,
+                'customer_name': customer_name,
+                'project': p,
+                'hours': total_h,
+                'qty': 1,
+                'rate': total_amount,
+                'action': prefix + _('Create invoice'),
+                'indent': 0
+            })
+            for d in details:
+                output.append(d)
     return output
 
-def get_invoiceable_entries(from_date=None, to_date=None, customer=None):
+def get_invoiceable_entries(from_date=None, to_date=None, customer=None, company=None):
     if not from_date:
         from_date = "2000-01-01"
     if not to_date:
@@ -81,6 +122,9 @@ def get_invoiceable_entries(from_date=None, to_date=None, customer=None):
     if not customer:
         customer = "%"
     
+    if not company:
+        company = frappe.defaults.get_global_default("company")
+
     invoicing_item = frappe.get_value("ERPNextSwiss Settings", "ERPNextSwiss Settings", "service_item")
     if not invoicing_item:
         frappe.throw( _("Invoicing configuration is missing the invoice item. Please set under ERPNextSwiss Settings > Invoice Item."), _("Configuration missing") )
@@ -117,6 +161,7 @@ def get_invoiceable_entries(from_date=None, to_date=None, customer=None):
             OR (DATE(`tabTimesheet Detail`.`to_time`) >= "{from_date}" AND DATE(`tabTimesheet Detail`.`to_time`) <= "{to_date}"))
            AND `tabSales Invoice Item`.`name` IS NULL
            AND `tabTimesheet Detail`.`{method}` > 0
+           AND `tabTimesheet`.`company` = "{company}"
            
         UNION SELECT
             `tabDelivery Note`.`customer` AS `customer`,
@@ -144,16 +189,24 @@ def get_invoiceable_entries(from_date=None, to_date=None, customer=None):
             AND `tabDelivery Note`.`customer` LIKE "{customer}"
             AND (`tabDelivery Note`.`posting_date` >= "{from_date}" AND `tabDelivery Note`.`posting_date` <= "{to_date}")
             AND `tabSales Invoice Item`.`name` IS NULL
-                    
+            AND `tabDelivery Note`.`company` = "{company}"
+            
         ORDER BY `customer_name` ASC, `date` ASC;
-    """.format(from_date=from_date, to_date=to_date, invoicing_item=invoicing_item, customer=customer, method=invoicing_method)
+    """.format(
+        from_date=from_date, 
+        to_date=to_date, 
+        invoicing_item=invoicing_item, 
+        customer=customer, 
+        method=invoicing_method, 
+        company=company
+    )
     entries = frappe.db.sql(sql_query, as_dict=True)
     return entries
 
 @frappe.whitelist()
-def create_invoice(from_date, to_date, customer, company=None):
+def create_invoice(from_date, to_date, customer, company=None, project=None):
     # fetch entries
-    entries = get_invoiceable_entries(from_date=from_date, to_date=to_date, customer=customer)
+    entries = get_invoiceable_entries(from_date=from_date, to_date=to_date, customer=customer, company=company)
     
     # create sales invoice
     sinv = frappe.get_doc({
@@ -163,6 +216,9 @@ def create_invoice(from_date, to_date, customer, company=None):
     })
     
     for e in entries:
+        if project and e.project != project:
+            continue            # skip in case project invoicing is active and this is not from this project
+            
         #Format Remarks 
         if e.remarks:
             remarkstring = "{0}: {1}<br>{2}".format(e.date.strftime("%d.%m.%Y"), e.employee_name, e.remarks)
@@ -207,7 +263,7 @@ def create_invoice(from_date, to_date, customer, company=None):
             sinv.debit_to = customer_doc.accounts[0].account
     
     # add default taxes and charges
-    taxes = find_tax_template(customer)
+    taxes = find_tax_template(customer, company)
     if taxes:
         sinv.taxes_and_charges = taxes
         taxes_template = frappe.get_doc("Sales Taxes and Charges Template", taxes)
@@ -221,7 +277,7 @@ def create_invoice(from_date, to_date, customer, company=None):
     
     return sinv.name
 
-def find_tax_template(customer):
+def find_tax_template(customer, company=None):
     # check if the customer has a specific template
     customer_doc = frappe.get_doc("Customer", customer)
     if customer_doc.get("default_taxes_and_charges"):
@@ -229,7 +285,8 @@ def find_tax_template(customer):
     else:
         default_template = frappe.get_all("Sales Taxes and Charges Template", 
             filters={
-                'is_default': 1
+                'is_default': 1,
+                'company': company or frappe.defaults.get_global_default("company")
             }, 
             fields=['name'])
         if len(default_template) > 0:

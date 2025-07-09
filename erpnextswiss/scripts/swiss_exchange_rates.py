@@ -1,14 +1,14 @@
 #
 # swiss_exchange_rates.py
 #
-# Copyright (C) libracore, 2017-2021
+# Copyright (C) libracore, 2017-2024
 # https://www.libracore.com or https://github.com/libracore
-#
-# For information on ERPNext, refer to https://erpnext.org/
 #
 # Execute with 
 #    $ bench execute erpnextswiss.scripts.swiss_exchange_rates.read_rates
 #    $ bench execute erpnextswiss.scripts.swiss_exchange_rates.read_rates --kwargs "{'currencies': ['EUR', 'USD', 'GBP']}"
+#    $ bench execute erpnextswiss.scripts.swiss_exchange_rates.add_inverted_rates --kwargs "{'currencies': ['EUR', 'USD', 'GBP']}"
+#    $ bench execute erpnextswiss.scripts.swiss_exchange_rates.add_cross_rates --kwargs "{'from_currency': 'USD', 'to_currency': 'EUR'}"
 #
 #    $ bench execute erpnextswiss.scripts.swiss_exchange_rates.read_daily_rates
 #    $ bench execute erpnextswiss.scripts.swiss_exchange_rates.read_daily_rates --kwargs "{'currencies': ['EUR', 'USD', 'GBP']}"
@@ -71,3 +71,61 @@ def create_exchange_rate(from_currency, rate, to_currency="CHF"):
         print(err.message)
         record = None
     return record
+
+"""
+Import the reverse rate
+"""
+def add_inverted_rates(currencies=["EUR"]):
+    from_currency = "CHF"
+    
+    for currency in currencies:
+        base_rates = frappe.db.sql("""
+            SELECT `exchange_rate`
+            FROM `tabCurrency Exchange`
+            WHERE 
+                `from_currency` = "{f}"
+                AND `to_currency` = "{t}"
+            ORDER BY `date` DESC
+            LIMIT 1;""".format(f=currency, t=from_currency), as_dict=True)
+        if len(base_rates) > 0:
+            base_rate = base_rates[0]['exchange_rate']
+        else:
+            base_rate = 1
+            
+        create_exchange_rate(from_currency, float(1/base_rate), currency)
+    
+    return
+    
+"""
+Import the cross rate
+"""
+def add_cross_rates(from_currency="USD", to_currency="EUR"):
+    from_rates = frappe.db.sql("""
+        SELECT `exchange_rate`
+        FROM `tabCurrency Exchange`
+        WHERE 
+            `from_currency` = "{f}"
+            AND `to_currency` = "CHF"
+        ORDER BY `date` DESC
+        LIMIT 1;""".format(f=from_currency), as_dict=True)
+    if len(from_rates) > 0:
+        from_rate = from_rates[0]['exchange_rate']
+    else:
+        from_rate = 1
+    
+    to_rates = frappe.db.sql("""
+        SELECT `exchange_rate`
+        FROM `tabCurrency Exchange`
+        WHERE 
+            `from_currency` = "{f}"
+            AND `to_currency` = "CHF"
+        ORDER BY `date` DESC
+        LIMIT 1;""".format(f=to_currency), as_dict=True)
+    if len(to_rates) > 0:
+        to_rate = to_rates[0]['exchange_rate']
+    else:
+        to_rate = 1
+        
+    create_exchange_rate(from_currency, float(from_rate/to_rate), to_currency)
+    
+    return

@@ -1,0 +1,110 @@
+A1;{# 1 #}
+{{- account_id or "" }};{# 2 #}
+{{- customer_no or "" }};{# 3 #}
+{{- department_no or "" }};{# 4 #}
+{{- sender.sender_type or "" }};{# 5 #}
+{{- (sender.salutation or "")[0:1] }};{# 6 #}
+{{- sender.first_name or "" }};{# 7 #}
+{{- sender.last_name or "" }};{# 8 #}
+{{- sender.company or "" }};{# 9 #}
+{{- sender.company_addition or "" }};{# 10 #}
+{{- sender.country or "" }};{# 11 - CH #}
+{{- sender.city or "" }};{# 12 #}
+{{- sender.plz or "" }};{# 13 #}
+{{- sender.street or "" }};{# 14 #}
+{{- sender.street_no or "" }};{# 15 #}
+{{- sender.gps_lat or "" }};{# 16 #}
+{{- sender.gps_long or "" }};{# 17 #}
+{{- sender.instructions or "" }};{# 18 #}
+{{- sender.phone or "" }};{# 19 #}
+{{- sender.mobile or "" }};{# 20 #}
+{{- sender.notification or "A" }};{# 21 - inactive #}
+{{- sender.email or "" }};{# 22 #}
+{{- sender.email_notification or "B" }};{# 23 - inactive#}
+{{- sender.language or "de" }};{# 24 #}
+{{- (sender.contact_salutation or "")[0:1] }};{# 25 #}
+{{- sender.contact_first_name or "" }};{# 26 #}
+{{- sender.contact_last_name or "" }};{# 27 #}
+{{- sender.contact_instruction or "" }};{# 28 #}
+{{- sender.contact_phone or "" }};{# 29 #}
+{{- sender.contact_mobile or "" }};{# 30 #}
+{{- sender.contact_notification or "A" }};{# 31 - inactvie #}
+{{- sender.contact_email or "" }};{# 32 #}
+{{- sender.contact_email_notification or "B" }};{# 33 - inactive #}
+{{- sender.contact_language or "de" }};{# 34 #}
+{{- pickup_date or "" }};{# 35 - dd.mm.yyyy #}
+{{- (pickup_from_time or "").replace(":", ".") }};{# 36 - HH:MM:ss #}
+{{- (pickup_to_time or "").replace(":", ".") }};{# 37 - HH:MM:ss #}
+{{- receiver.receiver_type or "" }};{# 38 #}
+{{- (receiver.salutation or "")[0:1] }};{# 39 #}
+{{- receiver.first_name or "" }};{# 40 #}
+{{- receiver.last_name or "" }};{# 41 #}
+{{- receiver.company or "" }};{# 42 #}
+{{- receiver.company_addition or "" }};{# 43 #}
+{{- receiver.country or "" }};{# 44 - CH #}
+{{- receiver.city or "" }};{# 45 #}
+{{- receiver.plz or "" }};{# 46 #}
+{{- receiver.street or "" }};{# 47 #}
+{{- receiver.street_no or "" }};{# 48 #}
+{{- receiver.gps_lat or "" }};{# 49 #}
+{{- receiver.gps_long or "" }};{# 50 #}
+{{- receiver.instructions or "" }};{# 51 #}
+{{- receiver.phone or "" }};{# 52 #}
+{{- receiver.mobile or "" }};{# 53 #}
+{{- receiver.notification or "A" }};{# 54 - inactive #}
+{{- receiver.email or "" }};{# 55 #}
+{{- receiver_email_notification or "B" or "" }};{# 56 - inactive #}
+{{- receiver.language or "de" }};{# 57 #}
+{{- (receiver.contact_salutation or "")[0:1] }};{# 58 #}
+{{- receiver.contact_first_name or "" }};{# 59 #}
+{{- receiver.contact_last_name or "" }};{# 60 #}
+{{- receiver.contact_instruction or "" }};{# 61 #}
+{{- receiver.contact_phone or "" }};{# 62 #}
+{{- receiver.contact_mobile or "" }};{# 63 #}
+{{- receiver.contact_notification or "A" }};{# 64 - inactvie #}
+{{- receiver.contact_email or "" }};{# 65 #}
+{{- receiver.contact_email_notification or "B" }};{# 66 - inactive #}
+{{- receiver.contact_language or "de" }};{# 67 #}
+{{- delivery_date or "" }};{# 68 #}
+{{- delivery_from_time or "" }};{# 69 - inactive #}
+{{- delivery_to_time or "" }};{# 70 - inactive #}
+{{- reference or "" }};{# 71 #}
+{{- remarks or "" }};{# 72 #}
+{{- pickup_service_code or "" }};{# 73 #}
+{{- delivery_service_code or "" }};{# 74 #}
+{{- passport_no or "" }};{# 75 #}
+{{- passport_check_date or "" }};{# 76 #}
+{{- deposit_notice or "" }};{# 77 #}
+{{- insurance_value or "" }};{# 78 #}
+{{- cash_on_delivery_amount or "" }};{# 79 - not used #}
+{{- cash_on_delivery_currency or "" }};{# 80 - not used #}
+{{- duty_amount or "" }};{# 81 - not used #}
+{{- duty_currency or "" }};{# 82 - not used #}
+{{- delivery_text or "" }};{# 83 - not used #}
+{{- stop_code or "" }};{# 84 #}
+{{- order_type or "" }};{# 85 - not used #}
+{{- settlement_branch or "" }};{# 86 - not used #}
+{{- pod_file_name or "" }};{# 87 - inactive #}
+{{- delivery_from_time_2 or "" }};{# 88 - inactive #}
+{{- delivery_to_time_2 or "" }};{# 89 #}
+{{- "\"{0}\"".format(additional_reference or "") }};{# 90 #}
+{{- "\"{0}\"".format(additional_reference_2 or "") }};{# 91 #}
+{{- "\"{0}\"".format(status_message or "") }};{# 92 #}
+{{- "\"{0}\"".format(status_message_2 or "") }};{# 93 #}
+{{- "\"{0}\"".format(status_message_3 or "") }};{# 94 #}
+{{- "\"{0}\"".format(status_message_4 or "") }};{# 95 #}
+{% for p in parcels -%}
+P1;{# 1 #}
+{{- "PAKE" }};{# 2 #}
+{{- p.length or 0 }};{# 3 #}
+{{- p.width or 0 }};{# 4 #}
+{{- p.height or 0 }};{# 5 #}
+{{- p.weight or 0 }};{# 6 #}
+{{- "\"{0}\"".format(((p.content or "").replace("\n", "").replace("<br>", "").replace("\"", "`"))[:100]) }};{# 7 #}
+{{- "\"{0}\"".format(((p.reference or "").replace("\n", "").replace("<br>", "").replace("\"", "`"))[:100]) }};{# 8 #}
+{{- p.barcode or ""}};{# 9 #}
+{%- endfor %}
+{% for o in options -%}
+O1;{# 1 #}
+{{- o.service_level_code or "" }};{# 2 #}
+{%- endfor %}

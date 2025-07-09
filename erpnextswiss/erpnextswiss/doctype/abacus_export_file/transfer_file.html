@@ -11,6 +11,7 @@
         {%- for transaction in transactions %}
         {%- set date_str = "{0}".format(transaction.date) %}
         {%- set short_reference = "{0}{1}{2}{3}".format(date_str[2:4], date_str[5:7], date_str[8:10], loop.index) %}
+        {%- set amounts = {'amount': 0, 'key_amount': 0, 'tax_amount': 0, 'key_tax_amount': 0} %}
         <Transaction id="{{ loop.index }}">
             <Entry mode="SAVE">
                 <CollectiveInformation mode="SAVE">
@@ -49,7 +50,7 @@
                     <Account>{{ transaction.account }}</Account>
                     <IntercompanyId>0</IntercompanyId>
                     <IntercompanyCode></IntercompanyCode>
-                    <Text1>{{ transaction.text1 }}</Text1>
+                    <Text1>{{ (transaction.text1 or "")[:80] }}</Text1>
                     {%- if transaction.text2 %}
                     <Text2>{{ transaction.text2 }}</Text2>
                     {%- endif %}
@@ -62,42 +63,48 @@
                     <DebitCredit>{{ transaction.debit_credit }}</DebitCredit>
                     <EntryDate>{{ transaction.date }}</EntryDate>
                     <ValueDate></ValueDate>
+                    {%- set factor = (-1) %}
+                    {%- if amounts.update({'amount': against.amount, 'key_amount': (against.key_amount or against.amount)}) %}{% endif %}
+                    {%- if transaction.tax_code %}
+                        {%- if against.currency == (transaction.key_currency or transaction.currency) -%}
+                            {# hardcoded 0 otherwise abacus raises an error if doc currency = key currency #}
+                            {%- if amounts.update({'tax_amount': 0}) %}{% endif %}
+                        {%- elif against.tax_amount or transaction.tax_rate == 0 -%}
+                            {%- if amounts.update({'tax_amount': ((against.tax_amount or 0) * factor)}) %}{% endif %}
+                        {%- else -%}
+                            {%- if amounts.update({'tax_amount': ((against.amount * (transaction.tax_rate or 0) / 100) * factor)}) %}{% endif %}
+                        {%- endif -%}
+                        {%- if against.key_tax_amount or transaction.tax_rate == 0 %}
+                            {%- if amounts.update({'key_tax_amount': ((against.key_tax_amount or 0) * factor)}) %}{% endif %}
+                        {%- else %}
+                            {%- if amounts.update({'key_tax_amount': ((against.key_amount * transaction.tax_rate / 100) * factor)}) %}{% endif %}
+                        {%- endif %}
+                        {%- if amounts.update({'amount': (amounts.amount - amounts.tax_amount), 'key_amount': (amounts.key_amount - amounts.key_tax_amount)}) %}{% endif %}
+                    {%- endif %}
                     <AmountData mode="SAVE">
                         <Currency>{{ against.currency }}</Currency>
-                        <Amount>{{ "{:.2f}".format(against.amount) }}</Amount>
+                        <Amount>{{ "{:.2f}".format(amounts.amount) }}</Amount>
                     </AmountData>
-                    <KeyAmount>{{ "{:.2f}".format(against.key_amount or against.amount) }}</KeyAmount>
+                    <KeyAmount>{{ "{:.2f}".format(amounts.key_amount or amounts.amount) }}</KeyAmount>
                     <Account>{{ against.account }}</Account>
                     {%- if transaction.tax_account %}
                     <TaxAccount>{{ transaction.tax_account }}</TaxAccount>
                     {%- endif %}
                     <IntercompanyId>0</IntercompanyId>
                     <IntercompanyCode></IntercompanyCode>
-                    <Text1>{{ transaction.text1 }}</Text1>
+                    <Text1>{{ (transaction.text1 or "")[:80] }}</Text1>
                     <DocumentNumber>{{ short_reference }}</DocumentNumber>
                     <SelectionCode></SelectionCode>
                     {%- if transaction.tax_code %}
                     <TaxData mode="SAVE">
-                        <TaxIncluded>{%- if transaction.against_singles|len == 1 %}I{%- else %}E{%- endif %}</TaxIncluded>
+                        <TaxIncluded>I</TaxIncluded>
                         <TaxType>1</TaxType>
                         <UseCode>1</UseCode>
-                        {%- if transaction.against_singles|len == 1 %}{%- set factor = (-1) %}{%- else %}{%- set factor = 1 %}{%- endif %}
                         <AmountData mode="SAVE">
                             <Currency>{{ against.currency }}</Currency>
-                            <Amount>
-                            {%- if against.currency == (transaction.key_currency or transaction.currency) -%}0{# hardcoded 0 otherwise abacus raises an error if doc currency = key currency #}
-                            {%- elif against.tax_amount or transaction.tax_rate == 0 -%}
-                                {{- "{:.2f}".format(((against.tax_amount or 0) * factor)) -}}
-                            {%- else -%}
-                                {{- "{:.2f}".format(((against.amount * (transaction.tax_rate or 0) / 100) * factor)) -}}
-                            {%- endif -%}
-                            </Amount>
+                            <Amount>{{ "{:.2f}".format(amounts.tax_amount) }}</Amount>
                         </AmountData>
-                        {%- if against.key_tax_amount or transaction.tax_rate == 0 %}
-                        <KeyAmount>{{ "{:.2f}".format(((against.key_tax_amount or 0) * factor)) }}</KeyAmount>
-                        {%- else %}
-                        <KeyAmount>{{ "{:.2f}".format(((against.key_amount * transaction.tax_rate / 100) * factor)) }}</KeyAmount>
-                        {%- endif %}
+                        <KeyAmount>{{ "{:.2f}".format(amounts.key_tax_amount) }}</KeyAmount>
                         <TaxRate>{{ transaction.tax_rate or 0 }}</TaxRate>
                         <TaxCoefficient>100</TaxCoefficient>
                         <Country>CH</Country>

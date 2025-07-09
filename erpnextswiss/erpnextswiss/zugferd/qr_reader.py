@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018-2023, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2018-2024, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
 #
 #
@@ -13,6 +13,10 @@ import frappe
 from frappe.utils import flt
 from datetime import date
 
+settings = {
+    'dpi': 300
+}
+
 @frappe.whitelist()
 def find_qr_content_from_pdf(filename):
     codes = []
@@ -20,11 +24,19 @@ def find_qr_content_from_pdf(filename):
     # open PDF file
     pdf_file = fitz.open(filename)
 
+    # try to load zxing-cpp for improved reading performance
+    has_zxingcpp = False
+    try:
+        import zxingcpp
+        has_zxingcpp = True
+    except:
+        pass
+    
     # read by page
     for page in pdf_file:
         # get the page as image
         try:
-            pix = page.get_pixmap(dpi=200)
+            pix = page.get_pixmap(dpi=settings['dpi'])
         except:
             pix = page.getPixmap(matrix=fitz.Matrix(2, 2))                  # fall back to v1.16.18
         # cv2 reader
@@ -40,11 +52,19 @@ def find_qr_content_from_pdf(filename):
         top, bottom, left, right = [150]*4
         img_with_border = cv2.copyMakeBorder(img, top, bottom, left, right, cv2.BORDER_CONSTANT, value=color)
 
-        retval, decoded_info, points, straight_qrcode = qcd.detectAndDecodeMulti(img_with_border)
+        if has_zxingcpp:
+            for result in zxingcpp.read_barcodes(img_with_border):
+                code = result.text
+                if code:
+                    codes.append(code)
 
-        if retval and len(decoded_info) > 0:
-            code = decoded_info[0]
-            codes.append(code)
+        else:
+            # use classic CV2/QrCodeDetector
+            retval, decoded_info, points, straight_qrcode = qcd.detectAndDecodeMulti(img_with_border)
+
+            if retval and len(decoded_info) > 0:
+                code = decoded_info[0]
+                codes.append(code)
     
     # if codes are found, you can leave here; otherwise, go to image-wise parsing
     if len(codes) > 0:
@@ -106,20 +126,23 @@ Extracts the relevant content for a purchase invoice from a QR code
 :params:qr_content:     list of qr codes (text)
 :return:                simplified dict with content
 """
-def get_content_from_qr(qr_codes, default_tax, default_item):
+def get_content_from_qr(qr_codes, default_tax, default_item, company):
     # dict for invoice
     invoice = {}
   
     # check format
     for code in qr_codes:
         if code.startswith("SPC"):
-            invoice = read_swiss_qr(code, default_tax, default_item)
+            invoice = read_swiss_qr(code, default_tax, default_item, company)
             return invoice
-    
+        elif code.startswith("BCD"):
+            invoice = read_eu_qr(code, default_tax, default_item, company)
+            return invoice
+            
     return None
         
-def read_swiss_qr(code, default_tax, default_item):
-    invoice = {}
+def read_swiss_qr(code, default_tax, default_item, company):
+    invoice = {'source': 'QR'}
     
     code = code.replace("\r", "")          # remove windows line endings
     lines = code.split("\n")
@@ -184,6 +207,9 @@ def read_swiss_qr(code, default_tax, default_item):
          
         invoice['currency'] = lines[19]
         
+        # try to fetch a default tax template from the supplier
+        default_tax = find_tax_from_supplier(company, invoice.get('supplier'), default_tax)
+        
         tax_template = frappe.get_doc("Purchase Taxes and Charges Template", default_tax)
         if len(tax_template.taxes) > 0:
             tax_rate = tax_template.taxes[0].rate
@@ -201,10 +227,7 @@ def read_swiss_qr(code, default_tax, default_item):
         invoice['grand_total'] = grand_total
         
         # try to fetch a default item from the supplier
-        if frappe.db.exists("Supplier", invoice['supplier']):
-            supplier_item = frappe.get_doc("Supplier", invoice['supplier']).get('default_item')
-            if supplier_item:
-                default_item = supplier_item
+        default_item = find_item_from_supplier(invoice.get('supplier'), default_item)
                 
         # collect items: not provided by QR
         invoice['items'] = [
@@ -222,3 +245,113 @@ def read_swiss_qr(code, default_tax, default_item):
     else:
         return None
     
+def read_eu_qr(code, default_tax, default_item, company):
+    invoice = {'source': 'QR'}
+    
+    code = code.replace("\r", "")          # remove windows line endings
+    lines = code.split("\n")
+    settings = frappe.get_doc("ERPNextSwiss Settings", "ERPNextSwiss Settings")
+    
+    if len(lines) >= 11:
+        invoice['supplier_name'] = lines[5]
+        invoice['iban'] = lines[6] 
+        invoice['supplier_al'] = None
+        invoice['supplier_pincode'] = None
+        invoice['supplier_city'] = None
+        invoice['supplier_country'] = None
+        invoice['supplier_globalid'] = None
+        supplier_match_by_iban = frappe.db.sql("""
+            SELECT `name`, `tax_id`
+            FROM `tabSupplier` 
+            WHERE REPLACE(`iban`, " ", "") = "{iban}";""".format(iban=invoice['iban']), as_dict=True)
+        if len(supplier_match_by_iban) > 0:
+            # matched by tax id
+            invoice['supplier'] = supplier_match_by_iban[0]['name']
+            invoice['supplier_taxid'] = supplier_match_by_iban[0].get('tax_id')
+        else:
+            supplier_match_by_name = frappe.get_all("Supplier", 
+                                        filters={'supplier_name': invoice['supplier_name']},
+                                        fields=['name'])   
+            if len(supplier_match_by_name) > 0:
+                # matched by supplier name
+                invoice['supplier'] = supplier_match_by_name[0]['name']  
+                invoice['supplier_taxid'] = supplier_match_by_name[0].get('tax_id')
+            else:
+                # need to insert new supplier
+                invoice['supplier'] = None
+                invoice['supplier_taxid'] = None
+                
+        # posting date not provided by QR: use default as date
+        today = date.today()
+        invoice['posting_date'] = today.strftime("%Y-%m-%d")
+        invoice['due_date'] = today.strftime("%Y-%m-%d")
+        
+        invoice['terms'] = None
+        invoice['doc_id'] = lines[10]
+         
+        invoice['currency'] = lines[7][0:3]
+        
+        # try to fetch a default tax template from the supplier
+        default_tax = find_tax_from_supplier(company, invoice.get('supplier'), default_tax)
+            
+        tax_template = frappe.get_doc("Purchase Taxes and Charges Template", default_tax) if default_tax else {}
+        if len(tax_template.get('taxes') or []) > 0:
+            tax_rate = tax_template.taxes[0].rate
+        else:
+            tax_rate = 0    
+            # default is not applicable: settings.scanning_default_tax_rate or 7.7, use no tax
+        invoice['tax_rate'] = tax_rate
+        invoice['tax_template'] = default_tax
+        
+        grand_total = flt(lines[7][3:])
+        net_total = round(grand_total / ((100 + tax_rate)/100), 2)
+        
+        invoice['line_total'] = net_total
+        invoice['total_taxes'] = grand_total - net_total
+        invoice['grand_total'] = grand_total
+        
+        # try to fetch a default item from the supplier
+        default_item = find_item_from_supplier(invoice.get('supplier'), default_item)
+                
+        # collect items: not provided by QR
+        invoice['items'] = [
+            {
+                'net_price': net_total,
+                'qty': 1,
+                'seller_item_code': None,
+                'item_name': frappe.get_cached_value("Item", default_item, "item_name"),
+                'item_code': default_item
+            }
+        ]
+        
+        return invoice
+        
+    else:
+        return None
+
+def find_item_from_supplier(supplier, default_item):
+    if frappe.db.exists("Supplier", supplier):
+        supplier_item = frappe.get_doc("Supplier", supplier).get('default_item')
+        if supplier_item:
+            return supplier_item
+
+    return default_item
+        
+def find_tax_from_supplier(company, supplier, default_tax):
+    supplier_tax = None
+    if frappe.db.exists("Supplier", supplier):
+        supplier = frappe.get_doc("Supplier", supplier)
+        
+        if supplier.accounts:
+            for a in supplier.accounts:
+                if a.company == company:
+                    if a.get("default_tax_template"):
+                        supplier_tax = a.get("default_tax_template")
+                    elif a.get("tax_template"):
+                        supplier_tax = a.get("tax_template")
+                    elif a.get("default_purchase_taxes_and_charges"):
+                        supplier_tax = a.get("default_purchase_taxes_and_charges")
+    
+    if supplier_tax:
+        return supplier_tax
+    return default_tax

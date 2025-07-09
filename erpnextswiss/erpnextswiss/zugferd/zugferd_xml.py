@@ -85,7 +85,7 @@ def create_zugferd_xml(sales_invoice, verify=True):
         }
         if sinv.taxes_and_charges:
             _taxes = frappe.get_doc("Sales Taxes and Charges Template", sinv.taxes_and_charges)
-            _tax_category = _taxes.get("tax_category")
+            _tax_category = _taxes.get("tax_class") or _taxes.get("tax_category")
             data['tax_category'] = (_tax_category or "S").split(':')[0]
         data['items'] = []
         for item in sinv.items:

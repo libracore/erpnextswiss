@@ -3,7 +3,7 @@ frappe.listview_settings['Purchase Invoice'] = {
         "currency", "is_return", "release_date", "on_hold"],
     get_indicator: function(doc) {
         if (doc.is_proposed && flt(doc.outstanding_amount)!=0 && doc.docstatus==1) {
-            return [__("in Zahlungslauf"), "green", `is_proposed,=,1`];
+            return [__("in Payment Proposal"), "green", `is_proposed,=,1`];
         } else {
             if(flt(doc.outstanding_amount) < 0 && doc.docstatus == 1) {
                 return [__("Debit Note Issued"), "darkgrey", "outstanding_amount,<,0"]

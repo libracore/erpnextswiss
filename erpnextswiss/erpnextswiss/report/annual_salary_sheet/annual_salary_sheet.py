@@ -79,7 +79,7 @@ def get_data(filters):
                     d['total'] -= u.amount
                     break
 
-        data[-1][col_str] = salary_slip.net_pay
+        data[-1][col_str] = data[-1].get(col_str, 0) + salary_slip.net_pay
         data[-1]['total'] += salary_slip.net_pay
 
     columns.append({

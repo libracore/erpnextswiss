@@ -13,6 +13,7 @@ import json
 from frappe.utils import cint, flt, get_link_to_form, get_url_to_form
 
 class ZUGFeRDWizard(Document):
+    @frappe.whitelist()
     def read_file(self):
         file_path = os.path.join(frappe.utils.get_bench_path(), 'sites', frappe.utils.get_site_path()) + self.file
         # try to fetch data from zugferd
@@ -31,6 +32,7 @@ class ZUGFeRDWizard(Document):
         else:
             return { 'html': "", 'dict': None }
     
+    @frappe.whitelist()
     def render_invoice(self, invoice):
         if (type(invoice) == str):
             invoice = json.loads(invoice)
@@ -38,10 +40,12 @@ class ZUGFeRDWizard(Document):
         content = frappe.render_template('erpnextswiss/erpnextswiss/doctype/zugferd_wizard/zugferd_content.html', invoice)
         # return html and dict
         return { 'html': content, 'dict': invoice }
-            
+
+    @frappe.whitelist() 
     def get_default_item(self):
         return frappe.get_cached_value("ERPNextSwiss Settings", "ERPNextSwiss Settings", "scanning_default_item")
-        
+    
+    @frappe.whitelist()
     def create_invoice(self):
         if not self.content_dict:
             frappe.throw( _("Please start by loading a document."), _("Notification") )
@@ -191,6 +195,7 @@ class ZUGFeRDWizard(Document):
             'link': get_link_to_form("Purchase Invoice", pinv_doc.name)
         }
 
+    @frappe.whitelist()
     def manual_purchase_invoice(self, company, supplier, date, bill_no, item, 
         amount, cost_center, taxes_and_charges, project=None, remarks=None, esr_code=None, payment_method=None):
         

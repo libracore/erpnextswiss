@@ -26,6 +26,12 @@ frappe.query_reports["Annual Salary Sheet"] = {
             'fieldtype': 'Link',
             'options': 'Employee',
             'reqd': 0
+        },
+        {
+            'fieldname': 'suppress_empty_lines',
+            'label': __("Suppress empty lines"),
+            'fieldtype': 'Check',
+            'default': 1
         }
     ]
 };

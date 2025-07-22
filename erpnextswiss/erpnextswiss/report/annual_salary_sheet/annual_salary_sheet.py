@@ -90,9 +90,12 @@ def get_data(filters):
     })
 
     # remove empty rows
-    clean_data =  []
-    for d in data:
-        if len(d.keys()) > 3: #description, total, auto
-            clean_data.append(d)
+    if filters.suppress_empty_lines:
+        clean_data =  []
+        for d in data:
+            if len(d.keys()) > 3: #description, total, auto
+                clean_data.append(d)
+    else:
+        clean_data = data
 
     return columns, clean_data

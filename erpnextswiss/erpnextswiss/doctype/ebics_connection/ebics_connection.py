@@ -75,6 +75,8 @@ class ebicsConnection(Document):
             bank = EbicsBank(keyring=keyring, hostid=self.host_id, url=self.url)
             user = EbicsUser(keyring=keyring, partnerid=self.partner_id, userid=self.user_id)
             user.create_keys(keyversion='A006', bitlength=2048)
+            if self.ebics_version == "H005":              # H005 requires certificates: create them
+                self.create_certificate()
         except Exception as err:
             frappe.throw( "{0}".format(err), _("Error") )
         return
@@ -131,7 +133,7 @@ class ebicsConnection(Document):
             user.create_ini_letter(bankname=self.title, path=file_name)
             # load ini pdf
             f = open(file_name, "rb")
-            pdf_content = r.read()
+            pdf_content = f.read()
             f.close()
             # attach to ebics
             save_file("ini_letter.pdf", pdf_content, self.doctype, self.name, is_private=1)

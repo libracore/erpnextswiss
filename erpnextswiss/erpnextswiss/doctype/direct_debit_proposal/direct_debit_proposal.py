@@ -12,6 +12,25 @@ from frappe import _
 from frappe.utils.data import get_url_to_form
 from frappe.utils import cint
 from unidecode import unidecode
+from erpnextswiss.erpnextswiss.xml import validate_xml_against_xsd
+import os
+
+XML_SCHEMA_FILES = {
+    'CH': {
+        '03':     "apps/erpnextswiss/erpnextswiss/public/xsd/pain.008.001.02.xsd",
+        '05':     "apps/erpnextswiss/erpnextswiss/public/xsd/pain.008.001.02.xsd",
+        '03CH02': "apps/erpnextswiss/erpnextswiss/public/xsd/pain.008.001.02.xsd",
+        '09':     "apps/erpnextswiss/erpnextswiss/public/xsd/pain.008.001.08.xsd",
+        '09CH03': "apps/erpnextswiss/erpnextswiss/public/xsd/pain.008.001.08.xsd"
+    },
+    'AT': {
+        '03':     "apps/erpnextswiss/erpnextswiss/public/xsd/pain.008.001.02.xsd",
+        '05':     "apps/erpnextswiss/erpnextswiss/public/xsd/pain.008.001.02.xsd",
+        '03CH02': "apps/erpnextswiss/erpnextswiss/public/xsd/pain.008.001.02.xsd",
+        '09':     "apps/erpnextswiss/erpnextswiss/public/xsd/pain.008.001.08.xsd",
+        '09CH03': "apps/erpnextswiss/erpnextswiss/public/xsd/pain.008.001.08.xsd"
+    }
+}
 
 class DirectDebitProposal(Document):
     def validate(self):
@@ -256,6 +275,14 @@ class DirectDebitProposal(Document):
         if cint(settings.get("use_unidecode")) == 1:
             content = unidecode(content)
         
+        # validate xml
+        if cint(settings.get("validate_xml")) == 1:
+            xml_schema = os.path.join(frappe.utils.get_bench_path(), XML_SCHEMA_FILES[settings.get("banking_region")][settings.get("xml_version")])
+            validated, errors = validate_xml_against_xsd(content, xml_schema)
+            if not validated:
+                frappe.log_error("{0}\n\n{1}".format(errors, content), "XML validation failed (pain.008)")
+                frappe.throw("Validation error: {0}".format(errors))
+
         return { 'content': content }
     pass
 

@@ -9,11 +9,30 @@ from frappe import _
 from datetime import datetime, timedelta
 import time
 from erpnextswiss.erpnextswiss.common_functions import get_building_number, get_street_name, get_pincode, get_city, get_primary_address, split_address_to_street_and_building
+from erpnextswiss.erpnextswiss.xml import validate_xml_against_xsd
 import html          # used to escape xml content
 from frappe.utils import cint, get_url_to_form, rounded
 from unidecode import unidecode     # used to remove German/French-type special characters from bank identifieres
+import os
 
 PAYMENT_REMARKS = "From Payment Proposal {0}"
+
+XML_SCHEMA_FILES = {
+    'CH': {
+        '03':     "apps/erpnextswiss/erpnextswiss/public/xsd/pain.001.001.03.xsd",
+        '05':     "apps/erpnextswiss/erpnextswiss/public/xsd/pain.001.001.05.xsd",
+        '03CH02': "apps/erpnextswiss/erpnextswiss/public/xsd/pain.001.001.03.ch.02.xsd",
+        '09':     "apps/erpnextswiss/erpnextswiss/public/xsd/pain.001.001.09.xsd",
+        '09CH03': "apps/erpnextswiss/erpnextswiss/public/xsd/pain.001.001.09.ch.03.xsd"
+    },
+    'AT': {
+        '03':     "apps/erpnextswiss/erpnextswiss/public/xsd/pain.001.001.03.xsd",
+        '05':     "apps/erpnextswiss/erpnextswiss/public/xsd/pain.001.001.05.xsd",
+        '03CH02': "apps/erpnextswiss/erpnextswiss/public/xsd/pain.001.001.03.ch.02.xsd",
+        '09':     "apps/erpnextswiss/erpnextswiss/public/xsd/pain.001.001.09.xsd",
+        '09CH03': "apps/erpnextswiss/erpnextswiss/public/xsd/pain.001.001.09.ch.03.xsd"
+    }
+}
 
 class PaymentProposal(Document):
     def validate(self):
@@ -459,6 +478,14 @@ class PaymentProposal(Document):
         # apply unidecode if enabled
         if cint(settings.get("use_unidecode")) == 1:
             content = unidecode(content)
+        
+        # validate xml
+        if cint(settings.get("validate_xml")) == 1:
+            xml_schema = os.path.join(frappe.utils.get_bench_path(), XML_SCHEMA_FILES[settings.get("banking_region")][settings.get("xml_version")])
+            validated, errors = validate_xml_against_xsd(content, xml_schema)
+            if not validated:
+                frappe.log_error("{0}\n\n{1}".format(errors, content), "XML validation failed (pain.001)")
+                frappe.throw("Validation error: {0}".format(errors))
         
         return { 'content': content }
     

@@ -100,7 +100,9 @@ frappe.bank_wizard = {
                 if (r.message) {
                     //try {
                         frappe.show_alert( r.message.transactions.length + "&nbsp;" + __("transactions found") );
-                        document.getElementById("bank_account").value = r.message.bank;
+                        let bank_account_element = document.getElementById("bank_account");
+                        bank_account_element.value = r.message.bank;
+                        bank_account_element.style.visibility = 'visible';
                         frappe.bank_wizard.render_response(r.message);
                     //} catch {
                     //    frappe.msgprint( "An error occurred while parsing. Please check the log files." );

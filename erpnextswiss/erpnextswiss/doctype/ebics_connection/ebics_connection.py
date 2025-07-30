@@ -6,7 +6,10 @@
 import frappe
 from frappe.model.document import Document
 import os
-import fintech
+try:
+    import fintech
+except:
+    pass            # failed to load fintech, skip
 fintech.register()
 from fintech.ebics import EbicsKeyRing, EbicsBank, EbicsUser, EbicsClient, BusinessTransactionFormat
 #from fintech.sepa import Account, SEPACreditTransfer

@@ -9,10 +9,10 @@ import os
 try:
     import fintech
     fintech.register()
+    from fintech.ebics import EbicsKeyRing, EbicsBank, EbicsUser, EbicsClient, BusinessTransactionFormat
+    #from fintech.sepa import Account, SEPACreditTransfer
 except:
     pass            # failed to load fintech, skip
-from fintech.ebics import EbicsKeyRing, EbicsBank, EbicsUser, EbicsClient, BusinessTransactionFormat
-#from fintech.sepa import Account, SEPACreditTransfer
 from frappe import _
 from frappe.utils.file_manager import save_file
 from frappe.utils.password import get_decrypted_password

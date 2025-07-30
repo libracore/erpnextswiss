@@ -170,7 +170,14 @@ def get_content_from_zugferd(zugferd_xml, debug=False):
         }
         if _item['qty'] == 0:       # skip 0-qty positions
             continue
-            
+        
+        # check if this node has a non-standard unit: use qty = 1 and total line amount (e.g. for gaseoline at CHF/100L)
+        # also, in case there are position surcharges, use the total line amount
+        basis_qty = flt(item.find('ram:basisquantity').string) if item.find('ram:basisquantity') else 1
+        if basis_qty > 1 or item.find('ram:specifiedtradeallowancecharge'):
+            _item['qty'] = 1
+            _item['net_price'] = flt(item.find('ram:specifiedtradesettlementlinemonetarysummation').find('ram:linetotalamount').string)
+        
         # match by seller item code
         match_item_by_code = frappe.get_all("Item",
                                             filters={'item_code': _item['seller_item_code']},

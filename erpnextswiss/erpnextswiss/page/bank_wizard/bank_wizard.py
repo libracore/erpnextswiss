@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2017-2024, libracore and contributors
+# Copyright (c) 2017-2025, libracore and contributors
 # License: AGPL v3. See LICENCE
 
 import frappe
@@ -12,6 +12,7 @@ import six
 from frappe.utils import cint, flt
 from frappe.utils.data import get_url_to_form
 from erpnext.setup.utils import get_exchange_rate
+import datetime
 
 # this function tries to match the amount to an open sales invoice
 #
@@ -245,17 +246,14 @@ def read_camt053(content, account):
             # node not found, probably wrong format
             iban = "n/a"
             frappe.log_error("Unable to read structure. Please make sure that you have selected the correct format.", "BankWizard read_camt053")
-
-    # verify iban
-    account_iban = frappe.get_value("Account", account, "iban")
-    if not account_iban and cint(settings.iban_check_mandatory):
-        frappe.throw( _("Bank account has no IBAN.").format(account_iban, iban), _("Bank Import IBAN validation") )
-    if account_iban and account_iban.replace(" ", "") != iban.replace(" ", ""):
-        if cint(settings.iban_check_mandatory):
-            frappe.throw( _("IBAN mismatch {0} (account) vs. {1} (file)").format(account_iban, iban), _("Bank Import IBAN validation") )
-        else:
-            frappe.log_error( _("IBAN mismatch {0} (account) vs. {1} (file)").format(account_iban, iban), _("Bank Import IBAN validation") )
-            frappe.msgprint( _("IBAN mismatch {0} (account) vs. {1} (file)").format(account_iban, iban), _("Bank Import IBAN validation") )
+            
+    # find account by iban
+    accounts = frappe.get_all("Account", 
+        filters={'account_type': 'Bank', 'disabled': 0, 'iban': iban},
+        fields=['name']
+    )
+    if len(accounts) == 0:
+        frappe.throw("No account found for IBAN {0}. Make sure there is an account in the chart of accounts with this IBAN, account type Bank and not disabled.".format(iban), _("Bank Import IBAN validation"))
 
     # transactions
     entries = soup.find_all('ntry')
@@ -263,7 +261,7 @@ def read_camt053(content, account):
 
     html = render_transactions(transactions)
     
-    return { 'transactions': transactions, 'html': html } 
+    return { 'transactions': transactions, 'html': html, 'bank': accounts[0]['name'] } 
 
 @frappe.whitelist()
 def render_transactions(transactions):
@@ -277,11 +275,13 @@ def read_camt_transactions(transaction_entries, account, settings, debug=False):
     company = frappe.get_value("Account", account, "company")
     txns = []
     for entry in transaction_entries:
-        if six.PY2:
-            entry_soup = BeautifulSoup(unicode(entry), 'lxml')
+        entry_soup = BeautifulSoup(str(entry), 'lxml')
+        if entry_soup.bookgdt.dt:
+            date = entry_soup.bookgdt.dt.get_text()
+        elif entry_soup.bookgdt.dttm:
+            date = entry_soup.bookgdt.dttm.get_text()[:10]
         else:
-            entry_soup = BeautifulSoup(str(entry), 'lxml')
-        date = entry_soup.bookgdt.dt.get_text()
+            date = datetime.datetime.today().strftime("%Y-%m-%d")
         transactions = entry_soup.find_all('txdtls')
         # fetch entry amount as fallback
         entry_amount = float(entry_soup.amt.get_text())
@@ -295,10 +295,7 @@ def read_camt_transactions(transaction_entries, account, settings, debug=False):
         if transactions and len(transactions) > 0:
             for transaction in transactions:
                 transaction_count += 1
-                if six.PY2:
-                    transaction_soup = BeautifulSoup(unicode(transaction), 'lxml')
-                else:
-                    transaction_soup = BeautifulSoup(str(transaction), 'lxml')
+                transaction_soup = BeautifulSoup(str(transaction), 'lxml')
                 # --- find transaction type: paid or received: (DBIT: paid, CRDT: received)
                 if settings.always_use_entry_transaction_type:
                     credit_debit = entry_soup.cdtdbtind.get_text()
@@ -328,19 +325,26 @@ def read_camt_transactions(transaction_entries, account, settings, debug=False):
                         try:
                             unique_reference = transaction_soup.pmtinfid.get_text()
                         except:
-                            # fallback to group account service reference plus transaction_count
-                            if global_account_service_reference != "":
-                                unique_reference = "{0}-{1}".format(global_account_service_reference, transaction_count)
-                            else:
-                                # fallback to ustrd (do not use)
-                                # unique_reference = transaction_soup.ustrd.get_text()
-                                # fallback to hash
-                                amount = transaction_soup.txdtls.amt.get_text()
-                                party = transaction_soup.nm.get_text()
-                                code = "{0}:{1}:{2}".format(date, amount, party)
-                                if settings.debug_mode:
-                                    frappe.log_error("Code: {0}".format(code))
-                                unique_reference = hashlib.md5(code.encode("utf-8")).hexdigest()
+                            # fallback ntry reference or booking code (wise)
+                            try:
+                                if entry_soup.ntryref:
+                                    unique_reference = entry_soup.ntryref.get_text()
+                                else:
+                                    unique_reference = entry_soup.bktxcd.prtry.cd.get_text()
+                            except:
+                                # fallback to group account service reference plus transaction_count
+                                if global_account_service_reference != "":
+                                    unique_reference = "{0}-{1}".format(global_account_service_reference, transaction_count)
+                                else:
+                                    # fallback to ustrd (do not use)
+                                    # unique_reference = transaction_soup.ustrd.get_text()
+                                    # fallback to hash
+                                    amount = transaction_soup.txdtls.amt.get_text()
+                                    party = transaction_soup.nm.get_text()
+                                    code = "{0}:{1}:{2}".format(date, amount, party)
+                                    if settings.debug_mode:
+                                        frappe.log_error("Code: {0}".format(code))
+                                    unique_reference = hashlib.md5(code.encode("utf-8")).hexdigest()
                 # --- find amount and currency
                 try:
                     # try to find as <TxAmt>
@@ -359,20 +363,14 @@ def read_camt_transactions(transaction_entries, account, settings, debug=False):
                     # --- find party IBAN
                     if credit_debit == "DBIT":
                         # use RltdPties:Cdtr
-                        if six.PY2:
-                            party_soup = BeautifulSoup(unicode(transaction_soup.txdtls.rltdpties.cdtr), 'lxml')
-                        else:
-                            party_soup = BeautifulSoup(str(transaction_soup.txdtls.rltdpties.cdtr), 'lxml')
+                        party_soup = BeautifulSoup(str(transaction_soup.txdtls.rltdpties.cdtr), 'lxml')
                         try:
                             party_iban = transaction_soup.cdtracct.id.iban.get_text()
                         except:
                             party_iban = ""
                     else:
                         # CRDT: use RltdPties:Dbtr
-                        if six.PY2:
-                            party_soup = BeautifulSoup(unicode(transaction_soup.txdtls.rltdpties.dbtr), 'lxml')
-                        else:
-                            party_soup = BeautifulSoup(str(transaction_soup.txdtls.rltdpties.dbtr), 'lxml')
+                        party_soup = BeautifulSoup(str(transaction_soup.txdtls.rltdpties.dbtr), 'lxml')
                         try:
                             party_iban = transaction_soup.dbtracct.id.iban.get_text()
                         except:

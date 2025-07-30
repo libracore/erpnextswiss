@@ -274,9 +274,10 @@ DocType: Payment Proposal,Target date,Zieldatum
 DocType: Payment Proposal,Employee name,Mitarbeitername
 DocType: Payment Proposal,Include Payments Until,Fälligkeiten einschliessen bis
 DocType: Payment Proposal,Execute as one single payment,Als eine einzige Zahlung ausführen
+DocType: Payment Proposal,in Payment Proposal,in Zahlungslauf
 Page: Bank Wizard,Bank Wizard,Bankassistent
 Page: Bank Wizard,Transaction matched,Zahlung zugewiesen
-Page: Bank Wizard, transactions found, Zahlungen gefunden
+Page: Bank Wizard,transactions found,Zahlungen gefunden
 Page: Bank Wizard,Please set the <b>default accounts</b> in <a href=\"/desk#Form/Company/{0}\">{0}</a>.Bitte setzten Sie <b>Standardkonten</b> unter <a href=\"/desk#Form/Company/{0}\">{0}</a>.
 Page: Bank Wizard,Please set the <b>default supplier</b> in <a href=\"/desk#Form/ERPNextSwiss Settings\">ERPNextSwiss Settings</a>.,Bitte setzen Sie den <b>Standardlieferant</b> unter <a href=\"/desk#Form/ERPNextSwiss Settings\">ERPNextSwiss Settings</a>.
 Page: Bank Wizard,Please set the <b>default customer</b> in <a href=\"/desk#Form/ERPNextSwiss Settings\">ERPNextSwiss Settings</a>.,Bitte setzen Sie den <b>Standardkunden</b> unter <a href=\"/desk#Form/ERPNextSwiss Settings\">ERPNextSwiss Settings</a>.
@@ -285,6 +286,7 @@ Page: Bank Wizard,An error occurred while parsing. Please check the log files.,E
 Page: Bank Wizard,Unsupported file format. Please use an xml or zip camt file,Dieses Format wird nicht unterstützt. Bitte verwenden Sie eine gültige XML- oder ZIP-Datei
 Page: Bank Wizard,Bank account has no IBAN.,Das Bankkonto hat keine IBAN hinterlegt.
 Page: Bank Wizard,IBAN check mandatory,IBAN-Prüfung zwingend erforderlich
+Page: Bank Wizard,"No account found for IBAN {0}. Make sure there is an account in the chart of accounts with this IBAN, account type Bank and not disabled.","Kein Bankkonto für IBAN {0} gefunden. Bitte sicherstellen, das im Kontenplan ein Konto vom Type Bank mit dieser IBAN existiert und nicht deaktiviert ist."
 DocType: Daily Closing Statement,Daily Closing Statement,Tagesabschluss
 DocType: Daily Closing Statement,Statistics,Statistik
 DocType: Daily Closing Statement,Total Sales,Total Umsatz
@@ -411,6 +413,7 @@ Report: Account Sheets with Tax Codes,Account Sheets with Tax Codes,Kontenblätt
 DocType: ERPNextSwiss Settings,Blocking period in days,Sperrfrist in Tagen
 DocType: ERPNextSwiss Settings,Payment Reminder Level Blocking Period,Mahnstufen Sperrfristen
 DocType: ERPNextSwiss Settings,Use unidecoded formats,Unidecodierte Formate verwenden
+DocType: ERPNextSwiss Settings,Validate XML,XML validieren
 Report: Budget Control,Budget Control,Budgetkontrolle
 Report: Service Invoicing,Service Invoicing,Dienstleistungsabrechnug
 Report: Service Invoicing,Create invoice,Rechnung erstellen

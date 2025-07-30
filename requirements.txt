@@ -8,3 +8,4 @@ fintech
 pysftp
 icalendar
 unidecode
+lxml

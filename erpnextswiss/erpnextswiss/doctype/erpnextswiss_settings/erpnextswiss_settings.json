@@ -22,6 +22,7 @@
   "xml_version",
   "enable_salary_payment",
   "use_unidecode",
+  "validate_xml",
   "section_bank_wizard",
   "intermediate_account",
   "column_bank_wizard",
@@ -311,10 +312,16 @@
    "fieldname": "use_unidecode",
    "fieldtype": "Check",
    "label": "Use unidecoded formats"
+  },
+  {
+   "default": "0",
+   "fieldname": "validate_xml",
+   "fieldtype": "Check",
+   "label": "Validate XML"
   }
  ],
  "issingle": 1,
- "modified": "2025-06-20 22:25:23.239750",
+ "modified": "2025-07-29 17:45:35.384417",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "ERPNextSwiss Settings",

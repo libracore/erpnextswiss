@@ -99,7 +99,8 @@ frappe.bank_wizard = {
             callback: function(r) {
                 if (r.message) {
                     //try {
-                        frappe.show_alert( r.message.transactions.length +  __(" transactions found") );
+                        frappe.show_alert( r.message.transactions.length + "&nbsp;" + __("transactions found") );
+                        document.getElementById("bank_account").value = r.message.bank;
                         frappe.bank_wizard.render_response(r.message);
                     //} catch {
                     //    frappe.msgprint( "An error occurred while parsing. Please check the log files." );

@@ -247,23 +247,20 @@ def read_camt053(content, account):
             iban = "n/a"
             frappe.log_error("Unable to read structure. Please make sure that you have selected the correct format.", "BankWizard read_camt053")
             
-    # verify iban
-    account_iban = frappe.get_value("Account", account, "iban")
-    if not account_iban and cint(settings.iban_check_mandatory):
-        frappe.throw( _("Bank account has no IBAN.").format(account_iban, iban), _("Bank Import IBAN validation") )
-    if account_iban and account_iban.replace(" ", "") != iban.replace(" ", ""):
-        if cint(settings.iban_check_mandatory):
-            frappe.throw( _("IBAN mismatch {0} (account) vs. {1} (file)").format(account_iban, iban), _("Bank Import IBAN validation") )
-        else:
-            frappe.log_error( _("IBAN mismatch {0} (account) vs. {1} (file)").format(account_iban, iban), _("Bank Import IBAN validation") )
-            frappe.msgprint( _("IBAN mismatch {0} (account) vs. {1} (file)").format(account_iban, iban), _("Bank Import IBAN validation") )
+    # find account by iban
+    accounts = frappe.get_all("Account", 
+        filters={'account_type': 'Bank', 'disabled': 0, 'iban': iban},
+        fields=['name']
+    )
+    if len(accounts) == 0:
+        frappe.throw("No account found for IBAN {0}. Make sure there is an account in the chart of accounts with this IBAN, account type Bank and not disabled.".format(iban), _("Bank Import IBAN validation"))
 
     # transactions
     entries = soup.find_all('ntry')
     transactions = read_camt_transactions(entries, account, settings)
     html = render_transactions(transactions)
     
-    return { 'transactions': transactions, 'html': html } 
+    return { 'transactions': transactions, 'html': html, 'bank': accounts[0]['name'] } 
 
 @frappe.whitelist()
 def render_transactions(transactions):

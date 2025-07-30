@@ -12,6 +12,7 @@ import six
 from frappe.utils import cint, flt
 from frappe.utils.data import get_url_to_form
 from erpnext.setup.utils import get_exchange_rate
+import datetime
 
 # this function tries to match the amount to an open sales invoice
 #
@@ -276,11 +277,13 @@ def read_camt_transactions(transaction_entries, account, settings, debug=False):
     company = frappe.get_value("Account", account, "company")
     txns = []
     for entry in transaction_entries:
-        if six.PY2:
-            entry_soup = BeautifulSoup(unicode(entry), 'lxml')
+        entry_soup = BeautifulSoup(str(entry), 'lxml')
+        if entry_soup.bookgdt.dt:
+            date = entry_soup.bookgdt.dt.get_text()
+        elif entry_soup.bookgdt.dttm:
+            date = entry_soup.bookgdt.dttm.get_text()[:10]
         else:
-            entry_soup = BeautifulSoup(str(entry), 'lxml')
-        date = entry_soup.bookgdt.dt.get_text()
+            date = datetime.datetime.today().strftime("%Y-%m-%d")
         transactions = entry_soup.find_all('txdtls')
         # fetch entry amount as fallback
         entry_amount = float(entry_soup.amt.get_text())
@@ -294,10 +297,7 @@ def read_camt_transactions(transaction_entries, account, settings, debug=False):
         if transactions and len(transactions) > 0:
             for transaction in transactions:
                 transaction_count += 1
-                if six.PY2:
-                    transaction_soup = BeautifulSoup(unicode(transaction), 'lxml')
-                else:
-                    transaction_soup = BeautifulSoup(str(transaction), 'lxml')
+                transaction_soup = BeautifulSoup(str(transaction), 'lxml')
                 # --- find transaction type: paid or received: (DBIT: paid, CRDT: received)
                 if settings.always_use_entry_transaction_type:
                     credit_debit = entry_soup.cdtdbtind.get_text()
@@ -358,20 +358,14 @@ def read_camt_transactions(transaction_entries, account, settings, debug=False):
                     # --- find party IBAN
                     if credit_debit == "DBIT":
                         # use RltdPties:Cdtr
-                        if six.PY2:
-                            party_soup = BeautifulSoup(unicode(transaction_soup.txdtls.rltdpties.cdtr), 'lxml') 
-                        else:
-                            party_soup = BeautifulSoup(str(transaction_soup.txdtls.rltdpties.cdtr), 'lxml') 
+                        party_soup = BeautifulSoup(str(transaction_soup.txdtls.rltdpties.cdtr), 'lxml') 
                         try:
                             party_iban = transaction_soup.cdtracct.id.iban.get_text()
                         except:
                             party_iban = ""
                     else:
                         # CRDT: use RltdPties:Dbtr
-                        if six.PY2:
-                            party_soup = BeautifulSoup(unicode(transaction_soup.txdtls.rltdpties.dbtr), 'lxml')
-                        else:
-                            party_soup = BeautifulSoup(str(transaction_soup.txdtls.rltdpties.dbtr), 'lxml')
+                        party_soup = BeautifulSoup(str(transaction_soup.txdtls.rltdpties.dbtr), 'lxml')
                         try:
                             party_iban = transaction_soup.dbtracct.id.iban.get_text()
                         except:

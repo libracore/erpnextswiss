@@ -8,7 +8,6 @@ import hashlib
 import json
 from bs4 import BeautifulSoup
 import ast
-import six
 from frappe.utils import cint, flt
 from frappe.utils.data import get_url_to_form
 from erpnext.setup.utils import get_exchange_rate
@@ -253,7 +252,8 @@ def read_camt053(content, account):
         fields=['name']
     )
     if len(accounts) == 0:
-        frappe.throw("No account found for IBAN {0}. Make sure there is an account in the chart of accounts with this IBAN, account type Bank and not disabled.".format(iban), _("Bank Import IBAN validation"))
+        frappe.msgprint("No account found for IBAN {0}. Make sure there is an account in the chart of accounts with this IBAN, account type Bank and not disabled.".format(iban), _("Bank Import IBAN validation"))
+        accounts = [{'name': 'n/a'}]
 
     # transactions
     entries = soup.find_all('ntry')

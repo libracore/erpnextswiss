@@ -101,7 +101,12 @@ frappe.bank_wizard = {
                     //try {
                         frappe.show_alert( r.message.transactions.length + "&nbsp;" + __("transactions found") );
                         let bank_account_element = document.getElementById("bank_account");
-                        bank_account_element.value = r.message.bank;
+                        if (r.message.bank != "n/a") {
+                            bank_account_element.value = r.message.bank;
+                        } else {
+                            // enable manual selection of bank account
+                            bank_account_element.disabled = false;
+                        }
                         bank_account_element.style.visibility = 'visible';
                         frappe.bank_wizard.render_response(r.message);
                     //} catch {

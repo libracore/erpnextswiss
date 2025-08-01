@@ -6,10 +6,13 @@
 import frappe
 from frappe.model.document import Document
 import os
-import fintech
-fintech.register()
-from fintech.ebics import EbicsKeyRing, EbicsBank, EbicsUser, EbicsClient, BusinessTransactionFormat
-#from fintech.sepa import Account, SEPACreditTransfer
+try:
+    import fintech
+    fintech.register()
+    from fintech.ebics import EbicsKeyRing, EbicsBank, EbicsUser, EbicsClient, BusinessTransactionFormat
+    #from fintech.sepa import Account, SEPACreditTransfer
+except:
+    pass            # failed to load fintech, skip
 from frappe import _
 from frappe.utils.file_manager import save_file
 from frappe.utils.password import get_decrypted_password
@@ -75,6 +78,8 @@ class ebicsConnection(Document):
             bank = EbicsBank(keyring=keyring, hostid=self.host_id, url=self.url)
             user = EbicsUser(keyring=keyring, partnerid=self.partner_id, userid=self.user_id)
             user.create_keys(keyversion='A006', bitlength=2048)
+            if self.ebics_version == "H005":              # H005 requires certificates: create them
+                self.create_certificate()
         except Exception as err:
             frappe.throw( "{0}".format(err), _("Error") )
         return
@@ -131,7 +136,7 @@ class ebicsConnection(Document):
             user.create_ini_letter(bankname=self.title, path=file_name)
             # load ini pdf
             f = open(file_name, "rb")
-            pdf_content = r.read()
+            pdf_content = f.read()
             f.close()
             # attach to ebics
             save_file("ini_letter.pdf", pdf_content, self.doctype, self.name, is_private=1)
@@ -235,6 +240,12 @@ class ebicsConnection(Document):
                     if debug:
                         print("Parsing data...")
                     stmt.parse_content()
+                    
+                    # if there are no transactions: drop file
+                    if len(stmt.transactions) == 0:
+                        stmt.delete()
+                        continue
+                        
                     if debug:
                         print("Processing transactions...")
                     stmt.process_transactions()

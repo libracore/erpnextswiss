@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018-2024, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2018-2025, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
 #
 #
@@ -47,6 +47,7 @@ def create_zugferd_xml(sales_invoice, verify=True):
             })
         # compile xml content
         owner = frappe.get_doc("User", sinv.owner)
+        delivery_date = sinv.get('delivery_date') or sinv.get('posting_date')
         data = {
             'name': html.escape(sinv.name),
             'issue_date': "{year:04d}{month:02d}{day:02d}".format(
@@ -57,6 +58,8 @@ def create_zugferd_xml(sales_invoice, verify=True):
             'customer': html.escape(sinv.customer),
             'customer_name': html.escape(sinv.customer_name),
             'customer_tax_id': html.escape(sinv.tax_id or ""),
+            'delivery_date': "{year:04d}{month:02d}{day:02d}".format(
+                year=delivery_date.year, month=delivery_date.month, day=delivery_date.day),
             'currency': sinv.currency,
             'payment_terms': html.escape(sinv.payment_terms_template or ""),
             'due_date': "{year:04d}{month:02d}{day:02d}".format(
@@ -90,6 +93,7 @@ def create_zugferd_xml(sales_invoice, verify=True):
                 'idx': item.idx,
                 'item_code': html.escape(item.item_code),
                 'item_name': html.escape(item.item_name),
+                'description': html.escape(item.description),
                 'barcode': item.barcode,
                 'price_list_rate': item.price_list_rate,
                 'rate': item.rate,
@@ -147,7 +151,25 @@ def create_zugferd_xml(sales_invoice, verify=True):
                 'pincode': "",
                 'city': "",
                 'country_code': "CH"
-            }            
+            }
+        shipping_address = frappe.get_doc("Address", sinv.shipping_address_name)
+        if shipping_address:
+            shipping_country_code = frappe.get_value("Country", shipping_address.country, "code").upper()
+            data['shipping_address'] = {
+                'address_line1': html.escape(shipping_address.address_line1 or ""),
+                'address_line2': html.escape(shipping_address.address_line2 or ""),
+                'pincode': html.escape(shipping_address.pincode or ""),
+                'city': html.escape(shipping_address.city or ""),
+                'country_code': shipping_country_code or "CH"
+            }
+        else:
+            data['shipping_address'] = {
+                'address_line1': "",
+                'address_line2': "",
+                'pincode': "",
+                'city': "",
+                'country_code': "CH"
+            }         
 
         xml = frappe.render_template('erpnextswiss/erpnextswiss/zugferd/en16931.html', data)
         

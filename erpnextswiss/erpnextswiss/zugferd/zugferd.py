@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018-2024, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2018-2025, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
 #
 #
@@ -131,7 +131,10 @@ def get_content_from_zugferd(zugferd_xml, debug=False):
         invoice['due_date'] = today.strftime("%Y-%m-%d")
 
     document_context = soup.find('rsm:exchangeddocument')
-    invoice['terms'] = document_context.find('ram:content').string
+    if document_context.find('ram:content'):
+        invoice['terms'] = document_context.find('ram:content').string
+    else:
+        invoice['terms'] = None         # if no content is provided, set to None
     
     doc_id = document_context.find('ram:id').string
     invoice['doc_id'] = doc_id
@@ -161,13 +164,20 @@ def get_content_from_zugferd(zugferd_xml, debug=False):
         _item = {
             'net_price': item.find('ram:netpriceproducttradeprice').find('ram:chargeamount').string, # if item.find('ram:netpriceproducttradeprice') else 0,
             'qty': flt(item.find('ram:billedquantity').string) if item.find('ram:billedquantity') else 0,
-            'seller_item_code': item.find('ram:sellerassignedid').string,
+            'seller_item_code': item.find('ram:sellerassignedid').string if item.find('ram:sellerassignedid') else None,
             'item_name': item.find('ram:name').string,
             'item_code': None
         }
         if _item['qty'] == 0:       # skip 0-qty positions
             continue
-            
+        
+        # check if this node has a non-standard unit: use qty = 1 and total line amount (e.g. for gaseoline at CHF/100L)
+        # also, in case there are position surcharges, use the total line amount
+        basis_qty = flt(item.find('ram:basisquantity').string) if item.find('ram:basisquantity') else 1
+        if basis_qty > 1 or item.find('ram:specifiedtradeallowancecharge'):
+            _item['qty'] = 1
+            _item['net_price'] = flt(item.find('ram:specifiedtradesettlementlinemonetarysummation').find('ram:linetotalamount').string)
+        
         # match by seller item code
         match_item_by_code = frappe.get_all("Item",
                                             filters={'item_code': _item['seller_item_code']},

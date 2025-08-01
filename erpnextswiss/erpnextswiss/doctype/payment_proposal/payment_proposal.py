@@ -9,11 +9,30 @@ from frappe import _
 from datetime import datetime, timedelta
 import time
 from erpnextswiss.erpnextswiss.common_functions import get_building_number, get_street_name, get_pincode, get_city, get_primary_address, split_address_to_street_and_building
+from erpnextswiss.erpnextswiss.xml import validate_xml_against_xsd
 import html          # used to escape xml content
 from frappe.utils import cint, get_url_to_form, rounded
 from unidecode import unidecode     # used to remove German/French-type special characters from bank identifieres
+import os
 
 PAYMENT_REMARKS = "From Payment Proposal {0}"
+
+XML_SCHEMA_FILES = {
+    'CH': {
+        '03':     "apps/erpnextswiss/erpnextswiss/public/xsd/pain.001.001.03.xsd",
+        '05':     "apps/erpnextswiss/erpnextswiss/public/xsd/pain.001.001.05.xsd",
+        '03CH02': "apps/erpnextswiss/erpnextswiss/public/xsd/pain.001.001.03.ch.02.xsd",
+        '09':     "apps/erpnextswiss/erpnextswiss/public/xsd/pain.001.001.09.xsd",
+        '09CH03': "apps/erpnextswiss/erpnextswiss/public/xsd/pain.001.001.09.ch.03.xsd"
+    },
+    'AT': {
+        '03':     "apps/erpnextswiss/erpnextswiss/public/xsd/pain.001.001.03.xsd",
+        '05':     "apps/erpnextswiss/erpnextswiss/public/xsd/pain.001.001.05.xsd",
+        '03CH02': "apps/erpnextswiss/erpnextswiss/public/xsd/pain.001.001.03.ch.02.xsd",
+        '09':     "apps/erpnextswiss/erpnextswiss/public/xsd/pain.001.001.09.xsd",
+        '09CH03': "apps/erpnextswiss/erpnextswiss/public/xsd/pain.001.001.09.ch.03.xsd"
+    }
+}
 
 class PaymentProposal(Document):
     def validate(self):
@@ -120,6 +139,7 @@ class PaymentProposal(Document):
                     invoice.save()
                     # create payment on intermediate
                     if self.use_intermediate == 1:
+                        
                         self.create_payment("Supplier", supplier, 
                             "Purchase Invoice", purchase_invoice.purchase_invoice, exec_date,
                             purchase_invoice.amount, self.company)
@@ -183,16 +203,17 @@ class PaymentProposal(Document):
             cntry = frappe.get_value("Company", emp.company, "country")
             self.add_payment(
                 receiver_name=emp.employee_name, 
-                iban=emp.bank_ac_no, 
+                iban=emp.bank_ac_no,
+                bic=emp.bic or '',
                 payment_type="IBAN",
-                address_line1=address_lines[0], 
-                address_line2=address_lines[1], 
-                country=cntry, 
-                pincode=plz_city[0], 
+                address_line1=address_lines[0],
+                address_line2=address_lines[1],
+                country=cntry,
+                pincode=plz_city[0],
                 city=plz_city[1],
-                amount=amount, 
-                currency=currency, 
-                reference=" ".join(references), 
+                amount=amount,
+                currency=currency,
+                reference=" ".join(references),
                 execution_date=self.date
             )
             total += amount
@@ -216,16 +237,17 @@ class PaymentProposal(Document):
             cntry = frappe.get_value("Company", emp.company, "country")
             self.add_payment(
                 receiver_name=emp.employee_name, 
-                iban=emp.bank_ac_no, 
+                iban=emp.bank_ac_no,
+                bic=emp.bic or '',
                 payment_type="IBAN",
-                address_line1=address_lines[0], 
-                address_line2=address_lines[1], 
-                country=cntry, 
-                pincode=plz_city[0], 
+                address_line1=address_lines[0],
+                address_line2=address_lines[1],
+                country=cntry,
+                pincode=plz_city[0],
                 city=plz_city[1],
-                amount=salary.amount, 
-                currency=account_currency, 
-                reference=(unidecode(salary.salary_slip))[-35:], 
+                amount=salary.amount,
+                currency=account_currency,
+                reference=(unidecode(salary.salary_slip))[-35:],
                 execution_date=salary.target_date,
                 is_salary=1
             )
@@ -305,8 +327,12 @@ class PaymentProposal(Document):
     def create_payment(self, party_type, party_name, 
                             reference_type, reference_name, date,
                             amount, company):
+        intermediate_currency = frappe.get_cached_value("Account", self.intermediate_account, 'account_currency')
         if reference_type == "Purchase Invoice":
             credit_to = frappe.get_value(reference_type, reference_name, "credit_to")
+            # if the document is in a foreign currency, calculate to expected value
+            if frappe.get_value(reference_type, reference_name, "currency") != intermediate_currency:
+                amount = rounded(amount * frappe.get_value(reference_type, reference_name, "conversion_rate"), 2)
         elif reference_type == "Expense Claim":
             credit_to = frappe.get_value(reference_type, reference_name, "payable_account")
         elif reference_type == "Expense Claim":
@@ -344,8 +370,9 @@ class PaymentProposal(Document):
     @frappe.whitelist()
     def create_bank_file(self):
         data = {}
-        data['xml_version'] = frappe.get_value("ERPNextSwiss Settings", "ERPNextSwiss Settings", "xml_version")
-        data['xml_region'] = frappe.get_value("ERPNextSwiss Settings", "ERPNextSwiss Settings", "banking_region")
+        settings = frappe.get_doc("ERPNextSwiss Settings", "ERPNextSwiss Settings")
+        data['xml_version'] = settings.get("xml_version")
+        data['xml_region'] = settings.get("banking_region")
         data['msgid'] = "MSG-" + time.strftime("%Y%m%d%H%M%S")                # message ID (unique, SWIFT-characters only)
         data['date'] = time.strftime("%Y-%m-%dT%H:%M:%S")                    # creation date and time ( e.g. 2010-02-15T07:30:00 )
         # number of transactions in the file
@@ -373,11 +400,11 @@ class PaymentProposal(Document):
         ### Payment Information (PmtInf, B-Level)
         # payment information records (1 .. 99'999)
         payment_account = frappe.get_doc('Account', self.pay_from_account)
-        if not payment_account:
-            frappe.throw( _("{0}: no account IBAN found ({1})".format(
-                payment.references, self.pay_from_account) ) )
+        if not payment_account.iban or not payment_account.bic:
+            frappe.throw( _("Account {0} is missing IBAN and/or BIC".format(
+                self.pay_from_account) ) )
         data['company']['iban'] = "{0}".format(payment_account.iban.replace(" ", ""))
-        data['company']['bic'] = payment_account.bic
+        data['company']['bic'] = "{0}".format(payment_account.bic.replace(" ", ""))
         data['payments'] = []
         for payment in self.payments:
             payment_content = ""
@@ -447,6 +474,19 @@ class PaymentProposal(Document):
             content = frappe.render_template('erpnextswiss/erpnextswiss/doctype/payment_proposal/pain-001_single_payment.html', data)
         else:
             content = frappe.render_template('erpnextswiss/erpnextswiss/doctype/payment_proposal/pain-001.html', data)
+        
+        # apply unidecode if enabled
+        if cint(settings.get("use_unidecode")) == 1:
+            content = unidecode(content)
+        
+        # validate xml
+        if cint(settings.get("validate_xml")) == 1:
+            xml_schema = os.path.join(frappe.utils.get_bench_path(), XML_SCHEMA_FILES[settings.get("banking_region")][settings.get("xml_version")])
+            validated, errors = validate_xml_against_xsd(content, xml_schema)
+            if not validated:
+                frappe.log_error("{0}\n\n{1}".format(errors, content), "XML validation failed (pain.001)")
+                frappe.throw("Validation error: {0}".format(errors))
+        
         return { 'content': content }
     
     def create_wise_file(self):
@@ -490,7 +530,25 @@ class PaymentProposal(Document):
         payment_content += make_line("          </PstlAdr>")
         payment_content += make_line("        </Cdtr>") 
         return payment_content
-
+        
+    @frappe.whitelist()
+    def has_active_ebics_connection(self):
+        statements = frappe.db.sql("""
+            SELECT `ebics_connection` 
+            FROM `tabebics Statement`
+            WHERE `account` = "{account}"
+            ORDER BY `creation` DESC;
+            """.format(account=self.pay_from_account), as_dict=True)
+        if len(statements) > 0:
+            connections = frappe.db.sql("""
+            SELECT `activated`, `name` 
+            FROM `tabebics Connection`
+            WHERE `name` = "{conn}";
+            """.format(conn=statements[0]['ebics_connection']), as_dict=True)
+            if len(connections) > 0:
+                return connections[0]['name']
+        return 0
+        
 # this function will create a new payment proposal
 @frappe.whitelist()
 def create_payment_proposal(date=None, company=None, currency=None):
@@ -596,6 +654,7 @@ def create_payment_proposal(date=None, company=None, currency=None):
                     LEFT JOIN `tabCompany` ON `tabSalary Slip`.`company` = `tabCompany`.`name`
                     WHERE `tabSalary Slip`.`docstatus` = 1 
                       AND `tabSalary Slip`.`is_proposed` = 0
+                      AND `tabSalary Slip`.`net_pay` > 0
                       AND `tabSalary Slip`.`company` = '{company}';""".format(company=company))
         salary_slips = frappe.db.sql(sql_query, as_dict=True)          
         # append salary slips

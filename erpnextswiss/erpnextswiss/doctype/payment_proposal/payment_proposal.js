@@ -13,35 +13,14 @@ frappe.ui.form.on('Payment Proposal', {
             });
             // check if this account has an active ebic connection
             frappe.call({
-                'method': 'frappe.client.get_list',
-                'args': {
-                    'doctype': 'ebics Statement',
-                    'filters': {
-                        'account': frm.doc.pay_from_account
-                    },
-                    'fields': ['name', 'ebics_connection']
-                },
+                'method': 'has_active_ebics_connection',
+                'doc': frm.doc,
                 'callback': function(response) {
-                    if (response.message.length > 0) {
-                        frappe.call({
-                            'method': 'frappe.client.get_list',
-                            'args': {
-                                'doctype': 'ebics Connection',
-                                'filters': {
-                                    'name': response.message[0]['ebics_connection'],
-                                    'activated': 1
-                                },
-                                'fields': ['name']
-                            },
-                            'callback': function(response) {
-                                if (response.message.length > 0) {
-                                    locals.ebics_connection = response.message[0]['name'];
-                                    frm.add_custom_button(__("Transmit by ebics"), function() {
-                                        transmit_ebics(frm);
-                                    }).addClass("btn-success");
-                                }
-                            }
-                        });
+                    if (response.message.toString() !== "0") {
+                        locals.ebics_connection = response.message[0]['name'];
+                        frm.add_custom_button(__("Transmit by ebics"), function() {
+                            transmit_ebics(frm);
+                        }).addClass("btn-success");
                     }
                 }
             });

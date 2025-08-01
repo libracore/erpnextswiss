@@ -80,39 +80,49 @@ function start_bank_wizard() {
     }
     
     if (pending_transactions.length > 0) {
-        let transaction_content = frappe.render_template('transaction_table', {'transactions': pending_transactions});
-        let d = new frappe.ui.Dialog({
-            'fields': [
-                {
-                    'fieldname': 'transaction_table', 
-                    'fieldtype': 'HTML', 
-                    'label': __('Transactions'), 
-                    'options': transaction_content
-                },
-            ],
-            'primary_action': function(){
-                d.hide();
-                // and remove the old dialog (otherwise, it cannot be opened again without F5)
-                clear_dialog_content();
+        frappe.call({
+            'method': 'erpnextswiss.erpnextswiss.page.bank_wizard.bank_wizard.render_transactions',
+            'args': {
+                'transactions': pending_transactions
             },
-            'secondary_action': function() {
-                clear_dialog_content();
-            },
-            'primary_action_label': __('Close'),
-            'title': __('Bank Wizard')
-        });
-        d.no_cancel();
-        d.show();
-        
-        setTimeout(function () {
-            let modals = document.getElementsByClassName("modal-dialog");
-            if (modals.length > 0) {
-                modals[modals.length - 1].style.width = "1000px";
+            'callback': function(r) {
+    
+                let transaction_content = r.message;
+                let d = new frappe.ui.Dialog({
+                    'fields': [
+                        {
+                            'fieldname': 'transaction_table', 
+                            'fieldtype': 'HTML', 
+                            'label': __('Transactions'), 
+                            'options': transaction_content
+                        },
+                    ],
+                    'primary_action': function(){
+                        d.hide();
+                        // and remove the old dialog (otherwise, it cannot be opened again without F5)
+                        clear_dialog_content();
+                    },
+                    'secondary_action': function() {
+                        clear_dialog_content();
+                    },
+                    'primary_action_label': __('Close'),
+                    'title': __('Bank Wizard')
+                });
+                d.no_cancel();
+                d.show();
+                
+                setTimeout(function () {
+                    let modals = document.getElementsByClassName("modal-dialog");
+                    if (modals.length > 0) {
+                        modals[modals.length - 1].style.width = "1000px";
+                    }
+                    
+                    // wait for the dialog to be ready to attach handlers
+                    attach_button_handlers(pending_transactions);
+                }, 300);
+                
             }
-            
-            // wait for the dialog to be ready to attach handlers
-            attach_button_handlers(pending_transactions);
-        }, 300);
+        });
     }
 }
 

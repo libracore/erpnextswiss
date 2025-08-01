@@ -1,8 +1,10 @@
 bs4
-factur-x
+factur-x>=2.3
 unidecode
 opencv-python
 pymupdf
 fintech
 pysftp
 icalendar
+unidecode
+lxml

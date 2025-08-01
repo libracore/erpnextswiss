@@ -20,6 +20,8 @@
       </PmtTpInf>
       {%- else %}
       <BtchBookg>{{ payment.batch }}</BtchBookg>
+      <NbOfTxs>1</NbOfTxs>{# note: this is only a patch for VoBA #}
+      <CtrlSum>{{ "{:.2f}".format(payment.amount) }}</CtrlSum>{# note: this is only a patch for VoBA #}
       {%- endif %}
       {%- if xml_region == "CH" and payment.is_salary and not payment.service_level == "SEPA" %}{# CH only: salary information #}
       <PmtTpInf>
@@ -34,7 +36,7 @@
         {%- if company.address_line1 %}
         <PstlAdr>
           <StrtNm>{{ company.street }}</StrtNm>
-          <BldgNb>{{ company.building }}</BldgNb>
+          <BldgNb>{% if company.building %}{{ company.building }}{% else %}0{% endif %}</BldgNb>
           <PstCd>{{ company.pincode }}</PstCd>
           <TwnNm>{{ company.city }}</TwnNm>
           <Ctry>{{ company.country_code }}</Ctry>
@@ -52,7 +54,7 @@
       </DbtrAcct>
       <DbtrAgt>
           <FinInstnId>
-              <Othr><Id>NOTPROVIDED</Id></Othr>
+              <BICFI>{{ company.bic }}</BICFI>
           </FinInstnId>
       </DbtrAgt>
       <CdtTrfTxInf>
@@ -76,10 +78,10 @@
         </CdtrAgt>
         {%- endif %}
         <Cdtr>
-          <Nm>{{ payment.creditor.name }}</Nm>
+          <Nm>{{ payment.creditor.name[:70] }}</Nm>
           <PstlAdr>
             <StrtNm>{{ payment.creditor.street }}</StrtNm>
-            <BldgNb>{{ payment.creditor.building }}</BldgNb>
+            <BldgNb>{% if payment.creditor.building %}{{ payment.creditor.building }}{% else %}0{% endif %}</BldgNb>
             <PstCd>{{ payment.creditor.pincode }}</PstCd>
             <TwnNm>{{ payment.creditor.city }}</TwnNm>
             <Ctry>{{ payment.creditor.country_code }}</Ctry>
@@ -87,7 +89,7 @@
           </PstlAdr>
         </Cdtr>
         {%- if payment.service_level == "SEPA" %}
-        {#- SEPA bapyment block #}
+        {#- SEPA payment block #}
         <CdtrAcct>
           <Id>
             <IBAN>{{ payment.iban }}</IBAN>

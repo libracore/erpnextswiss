@@ -6,11 +6,11 @@
 
   <div class="section-body">
     <div class="row"> 
-	  <div class="form-column col-sm-4">
-	    <p>{{ __("Bank Account") }}</p>
-	    <select id="bank_account">
-
-	    </select>
+      <div class="form-column col-sm-6">
+        <p>{{ __("File") }} <input type="file" id="input_file" /></p>
+        <p>
+            <select id="bank_account" disabled style="visibility: hidden;">
+            </select>
             <input id="intermediate_account" class="hidden" />
             <input id="company" class="hidden" />
             <input id="receivable_account" class="hidden" />
@@ -19,22 +19,19 @@
             <input id="default_customer" class="hidden" />
             <input id="default_supplier" class="hidden" />
             <input id="auto_process_matches" class="hidden" />
-	  </div>
+      </p>
+      </div>
 
-	  <div class="form-column col-sm-4">
-	    <p>{{ __("File") }} <input type="file" id="input_file" /></p>
-	  </div>
-
-	  <div class="form-column col-sm-4" style="text-align: right; ">	  	
-	    <br><button type="submit" id="btn-parse-file" class="btn btn-sm btn-primary btn-parse-file">{{ __("Parse") }}</button>  
+      <div class="form-column col-sm-6" style="text-align: right; ">	  	
+        <br><button type="submit" id="btn-parse-file" class="btn btn-sm btn-primary btn-parse-file">{{ __("Parse") }}</button>  
         <i id="waitingScreen" class="fa fa-spinner fa-spin hidden"></i>
-	  </div>
+      </div>
     </div>
-	  
+      
     <div class="row">
         <div class="col-sm-12">
-	    <div id="table_placeholder"></div>	    
-	</div>
+        <div id="table_placeholder"></div>	    
+    </div>
     </div>
   </div>
   

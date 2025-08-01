@@ -104,7 +104,7 @@
    "read_only": 1
   },
   {
-   "fetch_from": "ebics_connection.company",
+   "fetch_from": "account.company",
    "fieldname": "company",
    "fieldtype": "Link",
    "label": "Company",
@@ -122,7 +122,7 @@
    "read_only": 1
   }
  ],
- "modified": "2024-12-10 09:50:57.763294",
+ "modified": "2025-06-17 09:30:16.231389",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "ebics Statement",

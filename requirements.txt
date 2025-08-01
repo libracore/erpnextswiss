@@ -1,4 +1,3 @@
-frappe
 bs4
 factur-x
 unidecode

@@ -324,26 +324,25 @@ def read_camt_transactions(transaction_entries, account, settings, debug=False):
                         try:
                             unique_reference = transaction_soup.pmtinfid.get_text()
                         except:
-                            # fallback ntry reference or booking code (wise)
                             try:
                                 if entry_soup.ntryref:
                                     unique_reference = entry_soup.ntryref.get_text()
-                                else:
-                                    unique_reference = entry_soup.bktxcd.prtry.cd.get_text()
-                            except:
-                                # fallback to group account service reference plus transaction_count
-                                if global_account_service_reference != "":
+                                elif global_account_service_reference != "":
+                                    # fallback to group account service reference plus transaction_count
                                     unique_reference = "{0}-{1}".format(global_account_service_reference, transaction_count)
                                 else:
-                                    # fallback to ustrd (do not use)
-                                    # unique_reference = transaction_soup.ustrd.get_text()
-                                    # fallback to hash
-                                    amount = transaction_soup.txdtls.amt.get_text()
-                                    party = transaction_soup.nm.get_text()
-                                    code = "{0}:{1}:{2}".format(date, amount, party)
-                                    if settings.debug_mode:
-                                        frappe.log_error("Code: {0}".format(code))
-                                    unique_reference = hashlib.md5(code.encode("utf-8")).hexdigest()
+                                    # fallback ntry reference or booking code (wise) (for banks this is often not unique)
+                                    unique_reference = entry_soup.bktxcd.prtry.cd.get_text()
+                            except:
+                                # fallback to ustrd (do not use)
+                                # unique_reference = transaction_soup.ustrd.get_text()
+                                # fallback to hash
+                                amount = transaction_soup.txdtls.amt.get_text()
+                                party = transaction_soup.nm.get_text()
+                                code = "{0}:{1}:{2}".format(date, amount, party)
+                                if settings.debug_mode:
+                                    frappe.log_error("Code: {0}".format(code))
+                                unique_reference = hashlib.md5(code.encode("utf-8")).hexdigest()
                 # --- find amount and currency
                 try:
                     # try to find as <TxAmt>

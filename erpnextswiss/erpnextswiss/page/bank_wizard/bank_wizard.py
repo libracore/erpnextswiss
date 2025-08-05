@@ -248,18 +248,18 @@ def read_camt053(content, account):
             
     # find account by iban
     accounts = frappe.db.sql("""
-        SELECT `name`
-        FROM `tabAccount`
-        WHERE `account_type` = 'Bank'
-        AND `disabled` = 0
-        AND REPLACE(`iban`, ' ', '') = '{iban}'
-    """.format(iban=iban.replace(" ", "")), as_dict=True)
+            SELECT `name`
+            FROM `tabAccount`
+            WHERE `account_type` = 'Bank'
+              AND `disabled` = 0
+              AND REPLACE(`iban`, ' ', '') = %(iban)s
+        """,
+        {'iban': iban.replace(" ", "")},
+        as_dict=True
+    )
 
     if len(accounts) == 0:
-        frappe.msgprint("No account found for IBAN {0}.<br>" \
-        "Make sure there is an account in the chart of accounts with this IBAN, account type Bank and not disabled.<br><br>" \
-        "Otherwise: <ul><li>select a bank account manually, or</li>" \
-        "<li>if the preselected bank account is correct, click parse again.</li></ul>".format(iban), _("Bank Import IBAN validation"))
+        frappe.msgprint( _("No account found for IBAN {0}. Make sure there is an account in the chart of accounts with this IBAN, account type Bank and not disabled.").format(iban), _("Bank Import IBAN validation"))
         accounts = [{'name': 'n/a'}]
 
     # transactions

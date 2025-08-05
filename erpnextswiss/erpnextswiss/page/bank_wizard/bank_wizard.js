@@ -12,6 +12,8 @@ frappe.pages['bank_wizard'].on_page_load = function(wrapper) {
     frappe.breadcrumbs.add("ERPNextSwiss");
 }
 
+let ignore_not_found_bankaccount = false;
+
 frappe.bank_wizard = {
     start: 0,
     make: function(page) {
@@ -101,14 +103,19 @@ frappe.bank_wizard = {
                     //try {
                         frappe.show_alert( r.message.transactions.length + "&nbsp;" + __("transactions found") );
                         let bank_account_element = document.getElementById("bank_account");
-                        if (r.message.bank != "n/a") {
-                            bank_account_element.value = r.message.bank;
+                        if ((r.message.bank != "n/a")||(ignore_not_found_bankaccount)) {
+                            if (r.message.bank != "n/a") {
+                                bank_account_element.value = r.message.bank;
+                            }
+                            frappe.bank_wizard.render_response(r.message);
                         } else {
                             // enable manual selection of bank account
                             bank_account_element.disabled = false;
+                            ignore_not_found_bankaccount = true
+                            frappe.bank_wizard.end_wait();
                         }
                         bank_account_element.style.visibility = 'visible';
-                        frappe.bank_wizard.render_response(r.message);
+                        
                     //} catch {
                     //    frappe.msgprint( "An error occurred while parsing. Please check the log files." );
                     //    frappe.bank_wizard.end_wait();
@@ -119,6 +126,7 @@ frappe.bank_wizard = {
     },
     run: function() {
         // populate bank accounts
+        var me = this;
         frappe.call({
             method: 'erpnextswiss.erpnextswiss.page.bank_wizard.bank_wizard.get_bank_accounts',
             callback: function(r) {
@@ -127,6 +135,7 @@ frappe.bank_wizard = {
                     // add on change event
                     select.onchange = function() {
                         frappe.bank_wizard.set_default_accounts(select.value);
+                        me.page.main.find(".btn-parse-file").click();
                     };
                     for (var i = 0; i < r.message.accounts.length; i++) {
                         var opt = document.createElement("option");

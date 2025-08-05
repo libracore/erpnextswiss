@@ -102,14 +102,14 @@ frappe.bank_wizard = {
                         frappe.show_alert( r.message.transactions.length + "&nbsp;" + __("transactions found") );
                         let bank_account_element = document.getElementById("bank_account");
                         if (r.message.bank != "n/a") {
-                            if (r.message.bank != "n/a") {
-                                bank_account_element.value = r.message.bank;
-                            }
-                            
+                            bank_account_element.value = r.message.bank;
+                            frappe.bank_wizard.set_default_accounts(r.message.bank);  // onchange will not trigger automatically, update accounts
+                            bank_account_element.disabled = true;
                         } else {
                             // enable manual selection of bank account
                             bank_account_element.disabled = false;
-                            // frappe.bank_wizard.end_wait();
+                            // disable auto-submit
+                            document.getElementById("auto_process_matches").value = 0;
                         }
                         bank_account_element.style.visibility = 'visible';
                         frappe.bank_wizard.render_response(r.message);
@@ -177,11 +177,12 @@ frappe.bank_wizard = {
     },
     set_default_accounts: function(bank_account) {
         frappe.call({
-            method: 'erpnextswiss.erpnextswiss.page.bank_wizard.bank_wizard.get_default_accounts',
-            args: {
+            'method': 'erpnextswiss.erpnextswiss.page.bank_wizard.bank_wizard.get_default_accounts',
+            'args': {
                 'bank_account': bank_account
             },
-            callback: function(r) {
+            'async': false,                                             // important: needs to be done before render_response (which also triggers auto-submit)
+            'callback': function(r) {
                 if (r.message) {
                     document.getElementById("company").value = r.message.company;
                     document.getElementById("payable_account").value = r.message.payable_account;
@@ -210,14 +211,7 @@ frappe.bank_wizard = {
         let container = document.getElementById("table_placeholder");
         // var content = frappe.render_template('transaction_table', message);
         container.innerHTML = message.html;
-    
         // attach button handlers
-        //var bank_account = document.getElementById("bank_account").value;     // read value at click of button
-        let company = document.getElementById("company").value;
-        let intermediate_account = document.getElementById("intermediate_account").value;
-        let payable_account = document.getElementById("payable_account").value;
-        let expense_payable_account = document.getElementById("payable_account").value;
-        let receivable_account = document.getElementById("receivable_account").value;
         let auto_process_matches = parseInt(document.getElementById("auto_process_matches").value);
         let default_customer = document.getElementById("default_customer").value;
         let default_supplier = document.getElementById("default_supplier").value;
@@ -234,7 +228,7 @@ frappe.bank_wizard = {
                         'amount': transaction.amount,
                         'date': transaction.date,
                         'paid_from': document.getElementById("bank_account").value,
-                        'paid_to': payable_account,
+                        'paid_to': document.getElementById("payable_account").value,
                         'reference_no': transaction.unique_reference,
                         'type': "Pay",
                         'party_type': "Supplier",
@@ -243,7 +237,7 @@ frappe.bank_wizard = {
                         'remarks': (transaction.transaction_reference + ", " + transaction.party_name + ", " + transaction.party_address),
                         'auto_submit': 1,
                         'party_iban': transaction.party_iban,
-                        'company': company
+                        'company': document.getElementById("company").value
                     }
                     frappe.bank_wizard.quick_payment_entry(payment, transaction.txid);
                 });
@@ -260,7 +254,7 @@ frappe.bank_wizard = {
                         'amount': transaction.amount,
                         'date': transaction.date,
                         'paid_from': document.getElementById("bank_account").value,
-                        'paid_to': payable_account,
+                        'paid_to': document.getElementById("payable_account").value,
                         'reference_no': transaction.unique_reference,
                         'type': "Pay",
                         'party_type': "Employee",
@@ -269,7 +263,7 @@ frappe.bank_wizard = {
                         'remarks': (transaction.transaction_reference + ", " + transaction.party_name + ", " + transaction.party_address),
                         'auto_submit': 1,
                         'party_iban': transaction.party_iban,
-                        'company': company
+                        'company': document.getElementById("company").value
                     }
                     frappe.bank_wizard.quick_payment_entry(payment, transaction.txid);
                 });
@@ -286,7 +280,7 @@ frappe.bank_wizard = {
                         'amount': transaction.amount,
                         'date': transaction.date,
                         'paid_from': document.getElementById("bank_account").value,
-                        'paid_to': payable_account,
+                        'paid_to': document.getElementById("payable_account").value,
                         'reference_no': transaction.unique_reference,
                         'type': "Pay",
                         'party_type': "Supplier",
@@ -294,7 +288,7 @@ frappe.bank_wizard = {
                         'references': transaction.invoice_matches,
                         'remarks': (transaction.transaction_reference + ", " + transaction.party_name + ", " + transaction.party_address),
                         'party_iban': transaction.party_iban,
-                        'company': company
+                        'company': document.getElementById("company").value
                     }
                     frappe.bank_wizard.create_payment_entry(payment, transaction.txid);
                 });
@@ -308,7 +302,7 @@ frappe.bank_wizard = {
                         'amount': transaction.amount,
                         'date': transaction.date,
                         'paid_from': document.getElementById("bank_account").value,
-                        'paid_to': expense_payable_account,
+                        'paid_to': document.getElementById("expense_payable_account").value,
                         'reference_no': transaction.unique_reference,
                         'type': "Pay",
                         'party_type': "Employee",
@@ -316,7 +310,7 @@ frappe.bank_wizard = {
                         'references': transaction.expense_matches,
                         'remarks': (transaction.transaction_reference + ", " + transaction.party_name + ", " + transaction.party_address),
                         'party_iban': transaction.party_iban,
-                        'company': company
+                        'company': document.getElementById("company").value
                     }
                     frappe.bank_wizard.create_payment_entry(payment, transaction.txid);
                 });
@@ -330,14 +324,14 @@ frappe.bank_wizard = {
                         'amount': transaction.amount,
                         'date': transaction.date,
                         'paid_from': document.getElementById("bank_account").value,
-                        'paid_to': payable_account,
+                        'paid_to': document.getElementById("payable_account").value,
                         'reference_no': transaction.unique_reference,
                         'type': "Pay",
                         'party_type': "Supplier",
                         'party': transaction.party_match,
                         'remarks': (transaction.transaction_reference + ", " + transaction.party_name + ", " + transaction.party_address),
                         'party_iban': transaction.party_iban,
-                        'company': company
+                        'company': document.getElementById("company").value
                     }
                     frappe.bank_wizard.create_payment_entry(payment, transaction.txid);
                 });
@@ -351,14 +345,14 @@ frappe.bank_wizard = {
                         'amount': transaction.amount,
                         'date': transaction.date,
                         'paid_from': document.getElementById("bank_account").value,
-                        'paid_to': expense_payable_account,
+                        'paid_to': document.getElementById("expense_payable_account").value,
                         'reference_no': transaction.unique_reference,
                         'type': "Pay",
                         'party_type': "Employee",
                         'party': transaction.employee_match,
                         'remarks': (transaction.transaction_reference + ", " + transaction.party_name + ", " + transaction.party_address),
                         'party_iban': transaction.party_iban,
-                        'company': company
+                        'company': document.getElementById("company").value
                     }
                     frappe.bank_wizard.create_payment_entry(payment, transaction.txid);
                 });
@@ -372,14 +366,14 @@ frappe.bank_wizard = {
                         'amount': transaction.amount,
                         'date': transaction.date,
                         'paid_from': document.getElementById("bank_account").value,
-                        'paid_to': payable_account,
+                        'paid_to': document.getElementById("payable_account").value,
                         'reference_no': transaction.unique_reference,
                         'type': "Pay",
                         'party_type': "Supplier",
                         'party': default_supplier,
                         'remarks': (transaction.transaction_reference + ", " + transaction.party_name + ", " + transaction.party_address),
                         'party_iban': transaction.party_iban,
-                        'company': company
+                        'company': document.getElementById("company").value
                     }
                     frappe.bank_wizard.create_payment_entry(payment, transaction.txid);
                 });
@@ -393,7 +387,7 @@ frappe.bank_wizard = {
                     let payment = {
                         'amount': transaction.amount,
                         'date': transaction.date,
-                        'paid_from': receivable_account,
+                        'paid_from': document.getElementById("receivable_account").value,
                         'paid_to': document.getElementById("bank_account").value,
                         'reference_no': transaction.unique_reference,
                         'type': "Receive",
@@ -403,7 +397,7 @@ frappe.bank_wizard = {
                         'remarks': (transaction.transaction_reference + ", " + transaction.party_name + ", " + transaction.party_address),
                         'auto_submit': 1,
                         'party_iban': transaction.party_iban,
-                        'company': company
+                        'company': document.getElementById("company").value
                     }
                     frappe.bank_wizard.quick_payment_entry(payment, transaction.txid);
                 });
@@ -419,7 +413,7 @@ frappe.bank_wizard = {
                     let payment = {
                         'amount': transaction.amount,
                         'date': transaction.date,
-                        'paid_from': receivable_account,
+                        'paid_from': document.getElementById("receivable_account").value,
                         'paid_to': document.getElementById("bank_account").value,
                         'reference_no': transaction.unique_reference,
                         'type': "Receive",
@@ -428,7 +422,7 @@ frappe.bank_wizard = {
                         'references': transaction.invoice_matches,
                         'remarks': (transaction.transaction_reference + ", " + transaction.party_name + ", " + transaction.party_address),
                         'party_iban': transaction.party_iban,
-                        'company': company
+                        'company': document.getElementById("company").value
                     }
                     frappe.bank_wizard.create_payment_entry(payment, transaction.txid);
                 });
@@ -441,7 +435,7 @@ frappe.bank_wizard = {
                     let payment = {
                         'amount': transaction.amount,
                         'date': transaction.date,
-                        'paid_from': receivable_account,
+                        'paid_from': document.getElementById("receivable_account").value,
                         'paid_to': document.getElementById("bank_account").value,
                         'reference_no': transaction.unique_reference,
                         'type': "Receive",
@@ -449,7 +443,7 @@ frappe.bank_wizard = {
                         'party': transaction.party_match,
                         'remarks': (transaction.transaction_reference + ", " + transaction.party_name + ", " + transaction.party_address),
                         'party_iban': transaction.party_iban,
-                        'company': company
+                        'company': document.getElementById("company").value
                     }
                     frappe.bank_wizard.create_payment_entry(payment, transaction.txid);
                 });
@@ -462,7 +456,7 @@ frappe.bank_wizard = {
                     let payment = {
                         'amount': transaction.amount,
                         'date': transaction.date,
-                        'paid_from': receivable_account,
+                        'paid_from': document.getElementById("receivable_account").value,
                         'paid_to': document.getElementById("bank_account").value,
                         'reference_no': transaction.unique_reference,
                         'type': "Receive",
@@ -470,7 +464,7 @@ frappe.bank_wizard = {
                         'party': default_customer,
                         'remarks': (transaction.transaction_reference + ", " + transaction.party_name + ", " + transaction.party_address),
                         'party_iban': transaction.party_iban,
-                        'company': company
+                        'company': document.getElementById("company").value
                     }
                     frappe.bank_wizard.create_payment_entry(payment, transaction.txid);
                 });
@@ -482,10 +476,10 @@ frappe.bank_wizard = {
             button.addEventListener("click", function(e) {
                 e.target.disabled = true;
                 let paid_to = document.getElementById("bank_account").value;
-                let paid_from = intermediate_account;
+                let paid_from = document.getElementById("intermediate_account").value;
                 if (transaction.credit_debit == "DBIT") {
                     paid_from = document.getElementById("bank_account").value;
-                    paid_to = intermediate_account;
+                    paid_to = document.getElementById("intermediate_account").value;
                     }
                     // note: currency is defined through account currencies of the bank account
                     var payment = {
@@ -497,7 +491,7 @@ frappe.bank_wizard = {
                         'type': "Internal Transfer",
                         'remarks': (transaction.transaction_reference + ", " + transaction.party_name + ", " + transaction.party_address),
                         'party_iban': transaction.party_iban,
-                        'company': company
+                        'company': document.getElementById("company").value
                     }
                     frappe.bank_wizard.create_payment_entry(payment, transaction.txid);
                 });

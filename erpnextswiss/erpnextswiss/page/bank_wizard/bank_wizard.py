@@ -258,13 +258,17 @@ def read_camt053(content, account):
         as_dict=True
     )
 
+    skip_company_filter = False
     if len(accounts) == 0:
         frappe.msgprint( _("No account found for IBAN {0}. Make sure there is an account in the chart of accounts with this IBAN, account type Bank and not disabled.").format(iban), _("Bank Import IBAN validation"))
         accounts = [{'name': 'n/a'}]
-
+        skip_company_filter = True
+    else:
+        account = accounts[0]['name']
+    
     # transactions
     entries = soup.find_all('ntry')
-    transactions = read_camt_transactions(entries, account, settings)
+    transactions = read_camt_transactions(entries, account, settings, skip_company_filter=skip_company_filter)
     html = render_transactions(transactions)
     
     return { 'transactions': transactions, 'html': html, 'bank': accounts[0]['name'] } 
@@ -277,7 +281,7 @@ def render_transactions(transactions):
     html = frappe.render_template('erpnextswiss/erpnextswiss/page/bank_wizard/transaction_table.html', { 'transactions': transactions }  )
     return html
 
-def read_camt_transactions(transaction_entries, account, settings, debug=False):
+def read_camt_transactions(transaction_entries, account, settings, debug=False, skip_company_filter=False):
     company = frappe.get_value("Account", account, "company")
     txns = []
     for entry in transaction_entries:
@@ -477,8 +481,11 @@ def read_camt_transactions(transaction_entries, account, settings, debug=False):
                         payment_instruction_id=payment_instruction_id))
                 
                 # check if this transaction is already recorded
+                _filters = {'reference_no': unique_reference, 'company': company}
+                if skip_company_filter:                 # in case the account was not clear, do not filter for company (in multi-company case)
+                    _filters.pop('company', None)
                 match_payment_entry = frappe.get_all('Payment Entry', 
-                    filters={'reference_no': unique_reference, 'company': company}, 
+                    filters=_filters, 
                     fields=['name'])
                 if match_payment_entry:
                     if debug or settings.debug_mode:

@@ -287,7 +287,7 @@ def read_camt_transactions(transaction_entries, account, settings, debug=False, 
     for entry in transaction_entries:
         entry_soup = BeautifulSoup(str(entry), 'lxml')
         if entry_soup.bookgdt.dt:
-            date = entry_soup.bookgdt.dt.get_text()
+            date = entry_soup.bookgdt.dt.get_text()[:10]
         elif entry_soup.bookgdt.dttm:
             date = entry_soup.bookgdt.dttm.get_text()[:10]
         else:

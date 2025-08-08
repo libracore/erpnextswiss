@@ -247,17 +247,28 @@ def read_camt053(content, account):
             frappe.log_error("Unable to read structure. Please make sure that you have selected the correct format.", "BankWizard read_camt053")
             
     # find account by iban
-    accounts = frappe.get_all("Account", 
-        filters={'account_type': 'Bank', 'disabled': 0, 'iban': iban},
-        fields=['name']
+    accounts = frappe.db.sql("""
+            SELECT `name`
+            FROM `tabAccount`
+            WHERE `account_type` = 'Bank'
+              AND `disabled` = 0
+              AND REPLACE(`iban`, ' ', '') = %(iban)s
+        """,
+        {'iban': iban.replace(" ", "")},
+        as_dict=True
     )
-    if len(accounts) == 0:
-        frappe.msgprint("No account found for IBAN {0}. Make sure there is an account in the chart of accounts with this IBAN, account type Bank and not disabled.".format(iban), _("Bank Import IBAN validation"))
-        accounts = [{'name': 'n/a'}]
 
+    skip_company_filter = False
+    if len(accounts) == 0:
+        frappe.msgprint( _("No account found for IBAN {0}. Make sure there is an account in the chart of accounts with this IBAN, account type Bank and not disabled.").format(iban), _("Bank Import IBAN validation"))
+        accounts = [{'name': 'n/a'}]
+        skip_company_filter = True
+    else:
+        account = accounts[0]['name']
+    
     # transactions
     entries = soup.find_all('ntry')
-    transactions = read_camt_transactions(entries, account, settings)
+    transactions = read_camt_transactions(entries, account, settings, skip_company_filter=skip_company_filter)
     html = render_transactions(transactions)
     
     return { 'transactions': transactions, 'html': html, 'bank': accounts[0]['name'] } 
@@ -270,13 +281,13 @@ def render_transactions(transactions):
     html = frappe.render_template('erpnextswiss/erpnextswiss/page/bank_wizard/transaction_table.html', { 'transactions': transactions }  )
     return html
 
-def read_camt_transactions(transaction_entries, account, settings, debug=False):
+def read_camt_transactions(transaction_entries, account, settings, debug=False, skip_company_filter=False):
     company = frappe.get_value("Account", account, "company")
     txns = []
     for entry in transaction_entries:
         entry_soup = BeautifulSoup(str(entry), 'lxml')
         if entry_soup.bookgdt.dt:
-            date = entry_soup.bookgdt.dt.get_text()
+            date = entry_soup.bookgdt.dt.get_text()[:10]
         elif entry_soup.bookgdt.dttm:
             date = entry_soup.bookgdt.dttm.get_text()[:10]
         else:
@@ -324,26 +335,25 @@ def read_camt_transactions(transaction_entries, account, settings, debug=False):
                         try:
                             unique_reference = transaction_soup.pmtinfid.get_text()
                         except:
-                            # fallback ntry reference or booking code (wise)
                             try:
                                 if entry_soup.ntryref:
                                     unique_reference = entry_soup.ntryref.get_text()
-                                else:
-                                    unique_reference = entry_soup.bktxcd.prtry.cd.get_text()
-                            except:
-                                # fallback to group account service reference plus transaction_count
-                                if global_account_service_reference != "":
+                                elif global_account_service_reference != "":
+                                    # fallback to group account service reference plus transaction_count
                                     unique_reference = "{0}-{1}".format(global_account_service_reference, transaction_count)
                                 else:
-                                    # fallback to ustrd (do not use)
-                                    # unique_reference = transaction_soup.ustrd.get_text()
-                                    # fallback to hash
-                                    amount = transaction_soup.txdtls.amt.get_text()
-                                    party = transaction_soup.nm.get_text()
-                                    code = "{0}:{1}:{2}".format(date, amount, party)
-                                    if settings.debug_mode:
-                                        frappe.log_error("Code: {0}".format(code))
-                                    unique_reference = hashlib.md5(code.encode("utf-8")).hexdigest()
+                                    # fallback ntry reference or booking code (wise) (for banks this is often not unique)
+                                    unique_reference = entry_soup.bktxcd.prtry.cd.get_text()
+                            except:
+                                # fallback to ustrd (do not use)
+                                # unique_reference = transaction_soup.ustrd.get_text()
+                                # fallback to hash
+                                amount = transaction_soup.txdtls.amt.get_text()
+                                party = transaction_soup.nm.get_text()
+                                code = "{0}:{1}:{2}".format(date, amount, party)
+                                if settings.debug_mode:
+                                    frappe.log_error("Code: {0}".format(code))
+                                unique_reference = hashlib.md5(code.encode("utf-8")).hexdigest()
                 # --- find amount and currency
                 try:
                     # try to find as <TxAmt>
@@ -471,8 +481,11 @@ def read_camt_transactions(transaction_entries, account, settings, debug=False):
                         payment_instruction_id=payment_instruction_id))
                 
                 # check if this transaction is already recorded
+                _filters = {'reference_no': unique_reference, 'company': company}
+                if skip_company_filter:                 # in case the account was not clear, do not filter for company (in multi-company case)
+                    _filters.pop('company', None)
                 match_payment_entry = frappe.get_all('Payment Entry', 
-                    filters={'reference_no': unique_reference, 'company': company}, 
+                    filters=_filters, 
                     fields=['name'])
                 if match_payment_entry:
                     if debug or settings.debug_mode:

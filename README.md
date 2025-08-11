@@ -22,7 +22,7 @@ The software comes as-is without any warranty.
 Requires an ERPNext server instance (refer to [https://github.com/frappe/erpnext](https://github.com/frappe/erpnext))
 
 ## Compatibility
-ERPNextSwiss is tested against ERPNext v12. There are compatibility branches for v11 (for user who prefer the old desk) and v13 (for daring users). There are also branches for v14 and v15 of ERPNext which have been tested and validated for the company [2itea sàrl](https://2itea.ch)
+ERPNextSwiss is tested against libracore and ERPNext v15. There are compatibility branches for v11/v12/v13/v14/v15.
 
 ERPNextSwiss is also compatible with Dokos ([https://dokos.io](https://dokos.io))
 
@@ -83,6 +83,7 @@ In case you update from the sources and observe an error, make sure to update de
     * Interface to abacus (export transaction data)
     * ISO 20022
     * ISO 11649
+    * EBICS: electronic banking internet communication standard, allows to fully automate bank integration
     * ZUGFeRD
     * Interface to Zefix
     * Datatrans interface for payments
@@ -90,7 +91,13 @@ In case you update from the sources and observe an error, make sure to update de
     * EDI connector: allows to fully integrate EDI exchange (PRICAT, DESADV, ORDERS, SLSRPT, ...)
     * NextCloud:
         * Update contacts from ERPNext to NextCloud address book
-      
+    * Interface to Planzer logistics
+    * CalDav-feed for CRM (Lead/Customer) and ToDos
+ * Business Intelligence
+    * Data Provider for Looker Studio (refer to the libracore Connector to connect to your data)
+ * Productivity
+    * Gitlab integration: sync ERPNext Issues to Gitlab
+
 ## Release notes
 Refer to [https://github.com/libracore/erpnextswiss/wiki/Release-Notes](https://github.com/libracore/erpnextswiss/wiki/Release-Notes)
 

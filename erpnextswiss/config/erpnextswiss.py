@@ -211,11 +211,29 @@ def get_data():
             "label": _("Integrations"),
             "icon": "octicon octicon-git-compare",
             "items": [
-                   {
+                    {
+                       "type": "doctype",
+                       "name": "ebics Connection",
+                       "label": _("ebics Connection"),
+                       "description": _("ebics Connection")                   
+                    },
+                    {
+                       "type": "doctype",
+                       "name": "ebics Statement",
+                       "label": _("ebics Statement"),
+                       "description": _("ebics Statement")                   
+                    },
+                    {
                        "type": "doctype",
                        "name": "ZUGFeRD Wizard",
                        "label": _("ZUGFeRD Wizard"),
                        "description": _("ZUGFeRD Wizard")                   
+                    },
+                    {
+                       "type": "doctype",
+                       "name": "Planzer Settings",
+                       "label": _("Planzer Settings"),
+                       "description": _("Planzer Settings")                   
                     },
                     {
                        "type": "doctype",
@@ -231,6 +249,18 @@ def get_data():
                     },
                     {
                        "type": "doctype",
+                       "name": "Worldline TIM",
+                       "label": _("Worldline TIM"),
+                       "description": _("Worldline TIM")                   
+                    },
+                    {
+                       "type": "doctype",
+                       "name": "GitLab Settings",
+                       "label": _("GitLab"),
+                       "description": _("GitLab")                   
+                    },
+                    {
+                       "type": "doctype",
                        "name": "Abacus Export File",
                        "label": _("Abacus Export File"),
                        "description": _("Abacus Export File")                   
@@ -243,9 +273,9 @@ def get_data():
                     },
                     {
                        "type": "doctype",
-                       "name": "Worldline TIM",
-                       "label": _("Worldline TIM"),
-                       "description": _("Worldline TIM")                   
+                       "name": "CalDav Feed",
+                       "label": _("CalDav Feed"),
+                       "description": _("CalDav Feed")                   
                     }
             ]
         },

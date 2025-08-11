@@ -2,10 +2,8 @@
 #
 # esr_qr_tools.py
 #
-# Copyright (C) libracore, 2017-2020
+# Copyright (C) libracore, 2017-2024
 # https://www.libracore.com or https://github.com/libracore
-#
-# For information on ERPNext, refer to https://erpnext.org/
 #
 
 import frappe
@@ -27,6 +25,7 @@ def get_supplier_based_on_esr(participant):
             return {
                 'error': False,
                 'supplier': supplier[0].name,
+                'supplier_name': supplier[0].supplier_name,
                 'more_than_one_supplier': False
             }
     else:

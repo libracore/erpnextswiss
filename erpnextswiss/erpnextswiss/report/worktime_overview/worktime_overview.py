@@ -140,9 +140,9 @@ def get_target_time(filters, employee):
         while start_date <= end_date:
             for degree_range in degree_list:
                 if getdate(degree_range["start"]) <= start_date <= getdate(degree_range["end"]):
-                    working_hours += (((1 - get_off_days(start_date.strftime("%Y-%m-%d"), start_date.strftime("%Y-%m-%d"), filters.company)) * target_per_day) / 100 ) * degree_range["degree"]
+                    working_hours += (((1 - get_off_days(start_date.strftime("%Y-%m-%d"), start_date.strftime("%Y-%m-%d"), filters.company, employee)) * target_per_day) / 100 ) * degree_range["degree"]
             start_date += delta
-        return working_hours
+        target_time = working_hours
         
     # if only one degree or no degrees
     else:
@@ -153,21 +153,26 @@ def get_target_time(filters, employee):
             start_date = employee_joining_date
             
         days = date_diff(filters.to_date, start_date) + 1
-        off_days = get_off_days(start_date, filters.to_date, filters.company)
+        off_days = get_off_days(start_date, filters.to_date, filters.company, employee)
         if len(degrees) > 0:
             target_per_day = (get_daily_hours(filters) / 100) * degrees[0].degree
         else:
             target_per_day = get_daily_hours(filters)
         target_time = (days - off_days) * target_per_day
+    
     return target_time
     
 def get_degrees(employee):
     degrees = frappe.db.sql("""SELECT `degree`, `date` FROM `tabEmployment Degree` WHERE `parent` = '{employee}' ORDER BY `date` ASC""".format(employee=employee), as_dict=True)
     return degrees
     
-def get_off_days(from_date, to_date, company):
+def get_off_days(from_date, to_date, company, employee=None):
     off_days = 0
     year = getdate(from_date).strftime("%Y")
+
+    check_leave_application = False
+    if employee and frappe.get_doc("Worktime Settings", "Worktime Settings").vacation_hours_based_on == 'Leave Application':
+        check_leave_application = True
     
     holiday_lists = frappe.db.sql("""SELECT `year`, `public_holiday_list` FROM `tabPublic Holiday List` WHERE `year` = '{year}' AND `company` = '{company}' LIMIT 1""".format(year=year, company=company), as_dict=True)
     if len(holiday_lists) > 0:
@@ -183,6 +188,48 @@ def get_off_days(from_date, to_date, company):
         while start_date <= end_date:
             if start_date in holiday_list_entries:
                 off_days += 1
+            start_date += delta
+    
+    if check_leave_application:
+        leave_applications = frappe.db.sql("""
+            SELECT
+                `from_date`,
+                `to_date`,
+                `half_day`,
+                `half_day_date`
+            FROM `tabLeave Application`
+            WHERE `employee` = '{employee}'
+            AND `status` = 'Approved'
+            AND `company` = '{company}'
+            AND `docstatus` = 1
+            AND `leave_type` NOT IN (
+                SELECT `name`
+                FROM `tabLeave Type`
+                WHERE `is_lwp` = 1
+            )
+        """.format(employee=employee, company=company), as_dict=True)
+        full_day_off = []
+        half_day_of = []
+
+        for leave_application in leave_applications:
+            if cint(leave_application.half_day) == 1 and leave_application.half_day_date:
+                half_day_of.append(leave_application.half_day_date)
+            start_date = getdate(leave_application.from_date)
+            end_date = getdate(leave_application.to_date)
+            delta = timedelta(days=1)
+            while start_date <= end_date:
+                if start_date not in half_day_of:
+                    full_day_off.append(start_date)
+                start_date += delta
+
+        start_date = getdate(from_date)
+        end_date = getdate(to_date)
+        delta = timedelta(days=1)
+        while start_date <= end_date:
+            if start_date in full_day_off:
+                off_days += 1
+            elif start_date in half_day_of:
+                off_days += 0.5
             start_date += delta
             
     return off_days

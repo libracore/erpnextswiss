@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018-2023, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2018-2025, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
 
 from __future__ import unicode_literals
@@ -10,8 +10,37 @@ import time
 import html          # used to escape xml content
 from frappe import _
 from frappe.utils.data import get_url_to_form
+from frappe.utils import cint
+from unidecode import unidecode
+from erpnextswiss.erpnextswiss.xml import validate_xml_against_xsd
+import os
+
+XML_SCHEMA_FILES = {
+    'CH': {
+        '03':     "apps/erpnextswiss/erpnextswiss/public/xsd/pain.008.001.02.xsd",
+        '05':     "apps/erpnextswiss/erpnextswiss/public/xsd/pain.008.001.02.xsd",
+        '03CH02': "apps/erpnextswiss/erpnextswiss/public/xsd/pain.008.001.02.xsd",
+        '09':     "apps/erpnextswiss/erpnextswiss/public/xsd/pain.008.001.08.xsd",
+        '09CH03': "apps/erpnextswiss/erpnextswiss/public/xsd/pain.008.001.08.xsd"
+    },
+    'AT': {
+        '03':     "apps/erpnextswiss/erpnextswiss/public/xsd/pain.008.001.02.xsd",
+        '05':     "apps/erpnextswiss/erpnextswiss/public/xsd/pain.008.001.02.xsd",
+        '03CH02': "apps/erpnextswiss/erpnextswiss/public/xsd/pain.008.001.02.xsd",
+        '09':     "apps/erpnextswiss/erpnextswiss/public/xsd/pain.008.001.08.xsd",
+        '09CH03': "apps/erpnextswiss/erpnextswiss/public/xsd/pain.008.001.08.xsd"
+    }
+}
 
 class DirectDebitProposal(Document):
+    def before_save(self):
+        # update total
+        total = 0
+        for s in (self.sales_invoices or []):
+            total += s.amount
+        self.total = total
+        return
+    
     def validate(self):
         # check if closing on intermediate account that fields are set
         if self.use_intermediate == 1:
@@ -126,9 +155,13 @@ class DirectDebitProposal(Document):
         content = make_line("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
         # define xml template reference
         # load namespace based on banking region
-        banking_region = frappe.get_value("ERPNextSwiss Settings", "ERPNextSwiss Settings", "banking_region")
-        if banking_region == "AT":
-            content += make_line("<Document xmlns=\"urn:iso:std:iso:20022:tech:xsd:pain.008.001.02\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"\">")
+        settings = frappe.get_doc("ERPNextSwiss Settings", "ERPNextSwiss Settings")
+        xml_version = settings.get("xml_version")
+        banking_region = settings.get("banking_region")
+        if xml_version == "09":
+            content += make_line("<Document xmlns=\"urn:iso:std:iso:20022:tech:xsd:pain.008.001.08\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"urn:iso:std:iso:20022:tech:xsd:pain.008.001.08 pain.008.001.08.xsd\">")
+        elif banking_region == "AT":
+            content += make_line("<Document xmlns=\"urn:iso:std:iso:20022:tech:xsd:pain.008.001.02\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"urn:iso:std:iso:20022:tech:xsd:pain.008.001.02 pain.008.001.02.xsd\">")
         else:
             content += make_line("<Document xmlns=\"http://www.six-interbank-clearing.com/de/pain.008.001.03.ch.02.xsd\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.six-interbank-clearing.com/de/pain.008.001.03.ch.02.xsd  pain.008.001.03.ch.02.xsd\">")
         # transaction holder
@@ -221,7 +254,10 @@ class DirectDebitProposal(Document):
             content += make_line(" </DrctDbtTx>")
             content += make_line(" <DbtrAgt>")
             content += make_line("  <FinInstnId>")
-            content += make_line("    <BIC>{0}</BIC>".format(customer.bic))
+            if xml_version == "09":
+                content += make_line("    <Othr><Id>NOTPROVIDED</Id></Othr>")
+            else:
+                content += make_line("    <BIC>{0}</BIC>".format(customer.bic))
             content += make_line("  </FinInstnId>")
             content += make_line(" </DbtrAgt>")
             content += make_line(" <Dbtr>")
@@ -245,6 +281,18 @@ class DirectDebitProposal(Document):
         content = content.replace(transaction_count_identifier, "{0}".format(transaction_count))
         content = content.replace(control_sum_identifier, "{:.2f}".format(control_sum))
         
+        # use unicode if enabled (this will decode utf-8 to ascii)
+        if cint(settings.get("use_unidecode")) == 1:
+            content = unidecode(content)
+        
+        # validate xml
+        if cint(settings.get("validate_xml")) == 1:
+            xml_schema = os.path.join(frappe.utils.get_bench_path(), XML_SCHEMA_FILES[settings.get("banking_region")][settings.get("xml_version")])
+            validated, errors = validate_xml_against_xsd(content, xml_schema)
+            if not validated:
+                frappe.log_error("{0}\n\n{1}".format(errors, content), "XML validation failed (pain.008)")
+                frappe.throw("Validation error: {0}".format(errors))
+
         return { 'content': content }
     pass
 
@@ -256,8 +304,8 @@ def get_company_name(sales_invoice):
 def create_direct_debit_proposal(company=None):
     # check companies
     if company == None:
-        companies = frappe.get_all("Company", filters={}, fields=['name'])
-        company = companies[0]['name']
+        # use global default if not specified
+        company = frappe.defaults.get_global_default("company")
     # get all customers with open sales invoices
     sql_query = ("""SELECT `tabSales Invoice`.`customer` AS `customer`, 
               `tabSales Invoice`.`name` AS `name`,  

@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2023, libracore and contributors
+# Copyright (c) 2016-2024, libracore and contributors
 # For license information, please see license.txt
 
 from __future__ import unicode_literals
@@ -57,3 +57,8 @@ def get_data(from_date, end_date, code, company="%"):
 # v15 wrapper for jinja/get_data (incompatible function name rewrite)
 def get_tax_details(from_date, end_date, code, company="%"):
     return get_data(from_date, end_date, code, company)
+
+# this is an endpoint for the jinja environment
+def get_vat_control_details(from_date, end_date, code, company="%"):
+    return get_data(from_date, end_date, code, company)
+

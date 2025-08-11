@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018-2024, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2018-2025, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
 #
 #
@@ -12,7 +12,10 @@ from frappe import _
 from frappe.utils import cint
 from bs4 import BeautifulSoup
 from datetime import datetime
-from facturx import check_facturx_xsd
+try:            # factur-x v3.0 onwards
+    from facturx import xml_check_xsd
+except:         # factur-x before v3.0 
+    from facturx import check_facturx_xsd as xml_check_xsd
 from erpnextswiss.erpnextswiss.zugferd.codelist import get_unit_code
 import html          # used to escape xml content
 
@@ -25,6 +28,7 @@ def create_zugferd_xml(sales_invoice, verify=True):
     try:
         # get original document
         sinv = frappe.get_doc("Sales Invoice", sales_invoice)
+        customer = frappe.get_doc("Customer", sinv.customer)
         company = frappe.get_doc("Company", sinv.company)
         # compile notes
         notes = []
@@ -42,6 +46,8 @@ def create_zugferd_xml(sales_invoice, verify=True):
                     title=sinv.title, number=sinv.name, date=sinv.posting_date))
             })
         # compile xml content
+        owner = frappe.get_doc("User", sinv.owner)
+        delivery_date = sinv.get('delivery_date') or sinv.get('posting_date')
         data = {
             'name': html.escape(sinv.name),
             'issue_date': "{year:04d}{month:02d}{day:02d}".format(
@@ -51,6 +57,9 @@ def create_zugferd_xml(sales_invoice, verify=True):
             'tax_id': html.escape(company.tax_id or ""),
             'customer': html.escape(sinv.customer),
             'customer_name': html.escape(sinv.customer_name),
+            'customer_tax_id': html.escape(sinv.tax_id or ""),
+            'delivery_date': "{year:04d}{month:02d}{day:02d}".format(
+                year=delivery_date.year, month=delivery_date.month, day=delivery_date.day),
             'currency': sinv.currency,
             'payment_terms': html.escape(sinv.payment_terms_template or ""),
             'due_date': "{year:04d}{month:02d}{day:02d}".format(
@@ -62,22 +71,29 @@ def create_zugferd_xml(sales_invoice, verify=True):
             'grand_total': (sinv.rounded_total or sinv.grand_total),
             'prepaid_amount': ((sinv.rounded_total or sinv.grand_total) - sinv.outstanding_amount),
             'outstanding_amount': sinv.outstanding_amount,
-            'po_no': html.escape(sinv.po_no) if sinv.po_no else None,
-            'supplier_contact_name': html.escape(frappe.get_value("User", sinv.owner, "full_name") or ""),
-            'supplier_contact_phone': html.escape(frappe.get_value("User", sinv.owner, "phone") or ""),
-            'supplier_contact_email': html.escape(sinv.owner),
+            'buyer_reference': html.escape(customer.get('leitweg_id') or customer.get('invoice_network_id') or ""),
+            'po_no': html.escape(sinv.po_no or ""),
+            'supplier_contact_name': html.escape(owner.get("full_name") or ""),
+            'supplier_contact_phone': html.escape(owner.get("phone") or ""),
+            'supplier_contact_email': html.escape(owner.get("email") or ""),
             'customer_contact_name': html.escape(sinv.contact_display or ""),
             'customer_contact_phone': html.escape(sinv.contact_mobile or ""),
             'customer_contact_email': html.escape(sinv.contact_email or ""),
             'is_return': cint(sinv.is_return),
-            'iban': frappe.get_value("Account", sinv.debit_to, "iban")
+            'iban': frappe.get_value("Account", sinv.debit_to, "iban"),
+            'tax_category': "S"
         }
+        if sinv.taxes_and_charges:
+            _taxes = frappe.get_doc("Sales Taxes and Charges Template", sinv.taxes_and_charges)
+            _tax_category = _taxes.get("tax_class") or _taxes.get("tax_category")
+            data['tax_category'] = (_tax_category or "S").split(':')[0]
         data['items'] = []
         for item in sinv.items:
             item_data = {
                 'idx': item.idx,
                 'item_code': html.escape(item.item_code),
                 'item_name': html.escape(item.item_name),
+                'description': html.escape(item.description),
                 'barcode': item.barcode,
                 'price_list_rate': item.price_list_rate,
                 'rate': item.rate,
@@ -135,14 +151,32 @@ def create_zugferd_xml(sales_invoice, verify=True):
                 'pincode': "",
                 'city': "",
                 'country_code': "CH"
-            }            
+            }
+        shipping_address = frappe.get_doc("Address", sinv.shipping_address_name)
+        if shipping_address:
+            shipping_country_code = frappe.get_value("Country", shipping_address.country, "code").upper()
+            data['shipping_address'] = {
+                'address_line1': html.escape(shipping_address.address_line1 or ""),
+                'address_line2': html.escape(shipping_address.address_line2 or ""),
+                'pincode': html.escape(shipping_address.pincode or ""),
+                'city': html.escape(shipping_address.city or ""),
+                'country_code': shipping_country_code or "CH"
+            }
+        else:
+            data['shipping_address'] = {
+                'address_line1': "",
+                'address_line2': "",
+                'pincode': "",
+                'city': "",
+                'country_code': "CH"
+            }         
 
         xml = frappe.render_template('erpnextswiss/erpnextswiss/zugferd/en16931.html', data)
         
         # verify the generated xml
         if verify:
             try:
-                if not check_facturx_xsd(facturx_xml=xml.encode('utf-8')):
+                if not xml_check_xsd(xml=xml.encode('utf-8')):
                     frappe.log_error( _("XML validation failed for {0}").format(sales_invoice), "ZUGFeRD")
                     return None
             except Exception as err:

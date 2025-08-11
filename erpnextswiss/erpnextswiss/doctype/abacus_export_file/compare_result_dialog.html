@@ -1,0 +1,18 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th>{{ _("Document") }}</th>
+            <th>{{ _("Error") }}</th>
+            <th>{{ _("General Ledger") }}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for e in errors %}
+        <tr>
+            <td><a href="/desk#Form/{{ e.doctype }}/{{ e.document }}" target="_blank">{{ e.document }}</a></td>
+            <td>{{ e.error }}</td>
+            <td><a href="/desk#query-report/General Ledger?from_date={{ e.date }}&to_date={{ e.date }}&voucher_no={{ e.document }}" target="_blank">{{ _("General Ledger") }}</a></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

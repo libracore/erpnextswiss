@@ -1,0 +1,92 @@
+<p>
+    {% if stage == 0 %}
+        {{ _("Please fill in the configuration fields of the connection.") }}
+    {% elif stage == 1 %}
+        {{ _("Click next to create keys.") }}
+    {% elif stage == 2 %}
+        {{ _("Click next to send the signature to the bank.") }}
+    {% elif stage == 3 %}
+        {{ _("Click next to send the keys to the bank.") }}
+    {% elif stage == 4 %}
+        {{ _("Click next to create the INI letter, sign and send it to the bank.") }}
+    {% elif stage == 5 %}
+        {{ _("Once you have received the confirmation from the bank, click next to download the public keys.") }}
+    {% elif stage == 6 %}
+        {{ _("Click next to activate this connection.") }}
+    {% else %}
+        {{ _("All set.") }}
+    {% endif %}
+</p>
+
+<table class="table" style="width: 100%; ">
+    <tr>
+        <td>{{ _("Configuration prepared") }}</td>
+        <td>
+            {% if stage > 0 %}
+                <img src="/assets/erpnextswiss/images/tick.png">
+            {% else %}
+                <img src="/assets/erpnextswiss/images/gear.png">
+            {% endif %}
+        </td>
+    </tr>
+    <tr>
+        <td>{{ _("Keys created") }}</td>
+        <td>
+            {% if stage > 1 %}
+                <img src="/assets/erpnextswiss/images/tick.png">
+            {% else %}
+                <img src="/assets/erpnextswiss/images/gear.png">
+            {% endif %}
+        </td>
+    </tr>
+    <tr>
+        <td>{{ _("Signature sent") }}</td>
+        <td>
+            {% if stage > 2 %}
+                <img src="/assets/erpnextswiss/images/tick.png">
+            {% else %}
+                <img src="/assets/erpnextswiss/images/gear.png">
+            {% endif %}
+        </td>
+    </tr>
+    <tr>
+        <td>{{ _("Keys sent") }}</td>
+        <td>
+            {% if stage > 3 %}
+                <img src="/assets/erpnextswiss/images/tick.png">
+            {% else %}
+                <img src="/assets/erpnextswiss/images/gear.png">
+            {% endif %}
+        </td>
+    </tr>
+    <tr>
+        <td>{{ _("INI Letter created") }}</td>
+        <td>
+            {% if stage > 4 %}
+                <img src="/assets/erpnextswiss/images/tick.png">
+            {% else %}
+                <img src="/assets/erpnextswiss/images/gear.png">
+            {% endif %}
+        </td>
+    </tr>
+    <tr>
+        <td>{{ _("Public keys downloaded") }}</td>
+        <td>
+            {% if stage > 5 %}
+                <img src="/assets/erpnextswiss/images/tick.png">
+            {% else %}
+                <img src="/assets/erpnextswiss/images/gear.png">
+            {% endif %}
+        </td>
+    </tr>
+    <tr>
+        <td>{{ _("Account activated") }}</td>
+        <td>
+            {% if stage > 6 %}
+                <img src="/assets/erpnextswiss/images/tick.png">
+            {% else %}
+                <img src="/assets/erpnextswiss/images/gear.png">
+            {% endif %}
+        </td>
+    </tr>
+</table>

@@ -13,9 +13,11 @@ import frappe
 import unittest
 from frappe.utils.pdf import get_pdf
 from erpnextswiss.erpnextswiss.zugferd.zugferd_xml import create_zugferd_xml
-from facturx import generate_facturx_from_binary
-from erpnextswiss.erpnextswiss.zugferd.zugferd import import_pdf
-from erpnextswiss.erpnextswiss.zugferd.facturx.facturx import generate_facturx_from_binary, get_facturx_xml_from_pdf, check_facturx_xsd
+try:
+    from facturx import generate_from_binary
+except:
+    from facturx import generate_facturx_from_binary as generate_from_binary
+from erpnextswiss.erpnextswiss.zugferd.zugferd import import_pdf, get_facturx_xml_from_pdf, xml_check_xsd
 from PyPDF4 import PdfFileReader
 
 class TestZugferd(unittest.TestCase):
@@ -33,7 +35,7 @@ def create_pdf ():
     pdf = get_pdf(html)
     xml = create_zugferd_xml(name)
     
-    facturxPDF = generate_facturx_from_binary(pdf, xml)
+    facturxPDF = generate_from_binary(pdf, xml)
     newFile = open("filename.pdf", "wb")
     newFile.write(facturxPDF)
     

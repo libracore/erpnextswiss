@@ -1,0 +1,580 @@
+{
+ "charts": [],
+ "content": "[{\"id\":\"XCP4Zu1ala\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">ERPNextSwiss</span>\",\"col\":12}},{\"id\":\"BMI9jkkwmV\",\"type\":\"card\",\"data\":{\"card_name\":\"Bankwesen\",\"col\":4}},{\"id\":\"FdJhg9Z6tG\",\"type\":\"card\",\"data\":{\"card_name\":\"Taxes\",\"col\":4}},{\"id\":\"H9o0mwZ-1A\",\"type\":\"card\",\"data\":{\"card_name\":\"Finance\",\"col\":4}},{\"id\":\"aNvYrbPFJj\",\"type\":\"card\",\"data\":{\"card_name\":\"Human Resources\",\"col\":4}},{\"id\":\"lJL0ehoRyP\",\"type\":\"card\",\"data\":{\"card_name\":\"Contracts\",\"col\":4}},{\"id\":\"9HrSywCgWk\",\"type\":\"card\",\"data\":{\"card_name\":\"Configuration\",\"col\":4}},{\"id\":\"M1PH-f6yBI\",\"type\":\"card\",\"data\":{\"card_name\":\"Integrations\",\"col\":4}},{\"id\":\"fJovMK3KEi\",\"type\":\"card\",\"data\":{\"card_name\":\"EDI\",\"col\":4}},{\"id\":\"1ZiVpqdXv7\",\"type\":\"card\",\"data\":{\"card_name\":\"POS\",\"col\":4}},{\"id\":\"6-8Y3rY-Or\",\"type\":\"card\",\"data\":{\"card_name\":\"Quality\",\"col\":4}}]",
+ "creation": "2025-07-31 13:53:10.875690",
+ "custom_blocks": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "icon": "quality-3",
+ "idx": 0,
+ "indicator_color": "green",
+ "is_hidden": 0,
+ "label": "ERPNextSwiss",
+ "links": [
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Bankwesen",
+   "link_count": 6,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Bank Wizard",
+   "link_count": 0,
+   "link_to": "bank_wizard",
+   "link_type": "Page",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Payment Proposal",
+   "link_count": 0,
+   "link_to": "Payment Proposal",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Direct Debit Proposal",
+   "link_count": 0,
+   "link_to": "Direct Debit Proposal",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Payment Reminder",
+   "link_count": 0,
+   "link_to": "Payment Reminder",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "ebics Connection",
+   "link_count": 0,
+   "link_to": "ebics Connection",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "ebics Statement",
+   "link_count": 0,
+   "link_to": "ebics Statement",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Taxes",
+   "link_count": 2,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "VAT Declaration",
+   "link_count": 0,
+   "link_to": "VAT Declaration",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Kontrolle MwSt",
+   "link_count": 0,
+   "link_to": "Kontrolle MwSt",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Finance",
+   "link_count": 2,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Account Sheets",
+   "link_count": 0,
+   "link_to": "Account Sheets",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Account Sheets with Tax Codes",
+   "link_count": 0,
+   "link_to": "Account Sheets with Tax Codes",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Human Resources",
+   "link_count": 4,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Salary Certificate",
+   "link_count": 0,
+   "link_to": "Salary Certificate",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Worktime Overview",
+   "link_count": 0,
+   "link_to": "Worktime Overview",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Monthly Worktime",
+   "link_count": 0,
+   "link_to": "Monthly Worktime",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Annual Salary Sheet",
+   "link_count": 0,
+   "link_to": "Annual Salary Sheet",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Contracts",
+   "link_count": 5,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Contract",
+   "link_count": 0,
+   "link_to": "Contract",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Service Invoicing",
+   "link_count": 0,
+   "link_to": "Service Invoicing",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Specification Document",
+   "link_count": 0,
+   "link_to": "Specification Document",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Software Requirement",
+   "link_count": 0,
+   "link_to": "Software Requirement",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Software Specification",
+   "link_count": 0,
+   "link_to": "Software Specification",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Configuration",
+   "link_count": 7,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Label Printer",
+   "link_count": 0,
+   "link_to": "Label Printer",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Pincode",
+   "link_count": 0,
+   "link_to": "Pincode",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "ERPNextSwiss Settings",
+   "link_count": 0,
+   "link_to": "ERPNextSwiss Settings",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Worktime Settings",
+   "link_count": 0,
+   "link_to": "Worktime Settings",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "VAT query",
+   "link_count": 0,
+   "link_to": "VAT query",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Salary Certificate Settings",
+   "link_count": 0,
+   "link_to": "Salary Certificate Settings",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "ZUGFeRD Settings",
+   "link_count": 0,
+   "link_to": "ZUGFeRD Settings",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Integrations",
+   "link_count": 9,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "ZUGFeRD Wizard",
+   "link_count": 0,
+   "link_to": "ZUGFeRD Wizard",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Planzer Settings",
+   "link_count": 0,
+   "link_to": "Planzer Settings",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Datatrans Settings",
+   "link_count": 0,
+   "link_to": "Datatrans Settings",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Payrexx Settings",
+   "link_count": 0,
+   "link_to": "Payrexx Settings",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Worldline TIM",
+   "link_count": 0,
+   "link_to": "Worldline TIM",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "GitLab Settings",
+   "link_count": 0,
+   "link_to": "GitLab Settings",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Abacus Export File",
+   "link_count": 0,
+   "link_to": "Abacus Export File",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Abacus Export",
+   "link_count": 0,
+   "link_to": "abacus_export",
+   "link_type": "Page",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "CalDav Feed",
+   "link_count": 0,
+   "link_to": "CalDav Feed",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "EDI",
+   "link_count": 4,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "EDI Connection",
+   "link_count": 0,
+   "link_to": "EDI Connection",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "EDI File",
+   "link_count": 0,
+   "link_to": "EDI File",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "EDI Sales Report",
+   "link_count": 0,
+   "link_to": "EDI Sales Report",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "EDI Sales Report Overview",
+   "link_count": 0,
+   "link_to": "EDI Sales Report Overview",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "POS",
+   "link_count": 1,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "POS Closing Entry",
+   "link_count": 0,
+   "link_to": "POS Closing Entry",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Quality",
+   "link_count": 6,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Non Conformity Report 8D",
+   "link_count": 0,
+   "link_to": "Non Conformity Report 8D",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Inspection Equipment",
+   "link_count": 0,
+   "link_to": "Inspection Equipment",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Inspection Equipment Transaction",
+   "link_count": 0,
+   "link_to": "Inspection Equipment Transaction",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Inspection Equipment Type",
+   "link_count": 0,
+   "link_to": "Inspection Equipment Type",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Calibration Test",
+   "link_count": 0,
+   "link_to": "Calibration Test",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Calibration Test Set",
+   "link_count": 0,
+   "link_to": "Calibration Test Set",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  }
+ ],
+ "modified": "2025-07-31 16:41:27.217623",
+ "modified_by": "Administrator",
+ "module": "ERPNextSwiss",
+ "name": "ERPNextSwiss",
+ "number_cards": [],
+ "owner": "Administrator",
+ "parent_page": "",
+ "public": 1,
+ "quick_lists": [],
+ "roles": [],
+ "sequence_id": 39.0,
+ "shortcuts": [],
+ "title": "ERPNextSwiss"
+}

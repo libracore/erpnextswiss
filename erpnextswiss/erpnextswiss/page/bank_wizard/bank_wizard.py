@@ -1,18 +1,17 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2017-2023, libracore and contributors
+# Copyright (c) 2017-2025, libracore and contributors
 # License: AGPL v3. See LICENCE
 
-from __future__ import unicode_literals
 import frappe
 from frappe import throw, _
 import hashlib
 import json
 from bs4 import BeautifulSoup
 import ast
-import six
-from frappe.utils import cint
+from frappe.utils import cint, flt
 from frappe.utils.data import get_url_to_form
 from erpnext.setup.utils import get_exchange_rate
+import datetime
 
 # this function tries to match the amount to an open sales invoice
 #
@@ -201,6 +200,31 @@ def get_first_company():
     companies = frappe.get_all("Company", filters=None, fields=['name'])
     return companies[0]['name']
 
+"""
+Interpret meta information of the camt.053 record
+
+Input: camt.053-xml-string
+Output: meta-dict
+"""
+def read_camt053_meta(content):
+    soup = BeautifulSoup(content, 'lxml')
+    meta = {
+        'iban': soup.document.bktocstmrstmt.stmt.acct.id.iban.get_text(),
+        'electronic_sequence_number': soup.document.bktocstmrstmt.stmt.elctrncseqnb.get_text(),
+        'msgid': soup.document.bktocstmrstmt.stmt.id.get_text(),
+        'currency': soup.document.bktocstmrstmt.stmt.acct.ccy.get_text()
+    }
+    # find balances
+    balances = soup.find_all('bal')
+    for balance in balances:
+        balance_soup = BeautifulSoup(str(balance), 'lxml')
+        if balance_soup.tp.cdorprtry.cd.get_text() == "OPBD":
+            meta['opening_balance'] = float(balance_soup.amt.get_text())
+        elif balance_soup.tp.cdorprtry.cd.get_text() == "CLBD":
+            meta['closing_balance'] = float(balance_soup.amt.get_text())
+            
+    return meta
+
 @frappe.whitelist()
 def read_camt053(content, account):
     settings = frappe.get_doc("ERPNextSwiss Settings", "ERPNextSwiss Settings")
@@ -221,33 +245,53 @@ def read_camt053(content, account):
             # node not found, probably wrong format
             iban = "n/a"
             frappe.log_error("Unable to read structure. Please make sure that you have selected the correct format.", "BankWizard read_camt053")
+            
+    # find account by iban
+    accounts = frappe.db.sql("""
+            SELECT `name`
+            FROM `tabAccount`
+            WHERE `account_type` = 'Bank'
+              AND `disabled` = 0
+              AND REPLACE(`iban`, ' ', '') = %(iban)s
+        """,
+        {'iban': iban.replace(" ", "")},
+        as_dict=True
+    )
 
-    # verify iban
-    account_iban = frappe.get_value("Account", account, "iban")
-    if not account_iban and cint(settings.iban_check_mandatory):
-        frappe.throw( _("Bank account has no IBAN.").format(account_iban, iban), _("Bank Import IBAN validation") )
-    if account_iban and account_iban.replace(" ", "") != iban.replace(" ", ""):
-        if cint(settings.iban_check_mandatory):
-            frappe.throw( _("IBAN mismatch {0} (account) vs. {1} (file)").format(account_iban, iban), _("Bank Import IBAN validation") )
-        else:
-            frappe.log_error( _("IBAN mismatch {0} (account) vs. {1} (file)").format(account_iban, iban), _("Bank Import IBAN validation") )
-            frappe.msgprint( _("IBAN mismatch {0} (account) vs. {1} (file)").format(account_iban, iban), _("Bank Import IBAN validation") )
-
+    skip_company_filter = False
+    if len(accounts) == 0:
+        frappe.msgprint( _("No account found for IBAN {0}. Make sure there is an account in the chart of accounts with this IBAN, account type Bank and not disabled.").format(iban), _("Bank Import IBAN validation"))
+        accounts = [{'name': 'n/a'}]
+        skip_company_filter = True
+    else:
+        account = accounts[0]['name']
+    
     # transactions
     entries = soup.find_all('ntry')
-    transactions = read_camt_transactions(entries, account, settings)
+    transactions = read_camt_transactions(entries, account, settings, skip_company_filter=skip_company_filter)
+    html = render_transactions(transactions)
+    
+    return { 'transactions': transactions, 'html': html, 'bank': accounts[0]['name'] } 
 
-    return { 'transactions': transactions }
+@frappe.whitelist()
+def render_transactions(transactions):
+    if type(transactions) == str:
+        transactions = json.loads(transactions)
+    
+    html = frappe.render_template('erpnextswiss/erpnextswiss/page/bank_wizard/transaction_table.html', { 'transactions': transactions }  )
+    return html
 
-def read_camt_transactions(transaction_entries, account, settings, debug=False):
+def read_camt_transactions(transaction_entries, account, settings, debug=False, skip_company_filter=False):
     company = frappe.get_value("Account", account, "company")
     txns = []
     for entry in transaction_entries:
-        if six.PY2:
-            entry_soup = BeautifulSoup(unicode(entry), 'lxml')
+        entry_soup = BeautifulSoup(str(entry), 'lxml')
+        if entry_soup.bookgdt.dt:
+            date = entry_soup.bookgdt.dt.get_text()[:10]
+        elif entry_soup.bookgdt.dttm:
+            date = entry_soup.bookgdt.dttm.get_text()[:10]
         else:
-            entry_soup = BeautifulSoup(str(entry), 'lxml')
-        date = entry_soup.bookgdt.dt.get_text()
+            date = datetime.datetime.today().strftime("%Y-%m-%d")
         transactions = entry_soup.find_all('txdtls')
         # fetch entry amount as fallback
         entry_amount = float(entry_soup.amt.get_text())
@@ -261,10 +305,7 @@ def read_camt_transactions(transaction_entries, account, settings, debug=False):
         if transactions and len(transactions) > 0:
             for transaction in transactions:
                 transaction_count += 1
-                if six.PY2:
-                    transaction_soup = BeautifulSoup(unicode(transaction), 'lxml')
-                else:
-                    transaction_soup = BeautifulSoup(str(transaction), 'lxml')
+                transaction_soup = BeautifulSoup(str(transaction), 'lxml')
                 # --- find transaction type: paid or received: (DBIT: paid, CRDT: received)
                 if settings.always_use_entry_transaction_type:
                     credit_debit = entry_soup.cdtdbtind.get_text()
@@ -294,10 +335,16 @@ def read_camt_transactions(transaction_entries, account, settings, debug=False):
                         try:
                             unique_reference = transaction_soup.pmtinfid.get_text()
                         except:
-                            # fallback to group account service reference plus transaction_count
-                            if global_account_service_reference != "":
-                                unique_reference = "{0}-{1}".format(global_account_service_reference, transaction_count)
-                            else:
+                            try:
+                                if entry_soup.ntryref:
+                                    unique_reference = entry_soup.ntryref.get_text()
+                                elif global_account_service_reference != "":
+                                    # fallback to group account service reference plus transaction_count
+                                    unique_reference = "{0}-{1}".format(global_account_service_reference, transaction_count)
+                                else:
+                                    # fallback ntry reference or booking code (wise) (for banks this is often not unique)
+                                    unique_reference = entry_soup.bktxcd.prtry.cd.get_text()
+                            except:
                                 # fallback to ustrd (do not use)
                                 # unique_reference = transaction_soup.ustrd.get_text()
                                 # fallback to hash
@@ -325,20 +372,14 @@ def read_camt_transactions(transaction_entries, account, settings, debug=False):
                     # --- find party IBAN
                     if credit_debit == "DBIT":
                         # use RltdPties:Cdtr
-                        if six.PY2:
-                            party_soup = BeautifulSoup(unicode(transaction_soup.txdtls.rltdpties.cdtr), 'lxml')
-                        else:
-                            party_soup = BeautifulSoup(str(transaction_soup.txdtls.rltdpties.cdtr), 'lxml')
+                        party_soup = BeautifulSoup(str(transaction_soup.txdtls.rltdpties.cdtr), 'lxml')
                         try:
                             party_iban = transaction_soup.cdtracct.id.iban.get_text()
                         except:
                             party_iban = ""
                     else:
                         # CRDT: use RltdPties:Dbtr
-                        if six.PY2:
-                            party_soup = BeautifulSoup(unicode(transaction_soup.txdtls.rltdpties.dbtr), 'lxml')
-                        else:
-                            party_soup = BeautifulSoup(str(transaction_soup.txdtls.rltdpties.dbtr), 'lxml')
+                        party_soup = BeautifulSoup(str(transaction_soup.txdtls.rltdpties.dbtr), 'lxml')
                         try:
                             party_iban = transaction_soup.dbtracct.id.iban.get_text()
                         except:
@@ -440,8 +481,11 @@ def read_camt_transactions(transaction_entries, account, settings, debug=False):
                         payment_instruction_id=payment_instruction_id))
 
                 # check if this transaction is already recorded
-                match_payment_entry = frappe.get_all('Payment Entry',
-                    filters={'reference_no': unique_reference, 'company': company},
+                _filters = {'reference_no': unique_reference, 'company': company}
+                if skip_company_filter:                 # in case the account was not clear, do not filter for company (in multi-company case)
+                    _filters.pop('company', None)
+                match_payment_entry = frappe.get_all('Payment Entry', 
+                    filters=_filters, 
                     fields=['name'])
                 if match_payment_entry:
                     if debug or settings.debug_mode:
@@ -459,12 +503,19 @@ def read_camt_transactions(transaction_entries, account, settings, debug=False):
                         if payment_instruction_id:
                             try:
                                 payment_instruction_fields = payment_instruction_id.split("-")
-                                payment_instruction_row = str(payment_instruction_fields[-1]) + str('1')
+
+                                try:
+                                    payment_instruction_row = int(payment_instruction_fields[-1]) + 1
+                                except:
+                                    # invalid payment instruction id (cannot parse, e.g. on LSV or foreign pain.001 source) - no match
+                                    payment_instruction_row = None
                                 if len(payment_instruction_fields) > 3:
                                     # revision in payment proposal
                                     payment_proposal_id = "{0}-{1}".format(payment_instruction_fields[1], payment_instruction_fields[2])
+                                elif len(payment_instruction_fields) > 1:
+                                    payment_proposal_id = payment_instruction_fields[1]
                                 else:
-                                    payment_proposal_id = payment_instruction_fields[0]
+                                    payment_proposal_id = None
                                 # find original instruction record
                                 payment_proposal_payments = frappe.get_all("Payment Proposal Payment",
                                     filters={'parent': payment_proposal_id, 'idx': payment_instruction_row},
@@ -569,6 +620,10 @@ def read_camt_transactions(transaction_entries, account, settings, debug=False):
                                     # allow the numeric part matching
                                     if get_numeric_only_reference(sinv['name']) in transaction_reference:
                                         # matched numeric part and customer name
+                                        is_match = True
+                                elif cint(settings.ignore_special_characters) == 1:
+                                    if remove_special_characters(sinv['name']) in remove_special_characters(transaction_reference):
+                                        # matched without special characters
                                         is_match = True
 
                                 if is_match:
@@ -824,7 +879,7 @@ def make_payment_entry(amount, date, reference_no, paid_from=None, paid_to=None,
             matched_entry.save()
         matched_entry.submit()
         frappe.db.commit()
-    return get_url_to_form("Payment Entry", new_entry.name)
+    return {'link': get_url_to_form("Payment Entry", new_entry.name), 'payment_entry': new_entry.name}
 
 # creates the reference record in a payment entry
 def create_reference(payment_entry, invoice_reference, invoice_type="Sales Invoice"):
@@ -865,3 +920,7 @@ def get_numeric_only_reference(s):
         if c.isdigit():
             n += c
     return n
+
+def remove_special_characters(s):
+    return (s or "").replace(" ", "").replace("-", "")
+    

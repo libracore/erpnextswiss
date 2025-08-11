@@ -9,7 +9,7 @@ readme = "README.md"
 dynamic = ["version"]
 dependencies = [
     # dependencies
-    "frappe>=2025.0",
+    "frappe>=15.0",
     "bs4",
     "factur-x>=2.3",
     "unidecode",

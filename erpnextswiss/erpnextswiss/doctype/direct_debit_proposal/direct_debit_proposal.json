@@ -15,6 +15,8 @@
   "sales_invoices",
   "section_payments",
   "payments",
+  "sec_overview",
+  "total",
   "section_intermediate_account",
   "use_intermediate",
   "column_intermediate_account",
@@ -40,6 +42,8 @@
   {
    "fieldname": "receive_to_account",
    "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Receive to Account",
    "options": "Account"
   },
@@ -50,6 +54,7 @@
   {
    "fieldname": "date",
    "fieldtype": "Date",
+   "in_standard_filter": 1,
    "label": "Date"
   },
   {
@@ -126,10 +131,24 @@
    "hidden": 1,
    "label": "Letter Head",
    "options": "Letter Head"
+  },
+  {
+   "fieldname": "sec_overview",
+   "fieldtype": "Section Break",
+   "label": "Overview"
+  },
+  {
+   "fieldname": "total",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Total",
+   "precision": "2",
+   "read_only": 1
   }
  ],
  "is_submittable": 1,
- "modified": "2023-03-16 16:45:53.116572",
+ "modified": "2025-08-04 17:57:29.746108",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "Direct Debit Proposal",

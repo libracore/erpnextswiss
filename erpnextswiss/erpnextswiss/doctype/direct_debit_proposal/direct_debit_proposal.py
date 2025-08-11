@@ -33,6 +33,14 @@ XML_SCHEMA_FILES = {
 }
 
 class DirectDebitProposal(Document):
+    def before_save(self):
+        # update total
+        total = 0
+        for s in (self.sales_invoices or []):
+            total += s.amount
+        self.total = total
+        return
+    
     def validate(self):
         # check if closing on intermediate account that fields are set
         if self.use_intermediate == 1:
@@ -296,8 +304,8 @@ def get_company_name(sales_invoice):
 def create_direct_debit_proposal(company=None):
     # check companies
     if company == None:
-        companies = frappe.get_all("Company", filters={}, fields=['name'])
-        company = companies[0]['name']
+        # use global default if not specified
+        company = frappe.defaults.get_global_default("company")
     # get all customers with open sales invoices
     sql_query = ("""SELECT `tabSales Invoice`.`customer` AS `customer`, 
               `tabSales Invoice`.`name` AS `name`,  

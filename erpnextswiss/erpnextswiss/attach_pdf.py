@@ -4,7 +4,7 @@
 # For license information, please see license.txt
 import frappe
 from frappe import _
-from frappe.core.doctype.file.file import create_new_folder
+from frappe.core.api.file import create_new_folder
 from frappe.utils.file_manager import save_file
 import hashlib
 import time

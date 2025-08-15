@@ -608,12 +608,12 @@ def read_camt_transactions(transaction_entries, account, settings, debug=False, 
                         # sales invoices
                         possible_sinvs = frappe.get_all("Sales Invoice",
                             filters=[['outstanding_amount', '>', 0], ['docstatus', '=', 1]],
-                            fields=['name', 'customer', 'customer_name', 'outstanding_amount', 'esr_reference', 'esr_reference', 'reference_number_full', 'reference_number_full'])
+                            fields=['name', 'customer', 'customer_name', 'outstanding_amount', 'esr_reference', 'esr_reference', 'reference_number_full'])
                         if possible_sinvs:
                             invoice_matches = []
                             for sinv in possible_sinvs:
                                 is_match = False
-                                if sinv['name'] in transaction_reference or ('esr_reference' in sinv and sinv['esr_reference'] and sinv['esr_reference'] == transaction_reference) or ('esr_reference' in sinv and sinv['esr_reference'] and sinv['esr_reference'] == transaction_reference) or ('reference_number_full' in sinv and sinv['reference_number_full'] and sinv['reference_number_full'] == transaction_reference) or ('reference_number_full' in sinv and sinv['reference_number_full'] and sinv['reference_number_full'] == transaction_reference):
+                                if sinv['name'] in transaction_reference or ('esr_reference' in sinv and sinv['esr_reference'] and sinv['esr_reference'] == transaction_reference) or ('reference_number_full' in sinv and sinv['reference_number_full'] and sinv['reference_number_full'] == transaction_reference):
                                     # matched exact sales invoice reference or ESR reference or SCOR reference
                                     is_match = True
                                 elif cint(settings.numeric_only_debtor_matching) == 1:

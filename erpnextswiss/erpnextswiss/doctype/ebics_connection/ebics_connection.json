@@ -12,6 +12,7 @@
   "col_user",
   "partner_id",
   "user_id",
+  "scope",
   "col_account",
   "company",
   "key_password",
@@ -143,9 +144,16 @@
    "fieldtype": "Select",
    "label": "Version",
    "options": "H004\nH005"
+  },
+  {
+   "default": "CH",
+   "fieldname": "scope",
+   "fieldtype": "Select",
+   "label": "Scope",
+   "options": "CH\nAT\nDE\nLI\nFR\nIT\nES\nNL\nBE\nLU"
   }
  ],
- "modified": "2024-11-27 10:48:40.432257",
+ "modified": "2025-08-18 12:06:21.760865",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "ebics Connection",

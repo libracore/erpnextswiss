@@ -52,10 +52,10 @@ def execute(doctype, name, title, lang=None, print_format=None, hashname=None, i
 def create_folder(folder, parent):
     """Make sure the folder exists and return it's name."""
     new_folder_name = "/".join([parent, folder])
-    
+
     if not frappe.db.exists("File", new_folder_name):
         create_new_folder(folder, parent)
-    
+
     return new_folder_name
 
 

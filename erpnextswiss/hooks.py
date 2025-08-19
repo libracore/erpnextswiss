@@ -53,20 +53,21 @@ doctype_list_js = {
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
 
 # adding Jinja environments
-jenv = {
+jinja = {
     "methods": [
-        "get_tax_details:erpnextswiss.erpnextswiss.report.kontrolle_mwst.kontrolle_mwst.get_data",
-        "get_account_sheets:erpnextswiss.erpnextswiss.finance.get_account_sheets",
-        "get_customer_ledger:erpnextswiss.erpnextswiss.finance.get_customer_ledger",
-        "get_week_from_date:erpnextswiss.erpnextswiss.jinja.get_week_from_date",
-        "strip_html:erpnextswiss.erpnextswiss.jinja.strip_html",
-        "get_accounts_receivable:erpnextswiss.erpnextswiss.jinja.get_accounts_receivable",
-        "get_primary_company_address:erpnextswiss.scripts.crm_tools.get_primary_company_address",
-        "get_primary_customer_address:erpnextswiss.scripts.crm_tools.get_primary_customer_address",
-        "get_primary_supplier_address:erpnextswiss.scripts.crm_tools.get_primary_supplier_address",
-        "get_vat_control_details:erpnextswiss.erpnextswiss.report.kontrolle_mwst.kontrolle_mwst.get_vat_control_details",
-        "get_planzer_barcode:erpnextswiss.erpnextswiss.planzer.get_planzer_barcode",
-        "get_planzer_qr_code:erpnextswiss.erpnextswiss.planzer.get_planzer_qr_code"
+
+        "erpnextswiss.erpnextswiss.report.kontrolle_mwst.kontrolle_mwst.get_tax_details",
+        "erpnextswiss.erpnextswiss.finance.get_account_sheets",
+        "erpnextswiss.erpnextswiss.finance.get_customer_ledger",
+        "erpnextswiss.erpnextswiss.jinja.get_week_from_date",
+        "erpnextswiss.erpnextswiss.jinja.strip_html",
+        "erpnextswiss.erpnextswiss.jinja.get_accounts_receivable",
+        "erpnextswiss.scripts.crm_tools.get_primary_company_address",
+        "erpnextswiss.scripts.crm_tools.get_primary_customer_address",
+        "erpnextswiss.scripts.crm_tools.get_primary_supplier_address",
+        "erpnextswiss.erpnextswiss.report.kontrolle_mwst.kontrolle_mwst.get_vat_control_details",
+        "erpnextswiss.erpnextswiss.planzer.get_planzer_barcode",
+        "erpnextswiss.erpnextswiss.planzer.get_planzer_qr_code"
     ]
 }
 

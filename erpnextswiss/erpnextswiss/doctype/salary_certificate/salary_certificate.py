@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2018-2024, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
 
 from __future__ import unicode_literals
@@ -7,7 +7,8 @@ import frappe
 from frappe.model.document import Document
 
 class SalaryCertificate(Document):
-    # this function gathers values from the database
+    # this function gathers values from the database (whitelist required in v15 due to new permission model)
+    @frappe.whitelist()
     def fetch_values(self):
         if not self.employee:
             frappe.msgprint( _("Please select a valid employee.") )

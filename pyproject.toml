@@ -1,0 +1,28 @@
+[project]
+name = "erpnextswiss"
+authors = [
+    { name = "libracore AG", email = "info@libracore.com"}
+]
+description = "ERPNext extension for Switzerland"
+requires-python = ">=3.10"
+readme = "README.md"
+dynamic = ["version"]
+dependencies = [
+    # dependencies
+    "frappe>=15.0",
+    "bs4",
+    "factur-x>=2.3",
+    "unidecode",
+    "opencv-python",
+    "pymupdf",
+    "fintech",
+    "pysftp",
+    "icalendar",
+    "unidecode",
+    "lxml",
+]
+
+[project.urls]
+Homepage = "https://git.libracore.io/libracore/erpnextswiss"
+Repository = "https://git.libracore.io/libracore/erpnextswiss.git"
+"Bug Reports" = "https://git.libracore.io/libracore/erpnextswiss/issues"

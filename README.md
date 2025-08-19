@@ -4,25 +4,25 @@ ERPNext application for Switzerland-specific use cases
 ERPNext ([https://www.erpnext.org](https://www.erpnext.org)) is a global, leading, cloud based
 open source enterprise resource planning software. ERPNext is a trademark by Frappé Technologies.
 
-The ERPNextSwiss application adds country-specific features to this platform such as 
+The ERPNextSwiss application adds country-specific features to this platform such as
 bank, tax and payment integrations.
 
 ERPNextSwiss is maintaned by [libracore AG](https://www.libracore.com).
 
 For more information, refer to [https://erpnext.swiss](https://erpnext.swiss)
 
-## License 
+## License
 GNU Affero General Public License, refer to LICENSE
 
-ERPNextSwiss is developed and maintained by libracore and contributors. 
-The copyright is owned by libracore and contributors. 
+ERPNextSwiss is developed and maintained by libracore and contributors.
+The copyright is owned by libracore and contributors.
 The software comes as-is without any warranty.
 
 ## Requirements
 Requires an ERPNext server instance (refer to [https://github.com/frappe/erpnext](https://github.com/frappe/erpnext))
 
 ## Compatibility
-ERPNextSwiss is tested against libracore and ERPNext v12. There are compatibility branches for v11 (for user who prefer the old desk) and v13/v14/v15 (for daring users).
+ERPNextSwiss is tested against libracore and ERPNext v15. There are compatibility branches for v11/v12/v13/v14/v15.
 
 ERPNextSwiss is also compatible with Dokos ([https://dokos.io](https://dokos.io))
 
@@ -31,11 +31,11 @@ From the frappe-bench folder, execute
 
     $ bench get-app https://github.com/libracore/erpnextswiss.git
     $ bench install-app erpnextswiss
-    
+
 If you are using a multi-tenant environment, use the following for the installation
 
     $ bench --site site_name install-app erpnextswiss
-    
+
 (where site_name is e.g. erp.example.com)
 
 ## Update
@@ -47,7 +47,7 @@ In case you update from the sources and observe an error, make sure to update de
 
     $ bench update --requirements
 
-## Features 
+## Features
 * Banking / Accounting
     * Bank wizard: processes camt.053 and camt.054 files to payment entries (including linking to related documents)
     * Payment proposal: create payment files based on open purchase invoices, expenses and salaries (pain.001)
@@ -57,6 +57,7 @@ In case you update from the sources and observe an error, make sure to update de
     * Match payments: match unpaid sales invoices with the corresponding payments
     * Payment export: allows to create payment files for banks (pain.001) from payment entries (paying)
     * QR invoices and ESR invoices: outgoing (sales invoices) as well as incoming (scan purchase invoices); QR invoice supports ESR/NON/SCOR
+    * QR invoices It supports the generation of a reference number based on the Creditor Reference standard (ISO 11649)
     * ZUGFeRD: fully electronic invoices.
     * ZUGFeRD Wizard: read and interpret both ZUGFeRD and QR-invoices to purchase invoices
 * Taxes
@@ -75,12 +76,13 @@ In case you update from the sources and observe an error, make sure to update de
     * Large data import tools
     * Dynamic newsletter content
  * Interfaces
-    * Interface to ESTV: 
+    * Interface to ESTV:
         * read exchange rates
         * monthly average rates
         * transmit tax forms
     * Interface to abacus (export transaction data)
     * ISO 20022
+    * ISO 11649
     * EBICS: electronic banking internet communication standard, allows to fully automate bank integration
     * ZUGFeRD
     * Interface to Zefix

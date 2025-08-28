@@ -1,0 +1,73 @@
+{
+ "creation": "2025-08-28 16:13:04.491191",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "target_field",
+  "col_1",
+  "operator",
+  "col_2",
+  "value",
+  "sec_action",
+  "deductions"
+ ],
+ "fields": [
+  {
+   "default": "Party Name",
+   "fieldname": "target_field",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Target Field",
+   "options": "Transaction Reference\nParty Name\nParty Address\nAmount",
+   "reqd": 1
+  },
+  {
+   "fieldname": "col_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "=",
+   "fieldname": "operator",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Operator",
+   "options": "=\nincludes",
+   "reqd": 1
+  },
+  {
+   "fieldname": "col_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "value",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Value",
+   "reqd": 1
+  },
+  {
+   "fieldname": "sec_action",
+   "fieldtype": "Section Break",
+   "label": "Action"
+  },
+  {
+   "fieldname": "deductions",
+   "fieldtype": "Table",
+   "label": "Deduction",
+   "options": "Bank Wizard Pattern Account"
+  }
+ ],
+ "modified": "2025-08-28 17:03:52.114372",
+ "modified_by": "Administrator",
+ "module": "ERPNextSwiss",
+ "name": "Bank Wizard Pattern",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "title_field": "value",
+ "track_changes": 1
+}

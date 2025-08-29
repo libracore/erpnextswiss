@@ -766,12 +766,44 @@ def read_camt_transactions(transaction_entries, account, settings, debug=False, 
                     }
                     txns.append(new_txn)
 
+    # check against bank wizard patterns
+    patterns = frappe.get_all("Bank Wizard Pattern", filters={'disabled': 0}, fields=['name', 'target_field', 'operator', 'value'])
+    if len(patterns) > 0:
+        FIELD_MAP = {
+            "Transaction Reference": "transaction_reference",
+            "Party Name": "party_name",
+            "Party Address": "party_address",
+            "Amount": "amount",
+            "Unallocated_amount": "unallocated_amount"
+        }
+        for txn in txns:
+            txn['unallocated_amount'] = flt(txn['amount']) - flt(txn['matched_amount'])
+            txn['amount'] = flt(txn['amount'])
+            for p in patterns:
+                frappe.log_error("{0}: {1}".format(p['value'], type(p['value'])))
+                try:
+                    if p['operator'] == "=":
+                        if (type(txn[FIELD_MAP[p['target_field']]]) == float and txn[FIELD_MAP[p['target_field']]] == flt(p['value'])) \
+                            or txn[FIELD_MAP[p['target_field']]] == p['value']:
+                        
+                            txn['pattern'] = p['name']
+                        break
+                    elif p['operator'] == "includes" and p['value'] in txn[FIELD_MAP[p['target_field']]]:
+                        txn['pattern'] = p['name']
+                        break
+                    elif p['operator'] == "&lt;" and type(txn[FIELD_MAP[p['target_field']]]) == float and flt(txn[FIELD_MAP[p['target_field']]]) < flt(p['value']):
+                        txn['pattern'] = p['name']
+                        break
+                except Exception as err:
+                    frappe.log_error( err , "Bank Wizard: Pattern Error")
+                
+                
     return txns
 
 @frappe.whitelist()
 def make_payment_entry(amount, date, reference_no, paid_from=None, paid_to=None, type="Receive", 
     party=None, party_type=None, references=None, remarks=None, auto_submit=False, exchange_rate=1,
-    party_iban=None, company=None):
+    party_iban=None, company=None, pattern=None):
     # assert list
     if references:
         references = ast.literal_eval(references)
@@ -863,6 +895,23 @@ def make_payment_entry(amount, date, reference_no, paid_from=None, paid_to=None,
     if references:
         for reference in references:
             create_reference(new_entry.name, reference, reference_type)
+    # pattern matching
+    if pattern:
+        pattern_entry = frappe.get_doc("Payment Entry", new_entry.name) # include changes from reference
+        pattern_definition = frappe.get_doc("Bank Wizard Pattern", pattern)
+        amount = pattern_entry.unallocated_amount or pattern_entry.difference_amount
+        if pattern_entry.payment_type == "Receive":
+            amount = (-1) * amount
+        for deduction in pattern_definition.deductions:
+            if deduction.company == company:
+                pattern_entry.append("deductions", {
+                    'account': deduction.deduction_account,
+                    'cost_center': deduction.deduction_cost_center,
+                    'amount': amount
+                })
+            pattern_entry.save()
+            frappe.db.commit()
+            break
     # automatically submit if enabled
     if auto_submit:
         matched_entry = frappe.get_doc("Payment Entry", new_entry.name) # include changes from reference

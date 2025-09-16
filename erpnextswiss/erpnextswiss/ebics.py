@@ -43,7 +43,7 @@ def sync_connection(connection, debug=False):
         if debug:
             print("Syncing {0}...".format(date.strftime("%Y-%m-%d")))
             
-        conn.get_transactions(date.strftime("%Y-%m-%d"))
+        conn.get_transactions(date.strftime("%Y-%m-%d"), debug=debug)
         # note: sync date update happens in the transaction record when there are results
         
         date = add_days(date, 1)

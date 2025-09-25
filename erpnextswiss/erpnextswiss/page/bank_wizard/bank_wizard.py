@@ -151,8 +151,9 @@ def get_bank_accounts():
     return {'accounts': selectable_accounts }
 
 @frappe.whitelist()
-def get_default_accounts(bank_account):
-    company = frappe.get_value("Account", bank_account, "company")
+def get_default_accounts(bank_account=None, company=None):
+    if bank_account:
+        company = frappe.get_value("Account", bank_account, "company")
     receivable_account = frappe.get_value('Company', company, 'default_receivable_account')
     payable_account = frappe.get_value('Company', company, 'default_payable_account')
     expense_payable_account = frappe.get_value('Company', company, 'default_expense_claim_payable_account') or payable_account

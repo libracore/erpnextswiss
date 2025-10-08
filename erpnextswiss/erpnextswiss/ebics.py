@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2024, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2024-2025, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
 #
 # Sync can be externally triggered by
@@ -21,7 +21,10 @@ def sync(debug=False):
     for connection in enabled_connections:
         if debug:
             print("Syncing {0}".format(connection['name']))
-        sync_connection(connection['name'], debug)
+        try:
+            sync_connection(connection['name'], debug)
+        except Exception as err:
+            frappe.log_error("{0} occurred when trying to sync ebics {1}".format(err, connection['name']), "ebics sync error")
         
     if debug:
         print("Sync completed")

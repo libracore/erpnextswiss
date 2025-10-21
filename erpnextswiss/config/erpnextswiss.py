@@ -261,6 +261,12 @@ def get_data():
                     },
                     {
                        "type": "doctype",
+                       "name": "Mautic Settings",
+                       "label": _("Mautic"),
+                       "description": _("Mautic")                   
+                    },
+                    {
+                       "type": "doctype",
                        "name": "Abacus Export File",
                        "label": _("Abacus Export File"),
                        "description": _("Abacus Export File")                   

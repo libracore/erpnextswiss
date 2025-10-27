@@ -6,7 +6,7 @@ import frappe
 from frappe import _
 from frappe.utils.data import date_diff, getdate, add_days
 from datetime import date, timedelta
-from erpnext.hr.doctype.leave_application.leave_application import get_leave_details
+from hrms.hr.doctype.leave_application.leave_application import get_leave_details
 from frappe.utils import cint
 
 def execute(filters=None):

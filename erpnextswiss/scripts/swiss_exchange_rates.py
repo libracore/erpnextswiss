@@ -1,7 +1,7 @@
 #
 # swiss_exchange_rates.py
 #
-# Copyright (C) libracore, 2017-2024
+# Copyright (C) libracore, 2017-2025
 # https://www.libracore.com or https://github.com/libracore
 #
 # Execute with 
@@ -24,6 +24,7 @@ def parse_estv_xml(url, currencies):
     # import content into a string from URL XML data
     r = requests.get(url)
     data = r.text
+    print(data)
 
     # parse string to an XML object
     root = BeautifulSoup(data, 'lxml')
@@ -44,11 +45,11 @@ def parse_estv_xml(url, currencies):
     return
     
 def read_rates(currencies=["EUR"]):
-    parse_estv_xml('https://www.backend-rates.ezv.admin.ch/api/xmlavgmonth', currencies)
+    parse_estv_xml('https://www.backend-rates.bazg.admin.ch/api/xmlavgmonth', currencies)
     return
 
 def read_daily_rates(currencies=["EUR"]):
-    parse_estv_xml('https://www.backend-rates.ezv.admin.ch/api/xmldaily', currencies)
+    parse_estv_xml('https://www.backend-rates.bazg.admin.ch/api/xmldaily', currencies)
     return
 
 def create_exchange_rate(from_currency, rate, to_currency="CHF"):

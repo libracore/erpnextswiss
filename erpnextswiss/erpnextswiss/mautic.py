@@ -151,7 +151,7 @@ class MauticAPI:
         """Holt Kampagnen aus Mautic"""
         try:
             response = requests.get(
-                "{0}/api/campaigns".format(self.base_url,
+                "{0}/api/campaigns".format(self.base_url),
                 auth=HTTPBasicAuth(self.username, self.password)
             )
             response.raise_for_status()

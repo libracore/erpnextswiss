@@ -29,20 +29,20 @@ class MauticAPI:
             self.username = settings.username
             self.password = settings.get_password('password')
         except Exception as e:
-            frappe.throw(f"Mautic Credentials nicht gefunden: {str(e)}")
+            frappe.throw("Mautic Credentials nicht gefunden: {0}".format(e))
     
     def test_connection(self):
         """Testet die Verbindung zu Mautic"""
         try:
             response = requests.get(
-                f"{self.base_url}/api/contacts",
+                "{0}/api/contacts".format(self.base_url),
                 auth=HTTPBasicAuth(self.username, self.password),
                 params={'limit': 1}
             )
             response.raise_for_status()
             return True, "Verbindung erfolgreich"
         except Exception as e:
-            return False, f"Verbindungsfehler: {str(e)}\n{response.text}"
+            return False, "Verbindungsfehler: {0}\n{1}".format(e, response.text)
     
     # ===== Company API Methods =====
     
@@ -50,42 +50,42 @@ class MauticAPI:
         """Holt Companies aus Mautic"""
         try:
             response = requests.get(
-                f"{self.base_url}/api/companies",
+                "{0}/api/companies".format(self.base_url),
                 auth=HTTPBasicAuth(self.username, self.password),
                 params={'limit': limit, 'start': start}
             )
             response.raise_for_status()
             return response.json()
         except Exception as e:
-            frappe.log_error(f"Fehler beim Abrufen von Mautic Companies: {str(e)}")
+            frappe.log_error("Fehler beim Abrufen von Mautic Companies: {0}".format(e))
             return None
     
     def create_company(self, company_data):
         """Erstellt eine Company in Mautic"""
         try:
             response = requests.post(
-                f"{self.base_url}/api/companies/new",
+                "{0}/api/companies/new".format(self.base_url),
                 auth=HTTPBasicAuth(self.username, self.password),
                 json=company_data
             )
             response.raise_for_status()
             return response.json()
         except Exception as e:
-            frappe.log_error(f"Fehler beim Erstellen einer Mautic Company: {str(e)}")
+            frappe.log_error("Fehler beim Erstellen einer Mautic Company: {0}".format(e))
             return None
     
     def update_company(self, company_id, company_data):
         """Aktualisiert eine Company in Mautic"""
         try:
             response = requests.patch(
-                f"{self.base_url}/api/companies/{company_id}/edit",
+                "{0}/api/companies/{1}/edit".format(self.base_url, company_id),
                 auth=HTTPBasicAuth(self.username, self.password),
                 json=company_data
             )
             response.raise_for_status()
             return response.json()
         except Exception as e:
-            frappe.log_error(f"Fehler beim Aktualisieren der Mautic Company: {str(e)}")
+            frappe.log_error("Fehler beim Aktualisieren der Mautic Company: {0}".format(e))
             return None
     
     # ===== Contact API Methods =====
@@ -94,55 +94,55 @@ class MauticAPI:
         """Holt Kontakte aus Mautic"""
         try:
             response = requests.get(
-                f"{self.base_url}/api/contacts",
+                "{0}/api/contacts".format(self.base_url),
                 auth=HTTPBasicAuth(self.username, self.password),
                 params={'limit': limit, 'start': start}
             )
             response.raise_for_status()
             return response.json()
         except Exception as e:
-            frappe.log_error(f"Fehler beim Abrufen von Mautic Kontakten: {str(e)}")
+            frappe.log_error("Fehler beim Abrufen von Mautic Kontakten: {0}".format(e))
             return None
     
     def create_contact(self, contact_data):
         """Erstellt einen Kontakt in Mautic"""
         try:
             response = requests.post(
-                f"{self.base_url}/api/contacts/new",
+                "{0}/api/contacts/new".format(self.base_url),
                 auth=HTTPBasicAuth(self.username, self.password),
                 json=contact_data
             )
             response.raise_for_status()
             return response.json()
         except Exception as e:
-            frappe.log_error(f"Fehler beim Erstellen eines Mautic Kontakts: {str(e)}")
+            frappe.log_error("Fehler beim Erstellen eines Mautic Kontakts: {0}".format(e))
             return None
     
     def update_contact(self, contact_id, contact_data):
         """Aktualisiert einen Kontakt in Mautic"""
         try:
             response = requests.patch(
-                f"{self.base_url}/api/contacts/{contact_id}/edit",
+                "{0}/api/contacts/{1}/edit".format(self.base_url, contact_id),
                 auth=HTTPBasicAuth(self.username, self.password),
                 json=contact_data
             )
             response.raise_for_status()
             return response.json()
         except Exception as e:
-            frappe.log_error(f"Fehler beim Aktualisieren des Mautic Kontakts: {str(e)}")
+            frappe.log_error("Fehler beim Aktualisieren des Mautic Kontakts: {0}".format(e))
             return None
     
     def add_contact_to_company(self, company_id, contact_id):
         """Verknüpft einen Kontakt mit einer Company in Mautic"""
         try:
             response = requests.post(
-                f"{self.base_url}/api/companies/{company_id}/contact/{contact_id}/add",
+                "{0}/api/companies/{1}/contact/{2}/add".format(self.base_url, company_id, contact_id),
                 auth=HTTPBasicAuth(self.username, self.password)
             )
             response.raise_for_status()
             return response.json()
         except Exception as e:
-            frappe.log_error(f"Fehler beim Verknüpfen von Kontakt mit Company: {str(e)}")
+            frappe.log_error("Fehler beim Verknüpfen von Kontakt mit Company: {0}".format(e))
             return None
     
     # ===== Campaign API Methods =====
@@ -151,26 +151,26 @@ class MauticAPI:
         """Holt Kampagnen aus Mautic"""
         try:
             response = requests.get(
-                f"{self.base_url}/api/campaigns",
+                "{0}/api/campaigns".format(self.base_url,
                 auth=HTTPBasicAuth(self.username, self.password)
             )
             response.raise_for_status()
             return response.json()
         except Exception as e:
-            frappe.log_error(f"Fehler beim Abrufen von Mautic Kampagnen: {str(e)}")
+            frappe.log_error("Fehler beim Abrufen von Mautic Kampagnen: {0}".format(e))
             return None
     
     def add_contact_to_campaign(self, campaign_id, contact_id):
         """Fügt einen Kontakt zu einer Kampagne hinzu"""
         try:
             response = requests.post(
-                f"{self.base_url}/api/campaigns/{campaign_id}/contact/{contact_id}/add",
+                "{0}/api/campaigns/{1}/contact/{2}/add".format(self.base_url, campaign_id, contact_id),
                 auth=HTTPBasicAuth(self.username, self.password)
             )
             response.raise_for_status()
             return response.json()
         except Exception as e:
-            frappe.log_error(f"Fehler beim Hinzufügen zur Kampagne: {str(e)}")
+            frappe.log_error("Fehler beim Hinzufügen zur Kampagne: {0}".format(e))
             return None
 
 
@@ -201,12 +201,12 @@ def sync_customer_to_mautic(customer_name):
     
     if mautic_id:
         result = mautic.update_company(mautic_id, company_data)
-        frappe.msgprint(f"Kunde {customer_name} als Company in Mautic aktualisiert")
+        frappe.msgprint("Kunde {0} als Company in Mautic aktualisiert".format(customer_name))
     else:
         result = mautic.create_company(company_data)
         if result and 'company' in result:
             customer.db_set('mautic_id', result['company']['id'])
-            frappe.msgprint(f"Kunde {customer_name} als Company zu Mautic hinzugefügt")
+            frappe.msgprint("Kunde {0} als Company zu Mautic hinzugefügt".format(customer_name))
     
     return result
 
@@ -239,7 +239,7 @@ def sync_contact_to_mautic(contact_name):
     
     if mautic_id:
         result = mautic.update_contact(mautic_id, contact_data)
-        frappe.msgprint(f"Kontakt {contact_name} in Mautic aktualisiert")
+        frappe.msgprint("Kontakt {0} in Mautic aktualisiert".format(contact_name))
     else:
         result = mautic.create_contact(contact_data)
         if result and 'contact' in result:
@@ -250,7 +250,7 @@ def sync_contact_to_mautic(contact_name):
             if company_id:
                 mautic.add_contact_to_company(company_id, new_contact_id)
             
-            frappe.msgprint(f"Kontakt {contact_name} zu Mautic hinzugefügt")
+            frappe.msgprint("Kontakt {0} zu Mautic hinzugefügt".format(contact_name))
     
     # Aktualisiere Company-Verknüpfung, falls sich diese geändert hat
     if mautic_id and company_id:
@@ -272,9 +272,9 @@ def sync_all_customers():
             frappe.db.commit()
         except Exception as e:
             error_count += 1
-            frappe.log_error(f"Fehler bei Kunde {customer}: {str(e)}")
+            frappe.log_error("Fehler bei Kunde {0}: {1}".format(customer, e))
     
-    frappe.msgprint(f"Kunden-Synchronisation abgeschlossen: {success_count} erfolgreich, {error_count} Fehler")
+    frappe.msgprint("Kunden-Synchronisation abgeschlossen: {0} erfolgreich, {1} Fehler".format(success_count, error_count))
 
 
 def sync_all_contacts():
@@ -290,9 +290,9 @@ def sync_all_contacts():
             frappe.db.commit()
         except Exception as e:
             error_count += 1
-            frappe.log_error(f"Fehler bei Kontakt {contact}: {str(e)}")
+            frappe.log_error("Fehler bei Kontakt {0}: {1}".format(contact, e))
     
-    frappe.msgprint(f"Kontakt-Synchronisation abgeschlossen: {success_count} erfolgreich, {error_count} Fehler")
+    frappe.msgprint("Kontakt-Synchronisation abgeschlossen: {0} erfolgreich, {1} Fehler".format(success_count, error_count))
 
 
 def sync_customer_with_contacts(customer_name):
@@ -315,9 +315,9 @@ def sync_customer_with_contacts(customer_name):
         try:
             sync_contact_to_mautic(contact)
         except Exception as e:
-            frappe.log_error(f"Fehler bei Kontakt {contact}: {str(e)}")
+            frappe.log_error("Fehler bei Kontakt {0}: {1}".format(contact, e))
     
-    frappe.msgprint(f"Kunde {customer_name} mit {len(contacts)} Kontakten synchronisiert")
+    frappe.msgprint("Kunde {0} mit {1} Kontakten synchronisiert".format(customer_name, len(contacts)))
 
 
 def import_mautic_campaigns():
@@ -344,10 +344,10 @@ def import_mautic_campaigns():
                 doc.insert()
                 imported += 1
         except Exception as e:
-            frappe.log_error(f"Fehler beim Import von Kampagne {campaign_id}: {str(e)}")
+            frappe.log_error("Fehler beim Import von Kampagne {0}: {1}".format(campaign_id, e))
     
     frappe.db.commit()
-    frappe.msgprint(f"{imported} Kampagnen importiert")
+    frappe.msgprint("{0} Kampagnen importiert".format(imported))
 
 
 @frappe.whitelist()

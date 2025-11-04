@@ -24,7 +24,6 @@ def parse_estv_xml(url, currencies):
     # import content into a string from URL XML data
     r = requests.get(url)
     data = r.text
-    print(data)
 
     # parse string to an XML object
     root = BeautifulSoup(data, 'lxml')

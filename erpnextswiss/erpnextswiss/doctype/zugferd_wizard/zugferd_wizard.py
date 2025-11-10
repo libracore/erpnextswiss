@@ -273,3 +273,13 @@ class ZUGFeRDWizard(Document):
                 AND `field` = "file"
             ;""")
         return
+    
+    @frappe.whitelist()
+    def get_invoice_list_from_nextcloud(self):
+        from erpnextswiss.erpnextswiss.doctype.zugferd_wizard.nextcloud_integration import get_file_list
+        return get_file_list()
+
+    @frappe.whitelist()
+    def fetch_invoice_from_nextcloud(self, invoice):
+        from erpnextswiss.erpnextswiss.doctype.zugferd_wizard.nextcloud_integration import fetch_invoice
+        fetch_invoice(invoice)

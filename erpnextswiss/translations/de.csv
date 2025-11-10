@@ -441,6 +441,10 @@ DocType: ZUGFeRD Wizard,Creating invoice...,Rechnung erstellen...
 DocType: ZUGFeRD Wizard,Reading invoice...,Rechnung lesen...
 DocType: ZUGFeRD Wizard,Ignore bill date on QR,Rechnungsdatum bei QR-Rechnungen ignorieren
 DocType: ZUGFeRD Wizard,Ignore due date on QR,Fälligkeitsdatum bei QR-Rechnungen ignorieren
+DocType: ZUGFeRD Wizard,The ZUGFeRD <> NextCloud interface is disabled.,Die ZUGFeRD <> NextCloud-Schnittstelle ist deaktiviert.
+DocType: ZUGFeRD Wizard,There are no invoices ready for collection in {SRC_DIR}.,Es liegen keine Rechnungen in {SRC_DIR} zur Abholung bereit.
+DocType: ZUGFeRD Wizard,The following invoices were found in Nextcloud.<br>Click on them to process them.<br><br>,"Nachfolgende Rechnungen wurden in der Nextcloud gefunden,<br>durch einen Klick darauf können Sie sie verarbeiten.<br><br>"
+DocType: ZUGFeRD Wizard,Found Nextcloud Invoices,Nextcloud-Rechnungen gefunden
 DocType: Planzer Settings,Planzer Settings,Planzer-Einstellungen
 DocType: Planzer Settings,Shipment transmitted,Sendung übermittelt
 DocType: Planzer Settings,"If this is marked, submitting a Shipment will transfer it through the Planzer interface","Wenn diese Option aktiviert ist, wird eine Sendung beim Buchen automatisch an Planzer übertragen"

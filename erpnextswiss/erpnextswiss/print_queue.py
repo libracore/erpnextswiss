@@ -1,10 +1,10 @@
 # Copyright (c) 2025, libracore and Contributors
 # License: GNU General Public License v3. See license.txt
-import tempfile, os, time, socket, base64
+import time, socket, base64
 import frappe
 from frappe import _
-from frappe.utils import now_datetime
-from frappe.utils.file_manager import save_file, get_file
+from frappe.utils import today, add_days
+from frappe.utils.file_manager import save_file, get_file, remove_file_by_url
 from PyPDF2 import PdfFileReader
 
 
@@ -13,22 +13,19 @@ def print_doc_as_label(doctype, docname, label_printer, print_format=None):
     """
     Convert a document to a PDF and create a label printer job from it
     """
-
     pdf_bytes = frappe.get_print(doctype, docname, print_format, as_pdf=True)
-    fd, tmp_path = tempfile.mkstemp(suffix=".pdf")
-    os.close(fd)
-    with open(tmp_path, "wb") as f:
-        f.write(pdf_bytes)
+    return pdf_to_print_job(pdf_bytes, label_printer)
 
+
+def pdf_to_print_job(pdf_data, label_printer):
     file_doc = save_file(
-        filename="label-{docname}.pdf".format(docname=docname),
-        content=tmp_path,
-        attached_to_doctype=None,
-        attached_to_name=None,
+        fname="print_job_.pdf",
+        content=pdf_data,
+        dt=None,
+        dn=None,
         is_private=1
     )
-
-    print_job = frappe.new_doc({
+    print_job = frappe.get_doc({
         "doctype": "Label Printer Job",
         "printer": label_printer,
         "pdf_file": file_doc.name,
@@ -41,6 +38,8 @@ def print_doc_as_label(doctype, docname, label_printer, print_format=None):
     file_doc.save()
 
     frappe.db.commit()
+    return print_job.name
+
 
 # Convert data of a print job to raw Bytes to send to the printer
 # In case of PDF Direct Printing, determine print width of document and return a ZPL command to set the printer's width correctly before printing
@@ -54,8 +53,7 @@ def job_to_raw_bytes(print_job):
             job_doc.status_message = "No PDF file attached"
             job_doc.save()
             return
-        attachment_doc = frappe.get_doc("File", job_doc.pdf_file)
-        job_data = get_file(attachment_doc.file_url)
+        job_data = get_file(job_doc.pdf_file)
         if isinstance(job_data, dict) and "content" in job_data:
             job_data = job_data["content"]
         if not isinstance(job_data, bytes):
@@ -90,6 +88,8 @@ def job_to_raw_bytes(print_job):
 # Execute a print job by sending it directly to a label printer
 def exec_direct_print_job(print_job):
     job_doc = frappe.get_doc("Label Printer Job", print_job)
+    if job_doc.status != "Waiting":
+        return
     label_printer = frappe.get_doc("Label Printer", job_doc.printer)
     if label_printer.printing_method != "Direct printing":
         job_doc.status = "Failed"
@@ -101,10 +101,15 @@ def exec_direct_print_job(print_job):
     job_bytes = job_to_raw_bytes(print_job)
 
     # Send data to printer
-    soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    soc.connect((label_printer.printer_hostname, label_printer.printer_port))
-    soc.sendall(job_bytes)
-    soc.close()
+    try:
+        soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        soc.connect((label_printer.printer_hostname, label_printer.printer_port))
+        soc.sendall(job_bytes)
+        soc.close()
+    except Exception as e:
+        job_doc.status = "Failed"
+        job_doc.status_message = e
+        job_doc.save()
 
 
 LONG_POLL_SECONDS = 60
@@ -120,6 +125,7 @@ def set_job_status(job_name, status, message=''):
         job_doc.status = status
         job_doc.status_message = message
         job_doc.save()
+        frappe.enqueue("erpnextswiss.erpnextswiss.print_queue.cleanup_print_queue")
 
 @frappe.whitelist(allow_guest=False)
 def get_group_jobs(group_name, limit=10):
@@ -175,12 +181,12 @@ def _fetch_waiting_jobs_for_printers(printer_names, limit):
             job_bytes = job_to_raw_bytes(job['name'])
             job['data_base64'] = base64.b64encode(job_bytes)
         except Exception as e:
-            frappe.db.set_value("Label Printer Job", job['name'], "status", "Failed")
+            frappe.db.set_values("Label Printer Job", job['name'], {
+                "status": "Failed",
+                "status_message": e,
+            })
             return
-            #job_doc = frappe.db.get_doc("Label Printer Job", job['name'])
-            #job_doc.status = "Failed"
-            #job_doc.status_message = e
-            #job_doc.save()
+
         useful_jobs.append(job)
         frappe.db.set_value("Label Printer Job", job['name'], "status", "Printing")
 
@@ -188,5 +194,19 @@ def _fetch_waiting_jobs_for_printers(printer_names, limit):
 
 
 def cleanup_print_queue():
-    pass
-    #TODO clean PDF files and print jobs
+    """
+    Delete old print jobs
+    """
+    cutoff = add_days(today(), -1)
+    jobs = frappe.get_all(
+        "Label Printer Job",
+        filters={
+            "status": ["in", ["Printed", "Failed"]],
+            "creation": ["<", cutoff],
+        },
+        fields=["name"],
+    )
+
+    for job in jobs:
+        frappe.delete_doc("Label Printer Job", job['name'])
+    frappe.db.commit()

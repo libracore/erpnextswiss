@@ -1,6 +1,6 @@
 # Copyright (c) 2025, libracore and Contributors
 # License: GNU General Public License v3. See license.txt
-import time, socket, base64
+import time, socket, base64, io
 import frappe
 import traceback
 from frappe import _
@@ -53,15 +53,15 @@ def job_to_raw_bytes(print_job):
             job_doc.status = "Failed"
             job_doc.status_message = "No PDF file attached"
             job_doc.save()
-            return
+            return False
         job_data = get_file(job_doc.pdf_file)
-        if isinstance(job_data, dict) and "content" in job_data:
-            job_data = job_data["content"]
+        if isinstance(job_data, list) and len(job_data) == 2:
+            job_data = job_data[1]
         if not isinstance(job_data, bytes):
             job_doc.status = "Failed"
             job_doc.status_message = "Unexpected attachment format (Bytes expected)"
             job_doc.save()
-            return
+            return False
 
         # PDF direct printing (Zebra): Determine document width and set it using a printer command
         # (a workaround to ensure the printing width is always set correctly)
@@ -88,6 +88,7 @@ def job_to_raw_bytes(print_job):
 
 # Execute a print job by sending it directly to a label printer
 def exec_direct_print_job(print_job):
+    frappe.db.rollback() # Sync to any recent commits
     job_doc = frappe.get_doc("Label Printer Job", print_job)
     if job_doc.status != "Waiting":
         frappe.log_error(_("Unexpected job status: {0}").format(job_doc.status), _("Print job execution failed"))
@@ -102,6 +103,9 @@ def exec_direct_print_job(print_job):
 
     # Obtain data from DB and/or PDF file
     job_bytes = job_to_raw_bytes(print_job)
+    if not job_bytes:
+        # Errors in job data are handled directly by the function
+        return
 
     # Send data to printer
     try:
@@ -165,6 +169,7 @@ def get_group_jobs(group_name, limit=10):
 
 
 def _fetch_waiting_jobs_for_printers(printer_names, limit):
+    frappe.db.rollback() # Sync to any recent commits
     waiting_jobs = frappe.get_all(
         "Label Printer Job",
         filters=[
@@ -186,13 +191,16 @@ def _fetch_waiting_jobs_for_printers(printer_names, limit):
             job['printer_hostname'] = printer_doc.printer_hostname
             job['printer_port'] = printer_doc.printer_port
             job_bytes = job_to_raw_bytes(job['name'])
-            job['data_base64'] = base64.b64encode(job_bytes)
+            if not job_bytes:
+                # Job status is set to Failed by job_to_raw_bytes() in such cases
+                continue
+            job['data_base64'] = base64.b64encode(job_bytes).decode('ascii')
         except Exception as e:
             frappe.db.update("Label Printer Job", job['name'], {
                 "status": "Failed",
                 "status_message": traceback.format_exc(),
             })
-            return
+            continue
 
         useful_jobs.append(job)
         frappe.db.set_value("Label Printer Job", job['name'], "status", "Printing")

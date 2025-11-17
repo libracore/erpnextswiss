@@ -91,7 +91,7 @@
    "fieldtype": "Column Break"
   },
   {
-   "depends_on": "eval:doc.printing_method=='CUPS via client script'",
+   "depends_on": "eval:doc.printing_method=='Via client script'",
    "description": "A printer group consists of all printers that are reachable via the same on-site host (running a client script).",
    "fieldname": "printer_group",
    "fieldtype": "Link",
@@ -100,27 +100,25 @@
   },
   {
    "default": "203",
-   "depends_on": "eval:doc.printing_method == \"Direct printing\" && doc.accepted_input == \"PDF Files\"",
+   "depends_on": "eval:doc.printing_method == \"Direct printing\" && doc.accepted_input == \"PDF files\"",
    "description": "Used to calculate the printing width of Zebra printers",
    "fieldname": "pdf_direct_dpi",
    "fieldtype": "Int",
    "label": "PDF Direct printing resolution (DPI)"
   },
   {
-   "depends_on": "eval:doc.printing_method == \"Direct printing\"",
    "fieldname": "printer_hostname",
    "fieldtype": "Data",
    "label": "Printer hostname"
   },
   {
    "default": "9100",
-   "depends_on": "eval:doc.printing_method == \"Direct printing\"",
    "fieldname": "printer_port",
    "fieldtype": "Data",
    "label": "Printer port"
   }
  ],
- "modified": "2025-11-17 13:16:18.865910",
+ "modified": "2025-11-17 16:42:28.566562",
  "modified_by": "martin.zoller@libracore.com",
  "module": "ERPNextSwiss",
  "name": "Label Printer",

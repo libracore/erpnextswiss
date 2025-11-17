@@ -11,9 +11,9 @@ class LabelPrinterJob(Document):
 
 	# Trigger to run direct printing jobs in the background on creation
 	def after_insert(self):
+		frappe.db.commit()
 		printer_doc = frappe.get_doc("Label Printer", self.printer)
 		if printer_doc.printing_method == "Direct printing":
-			frappe.db.commit()
 			frappe.enqueue("erpnextswiss.erpnextswiss.print_queue.exec_direct_print_job", print_job=self.name)
 
 	# Trigger to run direct printing jobs again if status is set from Failed to Waiting (by "Retry" button or manually)
@@ -40,7 +40,7 @@ class LabelPrinterJob(Document):
 
 	# Enqueue direct printing job, if triggered above
 	def on_update(self):
+		frappe.db.commit()
 		if getattr(self, "_enqueue_failed_to_waiting", False):
-			frappe.db.commit()
 			frappe.enqueue("erpnextswiss.erpnextswiss.print_queue.exec_direct_print_job", print_job=self.name)
 			self._enqueue_failed_to_waiting = False

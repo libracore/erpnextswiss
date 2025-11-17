@@ -38,11 +38,11 @@
   },
   {
    "fieldname": "status_message",
-   "fieldtype": "Data",
+   "fieldtype": "Small Text",
    "label": "Status Message"
   }
  ],
- "modified": "2025-11-13 00:45:38.329151",
+ "modified": "2025-11-17 13:08:44.878689",
  "modified_by": "martin.zoller@libracore.com",
  "module": "ERPNextSwiss",
  "name": "Label Printer Job",

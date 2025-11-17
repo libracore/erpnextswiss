@@ -7,29 +7,40 @@ import frappe
 from frappe.model.document import Document
 
 class LabelPrinterJob(Document):
+	_enqueue_failed_to_waiting = False
+
+	# Trigger to run direct printing jobs in the background on creation
 	def after_insert(self):
 		printer_doc = frappe.get_doc("Label Printer", self.printer)
 		if printer_doc.printing_method == "Direct printing":
+			frappe.db.commit()
 			frappe.enqueue("erpnextswiss.erpnextswiss.print_queue.exec_direct_print_job", print_job=self.name)
-		else:
-			group = getattr(printer_doc, "printer_group", None)
-			if group:
-				room = "label_printer_group:{group}".format(group=group)
-			else:
-				# fallback room per-printer
-				room = "label_printer:{printer}".format(printer=self.printer)
 
-			job_data = {
-				"name": self.name,
-				"printer": self.printer,
-				"raw_data": self.raw_data,
-				"pdf_file": self.pdf_file,
-				"creation": self.creation,
-			}
-			if job_data['pdf_file']:
-				job_data['pdf_url'] = frappe.db.get_value("File", job_data['pdf_file'], "file_url")
+	# Trigger to run direct printing jobs again if status is set from Failed to Waiting (by "Retry" button or manually)
+	def before_save(self):
+		# Clear status message for waiting jobs
+		if self.status == "Waiting":
+			self.status_message = ''
 
-			try:
-				frappe.publish_realtime(event="label_printer_job", message=job_data, room=room)
-			except Exception:
-				frappe.log_error(frappe.get_traceback(), "Label Printer Job: publish_realtime failed")
+		# Only proceed for updates, not new docs
+		if self.get("__islocal"):
+			return
+
+		# Only relevant for jobs with direct printing
+		printing_method = frappe.db.get_value("Label Printer", self.printer, "printing_method")
+		if printing_method != "Direct printing":
+			return
+
+		# Fetch previous status from DB
+		prev_status = frappe.db.get_value("Label Printer Job", self.name, "status")
+
+		if prev_status == "Failed" and self.status == "Waiting":
+			# mark to enqueue after commit (otherwise the job status might still be "Failed" when the job runs)
+			self._enqueue_failed_to_waiting = True
+
+	# Enqueue direct printing job, if triggered above
+	def on_update(self):
+		if getattr(self, "_enqueue_failed_to_waiting", False):
+			frappe.db.commit()
+			frappe.enqueue("erpnextswiss.erpnextswiss.print_queue.exec_direct_print_job", print_job=self.name)
+			self._enqueue_failed_to_waiting = False

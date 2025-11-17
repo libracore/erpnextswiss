@@ -2,6 +2,7 @@
 # License: GNU General Public License v3. See license.txt
 import time, socket, base64
 import frappe
+import traceback
 from frappe import _
 from frappe.utils import today, add_days
 from frappe.utils.file_manager import save_file, get_file, remove_file_by_url
@@ -89,12 +90,14 @@ def job_to_raw_bytes(print_job):
 def exec_direct_print_job(print_job):
     job_doc = frappe.get_doc("Label Printer Job", print_job)
     if job_doc.status != "Waiting":
+        frappe.log_error(_("Unexpected job status: {0}").format(job_doc.status), _("Print job execution failed"))
         return
     label_printer = frappe.get_doc("Label Printer", job_doc.printer)
     if label_printer.printing_method != "Direct printing":
-        job_doc.status = "Failed"
-        job_doc.status_message = "Invalid job for direct printing"
-        job_doc.save()
+        frappe.db.update("Label Printer Job", print_job, {
+            "status": "Failed",
+            "status_message": "Invalid job for direct printing",
+        })
         return
 
     # Obtain data from DB and/or PDF file
@@ -102,14 +105,18 @@ def exec_direct_print_job(print_job):
 
     # Send data to printer
     try:
+        frappe.db.set_value("Label Printer Job", print_job, "status", "Printing")
         soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        soc.connect((label_printer.printer_hostname, label_printer.printer_port))
+        port = int(label_printer.printer_port) or 9100
+        soc.connect((label_printer.printer_hostname, port))
         soc.sendall(job_bytes)
         soc.close()
+        frappe.db.set_value("Label Printer Job", print_job, "status", "Printed")
     except Exception as e:
-        job_doc.status = "Failed"
-        job_doc.status_message = e
-        job_doc.save()
+        frappe.db.update("Label Printer Job", print_job, {
+            "status": "Failed",
+            "status_message": traceback.format_exc(),
+        })
 
 
 LONG_POLL_SECONDS = 60
@@ -181,9 +188,9 @@ def _fetch_waiting_jobs_for_printers(printer_names, limit):
             job_bytes = job_to_raw_bytes(job['name'])
             job['data_base64'] = base64.b64encode(job_bytes)
         except Exception as e:
-            frappe.db.set_values("Label Printer Job", job['name'], {
+            frappe.db.update("Label Printer Job", job['name'], {
                 "status": "Failed",
-                "status_message": e,
+                "status_message": traceback.format_exc(),
             })
             return
 

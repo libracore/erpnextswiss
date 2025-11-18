@@ -40,10 +40,11 @@
    "fieldtype": "Link",
    "label": "Customer",
    "options": "Customer",
-   "reqd": 1,
-   "read_only": 1
+   "read_only": 1,
+   "reqd": 1
   },
   {
+   "bold": 1,
    "fetch_from": "customer.customer_name",
    "fieldname": "customer_name",
    "fieldtype": "Data",
@@ -114,6 +115,7 @@
    "options": "currency"
   },
   {
+   "bold": 1,
    "fieldname": "total_with_charge",
    "fieldtype": "Currency",
    "label": "Total with Charge",
@@ -161,7 +163,7 @@
   }
  ],
  "is_submittable": 1,
- "modified": "2025-07-15 18:22:04.129616",
+ "modified": "2025-11-18 13:36:54.830649",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "Payment Reminder",
@@ -170,7 +172,6 @@
   {
    "amend": 1,
    "cancel": 1,
-   "create": 0,
    "delete": 1,
    "email": 1,
    "export": 1,
@@ -185,7 +186,6 @@
   {
    "amend": 1,
    "cancel": 1,
-   "create": 0,
    "delete": 1,
    "email": 1,
    "export": 1,
@@ -200,7 +200,6 @@
   {
    "amend": 1,
    "cancel": 1,
-   "create": 0,
    "delete": 1,
    "email": 1,
    "export": 1,

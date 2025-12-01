@@ -82,7 +82,7 @@ def generate_payment_file(payments):
             payment_content += make_line("      <Dbtr>")
             # debitor name
             payment_content += make_line("        <Nm>" +
-                cgi.escape(payment_record.company) + "</Nm>")
+                html.escape(payment_record.company) + "</Nm>")
             # postal address (recommendadtion: do not use)
             #content += make_line("        <PstlAdr>")
             #content += make_line("          <Ctry>CH</Ctry>")
@@ -399,18 +399,18 @@ def generate_payment_file_from_payroll(payroll_entry):
         city = get_city(lines[1])
             
         payments.append({
-            'payment_id': cgi.escape("PMTINF-{0}".format(salary_slip['name'])),
+            'payment_id': html.escape("PMTINF-{0}".format(salary_slip['name'])),
             'execution_date': salary_slip['posting_date'],
-            'instruction_id': cgi.escape("INSTRID-{0}".format(salary_slip['name'])),
-            'endtoend_id': cgi.escape("{0}".format(salary_slip['name'])),
+            'instruction_id': html.escape("INSTRID-{0}".format(salary_slip['name'])),
+            'endtoend_id': html.escape("{0}".format(salary_slip['name'])),
             'transaction_type': "SEPA",
             'amount': salary_slip['rounded_total'],
             'currency': company.default_currency,
-            'receiver_name': cgi.escape(salary_slip['employee_name']),
-            'receiver_street': cgi.escape(street),
-            'receiver_building': cgi.escape(building),
-            'receiver_city': cgi.escape(city),
-            'receiver_pincode': cgi.escape(pincode),
+            'receiver_name': html.escape(salary_slip['employee_name']),
+            'receiver_street': html.escape(street),
+            'receiver_building': html.escape(building),
+            'receiver_city': html.escape(city),
+            'receiver_pincode': html.escape(pincode),
             'receiver_country': country_code,
             'receiver_iban': salary_slip['bank_account_no'].replace(" ", "")
         })
@@ -421,7 +421,7 @@ def generate_payment_file_from_payroll(payroll_entry):
             
     pain001_data = {
         'msg_id': "MSG-" + payroll_record.name,
-        'company': cgi.escape(payroll_record.company),
+        'company': html.escape(payroll_record.company),
         'payments': payments,
         'paid_from_iban': paid_from,
         'paid_from_bic': frappe.get_value('Account', payroll_record.payment_account, 'bic')

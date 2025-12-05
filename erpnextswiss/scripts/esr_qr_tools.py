@@ -85,6 +85,7 @@ and add it up to 26 digits.
 def get_esr_raw_from_document_name(document_name):
     match = re.search(r'-(\d+)-', document_name)
     reference_raw = (match.group(1)).rjust(26, "0")
+    return reference_raw
 
 """
 This function takes a 26 digit reference raw and adds the check digit.

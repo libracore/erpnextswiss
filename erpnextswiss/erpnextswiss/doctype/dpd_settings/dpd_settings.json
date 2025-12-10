@@ -1,0 +1,97 @@
+{
+ "creation": "2025-12-10 17:39:15.989077",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "host",
+  "enabled",
+  "debug",
+  "col_main",
+  "delis_id",
+  "password",
+  "language",
+  "sec_details",
+  "paper_format",
+  "sender_depot"
+ ],
+ "fields": [
+  {
+   "fieldname": "host",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Host",
+   "reqd": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled"
+  },
+  {
+   "fieldname": "col_main",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "delis_id",
+   "fieldtype": "Data",
+   "label": "delisID"
+  },
+  {
+   "fieldname": "password",
+   "fieldtype": "Password",
+   "label": "Password"
+  },
+  {
+   "default": "de_CH",
+   "fieldname": "language",
+   "fieldtype": "Data",
+   "label": "Language"
+  },
+  {
+   "default": "0",
+   "fieldname": "debug",
+   "fieldtype": "Check",
+   "label": "Debug"
+  },
+  {
+   "fieldname": "sec_details",
+   "fieldtype": "Section Break",
+   "label": "Details"
+  },
+  {
+   "default": "A6",
+   "fieldname": "paper_format",
+   "fieldtype": "Data",
+   "label": "Paper Format"
+  },
+  {
+   "fieldname": "sender_depot",
+   "fieldtype": "Data",
+   "label": "Sender Depot"
+  }
+ ],
+ "issingle": 1,
+ "modified": "2025-12-10 19:50:59.179073",
+ "modified_by": "Administrator",
+ "module": "ERPNextSwiss",
+ "name": "DPD Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

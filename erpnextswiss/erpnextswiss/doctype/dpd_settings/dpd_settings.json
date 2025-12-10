@@ -1,0 +1,71 @@
+{
+ "creation": "2025-12-10 17:39:15.989077",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "host",
+  "enabled",
+  "col_main",
+  "delis_id",
+  "password",
+  "language"
+ ],
+ "fields": [
+  {
+   "fieldname": "host",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Host",
+   "reqd": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled"
+  },
+  {
+   "fieldname": "col_main",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "delis_id",
+   "fieldtype": "Data",
+   "label": "delisID"
+  },
+  {
+   "fieldname": "password",
+   "fieldtype": "Password",
+   "label": "Password"
+  },
+  {
+   "default": "de_CH",
+   "fieldname": "language",
+   "fieldtype": "Data",
+   "label": "Language"
+  }
+ ],
+ "issingle": 1,
+ "modified": "2025-12-10 17:39:15.989077",
+ "modified_by": "Administrator",
+ "module": "ERPNextSwiss",
+ "name": "DPD Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

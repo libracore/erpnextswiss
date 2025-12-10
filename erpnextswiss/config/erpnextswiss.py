@@ -237,6 +237,12 @@ def get_data():
                     },
                     {
                        "type": "doctype",
+                       "name": "DPD Settings",
+                       "label": _("DPD Settings"),
+                       "description": _("DPD Settings")                   
+                    },
+                    {
+                       "type": "doctype",
                        "name": "Datatrans Settings",
                        "label": _("Datatrans Settings"),
                        "description": _("Datatrans Settings")                   

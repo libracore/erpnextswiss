@@ -112,7 +112,7 @@ class DPD_API:
                                 "city": pickup_address.city
                             },
                             "recipient": {
-                                "name1": shipment_doc.delivery_customer,
+                                "name1": frappe.get_value("Customer", shipment_doc.delivery_customer, "customer_name") if frappe.db.exists("Customer", shipment_doc.delivery_customer) else shipment_doc.delivery_customer,
                                 "street": delivery_address.address_line1,
                                 "country": frappe.get_value("Country", delivery_address.country, "code").upper(),
                                 "zipCode": delivery_address.pincode,

@@ -7,6 +7,7 @@ import requests
 import json
 import base64
 from frappe.utils.file_manager import save_file
+from frappe.utils import cint
 
 class DPD_API:
     def __init__(self):
@@ -17,6 +18,8 @@ class DPD_API:
         self.token = None
         self.paper_format = "A6"
         self.sender_depot = None
+        self.debug = False
+        self.enabled = False
         self.load_credentials()
         return
         
@@ -26,9 +29,11 @@ class DPD_API:
             self.host = (settings.host or "").rstrip("/")
             self.delis_id = settings.delis_id
             self.password = settings.get_password("password")
-            self.lanugage = settings.language
+            self.language = settings.language
             self.paper_format = settings.paper_format or "A6"
             self.sender_depot = settings.sender_depot
+            self.debug = cint(settings.debug)
+            self.enabled = cint(settings.enabled)
         except Exception as e:
             frappe.throw("Unable to find DPD settings: {0}".format(e))
         return
@@ -45,8 +50,13 @@ class DPD_API:
           'Content-Type': 'application/json'
         }
         
+        if self.debug:
+            frappe.log_error("{0}\n\n{1}".format(headers, payload), "DPD Shipment Auth (Debug)")
         response = requests.request("POST", url, headers=headers, data=payload)
 
+        if self.debug:
+            frappe.log_error("{0}".format(response.text), "DPD Shipment Auth Response (Debug)")
+            
         if response.status_code == requests.codes.ok:
             self.token = response.json().get("getAuthResponse").get("return").get("authToken")
         else:
@@ -55,18 +65,29 @@ class DPD_API:
         return
     
     def store_order(self, shipment):
+        if not self.enabled:
+            frappe.log_error("DPD is disabled in DPD settings", "DPD Shipment request")
+            
         if not frappe.db.exists("Shipment", shipment):
             frappe.throw("Invalid shipment: {0}".format(shipment))
         
         if not self.token:
             self.get_auth()
         
+        parcel_id = None
         shipment_doc = frappe.get_doc("Shipment", shipment)
         pickup_address = frappe.get_doc("Address", shipment_doc.pickup_address_name)
         delivery_address = frappe.get_doc("Address", shipment_doc.delivery_address_name)
 
-        url = "{0}}/rest/services/ShipmentService/V3_2/storeOrders".format(self.host)
+        url = "{0}/rest/services/ShipmentService/V3_2/storeOrders".format(self.host)
 
+        parcels = []
+        for p in shipment_doc.shipment_parcel:
+            parcels.append({
+                'volume': "{l:03d}{w:03d}{h:03d}".format(l=p.length, w=p.width, h=p.height),
+                'weight': cint(p.weight * 100)                          # int in 10 gram units
+            })
+                
         payload = json.dumps({
             "authentication": {
                 "delisId": self.delis_id,
@@ -112,18 +133,18 @@ class DPD_API:
             'Content-Type': 'application/json'
         }
 
+        if self.debug:
+            frappe.log_error("{0}\n\n{1}".format(headers, payload), "DPD Shipment (Debug)")
         response = requests.request("POST", url, headers=headers, data=payload)
 
+        if self.debug:
+            frappe.log_error("{0}".format(response.text), "DPD Shipment Response (Debug)")
+            
         if response.status_code == requests.codes.ok:
             response_json = response.json()
-            pdf_base64 = response_json.get("orderResult").get("parcellabelsPDF").get("authToken")
-            mps_id = response_json.get("orderResult").get("shipmentResponses").get("identificationNumber")
-            parcel_id = response_json.get("orderResult").get("shipmentResponses").get("parcelInformation").get("parcelLabelNumber")
-
-            # update record
-            shipment_doc.shipment_id = parcel_id
-            shipment.save()
-            frappe.db.commit()
+            pdf_base64 = response_json.get("orderResult").get("parcellabelsPDF")
+            mps_id = response_json.get("orderResult").get("shipmentResponses")[0].get("identificationNumber")
+            parcel_id = response_json.get("orderResult").get("shipmentResponses")[0].get("parcelInformation")[0].get("parcelLabelNumber")
 
             # attach pdf
             pdf = base64.b64decode(pdf_base64)
@@ -131,12 +152,12 @@ class DPD_API:
             save_file(file_name, pdf, "Shipment", shipment, is_private=1)
 
         else:
-            response.rasie_for_status()
+            response.raise_for_status()
 
-        return
+        return parcel_id
         
 @frappe.whitelist()
 def transmit_to_dpd(shipment):
     dpd = DPD_API()
-    dpd.store_order(shipment)
-    return
+    parcel_id = dpd.store_order(shipment)
+    return parcel_id

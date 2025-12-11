@@ -17,6 +17,7 @@ class DPD_API:
         self.language = None
         self.token = None
         self.paper_format = "A6"
+        self.product = "B2C"
         self.sender_depot = None
         self.debug = False
         self.enabled = False
@@ -31,6 +32,7 @@ class DPD_API:
             self.password = settings.get_password("password")
             self.language = settings.language
             self.paper_format = settings.paper_format or "A6"
+            self.product = settings.product or "B2C"
             self.sender_depot = settings.sender_depot
             self.debug = cint(settings.debug)
             self.enabled = cint(settings.enabled)
@@ -103,7 +105,7 @@ class DPD_API:
                     {
                         "generalShipmentData": {
                             "sendingDepot": self.sender_depot,
-                            "product": "B2B",
+                            "product": self.product,
                             "sender": {
                                 "name1": shipment_doc.pickup_company,
                                 "street": pickup_address.address_line1,

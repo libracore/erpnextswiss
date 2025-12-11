@@ -13,7 +13,9 @@
   "language",
   "sec_details",
   "paper_format",
-  "sender_depot"
+  "sender_depot",
+  "col_details",
+  "product"
  ],
  "fields": [
   {
@@ -70,10 +72,20 @@
    "fieldname": "sender_depot",
    "fieldtype": "Data",
    "label": "Sender Depot"
+  },
+  {
+   "fieldname": "col_details",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "B2C",
+   "fieldname": "product",
+   "fieldtype": "Data",
+   "label": "Product"
   }
  ],
  "issingle": 1,
- "modified": "2025-12-10 19:50:59.179073",
+ "modified": "2025-12-11 23:12:10.089207",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "DPD Settings",

@@ -89,7 +89,12 @@ class DPD_API:
                 'volume': "{l:03d}{w:03d}{h:03d}".format(l=p.length, w=p.width, h=p.height),
                 'weight': cint(p.weight * 100)                          # int in 10 gram units
             })
-                
+        
+        # use recipient name from shipment if available, otherwise, fall back to customer name
+        recipient_name = shipment_doc.get("recipient_name") \
+            or frappe.get_value("Customer", shipment_doc.delivery_customer, "customer_name") if frappe.db.exists("Customer", shipment_doc.delivery_customer) else shipment_doc.delivery_customer,
+        product = shipment_doc.get("product") or self.product           # use product from shipment if avalable or fallback from settings
+        
         payload = json.dumps({
             "authentication": {
                 "delisId": self.delis_id,
@@ -105,7 +110,7 @@ class DPD_API:
                     {
                         "generalShipmentData": {
                             "sendingDepot": self.sender_depot,
-                            "product": self.product,
+                            "product": product,
                             "sender": {
                                 "name1": shipment_doc.pickup_company,
                                 "street": pickup_address.address_line1,
@@ -114,7 +119,7 @@ class DPD_API:
                                 "city": pickup_address.city
                             },
                             "recipient": {
-                                "name1": frappe.get_value("Customer", shipment_doc.delivery_customer, "customer_name") if frappe.db.exists("Customer", shipment_doc.delivery_customer) else shipment_doc.delivery_customer,
+                                "name1": recipient_name,
                                 "street": delivery_address.address_line1,
                                 "country": frappe.get_value("Country", delivery_address.country, "code").upper(),
                                 "zipCode": delivery_address.pincode,

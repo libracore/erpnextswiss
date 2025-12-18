@@ -94,7 +94,11 @@ class DPD_API:
         recipient_name = shipment_doc.get("recipient_name") \
             or frappe.get_value("Customer", shipment_doc.delivery_customer, "customer_name") if frappe.db.exists("Customer", shipment_doc.delivery_customer) else shipment_doc.delivery_customer
         product = shipment_doc.get("product") or self.product           # use product from shipment if avalable or fallback from settings
-        
+        if shipment_doc.delivery_contact_name:
+            recipient_phone = frappe.get_value("Contact", shipment_doc.delivery_contact_name, "phone")
+        else:
+            recipient_phone = None
+            
         payload = json.dumps({
             "authentication": {
                 "delisId": self.delis_id,
@@ -116,14 +120,17 @@ class DPD_API:
                                 "street": pickup_address.address_line1,
                                 "country": frappe.get_value("Country", pickup_address.country, "code").upper(),
                                 "zipCode": pickup_address.pincode,
-                                "city": pickup_address.city
+                                "city": pickup_address.city,
+                                "email": shipment_doc.pickup_contact_email or ""
                             },
                             "recipient": {
                                 "name1": recipient_name,
                                 "street": delivery_address.address_line1,
                                 "country": frappe.get_value("Country", delivery_address.country, "code").upper(),
                                 "zipCode": delivery_address.pincode,
-                                "city": delivery_address.city
+                                "city": delivery_address.city,
+                                "email": shipment_doc.delivery_contact_email or "",
+                                "phone": recipient_phone or ""
                             }
                         },
                         "parcels": [

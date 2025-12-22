@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018-2022, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2018-2025, libracore (https://www.libracore.com) and contributors
 # Part of this work is derived from pdf_on_submit, Copyright (C) 2019  Raffael Meyer <raffael@alyf.de>
 # For license information, please see license.txt
 import frappe
 from frappe import _
 from frappe.core.api.file import create_new_folder
-from frappe.utils.file_manager import save_file
 import hashlib
 import time
 from frappe.utils import cint
@@ -39,10 +38,12 @@ def enqueue(args):
 def execute(doctype, name, title, lang=None, print_format=None, hashname=None, is_private=1, file_name=None):
     if lang:
         frappe.local.lang = lang
+
     doctype_folder = create_folder(_(doctype), "Home")
     title_folder = create_folder(title, doctype_folder)
 
     pdf_data = get_pdf_data(doctype, name, print_format)
+
     save_and_attach(pdf_data, doctype, name, title_folder, hashname, is_private, file_name)
     return
 
@@ -87,7 +88,7 @@ def save_and_attach(content, to_doctype, to_name, folder, hashname=None, is_priv
         "file_name": file_name,
         "folder": folder,
         "is_private": is_private,
-        "content": content,
+        "content": content
     })
     f.flags.ignore_permissions = True
     try:

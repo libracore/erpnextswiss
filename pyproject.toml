@@ -26,3 +26,10 @@ dependencies = [
 Homepage = "https://git.libracore.io/libracore/erpnextswiss"
 Repository = "https://git.libracore.io/libracore/erpnextswiss.git"
 "Bug Reports" = "https://git.libracore.io/libracore/erpnextswiss/issues"
+
+[deploy.dependencies.apt]
+packages = [
+    "ffmpeg",
+    "libsm6",
+    "libxext6",
+]

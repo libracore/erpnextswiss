@@ -31,7 +31,7 @@
 # Updated 19 April 2021
 # Please validate your results with NAVREF on-line service: http://www.swisstopo.admin.ch/internet/swisstopo/en/home/apps/calc/navref.html (difference ~ 1-2m)
 
-# Updated 2024 by libracore AG to resolve elevation data (height above sea level)
+# Updated 2024-2026 by libracore AG to resolve elevation data (height above sea level)
 
 import math
 import frappe

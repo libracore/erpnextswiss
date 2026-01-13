@@ -1,5 +1,5 @@
 frappe.ui.form.on('Purchase Invoice', {
-    refresh(frm) {
+    'refresh': function(frm) {
         cur_frm.dashboard.clear_comment();
         if (frm.doc.__islocal||cur_frm.doc.docstatus == '0') {
             frm.add_custom_button(__("Scan Invoice"), function() {
@@ -15,7 +15,7 @@ frappe.ui.form.on('Purchase Invoice', {
         
         check_supplier_payment_details(frm);
     },
-    validate: function(frm) {
+    'validate': function(frm) {
         if (frm.doc.payment_type === "ESR") {
             if (frm.doc.esr_reference_number) {
                 if ((!frm.doc.esr_reference_number.startsWith("RF")) && (!check_esr(frm.doc.esr_reference_number))) {
@@ -67,12 +67,19 @@ frappe.ui.form.on('Purchase Invoice', {
                 }
             }
         }
+        // test valid characters in supplier invoice number
+        if (frm.doc.bill_no) {
+            if (!/^([A-Za-z0-9]|[+\?\/\-:().,'\p{Zs}])*$/u.test(frm.doc.bill_no)) {
+                frappe.msgprint( __("The supplier invoice number <b>{0}</b> contains invalid characters.").replace("{0}", frm.doc.bill_no), __("Validation") );
+                frappe.validated = false;
+            }
+        }
     },
-    supplier: function(frm) {
+    'supplier': function(frm) {
         pull_supplier_defaults(frm);
         check_supplier_payment_details(frm);
     },
-    payment_type: function(frm) {
+    'payment_type': function(frm) {
         check_supplier_payment_details(frm);
     }
 });

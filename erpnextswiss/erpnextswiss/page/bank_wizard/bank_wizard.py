@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2017-2025, libracore and contributors
+# Copyright (c) 2017-2026, libracore and contributors
 # License: AGPL v3. See LICENCE
 
 import frappe
@@ -151,8 +151,9 @@ def get_bank_accounts():
     return {'accounts': selectable_accounts }
 
 @frappe.whitelist()
-def get_default_accounts(bank_account):
-    company = frappe.get_value("Account", bank_account, "company")
+def get_default_accounts(bank_account=None, company=None):
+    if bank_account:
+        company = frappe.get_value("Account", bank_account, "company")
     receivable_account = frappe.get_value('Company', company, 'default_receivable_account')
     payable_account = frappe.get_value('Company', company, 'default_payable_account')
     expense_payable_account = frappe.get_value('Company', company, 'default_expense_claim_payable_account') or payable_account
@@ -324,36 +325,40 @@ def read_camt_transactions(transaction_entries, account, settings, debug=False, 
 
                 # --- find unique reference
                 try:
-                    # try to use the account service reference
-                    unique_reference = transaction_soup.txdtls.refs.acctsvcrref.get_text()
+                    # try to use the unique end-to-end transaction reference
+                    unique_reference = transaction_soup.txdtls.refs.uetr.get_text()
                 except:
-                    # fallback: use tx id
                     try:
-                        unique_reference = transaction_soup.txid.get_text()
+                        # try to use the account service reference
+                        unique_reference = transaction_soup.txdtls.refs.acctsvcrref.get_text()
                     except:
-                        # fallback to pmtinfid
+                        # fallback: use tx id
                         try:
-                            unique_reference = transaction_soup.pmtinfid.get_text()
+                            unique_reference = transaction_soup.txid.get_text()
                         except:
+                            # fallback to pmtinfid
                             try:
-                                if entry_soup.ntryref:
-                                    unique_reference = entry_soup.ntryref.get_text()
-                                elif global_account_service_reference != "":
-                                    # fallback to group account service reference plus transaction_count
-                                    unique_reference = "{0}-{1}".format(global_account_service_reference, transaction_count)
-                                else:
-                                    # fallback ntry reference or booking code (wise) (for banks this is often not unique)
-                                    unique_reference = entry_soup.bktxcd.prtry.cd.get_text()
+                                unique_reference = transaction_soup.pmtinfid.get_text()
                             except:
-                                # fallback to ustrd (do not use)
-                                # unique_reference = transaction_soup.ustrd.get_text()
-                                # fallback to hash
-                                amount = transaction_soup.txdtls.amt.get_text()
-                                party = transaction_soup.nm.get_text()
-                                code = "{0}:{1}:{2}".format(date, amount, party)
-                                if settings.debug_mode:
-                                    frappe.log_error("Code: {0}".format(code))
-                                unique_reference = hashlib.md5(code.encode("utf-8")).hexdigest()
+                                try:
+                                    if entry_soup.ntryref:
+                                        unique_reference = entry_soup.ntryref.get_text()
+                                    elif global_account_service_reference != "":
+                                        # fallback to group account service reference plus transaction_count
+                                        unique_reference = "{0}-{1}".format(global_account_service_reference, transaction_count)
+                                    else:
+                                        # fallback ntry reference or booking code (wise) (for banks this is often not unique)
+                                        unique_reference = entry_soup.bktxcd.prtry.cd.get_text()
+                                except:
+                                    # fallback to ustrd (do not use)
+                                    # unique_reference = transaction_soup.ustrd.get_text()
+                                    # fallback to hash
+                                    amount = transaction_soup.txdtls.amt.get_text()
+                                    party = transaction_soup.nm.get_text()
+                                    code = "{0}:{1}:{2}".format(date, amount, party)
+                                    if settings.debug_mode:
+                                        frappe.log_error("Code: {0}".format(code))
+                                    unique_reference = hashlib.md5(code.encode("utf-8")).hexdigest()
                 # --- find amount and currency
                 try:
                     # try to find as <TxAmt>
@@ -767,12 +772,44 @@ def read_camt_transactions(transaction_entries, account, settings, debug=False, 
                     }
                     txns.append(new_txn)
 
+    # check against bank wizard patterns
+    patterns = frappe.get_all("Bank Wizard Pattern", filters={'disabled': 0}, fields=['name', 'target_field', 'operator', 'value'])
+    if len(patterns) > 0:
+        FIELD_MAP = {
+            "Transaction Reference": "transaction_reference",
+            "Party Name": "party_name",
+            "Party Address": "party_address",
+            "Amount": "amount",
+            "Unallocated_amount": "unallocated_amount"
+        }
+        for txn in txns:
+            txn['unallocated_amount'] = flt(txn['amount']) - flt(txn['matched_amount'])
+            txn['amount'] = flt(txn['amount'])
+            for p in patterns:
+                frappe.log_error("{0}: {1}".format(p['value'], type(p['value'])))
+                try:
+                    if p['operator'] == "=":
+                        if (type(txn[FIELD_MAP[p['target_field']]]) == float and txn[FIELD_MAP[p['target_field']]] == flt(p['value'])) \
+                            or txn[FIELD_MAP[p['target_field']]] == p['value']:
+                        
+                            txn['pattern'] = p['name']
+                        break
+                    elif p['operator'] == "includes" and p['value'] in txn[FIELD_MAP[p['target_field']]]:
+                        txn['pattern'] = p['name']
+                        break
+                    elif p['operator'] == "&lt;" and type(txn[FIELD_MAP[p['target_field']]]) == float and flt(txn[FIELD_MAP[p['target_field']]]) < flt(p['value']):
+                        txn['pattern'] = p['name']
+                        break
+                except Exception as err:
+                    frappe.log_error( err , "Bank Wizard: Pattern Error")
+                
+                
     return txns
 
 @frappe.whitelist()
 def make_payment_entry(amount, date, reference_no, paid_from=None, paid_to=None, type="Receive",
     party=None, party_type=None, references=None, remarks=None, auto_submit=False, exchange_rate=1,
-    party_iban=None, company=None):
+    party_iban=None, company=None, pattern=None):
     # assert list
     if references:
         references = ast.literal_eval(references)
@@ -864,6 +901,23 @@ def make_payment_entry(amount, date, reference_no, paid_from=None, paid_to=None,
     if references:
         for reference in references:
             create_reference(new_entry.name, reference, reference_type)
+    # pattern matching
+    if pattern:
+        pattern_entry = frappe.get_doc("Payment Entry", new_entry.name) # include changes from reference
+        pattern_definition = frappe.get_doc("Bank Wizard Pattern", pattern)
+        amount = pattern_entry.unallocated_amount or pattern_entry.difference_amount
+        if pattern_entry.payment_type == "Receive":
+            amount = (-1) * amount
+        for deduction in pattern_definition.deductions:
+            if deduction.company == company:
+                pattern_entry.append("deductions", {
+                    'account': deduction.deduction_account,
+                    'cost_center': deduction.deduction_cost_center,
+                    'amount': amount
+                })
+            pattern_entry.save()
+            frappe.db.commit()
+            break
     # automatically submit if enabled
     if auto_submit:
         matched_entry = frappe.get_doc("Payment Entry", new_entry.name) # include changes from reference

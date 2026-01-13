@@ -41,8 +41,8 @@ class ebicsStatement(Document):
         account_matches = frappe.db.sql("""
             SELECT `name`, `company`
             FROM `tabAccount`
-            WHERE `iban` = "{iban}" AND `account_type` = "Bank";
-            """.format(iban=meta.get('iban')), as_dict=True)
+            WHERE REPLACE(`iban`, " ", "") = "{iban}" AND `account_type` = "Bank";
+            """.format(iban=(meta.get('iban') or "").replace(" ", "")), as_dict=True)
         print("{0}".format(account_matches))
         if len(account_matches) > 0:
             self.account = account_matches[0]['name']
@@ -98,7 +98,7 @@ class ebicsStatement(Document):
         """
         Analyse transactions and if possible, match them
         """
-        default_accounts = get_default_accounts(bank_account=self.account)
+        default_accounts = get_default_accounts(company=self.company)
         
         for t in self.transactions:
             # if matched amount equals the transaction amount, create and submit payment

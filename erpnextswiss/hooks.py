@@ -33,22 +33,24 @@ app_include_js = [
 # include js in doctype views
 # doctype_js = {"doctype" : "public/js/doctype.js"}
 doctype_js = {
-    "Item" :            "public/js/item.js",
-    "Quotation" :       "public/js/quotation.js",
-    "Sales Order" :     "public/js/sales_order.js",
-    "Sales Invoice" :   "public/js/sales_invoice.js",
-    "Purchase Invoice" :   "public/js/purchase_invoice.js",
-    "Fiscal Year":      "public/js/fiscal_year.js",
-    "Supplier":         "public/js/supplier.js",
-    "Customer":         "public/js/customer.js",
-    "Address":          "public/js/address.js",
-    "Holiday List":     "public/js/holiday_list.js",
-    "Shipment":         "public/js/shipment.js"
+    "Item" :                "public/js/item.js",
+    "Quotation" :           "public/js/quotation.js",
+    "Sales Order" :         "public/js/sales_order.js",
+    "Sales Invoice" :       "public/js/sales_invoice.js",
+    "Purchase Invoice" :    "public/js/purchase_invoice.js",
+    "Fiscal Year":          "public/js/fiscal_year.js",
+    "Supplier":             "public/js/supplier.js",
+    "Customer":             "public/js/customer.js",
+    "Address":              "public/js/address.js",
+    "Holiday List":         "public/js/holiday_list.js",
+    "Shipment":             "public/js/shipment.js"
 }
+
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 doctype_list_js = {
     "Purchase Invoice" : "public/js/purchase_invoice_list.js"
 }
+
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
 

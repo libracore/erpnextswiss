@@ -237,6 +237,12 @@ def get_data():
                     },
                     {
                        "type": "doctype",
+                       "name": "DPD Settings",
+                       "label": _("DPD Settings"),
+                       "description": _("DPD Settings")                   
+                    },
+                    {
+                       "type": "doctype",
                        "name": "Datatrans Settings",
                        "label": _("Datatrans Settings"),
                        "description": _("Datatrans Settings")                   
@@ -258,6 +264,12 @@ def get_data():
                        "name": "GitLab Settings",
                        "label": _("GitLab"),
                        "description": _("GitLab")                   
+                    },
+                    {
+                       "type": "doctype",
+                       "name": "Mautic Settings",
+                       "label": _("Mautic"),
+                       "description": _("Mautic")                   
                     },
                     {
                        "type": "doctype",

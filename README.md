@@ -22,9 +22,8 @@ The software comes as-is without any warranty.
 Requires an ERPNext server instance (refer to [https://github.com/frappe/erpnext](https://github.com/frappe/erpnext))
 
 ## Compatibility
-ERPNextSwiss is tested against libracore and ERPNext v15. There are compatibility branches for v11/v12/v13/v14/v15.
-
-ERPNextSwiss is also compatible with Dokos ([https://dokos.io](https://dokos.io))
+ERPNextSwiss is tested against libracore and ERPNext v2023/v2025. 
+There are compatibility branches for v11 (for user who prefer the old desk) and v13/v14/v15.
 
 ## Installation
 From the frappe-bench folder, execute
@@ -86,13 +85,17 @@ In case you update from the sources and observe an error, make sure to update de
     * EBICS: electronic banking internet communication standard, allows to fully automate bank integration
     * ZUGFeRD
     * Interface to Zefix
-    * Datatrans interface for payments
-    * Payrexx payment interface
+    * Payments
+        * Datatrans interface for payments
+        * Payrexx payment interface
     * EDI connector: allows to fully integrate EDI exchange (PRICAT, DESADV, ORDERS, SLSRPT, ...)
     * NextCloud:
         * Update contacts from ERPNext to NextCloud address book
-    * Interface to Planzer logistics
+    * Logistics:
+        * Interface to Planzer logistics
+        * Interface to DPD
     * CalDav-feed for CRM (Lead/Customer) and ToDos
+    * Mautic Integration
  * Business Intelligence
     * Data Provider for Looker Studio (refer to the libracore Connector to connect to your data)
  * Productivity

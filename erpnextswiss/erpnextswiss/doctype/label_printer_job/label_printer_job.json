@@ -1,0 +1,71 @@
+{
+ "creation": "2025-11-03 13:50:14.003502",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "printer",
+  "status",
+  "status_message",
+  "raw_data",
+  "pdf_file"
+ ],
+ "fields": [
+  {
+   "fieldname": "printer",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Printer",
+   "options": "Label Printer",
+   "reqd": 1
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "Waiting\nPrinting\nPrinted\nFailed",
+   "reqd": 1
+  },
+  {
+   "fieldname": "raw_data",
+   "fieldtype": "Long Text",
+   "label": "Raw data"
+  },
+  {
+   "fieldname": "pdf_file",
+   "fieldtype": "Attach",
+   "label": "PDF file"
+  },
+  {
+   "fieldname": "status_message",
+   "fieldtype": "Small Text",
+   "label": "Status Message"
+  }
+ ],
+ "modified": "2025-11-17 14:38:47.637757",
+ "modified_by": "martin.zoller@libracore.com",
+ "module": "ERPNextSwiss",
+ "name": "Label Printer Job",
+ "owner": "martin.zoller@libracore.com",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

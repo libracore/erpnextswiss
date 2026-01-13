@@ -257,6 +257,8 @@ class GPSConverter(object):
 @frappe.whitelist()
 def get_swisstopo_url_from_gps(lat, lng, zoom=12, language="de"):
     converter = GPSConverter()
+    lat = flt(lat)
+    lng = flt(lng)
     y = int(converter.WGStoLV95North(lat, lng))
     x = int(converter.WGSToLV95East(lat, lng))
     url = get_swisstopo_url_from_ch(x, y, zoom, language)

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018-2025, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2018-2026, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
 #
 #
@@ -26,6 +26,29 @@ Creates an XML file from a sales invoice
 """
 def create_zugferd_xml(sales_invoice, verify=True):
     try:
+        data = prepare_data(sales_invoice)
+
+        xml = frappe.render_template('erpnextswiss/erpnextswiss/zugferd/en16931.html', data)
+        
+        # verify the generated xml
+        if verify:
+            try:
+                if not xml_check_xsd(xml=xml.encode('utf-8')):
+                    frappe.log_error( _("XML validation failed for {0}").format(sales_invoice), "ZUGFeRD")
+                    return None
+            except Exception as err:
+                frappe.log_error("XML validation error ({2}): {0}\n{1}".format(err, xml, sales_invoice), "ZUGFeRD XSD validation")
+        return xml
+    except Exception as err:
+        frappe.log_error("Failure during XML generation for {1}: {0}".format(err, sales_invoice), "ZUGFeRD")
+        return None
+
+"""
+Function to compile the data sources into a dictionary
+"""
+def prepare_data(sales_invoice):
+    data = {}
+    try:
         # get original document
         sinv = frappe.get_doc("Sales Invoice", sales_invoice)
         customer = frappe.get_doc("Customer", sinv.customer)
@@ -48,7 +71,7 @@ def create_zugferd_xml(sales_invoice, verify=True):
         # compile xml content
         owner = frappe.get_doc("User", sinv.owner)
         delivery_date = sinv.get('delivery_date') or sinv.get('posting_date')
-        data = {
+        data.update({
             'name': html.escape(sinv.name),
             'issue_date': "{year:04d}{month:02d}{day:02d}".format(
               year=sinv.posting_date.year, month=sinv.posting_date.month, day=sinv.posting_date.day),
@@ -82,7 +105,7 @@ def create_zugferd_xml(sales_invoice, verify=True):
             'is_return': cint(sinv.is_return),
             'iban': frappe.get_value("Account", sinv.debit_to, "iban"),
             'tax_category': "S"
-        }
+        })
         if sinv.taxes_and_charges:
             _taxes = frappe.get_doc("Sales Taxes and Charges Template", sinv.taxes_and_charges)
             _tax_category = _taxes.get("tax_category")
@@ -171,17 +194,7 @@ def create_zugferd_xml(sales_invoice, verify=True):
                 'country_code': "CH"
             }         
 
-        xml = frappe.render_template('erpnextswiss/erpnextswiss/zugferd/en16931.html', data)
-        
-        # verify the generated xml
-        if verify:
-            try:
-                if not xml_check_xsd(xml=xml.encode('utf-8')):
-                    frappe.log_error( _("XML validation failed for {0}").format(sales_invoice), "ZUGFeRD")
-                    return None
-            except Exception as err:
-                frappe.log_error("XML validation error ({2}): {0}\n{1}".format(err, xml, sales_invoice), "ZUGFeRD XSD validation")
-        return xml
+        return data
     except Exception as err:
-        frappe.log_error("Failure during XML generation for {1}: {0}".format(err, sales_invoice), "ZUGFeRD")
-        return None
+        frappe.log_error("Failure during data preparation for {1}: {0}".format(err, sales_invoice), "ZUGFeRD")
+        return data

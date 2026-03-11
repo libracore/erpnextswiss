@@ -43,14 +43,14 @@ def get_columns(filters):
     columns = add_activity_type_determination(filters, columns)
     return columns
     
-def get_data_of_employee(filters):
+def get_data_of_employee(filters, ignore_carryover=False):
     if filters.employee:
         employee = frappe.get_doc("Employee", filters.employee)
     else:
         employee_name = get_employee_name(frappe.session.user)
         employee = frappe.get_doc("Employee", employee_name)
         
-    actual = get_actual_time(filters, employee.name)
+    actual = get_actual_time(filters, employee.name, ignore_carryover=ignore_carryover)
     target = get_target_time(filters, employee.name)
     diff = actual - target
     data = []
@@ -244,7 +244,7 @@ def get_holiday_balance(employee, to_date):
     
     return float(remaining_days)
     
-def get_actual_time(filters, employee):
+def get_actual_time(filters, employee, ignore_carryover=False):
     from_date = filters.from_date
     to_date = filters.to_date
     try:
@@ -262,12 +262,13 @@ def get_actual_time(filters, employee):
         return actual_time
     
     # handle carryover and payouts
-    employee = frappe.get_doc("Employee", employee)
-    if employee.carryover_and_payouts:
-        year = getdate(from_date).strftime("%Y")
-        for cp in employee.carryover_and_payouts:
-            if str(cp.year) == year:
-                actual_time += cp.amount
+    if not ignore_carryover:
+        employee = frappe.get_doc("Employee", employee)
+        if employee.carryover_and_payouts:
+            year = getdate(from_date).strftime("%Y")
+            for cp in employee.carryover_and_payouts:
+                if str(cp.year) == year:
+                    actual_time += cp.amount
                 
     return actual_time
 
@@ -343,6 +344,6 @@ def get_employee_overview_html(employee, company, from_date, to_date):
     
     return html
 
-def get_employee_overtime(filters):   
-    data = get_data_of_employee(filters)
+def get_employee_overtime(filters, ignore_carryover=False):
+    data = get_data_of_employee(filters, ignore_carryover=ignore_carryover)
     return round(data[0][4], 3)

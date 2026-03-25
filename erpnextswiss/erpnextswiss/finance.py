@@ -265,7 +265,30 @@ def save_submit_close_payment_entry(doc):
     db_doc.save()
     db_doc.submit()
     return
-    
+
+
+@frappe.whitelist()
+def find_party_from_iban(iban):
+    """
+    Allows to find a party (customer, supplier) from past transactions on the basis of the IBAN
+    """
+    parties = frappe.db.sql("""
+        SELECT `party_type`, `party`, `party_name`
+        FROM `tabPayment Entry`
+        WHERE `bank_account_no` = %(iban)s
+        ORDER BY `creation` DESC
+        LIMIT 1;""", 
+        {
+            'iban': iban
+        },
+        as_dict=True
+    )
+    if parties and len(parties) > 0:
+        return parties[0]
+    else:
+        return None
+
+
 @frappe.whitelist()
 def deduct_and_close(payment_entry, account, cost_center):
     """

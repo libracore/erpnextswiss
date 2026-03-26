@@ -93,6 +93,11 @@ class DPD_API:
         # use recipient name from shipment if available, otherwise, fall back to customer name
         recipient_name = shipment_doc.get("recipient_name") \
             or frappe.get_value("Customer", shipment_doc.delivery_customer, "customer_name") if frappe.db.exists("Customer", shipment_doc.delivery_customer) else shipment_doc.delivery_customer
+        
+        #recipient contact from shipment if available and different to recipient_name
+        if shipment_doc.get("recipient_contact") and shipment_doc.get("recipient_contact") != recipient_name:
+            recipient_contact = shipment_doc.get("recipient_contact")
+        
         product = shipment_doc.get("product") or self.product           # use product from shipment if avalable or fallback from settings
         if shipment_doc.delivery_contact_name:
             recipient_phone = frappe.get_value("Contact", shipment_doc.delivery_contact_name, "phone")

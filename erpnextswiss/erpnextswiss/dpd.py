@@ -94,17 +94,13 @@ class DPD_API:
         recipient_name = shipment_doc.get("recipient_name") \
             or frappe.get_value("Customer", shipment_doc.delivery_customer, "customer_name") if frappe.db.exists("Customer", shipment_doc.delivery_customer) else shipment_doc.delivery_customer
         
-        #recipient contact from shipment if available and different to recipient_name
-        if shipment_doc.get("recipient_contact") and shipment_doc.get("recipient_contact") != recipient_name:
-            recipient_contact = shipment_doc.get("recipient_contact")
-        
         product = shipment_doc.get("product") or self.product           # use product from shipment if avalable or fallback from settings
         if shipment_doc.delivery_contact_name:
             recipient_phone = frappe.get_value("Contact", shipment_doc.delivery_contact_name, "phone")
         else:
             recipient_phone = None
-            
-        payload = json.dumps({
+        
+        payload_dict = {
             "authentication": {
                 "delisId": self.delis_id,
                 "authToken": self.token,
@@ -147,7 +143,18 @@ class DPD_API:
                     }
                 ]
             }
-        })
+        }
+        
+        #add recipient contact from shipment if available and different to recipient_name
+        if shipment_doc.get("recipient_contact") and shipment_doc.get("recipient_contact") != recipient_name:
+            payload_dict["storeOrders"]["order"][0]["generalShipmentData"]["recipient"]["name2"] = shipment_doc.get("recipient_contact")
+        
+        #add address_line_2 if avaliable
+        if delivery_address.get('address_line2'):
+            payload_dict["storeOrders"]["order"][0]["generalShipmentData"]["recipient"]["street2"] = delivery_address.get('address_line2')
+        
+        
+        payload = json.dumps(payload_dict)
         headers = {
             'Content-Type': 'application/json'
         }

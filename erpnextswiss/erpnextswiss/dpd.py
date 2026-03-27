@@ -100,6 +100,7 @@ class DPD_API:
         else:
             recipient_phone = None
         
+        #Prepare payload
         payload_dict = {
             "authentication": {
                 "delisId": self.delis_id,
@@ -145,15 +146,21 @@ class DPD_API:
             }
         }
         
-        #add recipient contact from shipment if available and different to recipient_name
+        #add recipient contact from shipment if available and different to recipient_name, Fallback to regular Contact
         if shipment_doc.get("recipient_contact") and shipment_doc.get("recipient_contact") != recipient_name:
             payload_dict["storeOrders"]["order"][0]["generalShipmentData"]["recipient"]["name2"] = shipment_doc.get("recipient_contact")
+        elif shipment_doc.get('delivery_contact_name'):
+            contact_doc = frappe.get_doc("Contact", shipment_doc.get('delivery_contact_name'))
+            if contact_doc.get('first_name') and contact_doc.get('last_name'):
+                full_name = "{0} {1}".format(contact_doc.get('first_name'), contact_doc.get('last_name'))
+                if full_name != recipient_name:
+                    payload_dict["storeOrders"]["order"][0]["generalShipmentData"]["recipient"]["name2"] = full_name
         
         #add address_line_2 if avaliable
         if delivery_address.get('address_line2'):
             payload_dict["storeOrders"]["order"][0]["generalShipmentData"]["recipient"]["street2"] = delivery_address.get('address_line2')
         
-        
+        #create json
         payload = json.dumps(payload_dict)
         headers = {
             'Content-Type': 'application/json'

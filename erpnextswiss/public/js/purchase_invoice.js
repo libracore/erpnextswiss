@@ -253,8 +253,8 @@ function show_esr_detail_dialog(frm, participant, reference, amount, default_set
     field_list.push({'fieldname': 'participant', 'fieldtype': 'Data', 'label': __('ESR Participant'), 'read_only': 1, 'default': participant});
 
     var default_cost_center;
-    if (frm.doc.company) {
-        default_cost_center = locals[":Company"][frm.doc.company]['cost_center'];
+    if (cur_frm.doc.company) {
+        default_cost_center = locals[":Company"][cur_frm.doc.company]['cost_center'];
     } else {
         default_cost_center = locals[":Company"][frappe.defaults.get_user_default("company")]['cost_center'];
     }

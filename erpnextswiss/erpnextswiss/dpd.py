@@ -93,13 +93,15 @@ class DPD_API:
         # use recipient name from shipment if available, otherwise, fall back to customer name
         recipient_name = shipment_doc.get("recipient_name") \
             or frappe.get_value("Customer", shipment_doc.delivery_customer, "customer_name") if frappe.db.exists("Customer", shipment_doc.delivery_customer) else shipment_doc.delivery_customer
+        
         product = shipment_doc.get("product") or self.product           # use product from shipment if avalable or fallback from settings
         if shipment_doc.delivery_contact_name:
             recipient_phone = frappe.get_value("Contact", shipment_doc.delivery_contact_name, "phone")
         else:
             recipient_phone = None
-            
-        payload = json.dumps({
+        
+        #Prepare payload
+        payload_dict = {
             "authentication": {
                 "delisId": self.delis_id,
                 "authToken": self.token,
@@ -142,7 +144,24 @@ class DPD_API:
                     }
                 ]
             }
-        })
+        }
+        
+        #add recipient contact from shipment if available and different to recipient_name, Fallback to regular Contact
+        if shipment_doc.get("recipient_contact") and shipment_doc.get("recipient_contact") != recipient_name:
+            payload_dict["storeOrders"]["order"][0]["generalShipmentData"]["recipient"]["name2"] = shipment_doc.get("recipient_contact")
+        elif shipment_doc.get('delivery_contact_name'):
+            contact_doc = frappe.get_doc("Contact", shipment_doc.get('delivery_contact_name'))
+            if contact_doc.get('first_name') and contact_doc.get('last_name'):
+                full_name = "{0} {1}".format(contact_doc.get('first_name'), contact_doc.get('last_name'))
+                if full_name != recipient_name:
+                    payload_dict["storeOrders"]["order"][0]["generalShipmentData"]["recipient"]["name2"] = full_name
+        
+        #add address_line_2 if avaliable
+        if delivery_address.get('address_line2'):
+            payload_dict["storeOrders"]["order"][0]["generalShipmentData"]["recipient"]["street2"] = delivery_address.get('address_line2')
+        
+        #create json
+        payload = json.dumps(payload_dict)
         headers = {
             'Content-Type': 'application/json'
         }

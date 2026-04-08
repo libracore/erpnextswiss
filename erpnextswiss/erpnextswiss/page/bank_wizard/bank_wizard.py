@@ -354,7 +354,13 @@ def read_camt_transactions(transaction_entries, account, settings, debug=False, 
                                     # unique_reference = transaction_soup.ustrd.get_text()
                                     # fallback to hash
                                     amount = transaction_soup.txdtls.amt.get_text()
-                                    party = transaction_soup.nm.get_text()
+                                    try:
+                                        party = transaction_soup.nm.get_text()
+                                    except:
+                                        # fallback for bank internal debits and credits without a party name tag
+                                        # first appearance with the Nidwaldner Kantonalbank
+                                        # see issue libracore/bimbo#379
+                                        party = "Bank internal"
                                     code = "{0}:{1}:{2}".format(date, amount, party)
                                     if settings.debug_mode:
                                         frappe.log_error("Code: {0}".format(code))

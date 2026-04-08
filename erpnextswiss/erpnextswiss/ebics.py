@@ -45,10 +45,15 @@ def sync_connection(connection, debug=False):
     while date < datetime.today().date():
         if debug:
             print("Syncing {0}...".format(date.strftime("%Y-%m-%d")))
-            
-        conn.get_transactions(date.strftime("%Y-%m-%d"), debug=debug)
-        # note: sync date update happens in the transaction record when there are results
         
+        try:
+            conn.get_transactions(date.strftime("%Y-%m-%d"), debug=debug)
+            # note: sync date update happens in the transaction record when there are results
+        except Exception as err:
+            frappe.log_error("{0} occurred when trying to sync ebics {1} for {2}".format(err, connection, date), "ebics sync get transactions error")
+            # stop reading forward, this will be recovered with the next sync run (because of sync date)
+            break
+
         date = add_days(date, 1)
     
     return

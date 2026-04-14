@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2025, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2025-2026, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
 
 import frappe
@@ -41,7 +41,7 @@ class DPD_API:
         return
         
     def get_auth(self):
-        url = "{0}/rest/services/LoginService/V2_1/getAuth".format(self.host)
+        url = "{0}/external/rest/services/LoginService/getAuth".format(self.host)
 
         payload = json.dumps({
           "delisId": self.delis_id,
@@ -81,7 +81,7 @@ class DPD_API:
         pickup_address = frappe.get_doc("Address", shipment_doc.pickup_address_name)
         delivery_address = frappe.get_doc("Address", shipment_doc.delivery_address_name)
 
-        url = "{0}/rest/services/ShipmentService/V3_2/storeOrders".format(self.host)
+        url = "{0}/external/rest/services/ShipmentService/storeOrders".format(self.host)
 
         parcels = []
         for p in shipment_doc.shipment_parcel:

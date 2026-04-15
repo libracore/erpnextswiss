@@ -154,10 +154,10 @@ class DPD_API:
         if self.debug:
             frappe.log_error("{0}".format(response.text), "DPD Shipment Response (Debug)")
             
-        if response.status_code == requests.codes.ok:
+        if response.status_code in [requests.codes.ok, requests.codes.created]:
             response_json = response.json()
             pdf_base64 = response_json.get("orderResult").get("parcellabelsPDF")
-            mps_id = response_json.get("orderResult").get("shipmentResponses")[0].get("identificationNumber")
+            mps_id = response_json.get("orderResult").get("shipmentResponses")[0].get("mpsId")
             parcel_id = response_json.get("orderResult").get("shipmentResponses")[0].get("parcelInformation")[0].get("parcelLabelNumber")
 
             # attach pdf

@@ -27,6 +27,7 @@
   "intermediate_account",
   "column_bank_wizard",
   "always_use_entry_transaction_type",
+  "always_use_entry_amount",
   "auto_process_matches",
   "numeric_only_debtor_matching",
   "ignore_special_characters",
@@ -318,10 +319,17 @@
    "fieldname": "validate_xml",
    "fieldtype": "Check",
    "label": "Validate XML"
+  },
+  {
+   "default": "0",
+   "description": "Use this to always book in account currency. This should not be used if the bank uses collective transactions.",
+   "fieldname": "always_use_entry_amount",
+   "fieldtype": "Check",
+   "label": "Always use entry amount"
   }
  ],
  "issingle": 1,
- "modified": "2025-07-29 17:45:35.384417",
+ "modified": "2026-05-08 18:22:35.221229",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "ERPNextSwiss Settings",

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2017-2025, libracore and contributors
+# Copyright (c) 2017-2026, libracore and contributors
 # License: AGPL v3. See LICENCE
 
 import frappe
@@ -360,19 +360,24 @@ def read_camt_transactions(transaction_entries, account, settings, debug=False, 
                                         frappe.log_error("Code: {0}".format(code))
                                     unique_reference = hashlib.md5(code.encode("utf-8")).hexdigest()
                 # --- find amount and currency
-                try:
-                    # try to find as <TxAmt>
-                    amount = float(transaction_soup.txdtls.txamt.amt.get_text())
-                    currency = transaction_soup.txdtls.txamt.amt['ccy']
-                except:
+                if cint(settings.always_use_entry_amount):
+                    # in this case, we ignore collective transaction parts and book on the entry amount in account currency
+                    amount = entry_amount
+                    currency = entry_currency
+                else:
                     try:
-                        # fallback to pure <AMT>
-                        amount = float(transaction_soup.txdtls.amt.get_text())
-                        currency = transaction_soup.txdtls.amt['ccy']
+                        # try to find as <TxAmt>
+                        amount = float(transaction_soup.txdtls.txamt.amt.get_text())
+                        currency = transaction_soup.txdtls.txamt.amt['ccy']
                     except:
-                        # fallback to amount from entry level
-                        amount = entry_amount
-                        currency = entry_currency
+                        try:
+                            # fallback to pure <AMT>
+                            amount = float(transaction_soup.txdtls.amt.get_text())
+                            currency = transaction_soup.txdtls.amt['ccy']
+                        except:
+                            # fallback to amount from entry level
+                            amount = entry_amount
+                            currency = entry_currency
                 try:
                     # --- find party IBAN
                     if credit_debit == "DBIT":

@@ -287,6 +287,8 @@ Unsupported file format. Please use an xml or zip camt file,Dieses Format wird n
 Bank account has no IBAN.,Das Bankkonto hat keine IBAN hinterlegt.,Page: Bank Wizard
 IBAN check mandatory,IBAN-Prüfung zwingend erforderlich,Page: Bank Wizard
 "No account found for IBAN {0}. Make sure there is an account in the chart of accounts with this IBAN, account type Bank and not disabled.","Kein Bankkonto für IBAN {0} gefunden. Bitte sicherstellen, das im Kontenplan ein Konto vom Type Bank mit dieser IBAN existiert und nicht deaktiviert ist.",Page: Bank Wizard
+"Always use entry amount","Immer den Buchungsbetrag verwenden",Page: Bank Wizard
+"Use this to always book in account currency. This should not be used if the bank uses collective transactions.","Mit dieser Einstellung wird immer der Transaktionbetrag verwendet in Kontowährung. Sollte nicht verwendet werden, wenn es Sammeltransaktionen gibt",Page: Bank Wizard
 Daily Closing Statement,Tagesabschluss,DocType: Daily Closing Statement
 Statistics,Statistik,DocType: Daily Closing Statement
 Total Sales,Total Umsatz,DocType: Daily Closing Statement

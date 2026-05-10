@@ -10,7 +10,7 @@ dynamic = ["version"]
 dependencies = [
     # dependencies
     "bs4",
-    "factur-x>=2.3",
+    "factur-x>=2.3,<5",
     "unidecode",
     "opencv-python",
     "pymupdf",

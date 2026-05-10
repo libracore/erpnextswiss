@@ -13,7 +13,8 @@ def execute():
         {'doctype': 'BankImport Bank','bank_name': 'Migrosbank','legacy_ref': 'migrosbank','file_format': 'CSV(csv)','bank_enabled': 1},
         {'doctype': 'BankImport Bank','bank_name': 'Postfinance','legacy_ref': 'postfinance','file_format': 'CAMT.054 Transaction Notification(camt054)','bank_enabled': 1},
         {'doctype': 'BankImport Bank','bank_name': 'Kreissparkasse','legacy_ref': 'ksk','file_format': 'CSV(csv)','bank_enabled': 1},
-        {'doctype': 'BankImport Bank','bank_name': 'Volksbank','legacy_ref': 'voba','file_format': 'CSV(csv)','bank_enabled': 1}
+        {'doctype': 'BankImport Bank','bank_name': 'Volksbank','legacy_ref': 'voba','file_format': 'CSV(csv)','bank_enabled': 1},
+        {'doctype': 'BankImport Bank','bank_name': 'Aargauische Kantonalbank','legacy_ref': 'akb','file_format': 'CAMT.053 Bank Statement(camt053)','bank_enabled': 1}
     ]
     
     doc = frappe.get_doc("ERPNextSwiss Settings", "ERPNextSwiss Settings")

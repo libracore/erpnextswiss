@@ -13,6 +13,20 @@ This branch is based on upstream `libracore/erpnextswiss` branch `v2025` and is 
   - child workspaces for `Zahlungsverkehr`, `QR-Rechnung & E-Rechnung`, `Schweizer MwSt` and `Schweiz-Einstellungen`
   - app tile, app home route and workspace sidebar records created/updated during install and migrate
 - Fixed compatibility with current `factur-x` imports.
+- Added `Aargauische Kantonalbank` as an enabled bank import profile using `CAMT.053 Bank Statement`.
+- Enabled `CAMT.053` as a selectable bank import format in the legacy bank import page.
+
+## QR invoice setup
+
+For outgoing QR invoices use the workspace `Schweizer Buchhaltung > QR-Rechnung & E-Rechnung`.
+
+Required setup:
+
+- Maintain the company bank account in `Bank Account` with IBAN or QR-IBAN.
+- Maintain company and customer addresses completely.
+- Use the ERPNextSwiss QR print format on submitted `Sales Invoice` documents.
+
+For incoming QR invoices use `QR-/ZUGFeRD-Assistent` or the QR/ESR fields on `Purchase Invoice`, depending on whether the supplier sends a QR PDF or only the payment information.
 
 ## Compatibility note
 

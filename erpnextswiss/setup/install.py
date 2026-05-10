@@ -6,33 +6,59 @@ from pathlib import Path
 
 import frappe
 
+
+BANKIMPORT_BANKS = [
+    {'doctype': 'BankImport Bank','bank_name': 'UBS','legacy_ref': 'ubs','file_format': 'CSV(csv)','bank_enabled': 1},
+    {'doctype': 'BankImport Bank','bank_name': 'ZKB','legacy_ref': 'zkb','file_format': 'CSV(csv)','bank_enabled': 1},
+    {'doctype': 'BankImport Bank','bank_name': 'Raiffeisen','legacy_ref': 'raiffeisen','file_format': 'CSV(csv)','bank_enabled': 1},
+    {'doctype': 'BankImport Bank','bank_name': 'CreditSwiss','legacy_ref': 'cs','file_format': 'CSV(csv)','bank_enabled': 1},
+    {'doctype': 'BankImport Bank','bank_name': 'Migrosbank','legacy_ref': 'migrosbank','file_format': 'CSV(csv)','bank_enabled': 1},
+    {'doctype': 'BankImport Bank','bank_name': 'Postfinance','legacy_ref': 'postfinance','file_format': 'CAMT.054 Transaction Notification(camt054)','bank_enabled': 1},
+    {'doctype': 'BankImport Bank','bank_name': 'Kreissparkasse','legacy_ref': 'ksk','file_format': 'CSV(csv)','bank_enabled': 1},
+    {'doctype': 'BankImport Bank','bank_name': 'Volksbank','legacy_ref': 'voba','file_format': 'CSV(csv)','bank_enabled': 1},
+    {'doctype': 'BankImport Bank','bank_name': 'Aargauische Kantonalbank','legacy_ref': 'akb','file_format': 'CAMT.053 Bank Statement(camt053)','bank_enabled': 1},
+]
+
+
 def after_install():
-    install_basic_docs()
+    ensure_bankimport_banks()
     ensure_v16_desk_records()
     frappe.db.commit()
 
 
 def after_migrate():
+    ensure_bankimport_banks()
     ensure_v16_desk_records()
     frappe.db.commit()
     
 
-def install_basic_docs():
-    install_bankimport_banks = [
-        {'doctype': 'BankImport Bank','bank_name': 'UBS','legacy_ref': 'ubs','file_format': 'CSV(csv)','bank_enabled': 1},
-        {'doctype': 'BankImport Bank','bank_name': 'ZKB','legacy_ref': 'zkb','file_format': 'CSV(csv)','bank_enabled': 1},
-        {'doctype': 'BankImport Bank','bank_name': 'Raiffeisen','legacy_ref': 'raiffeisen','file_format': 'CSV(csv)','bank_enabled': 1},
-        {'doctype': 'BankImport Bank','bank_name': 'CreditSwiss','legacy_ref': 'cs','file_format': 'CSV(csv)','bank_enabled': 1},
-        {'doctype': 'BankImport Bank','bank_name': 'Migrosbank','legacy_ref': 'migrosbank','file_format': 'CSV(csv)','bank_enabled': 1},
-        {'doctype': 'BankImport Bank','bank_name': 'Postfinance','legacy_ref': 'postfinance','file_format': 'CAMT.054 Transaction Notification(camt054)','bank_enabled': 1},
-        {'doctype': 'BankImport Bank','bank_name': 'Kreissparkasse','legacy_ref': 'ksk','file_format': 'CSV(csv)','bank_enabled': 1},
-        {'doctype': 'BankImport Bank','bank_name': 'Volksbank','legacy_ref': 'voba','file_format': 'CSV(csv)','bank_enabled': 1}
-    ]
-    
+def ensure_bankimport_banks():
+    if not frappe.db.exists("DocType", "ERPNextSwiss Settings"):
+        return
+
     doc = frappe.get_doc("ERPNextSwiss Settings", "ERPNextSwiss Settings")
-    for d in install_bankimport_banks:
-        doc.append("bankimport_table",d)
-    doc.save()
+    changed = False
+    existing_by_name = {row.bank_name: row for row in doc.get("bankimport_table") or []}
+    existing_by_ref = {row.legacy_ref: row for row in doc.get("bankimport_table") or [] if row.legacy_ref}
+
+    for bank in BANKIMPORT_BANKS:
+        row = existing_by_name.get(bank["bank_name"]) or existing_by_ref.get(bank["legacy_ref"])
+        if row:
+            for fieldname in ("bank_name", "legacy_ref", "file_format", "bank_enabled"):
+                if getattr(row, fieldname, None) != bank[fieldname]:
+                    setattr(row, fieldname, bank[fieldname])
+                    changed = True
+            continue
+
+        doc.append("bankimport_table", bank)
+        changed = True
+
+    if changed:
+        doc.save(ignore_permissions=True)
+
+
+def install_basic_docs():
+    ensure_bankimport_banks()
 
 
 def ensure_v16_desk_records():

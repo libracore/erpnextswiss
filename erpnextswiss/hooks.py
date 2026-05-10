@@ -3,13 +3,24 @@ from __future__ import unicode_literals
 from . import __version__ as app_version
 
 app_name = "erpnextswiss"
-app_title = "ERPNextSwiss"
+app_title = "Schweizer Buchhaltung"
 app_publisher = "libracore (https://www.libracore.com)"
-app_description = "ERPNext application for Switzerland-specific use cases"
+app_description = "Schweizer Banking, QR-Rechnung, MwSt und E-Rechnung für ERPNext"
 app_icon = "fa fa-diamond"
 app_color = "#92d050"
 app_email = "info@libracore.com"
 app_license = "AGPL"
+app_home = "/desk/schweizer-buchhaltung"
+app_logo_url = "/assets/erpnextswiss/images/schweizer_buchhaltung.svg"
+
+add_to_apps_screen = [
+    {
+        "name": "erpnextswiss",
+        "logo": "/assets/erpnextswiss/images/schweizer_buchhaltung.svg",
+        "title": "Schweizer Buchhaltung",
+        "route": "/desk/schweizer-buchhaltung",
+    }
+]
 
 # Includes in <head>
 # ------------------
@@ -101,6 +112,7 @@ email_append_to = ["EDI File"]
 
 # before_install = "erpnextswiss.install.before_install"
 after_install = "erpnextswiss.setup.install.after_install"
+after_migrate = "erpnextswiss.setup.install.after_migrate"
 
 # Desk Notifications
 # ------------------

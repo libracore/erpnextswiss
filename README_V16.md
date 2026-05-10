@@ -8,7 +8,25 @@ This branch is based on upstream `libracore/erpnextswiss` branch `v2025` and is 
 - Added Bench app dependencies for Frappe and ERPNext `>=16.0.0,<17.0.0`.
 - Added explicit setuptools build backend and dynamic version lookup from `erpnextswiss.__version__`.
 - Fixed the generated template bundle path in `app_include_js`.
+- Added a Frappe v16-style workspace structure:
+  - `Schweizer Buchhaltung` as the app entry workspace
+  - child workspaces for `Zahlungsverkehr`, `QR-Rechnung & E-Rechnung`, `Schweizer MwSt` and `Schweiz-Einstellungen`
+  - app tile, app home route and workspace sidebar records created/updated during install and migrate
+- Fixed compatibility with current `factur-x` imports.
 
 ## Compatibility note
 
 This branch is intended to make the app installable on Frappe/ERPNext 16. ERPNextSwiss is a broad app with accounting, banking, HR and integration features, so production use still requires a full `bench migrate` and functional checks on a staging site.
+
+## Swiss Accounting Software overlap
+
+This fork intentionally keeps QR invoice and ZUGFeRD functionality inside ERPNextSwiss, but it does not automatically migrate settings or disable overlapping features from `swiss_accounting_software`.
+
+Known overlap areas:
+
+- Swiss QR invoices
+- CAMT/payment reconciliation
+- pain.001 payment export
+- Swiss accounting setup/settings
+
+Do not uninstall `swiss_accounting_software` until QR invoices, payment imports and payment exports have been validated on the production site with this fork.

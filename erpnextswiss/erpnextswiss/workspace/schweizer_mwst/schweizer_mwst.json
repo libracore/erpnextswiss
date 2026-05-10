@@ -1,0 +1,49 @@
+{
+  "charts": [],
+  "content": "[{\"id\":\"header-1\",\"type\":\"header\",\"data\":{\"text\":\"Schweizer MwSt\",\"level\":4,\"col\":12}},{\"id\":\"shortcut-vat\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"MwSt-Abrechnung\",\"col\":3}},{\"id\":\"shortcut-control\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Kontrolle MwSt\",\"col\":3}},{\"id\":\"shortcut-control-de\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Kontrolle MwSt DE\",\"col\":3}},{\"id\":\"shortcut-vat-query\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"MwSt-Abfragen\",\"col\":3}},{\"id\":\"header-2\",\"type\":\"header\",\"data\":{\"text\":\"Finanzberichte\",\"level\":4,\"col\":12}},{\"id\":\"shortcut-account-sheets\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Kontoblätter\",\"col\":3}},{\"id\":\"shortcut-account-sheets-tax\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Kontoblätter mit Steuercodes\",\"col\":3}},{\"id\":\"shortcut-gl-entry\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Hauptbucheinträge\",\"col\":3}}]",
+  "creation": "2026-05-10 00:00:00.000000",
+  "custom_blocks": [],
+  "docstatus": 0,
+  "doctype": "Workspace",
+  "for_user": "",
+  "hide_custom": 0,
+  "icon": "percentage",
+  "idx": 0,
+  "indicator_color": "orange",
+  "is_hidden": 0,
+  "label": "Schweizer MwSt",
+  "links": [
+    {"label": "MwSt-Abrechnung", "link_to": "VAT Declaration", "link_type": "DocType", "type": "Link"},
+    {"label": "Kontrolle MwSt", "link_to": "Kontrolle MwSt", "link_type": "Report", "type": "Link"},
+    {"label": "Kontrolle MwSt DE", "link_to": "Kontrolle MwSt DE", "link_type": "Report", "type": "Link"},
+    {"label": "MwSt-Abfragen", "link_to": "VAT query", "link_type": "DocType", "type": "Link"},
+    {"label": "Kontoblätter", "link_to": "Account Sheets", "link_type": "Report", "type": "Link"},
+    {"label": "Kontoblätter mit Steuercodes", "link_to": "Account Sheets with Tax Codes", "link_type": "Report", "type": "Link"},
+    {"label": "Hauptbucheinträge", "link_to": "GL Entry", "link_type": "DocType", "type": "Link"}
+  ],
+  "modified": "2026-05-10 00:00:00.000000",
+  "module": "ERPNextSwiss",
+  "name": "Schweizer MwSt",
+  "number_cards": [],
+  "owner": "Administrator",
+  "parent_page": "Schweizer Buchhaltung",
+  "public": 1,
+  "quick_lists": [],
+  "roles": [
+    {"role": "System Manager"},
+    {"role": "Accounts Manager"},
+    {"role": "Accounts User"}
+  ],
+  "sequence_id": 23,
+  "shortcuts": [
+    {"color": "Orange", "doc_view": "List", "label": "MwSt-Abrechnung", "link_to": "VAT Declaration", "type": "DocType"},
+    {"color": "Orange", "doc_view": "", "label": "Kontrolle MwSt", "link_to": "Kontrolle MwSt", "type": "Report"},
+    {"color": "Orange", "doc_view": "", "label": "Kontrolle MwSt DE", "link_to": "Kontrolle MwSt DE", "type": "Report"},
+    {"color": "Grey", "doc_view": "List", "label": "MwSt-Abfragen", "link_to": "VAT query", "type": "DocType"},
+    {"color": "Blue", "doc_view": "", "label": "Kontoblätter", "link_to": "Account Sheets", "type": "Report"},
+    {"color": "Blue", "doc_view": "", "label": "Kontoblätter mit Steuercodes", "link_to": "Account Sheets with Tax Codes", "type": "Report"},
+    {"color": "Blue", "doc_view": "List", "label": "Hauptbucheinträge", "link_to": "GL Entry", "type": "DocType"}
+  ],
+  "title": "Schweizer MwSt",
+  "type": "Workspace"
+}

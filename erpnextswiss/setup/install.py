@@ -1,10 +1,19 @@
 # -*- coding: utf-8 -*-
 # License: AGPL v3. See LICENCE
 
+import json
+from pathlib import Path
+
 import frappe
 
 def after_install():
     install_basic_docs()
+    ensure_v16_desk_records()
+    frappe.db.commit()
+
+
+def after_migrate():
+    ensure_v16_desk_records()
     frappe.db.commit()
     
 
@@ -24,4 +33,196 @@ def install_basic_docs():
     for d in install_bankimport_banks:
         doc.append("bankimport_table",d)
     doc.save()
+
+
+def ensure_v16_desk_records():
+    ensure_workspace_records()
+    ensure_workspace_sidebar_records()
+    ensure_desktop_icon_records()
+    _clear_desk_navigation_cache()
+
+
+def ensure_workspace_records():
+    workspace_root = Path(frappe.get_app_path("erpnextswiss", "erpnextswiss", "workspace"))
+    if not workspace_root.exists():
+        return
+
+    for workspace_file in workspace_root.glob("*/*.json"):
+        data = json.loads(workspace_file.read_text(encoding="utf-8"))
+        if data.get("doctype") != "Workspace" or not data.get("name"):
+            continue
+        _upsert_workspace_record(_prepare_workspace_data(data))
+
+
+def _prepare_workspace_data(data):
+    data = data.copy()
+    for meta_field in ("creation", "modified", "modified_by", "owner"):
+        data.pop(meta_field, None)
+    data.setdefault("type", "Workspace")
+    data.setdefault("public", 1)
+    data.setdefault("for_user", "")
+    data["app"] = "erpnextswiss"
+    _sanitize_workspace_links(data)
+    _sanitize_workspace_shortcuts(data)
+    return data
+
+
+def _upsert_workspace_record(data):
+    existing_workspace = frappe.db.exists("Workspace", data["name"])
+    if existing_workspace:
+        workspace = frappe.get_doc("Workspace", existing_workspace)
+        _clear_workspace_child_tables(workspace)
+        workspace.update(data)
+        _sanitize_workspace_links(workspace)
+        _sanitize_workspace_shortcuts(workspace)
+        workspace.save(ignore_permissions=True)
+        return
+
+    try:
+        frappe.get_doc(data).insert(ignore_permissions=True)
+    except frappe.DuplicateEntryError:
+        frappe.clear_last_message()
+        duplicate_workspace = (
+            frappe.db.exists("Workspace", data["name"])
+            or frappe.db.exists("Workspace", data.get("title"))
+            or frappe.db.exists("Workspace", data.get("label"))
+        )
+        if not duplicate_workspace:
+            raise
+        workspace = frappe.get_doc("Workspace", duplicate_workspace)
+        _clear_workspace_child_tables(workspace)
+        workspace.update(data)
+        _sanitize_workspace_links(workspace)
+        _sanitize_workspace_shortcuts(workspace)
+        workspace.save(ignore_permissions=True)
+
+
+def ensure_workspace_sidebar_records():
+    if not frappe.db.exists("DocType", "Workspace Sidebar"):
+        return
+
+    sidebar_root = Path(frappe.get_app_path("erpnextswiss", "workspace_sidebar"))
+    if not sidebar_root.exists():
+        return
+
+    for sidebar_file in sidebar_root.glob("*.json"):
+        data = json.loads(sidebar_file.read_text(encoding="utf-8"))
+        if data.get("doctype") != "Workspace Sidebar" or not data.get("name"):
+            continue
+        _upsert_workspace_sidebar_record(_prepare_workspace_sidebar_data(data))
+
+
+def _prepare_workspace_sidebar_data(data):
+    data = data.copy()
+    for meta_field in ("creation", "modified", "modified_by", "owner"):
+        data.pop(meta_field, None)
+    data.setdefault("standard", 1)
+    data["app"] = "erpnextswiss"
+    return data
+
+
+def _upsert_workspace_sidebar_record(data):
+    if frappe.db.exists("Workspace Sidebar", data["name"]):
+        sidebar = frappe.get_doc("Workspace Sidebar", data["name"])
+        if sidebar.meta.has_field("items"):
+            sidebar.set("items", [])
+        sidebar.update(data)
+        sidebar.save(ignore_permissions=True)
+    else:
+        frappe.get_doc(data).insert(ignore_permissions=True)
+
+
+def ensure_desktop_icon_records():
+    if not frappe.db.exists("DocType", "Desktop Icon"):
+        return
+
+    icon_root = Path(frappe.get_app_path("erpnextswiss", "desktop_icon"))
+    if not icon_root.exists():
+        return
+
+    for icon_file in icon_root.glob("*.json"):
+        data = json.loads(icon_file.read_text(encoding="utf-8"))
+        if data.get("doctype") != "Desktop Icon" or not data.get("name"):
+            continue
+        for meta_field in ("creation", "modified", "modified_by", "owner"):
+            data.pop(meta_field, None)
+        data.setdefault("standard", 1)
+        data["app"] = "erpnextswiss"
+        _upsert_desktop_icon_record(data)
+
+
+def _upsert_desktop_icon_record(data):
+    if frappe.db.exists("Desktop Icon", data["name"]):
+        desktop_icon = frappe.get_doc("Desktop Icon", data["name"])
+        if desktop_icon.meta.has_field("roles"):
+            desktop_icon.set("roles", [])
+        desktop_icon.update(data)
+        desktop_icon.save(ignore_permissions=True)
+    else:
+        frappe.get_doc(data).insert(ignore_permissions=True)
+
+
+def _sanitize_workspace_links(workspace):
+    links = workspace.get("links") or []
+    filtered_links = []
+    for link in links:
+        if link.get("link_type") == "Workspace":
+            if hasattr(link, "link_type"):
+                link.link_type = "URL"
+                link.link_to = _workspace_route_url(link.get("link_to") or link.get("label"))
+            else:
+                link["link_type"] = "URL"
+                link["link_to"] = _workspace_route_url(link.get("link_to") or link.get("label"))
+        if link.get("link_type") == "URL":
+            continue
+        filtered_links.append(link)
+    if hasattr(workspace, "links"):
+        workspace.links = filtered_links
+    else:
+        workspace["links"] = filtered_links
+
+
+def _sanitize_workspace_shortcuts(workspace):
+    for shortcut in workspace.get("shortcuts") or []:
+        if shortcut.get("type") == "Workspace":
+            url = _workspace_route_url(shortcut.get("link_to") or shortcut.get("label"))
+            if hasattr(shortcut, "type"):
+                shortcut.type = "URL"
+                shortcut.url = url
+                shortcut.link_to = ""
+                shortcut.doc_view = ""
+            else:
+                shortcut["type"] = "URL"
+                shortcut["url"] = url
+                shortcut["link_to"] = ""
+                shortcut["doc_view"] = ""
+        if shortcut.get("type") == "URL":
+            if hasattr(shortcut, "link_to"):
+                shortcut.link_to = ""
+                if not shortcut.get("url"):
+                    shortcut.url = _workspace_route_url(shortcut.get("label"))
+            else:
+                shortcut["link_to"] = ""
+                shortcut.setdefault("url", _workspace_route_url(shortcut.get("label")))
+        if shortcut.get("type") == "Report" and shortcut.get("doc_view") == "Report":
+            if hasattr(shortcut, "doc_view"):
+                shortcut.doc_view = ""
+            else:
+                shortcut["doc_view"] = ""
+
+
+def _clear_workspace_child_tables(workspace):
+    for fieldname in ("charts", "shortcuts", "links", "quick_lists", "number_cards", "custom_blocks", "roles"):
+        if workspace.meta.has_field(fieldname):
+            workspace.set(fieldname, [])
+
+
+def _workspace_route_url(label):
+    return "/desk/" + frappe.scrub(label or "").replace("_", "-")
+
+
+def _clear_desk_navigation_cache():
+    frappe.clear_cache()
+    frappe.cache.delete_key("desktop_icons")
+    frappe.cache.delete_key("bootinfo")
     

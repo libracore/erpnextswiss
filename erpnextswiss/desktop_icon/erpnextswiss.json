@@ -1,0 +1,19 @@
+{
+  "app": "erpnextswiss",
+  "docstatus": 0,
+  "doctype": "Desktop Icon",
+  "hidden": 0,
+  "icon": "erpnextswiss",
+  "icon_type": "App",
+  "idx": 0,
+  "label": "Schweizer Buchhaltung",
+  "link": "/desk/schweizer-buchhaltung",
+  "link_to": "",
+  "link_type": "External",
+  "logo_url": "/assets/erpnextswiss/images/schweizer_buchhaltung.svg",
+  "name": "ERPNextSwiss",
+  "restrict_removal": 0,
+  "roles": [],
+  "sidebar": "",
+  "standard": 1
+}

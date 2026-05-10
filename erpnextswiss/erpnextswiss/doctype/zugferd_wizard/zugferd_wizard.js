@@ -47,6 +47,30 @@ frappe.ui.form.on('ZUGFeRD Wizard', {
             frm.add_custom_button(__("Manually create invoice"), function() {
                 create_manual_invoice(frm);
             });
+        } else {
+            frm.add_custom_button(__("Get invoice from Nextcloud"), function() {
+                frappe.call({
+                    'method': 'get_invoice_list_from_nextcloud',
+                    'doc': frm.doc,
+                    'freeze': true,
+                    'freeze_message': __("Get invoices..."),
+                    'callback': function(r) {
+                        if (r.message) {
+                            let d = frappe.msgprint(r.message, __("Found Nextcloud Invoices"));
+
+                            setTimeout(function(){
+                                document.querySelectorAll(".invoice-fetch").forEach(el => {
+                                    const invoice_id = el.dataset.invoice;
+                                    el.addEventListener("click", () => {
+                                        d.hide();
+                                        fetch_nextcloud_invoice(frm, invoice_id);
+                                    });
+                                });
+                            }, 300);
+                        }
+                    }
+                })
+            });
         }
         if (frm.doc.content_dict) {
             frappe.call({
@@ -81,25 +105,7 @@ frappe.ui.form.on('ZUGFeRD Wizard', {
         if (frm.doc.file) {
             // has a file --> read & interpret (prevent race condition with file save)
             setTimeout(function() {
-                frappe.call({
-                    'method': 'read_file',
-                    'doc': frm.doc,
-                    'freeze': true,
-                    'freeze_message': __("Reading invoice..."),
-                    'callback': function(response) {
-                        var content = response.message;
-                        cur_frm.set_df_property('preview_html', 'options', content.html);
-                        console.log(content.dict);
-                        if (content.dict !== null) {
-                            cur_frm.set_value('content_dict', JSON.stringify(content.dict));
-                            cur_frm.set_value('ready_for_import', 1);
-                            cur_frm.save();
-                        } else {
-                            cur_frm.set_value('ready_for_import', 0);
-                            frappe.msgprint( __("This invoice cannot be interpreted automatically."), __("Information") );
-                        }
-                    }
-                });
+                read_file(frm);
             }, 1000);
             
         } else {
@@ -117,6 +123,28 @@ frappe.ui.form.on('ZUGFeRD Wizard', {
         }
     }
 });
+
+function read_file(frm) {
+    frappe.call({
+        'method': 'read_file',
+        'doc': frm.doc,
+        'freeze': true,
+        'freeze_message': __("Reading invoice..."),
+        'callback': function(response) {
+            var content = response.message;
+            cur_frm.set_df_property('preview_html', 'options', content.html);
+            console.log(content.dict);
+            if (content.dict !== null) {
+                cur_frm.set_value('content_dict', JSON.stringify(content.dict));
+                cur_frm.set_value('ready_for_import', 1);
+                cur_frm.save();
+            } else {
+                cur_frm.set_value('ready_for_import', 0);
+                frappe.msgprint( __("This invoice cannot be interpreted automatically."), __("Information") );
+            }
+        }
+    });
+}
 
 function set_tax(frm) {
     frappe.call({
@@ -300,4 +328,22 @@ function create_manual_invoice(frm) {
         'primary_action_label': __('Create')
     });
     d.show();
+}
+
+function fetch_nextcloud_invoice(frm, invoice) {
+    frappe.call({
+        'method': 'fetch_invoice_from_nextcloud',
+        'doc': frm.doc,
+        'args': {
+            'invoice': invoice
+        },
+        'freeze': true,
+        'freeze_message': __("Fetch invoice..."),
+        'callback': function(r)
+        {
+            cur_frm.reload_doc().then(() => {
+                read_file(cur_frm);
+            });
+        }
+    })
 }

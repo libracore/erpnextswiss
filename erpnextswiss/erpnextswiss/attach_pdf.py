@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018-2022, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2018-2025, libracore (https://www.libracore.com) and contributors
 # Part of this work is derived from pdf_on_submit, Copyright (C) 2019  Raffael Meyer <raffael@alyf.de>
 # For license information, please see license.txt
 import frappe
 from frappe import _
-from frappe.core.doctype.file.file import create_new_folder
-from frappe.utils.file_manager import save_file
+from frappe.core.api.file import create_new_folder
 import hashlib
 import time
 from frappe.utils import cint
@@ -52,10 +51,10 @@ def execute(doctype, name, title, lang=None, print_format=None, hashname=None, i
 def create_folder(folder, parent):
     """Make sure the folder exists and return it's name."""
     new_folder_name = "/".join([parent, folder])
-    
+
     if not frappe.db.exists("File", new_folder_name):
         create_new_folder(folder, parent)
-    
+
     return new_folder_name
 
 
@@ -82,6 +81,18 @@ def save_and_attach(content, to_doctype, to_name, folder, hashname=None, is_priv
             # use a hased file name
             file_name = "{0}.pdf".format(hashlib.md5("{0}{1}".format(to_name, time.time()).encode('utf-8')).hexdigest())
 
-    save_file(file_name, content, to_doctype,
-              to_name, folder=folder, is_private=is_private)
+    f = frappe.get_doc({
+        "doctype": "File",
+        "attached_to_doctype": to_doctype,
+        "attached_to_name": to_name,
+        "file_name": file_name,
+        "folder": folder,
+        "is_private": is_private,
+        "content": content
+    })
+    f.flags.ignore_permissions = True
+    try:
+        f.insert()
+    except frappe.DuplicateEntryError:
+        pass
     return

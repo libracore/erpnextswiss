@@ -1,0 +1,52 @@
+{
+  "charts": [],
+  "content": "[{\"id\":\"header-1\",\"type\":\"header\",\"data\":{\"text\":\"QR-Rechnung & E-Rechnung\",\"level\":4,\"col\":12}},{\"id\":\"shortcut-sales-invoice\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Ausgangsrechnungen\",\"col\":3}},{\"id\":\"shortcut-purchase-invoice\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Eingangsrechnungen\",\"col\":3}},{\"id\":\"shortcut-zugferd-wizard\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"QR-/ZUGFeRD-Assistent\",\"col\":3}},{\"id\":\"shortcut-zugferd-settings\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"ZUGFeRD-Einstellungen\",\"col\":3}},{\"id\":\"header-2\",\"type\":\"header\",\"data\":{\"text\":\"QR-Rechnung\",\"level\":4,\"col\":12}},{\"id\":\"shortcut-bank-account\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Bankkonten\",\"col\":3}},{\"id\":\"shortcut-company\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Unternehmen\",\"col\":3}},{\"id\":\"shortcut-customer\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Kunden\",\"col\":3}},{\"id\":\"shortcut-print-format\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Druckformate\",\"col\":3}}]",
+  "creation": "2026-05-10 00:00:00.000000",
+  "custom_blocks": [],
+  "docstatus": 0,
+  "doctype": "Workspace",
+  "for_user": "",
+  "hide_custom": 0,
+  "icon": "file-text",
+  "idx": 0,
+  "indicator_color": "green",
+  "is_hidden": 0,
+  "label": "QR-Rechnung & E-Rechnung",
+  "links": [
+    {"label": "Ausgangsrechnungen", "link_to": "Sales Invoice", "link_type": "DocType", "type": "Link"},
+    {"label": "Eingangsrechnungen", "link_to": "Purchase Invoice", "link_type": "DocType", "type": "Link"},
+    {"label": "QR-/ZUGFeRD-Assistent", "link_to": "ZUGFeRD Wizard", "link_type": "DocType", "type": "Link"},
+    {"label": "ZUGFeRD-Einstellungen", "link_to": "ZUGFeRD Settings", "link_type": "DocType", "type": "Link"},
+    {"label": "Bankkonten", "link_to": "Bank Account", "link_type": "DocType", "type": "Link"},
+    {"label": "Unternehmen", "link_to": "Company", "link_type": "DocType", "type": "Link"},
+    {"label": "Kunden", "link_to": "Customer", "link_type": "DocType", "type": "Link"},
+    {"label": "Druckformate", "link_to": "Print Format", "link_type": "DocType", "type": "Link"}
+  ],
+  "modified": "2026-05-10 00:00:00.000000",
+  "module": "ERPNextSwiss",
+  "name": "QR-Rechnung & E-Rechnung",
+  "number_cards": [],
+  "owner": "Administrator",
+  "parent_page": "Schweizer Buchhaltung",
+  "public": 1,
+  "quick_lists": [],
+  "roles": [
+    {"role": "System Manager"},
+    {"role": "Accounts Manager"},
+    {"role": "Accounts User"}
+  ],
+  "route": "qr-rechnung-e-rechnung",
+  "sequence_id": 22,
+  "shortcuts": [
+    {"color": "Blue", "doc_view": "List", "label": "Ausgangsrechnungen", "link_to": "Sales Invoice", "type": "DocType"},
+    {"color": "Purple", "doc_view": "List", "label": "Eingangsrechnungen", "link_to": "Purchase Invoice", "type": "DocType"},
+    {"color": "Green", "doc_view": "List", "label": "QR-/ZUGFeRD-Assistent", "link_to": "ZUGFeRD Wizard", "type": "DocType"},
+    {"color": "Grey", "doc_view": "List", "label": "ZUGFeRD-Einstellungen", "link_to": "ZUGFeRD Settings", "type": "DocType"},
+    {"color": "Blue", "doc_view": "List", "label": "Bankkonten", "link_to": "Bank Account", "type": "DocType"},
+    {"color": "Grey", "doc_view": "List", "label": "Unternehmen", "link_to": "Company", "type": "DocType"},
+    {"color": "Blue", "doc_view": "List", "label": "Kunden", "link_to": "Customer", "type": "DocType"},
+    {"color": "Orange", "doc_view": "List", "label": "Druckformate", "link_to": "Print Format", "type": "DocType"}
+  ],
+  "title": "QR-Rechnung & E-Rechnung",
+  "type": "Workspace"
+}

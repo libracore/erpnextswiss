@@ -3,13 +3,24 @@ from __future__ import unicode_literals
 from . import __version__ as app_version
 
 app_name = "erpnextswiss"
-app_title = "ERPNextSwiss"
+app_title = "Schweizer Buchhaltung"
 app_publisher = "libracore (https://www.libracore.com)"
-app_description = "ERPNext application for Switzerland-specific use cases"
+app_description = "Schweizer Banking, QR-Rechnung, MwSt und E-Rechnung für ERPNext"
 app_icon = "fa fa-diamond"
 app_color = "#92d050"
 app_email = "info@libracore.com"
 app_license = "AGPL"
+app_home = "/desk/schweizer-buchhaltung"
+app_logo_url = "/assets/erpnextswiss/images/schweizer_buchhaltung.svg"
+
+add_to_apps_screen = [
+    {
+        "name": "erpnextswiss",
+        "logo": "/assets/erpnextswiss/images/schweizer_buchhaltung.svg",
+        "title": "Schweizer Buchhaltung",
+        "route": "/desk/schweizer-buchhaltung",
+    }
+]
 
 # Includes in <head>
 # ------------------
@@ -20,7 +31,7 @@ app_include_js = [
     "/assets/erpnextswiss/js/swiss_common.js",
     "/assets/erpnextswiss/js/iban.js",
     "/assets/erpnextswiss/js/email.js",
-    "assets/js/erpnextswiss_templates.min.js"
+    "/assets/erpnextswiss/js/erpnextswiss_templates.min.js"
 ]
 
 # include js, css files in header of web template
@@ -55,20 +66,21 @@ doctype_list_js = {
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
 
 # adding Jinja environments
-jenv = {
+jinja = {
     "methods": [
-        "get_tax_details:erpnextswiss.erpnextswiss.report.kontrolle_mwst.kontrolle_mwst.get_data",
-        "get_account_sheets:erpnextswiss.erpnextswiss.finance.get_account_sheets",
-        "get_customer_ledger:erpnextswiss.erpnextswiss.finance.get_customer_ledger",
-        "get_week_from_date:erpnextswiss.erpnextswiss.jinja.get_week_from_date",
-        "strip_html:erpnextswiss.erpnextswiss.jinja.strip_html",
-        "get_accounts_receivable:erpnextswiss.erpnextswiss.jinja.get_accounts_receivable",
-        "get_primary_company_address:erpnextswiss.scripts.crm_tools.get_primary_company_address",
-        "get_primary_customer_address:erpnextswiss.scripts.crm_tools.get_primary_customer_address",
-        "get_primary_supplier_address:erpnextswiss.scripts.crm_tools.get_primary_supplier_address",
-        "get_vat_control_details:erpnextswiss.erpnextswiss.report.kontrolle_mwst.kontrolle_mwst.get_vat_control_details",
-        "get_planzer_barcode:erpnextswiss.erpnextswiss.planzer.get_planzer_barcode",
-        "get_planzer_qr_code:erpnextswiss.erpnextswiss.planzer.get_planzer_qr_code"
+
+        "erpnextswiss.erpnextswiss.report.kontrolle_mwst.kontrolle_mwst.get_tax_details",
+        "erpnextswiss.erpnextswiss.finance.get_account_sheets",
+        "erpnextswiss.erpnextswiss.finance.get_customer_ledger",
+        "erpnextswiss.erpnextswiss.jinja.get_week_from_date",
+        "erpnextswiss.erpnextswiss.jinja.strip_html",
+        "erpnextswiss.erpnextswiss.jinja.get_accounts_receivable",
+        "erpnextswiss.scripts.crm_tools.get_primary_company_address",
+        "erpnextswiss.scripts.crm_tools.get_primary_customer_address",
+        "erpnextswiss.scripts.crm_tools.get_primary_supplier_address",
+        "erpnextswiss.erpnextswiss.report.kontrolle_mwst.kontrolle_mwst.get_vat_control_details",
+        "erpnextswiss.erpnextswiss.planzer.get_planzer_barcode",
+        "erpnextswiss.erpnextswiss.planzer.get_planzer_qr_code"
     ]
 }
 
@@ -100,6 +112,7 @@ email_append_to = ["EDI File"]
 
 # before_install = "erpnextswiss.install.before_install"
 after_install = "erpnextswiss.setup.install.after_install"
+after_migrate = "erpnextswiss.setup.install.after_migrate"
 
 # Desk Notifications
 # ------------------

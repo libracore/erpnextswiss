@@ -9,7 +9,6 @@ readme = "README.md"
 dynamic = ["version"]
 dependencies = [
     # dependencies
-    "frappe>=15.0",
     "bs4",
     "factur-x>=2.3",
     "unidecode",
@@ -21,6 +20,17 @@ dependencies = [
     "lxml",
     "paramiko<4",
 ]
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.dynamic]
+version = { attr = "erpnextswiss.__version__" }
+
+[tool.bench.frappe-dependencies]
+frappe = ">=16.0.0,<17.0.0"
+erpnext = ">=16.0.0,<17.0.0"
 
 [project.urls]
 Homepage = "https://git.libracore.io/libracore/erpnextswiss"

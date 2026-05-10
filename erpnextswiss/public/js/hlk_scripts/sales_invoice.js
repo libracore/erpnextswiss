@@ -94,7 +94,8 @@ frappe.ui.form.on('Sales Invoice', {
                 remove_zero_positions(frm);
             }, __("HLK Tools"));
         }
-})
+    }
+});
 
 function recalc_special_discounts(frm) {
     if (cur_frm.doc.special_discounts) {

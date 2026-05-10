@@ -251,7 +251,14 @@ function show_esr_detail_dialog(frm, participant, reference, amount, default_set
     field_list.push({'fieldname': 'tax_rate', 'fieldtype': 'Float', 'label': __('Tax Rate in %'), 'default': default_settings.default_tax_rate});
     field_list.push({'fieldname': 'reference', 'fieldtype': 'Data', 'label': __('ESR Reference'), 'read_only': 1, 'default': reference});
     field_list.push({'fieldname': 'participant', 'fieldtype': 'Data', 'label': __('ESR Participant'), 'read_only': 1, 'default': participant});
-    field_list.push({'fieldname': 'cost_center', 'fieldtype': 'Link', 'label': __('Cost Center'), 'options': "Cost Center", 'default': locals[":Company"][frappe.defaults.get_user_default("company")]['cost_center'] });
+
+    var default_cost_center;
+    if (cur_frm.doc.company) {
+        default_cost_center = locals[":Company"][cur_frm.doc.company]['cost_center'];
+    } else {
+        default_cost_center = locals[":Company"][frappe.defaults.get_user_default("company")]['cost_center'];
+    }
+    field_list.push({'fieldname': 'cost_center', 'fieldtype': 'Link', 'label': __('Cost Center'), 'options': "Cost Center", 'default': default_cost_center });
     
     frappe.prompt(field_list,
     function(values){

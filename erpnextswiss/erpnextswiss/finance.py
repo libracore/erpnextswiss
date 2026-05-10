@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018-2024, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2018-2026, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
+
 import frappe
 from frappe import _
 from frappe.utils.background_jobs import enqueue
 from frappe.utils.file_manager import save_file, remove_all
 from erpnext.setup.utils import get_exchange_rate as get_core_exchange_rate
 from frappe.utils import rounded
+import json
 
 """ Jinja hook to create account sheets """
 def get_account_sheets(fiscal_year, company=None):
@@ -235,3 +237,82 @@ def get_booking_pairs(voucher_type, voucher_no):
     
     return booking_pairs
     
+
+@frappe.whitelist()
+def save_submit_close_payment_entry(doc):
+    """
+    This function allows to hook a button that will in one step save/submit and close a payment entry tab.
+    Refer to required JS-Code.
+    """
+    if type(doc) == str:
+        doc = json.loads(doc)
+    
+    if not frappe.db.exists("Payment Entry", doc.get('name')):
+        frappe.throw( _("Invalid document reference"), _("Auto submit") )
+        
+    db_doc = frappe.get_doc("Payment Entry", doc.get('name'))
+    # child tables: make sure to skip temporary names
+    for d in doc['deductions']:
+        if " " in d['name']:
+            d.pop('name', None)
+    for r in doc['references']:
+        if " " in r['name']:
+            r.pop('name', None)
+    
+    # apply document changes
+    db_doc.update(doc)
+
+    db_doc.save()
+    db_doc.submit()
+    return
+
+
+@frappe.whitelist()
+def find_party_from_iban(iban):
+    """
+    Allows to find a party (customer, supplier) from past transactions on the basis of the IBAN
+    """
+    parties = frappe.db.sql("""
+        SELECT `party_type`, `party`, `party_name`
+        FROM `tabPayment Entry`
+        WHERE `bank_account_no` = %(iban)s
+        ORDER BY `creation` DESC
+        LIMIT 1;""", 
+        {
+            'iban': iban
+        },
+        as_dict=True
+    )
+    if parties and len(parties) > 0:
+        return parties[0]
+    else:
+        return None
+
+
+@frappe.whitelist()
+def deduct_and_close(payment_entry, account, cost_center):
+    """
+    This function will deduct the unallocated amount to the provided account and submit the payment entry
+    """
+    doc = frappe.get_doc("Payment Entry", payment_entry)
+    if doc.payment_type == "Pay":
+        if doc.source_exchange_rate != 1 and (not doc.references or len(doc.references) == 0):
+            amount = doc.base_paid_amount;   # use full paid amount, with valuation
+        else:
+            amount = doc.unallocated_amount or doc.difference_amount or 0
+    else:
+        amount = ((-1) * doc.unallocated_amount) or doc.difference_amount
+
+    add_deduction(doc, account, cost_center, amount)
+
+    doc.save()
+    doc.submit()
+    return
+    
+def add_deduction(doc, account, cost_center, amount):
+    doc.append('deductions', {
+        'account': account,
+        'cost_center': cost_center,
+        'amount': amount
+    })
+    return

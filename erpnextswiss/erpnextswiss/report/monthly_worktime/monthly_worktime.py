@@ -111,7 +111,7 @@ def get_data(filters):
     lookup_filters.company = filters.company
     
     target_hours = get_target_time(lookup_filters, filters.employee)
-    monthly_overtime = get_employee_overtime(lookup_filters)
+    monthly_overtime = get_employee_overtime(lookup_filters, ignore_carryover=True)
     
     # set full year
     lookup_filters.from_date = datetime.date(filters.year, 1, 1)

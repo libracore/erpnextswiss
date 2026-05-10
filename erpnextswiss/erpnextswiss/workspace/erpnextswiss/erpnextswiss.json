@@ -34,6 +34,7 @@
     {"role": "Accounts Manager"},
     {"role": "Accounts User"}
   ],
+  "route": "schweizer-buchhaltung",
   "sequence_id": 20,
   "shortcuts": [
     {"color": "Blue", "doc_view": "", "label": "Zahlungsverkehr", "link_to": "", "type": "URL", "url": "/desk/zahlungsverkehr"},

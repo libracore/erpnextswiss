@@ -38,6 +38,7 @@
     {"role": "System Manager"},
     {"role": "Accounts Manager"}
   ],
+  "route": "schweiz-einstellungen",
   "sequence_id": 24,
   "shortcuts": [
     {"color": "Grey", "doc_view": "List", "label": "ERPNextSwiss Einstellungen", "link_to": "ERPNextSwiss Settings", "type": "DocType"},

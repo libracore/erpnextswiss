@@ -34,6 +34,7 @@
     {"role": "Accounts Manager"},
     {"role": "Accounts User"}
   ],
+  "route": "schweizer-mwst",
   "sequence_id": 23,
   "shortcuts": [
     {"color": "Orange", "doc_view": "List", "label": "MwSt-Abrechnung", "link_to": "VAT Declaration", "type": "DocType"},

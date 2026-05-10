@@ -2,10 +2,19 @@
 # License: AGPL v3. See LICENCE
 
 import json
+import re
 from pathlib import Path
 
 import frappe
 
+
+WORKSPACE_ROUTES = {
+    "Schweizer Buchhaltung": "schweizer-buchhaltung",
+    "Zahlungsverkehr": "zahlungsverkehr",
+    "QR-Rechnung & E-Rechnung": "qr-rechnung-e-rechnung",
+    "Schweizer MwSt": "schweizer-mwst",
+    "Schweiz-Einstellungen": "schweiz-einstellungen",
+}
 
 BANKIMPORT_BANKS = [
     {'doctype': 'BankImport Bank','bank_name': 'UBS','legacy_ref': 'ubs','file_format': 'CSV(csv)','bank_enabled': 1},
@@ -88,6 +97,8 @@ def _prepare_workspace_data(data):
     data.setdefault("public", 1)
     data.setdefault("for_user", "")
     data["app"] = "erpnextswiss"
+    if frappe.get_meta("Workspace").has_field("route"):
+        data["route"] = data.get("route") or _workspace_route(data.get("name") or data.get("title") or data.get("label"))
     _sanitize_workspace_links(data)
     _sanitize_workspace_shortcuts(data)
     return data
@@ -244,7 +255,33 @@ def _clear_workspace_child_tables(workspace):
 
 
 def _workspace_route_url(label):
-    return "/desk/" + frappe.scrub(label or "").replace("_", "-")
+    return "/desk/" + _workspace_route(label)
+
+
+def _workspace_route(label):
+    label = label or ""
+    return WORKSPACE_ROUTES.get(label) or _slugify_route(label)
+
+
+def _slugify_route(value):
+    value = str(value or "").strip().lower()
+    replacements = {
+        "ä": "ae",
+        "ö": "oe",
+        "ü": "ue",
+        "é": "e",
+        "è": "e",
+        "à": "a",
+        "ß": "ss",
+        "&": " ",
+        "+": " ",
+        "/": " ",
+        "\\": " ",
+    }
+    for source, target in replacements.items():
+        value = value.replace(source, target)
+    value = re.sub(r"[^a-z0-9]+", "-", value)
+    return value.strip("-") or "workspace"
 
 
 def _clear_desk_navigation_cache():

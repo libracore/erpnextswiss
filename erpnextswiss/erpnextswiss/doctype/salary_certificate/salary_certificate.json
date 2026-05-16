@@ -73,14 +73,14 @@
    "fieldname": "employee",
    "fieldtype": "Link",
    "in_list_view": 1,
-   "label": "Employee",
+   "label": "Mitarbeiter/in",
    "options": "Employee",
    "reqd": 1
   },
   {
    "fieldname": "amended_from",
    "fieldtype": "Link",
-   "label": "Amended From",
+   "label": "Korrigiert von",
    "no_copy": 1,
    "options": "Salary Certificate",
    "print_hide": 1,
@@ -102,12 +102,12 @@
   {
    "fieldname": "section_period",
    "fieldtype": "Section Break",
-   "label": "Period"
+   "label": "Periode"
   },
   {
    "fieldname": "year",
    "fieldtype": "Int",
-   "label": "Year"
+   "label": "Jahr"
   },
   {
    "fieldname": "column_period",
@@ -116,7 +116,7 @@
   {
    "fieldname": "start_date",
    "fieldtype": "Date",
-   "label": "Start date"
+   "label": "Von"
   },
   {
    "fieldname": "column_period_2",
@@ -127,18 +127,18 @@
    "fieldtype": "Date",
    "in_list_view": 1,
    "in_standard_filter": 1,
-   "label": "End date"
+   "label": "Bis"
   },
   {
    "fieldname": "section_benefits",
    "fieldtype": "Section Break",
-   "label": "Benefits"
+   "label": "Leistungen"
   },
   {
    "default": "Salary",
    "fieldname": "certificate_type",
    "fieldtype": "Select",
-   "label": "Certificate type",
+   "label": "Art des Lohnausweises",
    "options": "Salary\nPension"
   },
   {
@@ -149,7 +149,7 @@
    "default": "0",
    "fieldname": "free_transport",
    "fieldtype": "Check",
-   "label": "Free transport"
+   "label": "Unentgeltliche Beförderung"
   },
   {
    "fieldname": "column_benefits_2",
@@ -159,27 +159,27 @@
    "default": "0",
    "fieldname": "lunch_checks",
    "fieldtype": "Check",
-   "label": "Lunch checks"
+   "label": "Kantinenverpflegung / Lunch-Checks"
   },
   {
    "fieldname": "section_salary",
    "fieldtype": "Section Break",
-   "label": "Section salary"
+   "label": "Lohnangaben"
   },
   {
    "fieldname": "salary",
    "fieldtype": "Currency",
-   "label": "1. Salary"
+   "label": "1. Lohn / Rente"
   },
   {
    "fieldname": "catering",
    "fieldtype": "Currency",
-   "label": "2.1 Catering"
+   "label": "2.1 Verpflegung und Unterkunft"
   },
   {
    "fieldname": "car",
    "fieldtype": "Currency",
-   "label": "2.2 Car"
+   "label": "2.2 Privatanteil Geschäftsfahrzeug"
   },
   {
    "fieldname": "section_1",
@@ -188,17 +188,17 @@
   {
    "fieldname": "other_salary",
    "fieldtype": "Currency",
-   "label": "2.3 Other salary"
+   "label": "2.3 Weitere Gehaltsnebenleistungen"
   },
   {
    "fieldname": "irregular",
    "fieldtype": "Currency",
-   "label": "3 Irregular"
+   "label": "3. Unregelmässige Leistungen"
   },
   {
    "fieldname": "capital",
    "fieldtype": "Currency",
-   "label": "4 Capital"
+   "label": "4. Kapitalleistungen"
   },
   {
    "fieldname": "column_2",
@@ -207,17 +207,17 @@
   {
    "fieldname": "other_salary_description",
    "fieldtype": "Data",
-   "label": "2.3 Other salary description"
+   "label": "2.3 Bezeichnung weiterer Leistungen"
   },
   {
    "fieldname": "irregular_description",
    "fieldtype": "Data",
-   "label": "3 Irregular description"
+   "label": "3. Bezeichnung unregelmässige Leistungen"
   },
   {
    "fieldname": "capital_description",
    "fieldtype": "Data",
-   "label": "4 Capital description"
+   "label": "4. Bezeichnung Kapitalleistungen"
   },
   {
    "fieldname": "section_2",
@@ -226,12 +226,12 @@
   {
    "fieldname": "participation",
    "fieldtype": "Currency",
-   "label": "5 Participation"
+   "label": "5. Beteiligungsrechte gemäss Beiblatt"
   },
   {
    "fieldname": "board",
    "fieldtype": "Currency",
-   "label": "6 Board"
+   "label": "6. Verwaltungsratsentschädigungen"
   },
   {
    "fieldname": "section_3",
@@ -240,7 +240,7 @@
   {
    "fieldname": "other",
    "fieldtype": "Currency",
-   "label": "7 Other"
+   "label": "7. Andere Leistungen"
   },
   {
    "fieldname": "column_3",
@@ -249,7 +249,7 @@
   {
    "fieldname": "other_description",
    "fieldtype": "Data",
-   "label": "7 Other description"
+   "label": "7. Bezeichnung andere Leistungen"
   },
   {
    "fieldname": "section_4",
@@ -258,40 +258,40 @@
   {
    "fieldname": "gross_salary",
    "fieldtype": "Currency",
-   "label": "8 Gross salary",
+   "label": "8. Bruttolohn total",
    "read_only": 1
   },
   {
    "fieldname": "deduction_ahv",
    "fieldtype": "Currency",
-   "label": "9 Deductions AHV/IV/EO/ALV/NBUV"
+   "label": "9. Beiträge AHV/IV/EO/ALV/NBUV"
   },
   {
    "fieldname": "deduction_pension",
    "fieldtype": "Currency",
-   "label": "10.1 Deduction pension"
+   "label": "10.1 Ordentliche Beiträge berufliche Vorsorge"
   },
   {
    "fieldname": "deduction_pension_additional",
    "fieldtype": "Currency",
-   "label": "10.2 Deduction pension additional"
+   "label": "10.2 Beiträge Einkauf berufliche Vorsorge"
   },
   {
    "bold": 1,
    "fieldname": "net_salary",
    "fieldtype": "Currency",
-   "label": "11 Net salary",
+   "label": "11. Nettolohn / Rente",
    "read_only": 1
   },
   {
    "fieldname": "source_tax_deduction",
    "fieldtype": "Currency",
-   "label": "12 Source tax deduction"
+   "label": "12. Quellensteuerabzug"
   },
   {
    "fieldname": "effective_expenses_travel",
    "fieldtype": "Currency",
-   "label": "13.1.1 Effective expenses travel"
+   "label": "13.1.1 Effektive Spesen Reise / Verpflegung / Übernachtung"
   },
   {
    "fieldname": "section_5",
@@ -300,7 +300,7 @@
   {
    "fieldname": "effective_other_expenses",
    "fieldtype": "Currency",
-   "label": "13.1.2 Effective other expenses"
+   "label": "13.1.2 Effektive Spesen übrige"
   },
   {
    "fieldname": "column_4",
@@ -309,7 +309,7 @@
   {
    "fieldname": "effective_other_expenses_description",
    "fieldtype": "Data",
-   "label": "13.1.2 Effective other expenses description"
+   "label": "13.1.2 Bezeichnung effektive Spesen übrige"
   },
   {
    "fieldname": "section_6",
@@ -318,12 +318,12 @@
   {
    "fieldname": "representation_expenses",
    "fieldtype": "Currency",
-   "label": "13.2.1 Representation expenses"
+   "label": "13.2.1 Pauschalspesen Repräsentation"
   },
   {
    "fieldname": "car_expenses",
    "fieldtype": "Currency",
-   "label": "13.2.2 Car expenses"
+   "label": "13.2.2 Pauschalspesen Auto"
   },
   {
    "fieldname": "section_7",
@@ -332,7 +332,7 @@
   {
    "fieldname": "other_net_expenses",
    "fieldtype": "Currency",
-   "label": "13.2.3 Other net expenses"
+   "label": "13.2.3 Pauschalspesen übrige"
   },
   {
    "fieldname": "column_5",
@@ -341,7 +341,7 @@
   {
    "fieldname": "other_net_expenses_description",
    "fieldtype": "Data",
-   "label": "13.2.3 Other net exenses description"
+   "label": "13.2.3 Bezeichnung Pauschalspesen übrige"
   },
   {
    "fieldname": "section_8",
@@ -350,7 +350,7 @@
   {
    "fieldname": "education",
    "fieldtype": "Currency",
-   "label": "13.3 Education"
+   "label": "13.3 Beiträge an die Weiterbildung"
   },
   {
    "fieldname": "section_9",
@@ -359,7 +359,7 @@
   {
    "fieldname": "other_salary_sides",
    "fieldtype": "Data",
-   "label": "14 Other salary sides"
+   "label": "14. Weitere Gehaltsnebenleistungen"
   },
   {
    "fieldname": "column_6",
@@ -368,13 +368,13 @@
   {
    "fieldname": "remarks",
    "fieldtype": "Data",
-   "label": "15 Remarks"
+   "label": "15. Bemerkungen"
   },
   {
    "default": "0",
    "fieldname": "effective_expenses_travel_check",
    "fieldtype": "Check",
-   "label": "13.1.1 Effective expenses travel"
+   "label": "13.1.1 Effektive Reisespesen pauschal genehmigt"
   },
   {
    "fetch_from": "company.default_letter_head",
@@ -382,7 +382,7 @@
    "fieldname": "letter_head",
    "fieldtype": "Link",
    "hidden": 1,
-   "label": "Letter Head",
+   "label": "Briefkopf",
    "options": "Letter Head"
   },
   {
@@ -390,7 +390,7 @@
    "fetch_if_empty": 1,
    "fieldname": "company",
    "fieldtype": "Link",
-   "label": "Company",
+   "label": "Unternehmen",
    "options": "Company"
   }
  ],

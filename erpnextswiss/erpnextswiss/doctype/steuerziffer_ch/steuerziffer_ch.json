@@ -1,0 +1,80 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "autoname": "field:steuerziffer",
+ "creation": "2026-05-22 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "steuerziffer",
+  "beschreibung",
+  "steuersatz"
+ ],
+ "fields": [
+  {
+   "fieldname": "steuerziffer",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Steuerziffer",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "beschreibung",
+   "fieldtype": "Small Text",
+   "in_list_view": 1,
+   "label": "Beschreibung"
+  },
+  {
+   "fieldname": "steuersatz",
+   "fieldtype": "Percent",
+   "in_list_view": 1,
+   "label": "Steuersatz %"
+  }
+ ],
+ "links": [],
+ "modified": "2026-05-22 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "ERPNextSwiss",
+ "name": "Steuerziffer CH",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "role": "Accounts Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "role": "Accounts User"
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "steuerziffer",
+ "track_changes": 1
+}

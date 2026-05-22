@@ -1,5 +1,8 @@
-# erpnextswiss
-ERPNext application for Switzerland-specific use cases
+# ERPNextSwiss v16 fork
+
+ERPNext application for Switzerland-specific use cases, maintained here as a Frappe/ERPNext 16 compatible fork.
+
+This branch is based on upstream `libracore/erpnextswiss` (`v2025` / `master`) and contains the v16 adjustments used by KT Waermesysteme AG. The original upstream project does not currently provide a dedicated `v16` branch.
 
 ERPNext ([https://www.erpnext.org](https://www.erpnext.org)) is a global, leading, cloud based
 open source enterprise resource planning software. ERPNext is a trademark by Frappé Technologies.
@@ -7,7 +10,7 @@ open source enterprise resource planning software. ERPNext is a trademark by Fra
 The ERPNextSwiss application adds country-specific features to this platform such as
 bank, tax and payment integrations.
 
-ERPNextSwiss is maintaned by [libracore AG](https://www.libracore.com).
+ERPNextSwiss is maintained by [libracore AG](https://www.libracore.com). This fork keeps upstream functionality and adds local v16 compatibility fixes.
 
 For more information, refer to [https://erpnext.swiss](https://erpnext.swiss)
 
@@ -19,16 +22,17 @@ The copyright is owned by libracore and contributors.
 The software comes as-is without any warranty.
 
 ## Requirements
-Requires an ERPNext server instance (refer to [https://github.com/frappe/erpnext](https://github.com/frappe/erpnext))
+Requires a Frappe/ERPNext 16 server instance (refer to [https://github.com/frappe/erpnext](https://github.com/frappe/erpnext)).
 
 ## Compatibility
-ERPNextSwiss is tested against libracore and ERPNext v2023/v2025. 
-There are compatibility branches for v11 (for user who prefer the old desk) and v13/v14/v15.
+This fork targets Frappe/ERPNext 16. Upstream ERPNextSwiss is tested against libracore and ERPNext v2023/v2025, with older compatibility branches for v11 and v13/v14/v15.
+
+Additional v16 notes are kept in [README_V16.md](README_V16.md).
 
 ## Installation
 From the frappe-bench folder, execute
 
-    $ bench get-app https://github.com/libracore/erpnextswiss.git
+    $ bench get-app https://github.com/philippbenkert-maker/erpnextswiss.git --branch v16
     $ bench install-app erpnextswiss
 
 If you are using a multi-tenant environment, use the following for the installation
@@ -41,6 +45,8 @@ If you are using a multi-tenant environment, use the following for the installat
 Run updates with
 
     $ bench update
+
+For this fork, keep the app on branch `v16`. Upstream changes from `libracore/erpnextswiss` should be reviewed and merged selectively because the upstream repository has no v16 branch.
 
 In case you update from the sources and observe an error, make sure to update dependencies with
 

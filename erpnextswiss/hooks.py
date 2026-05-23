@@ -18,7 +18,7 @@ add_to_apps_screen = [
         "name": "erpnextswiss",
         "logo": "/assets/erpnextswiss/images/schweizer_buchhaltung.svg",
         "title": "Schweizer Buchhaltung",
-        "route": "/desk/schweizer-buchhaltung",
+        "route": "schweizer-buchhaltung",
     }
 ]
 

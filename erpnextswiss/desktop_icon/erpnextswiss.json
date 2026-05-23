@@ -9,7 +9,7 @@
   "label": "Schweizer Buchhaltung",
   "link": "",
   "link_to": "Schweizer Buchhaltung",
-  "link_type": "Workspace",
+  "link_type": "Workspace Sidebar",
   "logo_url": "/assets/erpnextswiss/images/schweizer_buchhaltung.svg",
   "name": "ERPNextSwiss",
   "restrict_removal": 0,

@@ -9,6 +9,7 @@ import frappe
 
 
 WORKSPACE_ROUTES = {
+    "ERPNextSwiss": "erpnextswiss",
     "Schweizer Buchhaltung": "schweizer-buchhaltung",
     "Zahlungsverkehr": "zahlungsverkehr",
     "QR-Rechnung & E-Rechnung": "qr-rechnung-e-rechnung",
@@ -73,6 +74,7 @@ def install_basic_docs():
 def ensure_v16_desk_records():
     ensure_workspace_records()
     ensure_workspace_sidebar_records()
+    ensure_erpnextswiss_alias_records()
     ensure_desktop_icon_records()
     _clear_desk_navigation_cache()
 
@@ -189,14 +191,58 @@ def ensure_desktop_icon_records():
 
 
 def _upsert_desktop_icon_record(data):
-    if frappe.db.exists("Desktop Icon", data["name"]):
-        desktop_icon = frappe.get_doc("Desktop Icon", data["name"])
+    existing_icon = frappe.db.exists("Desktop Icon", data["name"])
+    if not existing_icon and data.get("label"):
+        existing_icon = frappe.db.get_value("Desktop Icon", {"label": data["label"]}, "name")
+
+    if existing_icon:
+        desktop_icon = frappe.get_doc("Desktop Icon", existing_icon)
         if desktop_icon.meta.has_field("roles"):
             desktop_icon.set("roles", [])
-        desktop_icon.update(data)
+        update_data = data.copy()
+        update_data.pop("name", None)
+        desktop_icon.update(update_data)
         desktop_icon.save(ignore_permissions=True)
     else:
         frappe.get_doc(data).insert(ignore_permissions=True)
+
+
+def ensure_erpnextswiss_alias_records():
+    """Keep the app tile route /desk/erpnextswiss wired to the Swiss accounting workspace."""
+    if frappe.db.exists("Workspace", "Schweizer Buchhaltung"):
+        source = frappe.get_doc("Workspace", "Schweizer Buchhaltung").as_dict()
+        _strip_child_row_names(source)
+        source.update(
+            {
+                "name": "ERPNextSwiss",
+                "label": "ERPNextSwiss",
+                "title": "ERPNextSwiss",
+                "route": "erpnextswiss",
+            }
+        )
+        _upsert_workspace_record(_prepare_workspace_data(source))
+
+    if frappe.db.exists("DocType", "Workspace Sidebar") and frappe.db.exists(
+        "Workspace Sidebar", "Schweizer Buchhaltung"
+    ):
+        sidebar = frappe.get_doc("Workspace Sidebar", "Schweizer Buchhaltung").as_dict()
+        _strip_child_row_names(sidebar)
+        sidebar.update({"name": "ERPNextSwiss", "title": "ERPNextSwiss"})
+        for item in sidebar.get("items") or []:
+            if item.get("label") == "Start" and item.get("link_type") == "Workspace":
+                item["link_to"] = "ERPNextSwiss"
+        _upsert_workspace_sidebar_record(_prepare_workspace_sidebar_data(sidebar))
+
+
+def _strip_child_row_names(data):
+    for value in data.values():
+        if not isinstance(value, list):
+            continue
+        for row in value:
+            if not isinstance(row, dict):
+                continue
+            for fieldname in ("name", "parent", "parentfield", "parenttype"):
+                row.pop(fieldname, None)
 
 
 def _sanitize_workspace_links(workspace):

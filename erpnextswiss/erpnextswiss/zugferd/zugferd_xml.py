@@ -160,8 +160,12 @@ def prepare_data(sales_invoice):
         customer_address = frappe.get_doc("Address", sinv.customer_address)
         if customer_address:
             customer_country_code = frappe.get_value("Country", customer_address.country, "code").upper()
+            address_line_1 = html.escape(customer_address.address_line1 or "")
+            if customer_address.get('hausnummer'):
+                # this is an override function, if the address exposes a house number field, append this
+                address_line_1 = html.escape((customer_address.address_line1 or "") + " " + (customer_address.hausnummer or ""))  
             data['customer_address'] = {
-                'address_line1': html.escape(customer_address.address_line1 or ""),
+                'address_line1': address_line_1,
                 'address_line2': html.escape(customer_address.address_line2 or ""),
                 'pincode': html.escape(customer_address.pincode or ""),
                 'city': html.escape(customer_address.city or ""),

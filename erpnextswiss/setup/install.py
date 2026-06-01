@@ -194,9 +194,12 @@ def ensure_desktop_icon_records():
 
 
 def _upsert_desktop_icon_record(data):
-    existing_icon = frappe.db.exists("Desktop Icon", data["name"])
-    if not existing_icon and data.get("label"):
+    legacy_icon = frappe.db.exists("Desktop Icon", data["name"])
+    existing_icon = None
+    if data.get("label"):
         existing_icon = frappe.db.get_value("Desktop Icon", {"label": data["label"]}, "name")
+    if not existing_icon:
+        existing_icon = legacy_icon
 
     if existing_icon:
         desktop_icon = frappe.get_doc("Desktop Icon", existing_icon)
@@ -215,6 +218,8 @@ def _upsert_desktop_icon_record(data):
                     update_data[fieldname],
                     update_modified=False,
                 )
+        if legacy_icon and legacy_icon != existing_icon:
+            frappe.db.set_value("Desktop Icon", legacy_icon, "hidden", 1, update_modified=False)
     else:
         frappe.get_doc(data).insert(ignore_permissions=True)
 

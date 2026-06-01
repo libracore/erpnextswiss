@@ -103,6 +103,7 @@ def _prepare_workspace_data(data):
         data["route"] = data.get("route") or _workspace_route(data.get("name") or data.get("title") or data.get("label"))
     _sanitize_workspace_links(data)
     _sanitize_workspace_shortcuts(data)
+    _sanitize_workspace_content(data)
     return data
 
 
@@ -114,6 +115,7 @@ def _upsert_workspace_record(data):
         workspace.update(data)
         _sanitize_workspace_links(workspace)
         _sanitize_workspace_shortcuts(workspace)
+        _sanitize_workspace_content(workspace)
         workspace.save(ignore_permissions=True)
         return
 
@@ -133,6 +135,7 @@ def _upsert_workspace_record(data):
         workspace.update(data)
         _sanitize_workspace_links(workspace)
         _sanitize_workspace_shortcuts(workspace)
+        _sanitize_workspace_content(workspace)
         workspace.save(ignore_permissions=True)
 
 
@@ -157,6 +160,7 @@ def _prepare_workspace_sidebar_data(data):
         data.pop(meta_field, None)
     data.setdefault("standard", 1)
     data["app"] = "erpnextswiss"
+    _sanitize_sidebar_items(data)
     return data
 
 
@@ -257,6 +261,9 @@ def _sanitize_workspace_links(workspace):
                 link["link_type"] = "URL"
                 link["link_to"] = _workspace_route_url(link.get("link_to") or link.get("label"))
         if link.get("link_type") == "URL":
+            filtered_links.append(link)
+            continue
+        if not _workspace_target_exists(link.get("link_type"), link.get("link_to")):
             continue
         filtered_links.append(link)
     if hasattr(workspace, "links"):
@@ -266,6 +273,7 @@ def _sanitize_workspace_links(workspace):
 
 
 def _sanitize_workspace_shortcuts(workspace):
+    filtered_shortcuts = []
     for shortcut in workspace.get("shortcuts") or []:
         if shortcut.get("type") == "Workspace":
             url = _workspace_route_url(shortcut.get("link_to") or shortcut.get("label"))
@@ -292,6 +300,75 @@ def _sanitize_workspace_shortcuts(workspace):
                 shortcut.doc_view = ""
             else:
                 shortcut["doc_view"] = ""
+        if shortcut.get("type") == "URL":
+            filtered_shortcuts.append(shortcut)
+            continue
+        if not _workspace_target_exists(shortcut.get("type"), shortcut.get("link_to")):
+            continue
+        filtered_shortcuts.append(shortcut)
+    if hasattr(workspace, "shortcuts"):
+        workspace.shortcuts = filtered_shortcuts
+    else:
+        workspace["shortcuts"] = filtered_shortcuts
+
+
+def _sanitize_workspace_content(workspace):
+    content = workspace.get("content")
+    if not content:
+        return
+
+    try:
+        blocks = json.loads(content)
+    except (TypeError, ValueError):
+        return
+
+    shortcut_names = {shortcut.get("label") for shortcut in workspace.get("shortcuts") or []}
+    filtered_blocks = []
+    for block in blocks:
+        if block.get("type") == "shortcut":
+            shortcut_name = (block.get("data") or {}).get("shortcut_name")
+            if shortcut_name not in shortcut_names:
+                continue
+        filtered_blocks.append(block)
+
+    sanitized_content = json.dumps(filtered_blocks, ensure_ascii=False, separators=(",", ":"))
+    if hasattr(workspace, "content"):
+        workspace.content = sanitized_content
+    else:
+        workspace["content"] = sanitized_content
+
+
+def _sanitize_sidebar_items(sidebar):
+    filtered_items = []
+    for item in sidebar.get("items") or []:
+        if item.get("link_type") == "URL":
+            filtered_items.append(item)
+            continue
+        if not _workspace_target_exists(item.get("link_type"), item.get("link_to")):
+            continue
+        filtered_items.append(item)
+    sidebar["items"] = filtered_items
+
+
+def _workspace_target_exists(link_type, link_to):
+    if not link_type or not link_to:
+        return True
+    if link_type == "DocType":
+        return bool(frappe.db.exists("DocType", link_to))
+    if link_type == "Page":
+        return bool(frappe.db.exists("Page", link_to))
+    if link_type == "Report":
+        return _report_target_exists(link_to)
+    if link_type == "Workspace":
+        return bool(frappe.db.exists("Workspace", link_to))
+    return True
+
+
+def _report_target_exists(report_name):
+    ref_doctype = frappe.db.get_value("Report", report_name, "ref_doctype")
+    if ref_doctype and not frappe.db.exists("DocType", ref_doctype):
+        return False
+    return bool(frappe.db.exists("Report", report_name))
 
 
 def _clear_workspace_child_tables(workspace):

@@ -59,7 +59,7 @@ def submit(payment_entry):
 @frappe.whitelist()
 def submit_all(payment_entries):
     # get the array from the string parameter
-    payments = eval(payment_entries)
+    payments = frappe.parse_json(payment_entries) if isinstance(payment_entries, str) else payment_entries
     # loop through all matched payments and submit them
     for payment_entry in payments:
         submit(payment_entry)

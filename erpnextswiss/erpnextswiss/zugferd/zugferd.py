@@ -22,6 +22,15 @@ from datetime import datetime, date
 from bs4 import BeautifulSoup
 from frappe import _
 
+def import_pdf(pdf):
+    """Backward-compatible wrapper for extracting Factur-X/ZUGFeRD XML from a PDF."""
+    if isinstance(pdf, str):
+        with open(pdf, "rb") as file:
+            pdf = file.read()
+
+    _xml_filename, xml_content = get_facturx_xml_from_pdf(pdf)
+    return xml_content
+
 """
 Creates an XML file from a sales invoice
 :params:sales_invoice:   document name of the sale invoice

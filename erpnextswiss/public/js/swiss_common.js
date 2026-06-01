@@ -16,22 +16,54 @@
                 return;
             }
 
+            var firstPosition = -1;
+            var firstIdx = null;
             var changed = false;
+            var migrated = [];
+
             icons.forEach(function(icon) {
-                if (!icon || icon.label !== "ERPNextSwiss") {
+                var isSwissAccountingIcon = icon && (
+                    icon.label === "ERPNextSwiss" ||
+                    icon.label === "Schweizer Buchhaltung" ||
+                    icon.name === "ERPNextSwiss" ||
+                    icon.name === "Schweizer Buchhaltung" ||
+                    (icon.app === "erpnextswiss" && icon.icon_type === "App")
+                );
+
+                if (!isSwissAccountingIcon) {
+                    migrated.push(icon);
                     return;
                 }
 
-                icon.label = "Schweizer Buchhaltung";
-                icon.link_type = "Workspace Sidebar";
-                icon.link_to = "Schweizer Buchhaltung";
-                icon.app = "erpnextswiss";
-                icon.logo_url = "/assets/erpnextswiss/images/schweizer_buchhaltung.svg";
+                if (firstPosition === -1) {
+                    firstPosition = migrated.length;
+                    firstIdx = icon.idx;
+                }
                 changed = true;
             });
 
             if (changed) {
-                localStorage.setItem(key, JSON.stringify(icons));
+                var swissIcon = {
+                    label: "Schweizer Buchhaltung",
+                    bg_color: null,
+                    link: "",
+                    link_type: "Workspace Sidebar",
+                    app: "erpnextswiss",
+                    icon_type: "App",
+                    parent_icon: null,
+                    icon: "erpnextswiss",
+                    link_to: "Schweizer Buchhaltung",
+                    idx: firstIdx,
+                    standard: 1,
+                    logo_url: "/assets/erpnextswiss/images/schweizer_buchhaltung.svg",
+                    hidden: 0,
+                    name: "ERPNextSwiss",
+                    restrict_removal: 0,
+                    icon_image: null,
+                    child_icons: []
+                };
+                migrated.splice(firstPosition, 0, swissIcon);
+                localStorage.setItem(key, JSON.stringify(migrated));
             }
         } catch (e) {
             // Ignore broken local desktop layouts; Frappe will fall back to boot data.

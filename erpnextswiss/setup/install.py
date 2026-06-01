@@ -27,6 +27,25 @@ PAGE_TITLES = {
     "worldline-tim-test": "Worldline TIM-Test",
 }
 
+SWISS_ACCOUNTING_ICON = {
+    "label": "Schweizer Buchhaltung",
+    "icon_type": "App",
+    "link_type": "Workspace Sidebar",
+    "link_to": "Schweizer Buchhaltung",
+    "parent_icon": None,
+    "sidebar": "",
+    "icon": "erpnextswiss",
+    "icon_image": None,
+    "logo_url": "/assets/erpnextswiss/images/schweizer_buchhaltung.svg",
+    "link": "",
+    "hidden": 0,
+    "standard": 1,
+    "app": "erpnextswiss",
+    "bg_color": None,
+    "name": "ERPNextSwiss",
+    "restrict_removal": 0,
+}
+
 BANKIMPORT_BANKS = [
     {'doctype': 'BankImport Bank','bank_name': 'UBS','legacy_ref': 'ubs','file_format': 'CSV(csv)','bank_enabled': 1},
     {'doctype': 'BankImport Bank','bank_name': 'ZKB','legacy_ref': 'zkb','file_format': 'CSV(csv)','bank_enabled': 1},
@@ -85,6 +104,7 @@ def ensure_v16_desk_records():
     ensure_workspace_records()
     ensure_workspace_sidebar_records()
     ensure_desktop_icon_records()
+    ensure_desktop_layout_records()
     ensure_page_titles()
     _clear_desk_navigation_cache()
 
@@ -243,6 +263,71 @@ def _upsert_desktop_icon_record(data):
             frappe.db.set_value("Desktop Icon", legacy_icon, "hidden", 1, update_modified=False)
     else:
         frappe.get_doc(data).insert(ignore_permissions=True)
+
+
+def ensure_desktop_layout_records():
+    if not frappe.db.exists("DocType", "Desktop Layout"):
+        return
+
+    for layout_name in frappe.get_all("Desktop Layout", pluck="name"):
+        layout_doc = frappe.get_doc("Desktop Layout", layout_name)
+        if _sanitize_desktop_layout(layout_doc):
+            layout_doc.save(ignore_permissions=True)
+
+
+def _sanitize_desktop_layout(layout_doc):
+    if not layout_doc.get("layout"):
+        return False
+
+    try:
+        icons = json.loads(layout_doc.layout)
+    except (TypeError, ValueError):
+        return False
+
+    if not isinstance(icons, list):
+        return False
+
+    first_position = None
+    first_idx = None
+    sanitized_icons = []
+    changed = False
+
+    for position, icon in enumerate(icons):
+        if not isinstance(icon, dict):
+            sanitized_icons.append(icon)
+            continue
+
+        if _is_swiss_accounting_desktop_icon(icon):
+            if first_position is None:
+                first_position = len(sanitized_icons)
+                first_idx = icon.get("idx")
+            changed = True
+            continue
+
+        sanitized_icons.append(icon)
+
+    if first_position is None:
+        return False
+
+    canonical_icon = SWISS_ACCOUNTING_ICON.copy()
+    if first_idx is not None:
+        canonical_icon["idx"] = first_idx
+    canonical_icon["child_icons"] = []
+    sanitized_icons.insert(first_position, canonical_icon)
+
+    layout_doc.layout = json.dumps(sanitized_icons, ensure_ascii=False)
+    return changed or icons != sanitized_icons
+
+
+def _is_swiss_accounting_desktop_icon(icon):
+    return (
+        icon.get("label") in {"ERPNextSwiss", "Schweizer Buchhaltung"}
+        or icon.get("name") in {"ERPNextSwiss", "Schweizer Buchhaltung"}
+        or (
+            icon.get("app") == "erpnextswiss"
+            and icon.get("icon_type") == "App"
+        )
+    )
 
 
 def ensure_erpnextswiss_alias_records():

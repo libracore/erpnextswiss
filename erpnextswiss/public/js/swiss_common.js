@@ -1,3 +1,50 @@
+(function() {
+    function migrate_legacy_desktop_icon() {
+        if (!window.frappe || !frappe.session || !frappe.session.user || !window.localStorage) {
+            return;
+        }
+
+        var key = frappe.session.user + ":desktop";
+        var raw = localStorage.getItem(key);
+        if (!raw || raw === "undefined" || raw === "null") {
+            return;
+        }
+
+        try {
+            var icons = JSON.parse(raw);
+            if (!Array.isArray(icons)) {
+                return;
+            }
+
+            var changed = false;
+            icons.forEach(function(icon) {
+                if (!icon || icon.label !== "ERPNextSwiss") {
+                    return;
+                }
+
+                icon.label = "Schweizer Buchhaltung";
+                icon.link_type = "Workspace Sidebar";
+                icon.link_to = "Schweizer Buchhaltung";
+                icon.app = "erpnextswiss";
+                icon.logo_url = "/assets/erpnextswiss/images/schweizer_buchhaltung.svg";
+                changed = true;
+            });
+
+            if (changed) {
+                localStorage.setItem(key, JSON.stringify(icons));
+            }
+        } catch (e) {
+            // Ignore broken local desktop layouts; Frappe will fall back to boot data.
+        }
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", migrate_legacy_desktop_icon);
+    } else {
+        migrate_legacy_desktop_icon();
+    }
+})();
+
 // this function checks if an ESR code is valid
 function check_esr(esr_raw) {
     esr_code = esr_raw.replace(/ /g, '');

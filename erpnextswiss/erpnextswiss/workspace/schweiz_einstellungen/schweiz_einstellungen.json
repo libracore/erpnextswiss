@@ -1,6 +1,6 @@
 {
   "charts": [],
-  "content": "[{\"id\":\"header-1\",\"type\":\"header\",\"data\":{\"text\":\"Schweiz-Einstellungen\",\"level\":4,\"col\":12}},{\"id\":\"shortcut-settings\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"ERPNextSwiss Einstellungen\",\"col\":3}},{\"id\":\"shortcut-zugferd\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"ZUGFeRD-Einstellungen\",\"col\":3}},{\"id\":\"shortcut-bank-template\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Bankimport-Vorlagen\",\"col\":3}},{\"id\":\"shortcut-vat-query\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"MwSt-Abfragen\",\"col\":3}},{\"id\":\"header-2\",\"type\":\"header\",\"data\":{\"text\":\"Stammdaten\",\"level\":4,\"col\":12}},{\"id\":\"shortcut-pincode\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Postleitzahlen\",\"col\":3}},{\"id\":\"shortcut-label-printer\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Etikettendrucker\",\"col\":3}},{\"id\":\"shortcut-supplier\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Lieferanten\",\"col\":3}},{\"id\":\"shortcut-bank-account\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Bankkonten\",\"col\":3}},{\"id\":\"header-3\",\"type\":\"header\",\"data\":{\"text\":\"Optionale Integrationen\",\"level\":4,\"col\":12}},{\"id\":\"shortcut-planzer\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Planzer Einstellungen\",\"col\":3}},{\"id\":\"shortcut-dpd\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"DPD Einstellungen\",\"col\":3}},{\"id\":\"shortcut-datatrans\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Datatrans Einstellungen\",\"col\":3}},{\"id\":\"shortcut-payrexx\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Payrexx Einstellungen\",\"col\":3}}]",
+  "content": "[{\"id\":\"header-1\",\"type\":\"header\",\"data\":{\"text\":\"Schweiz-Einstellungen\",\"level\":4,\"col\":12}},{\"id\":\"shortcut-settings\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"App-Einstellungen\",\"col\":3}},{\"id\":\"shortcut-zugferd\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"ZUGFeRD-Einstellungen\",\"col\":3}},{\"id\":\"shortcut-bank-template\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Bankimport-Vorlagen\",\"col\":3}},{\"id\":\"shortcut-vat-query\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"MwSt-Abfragen\",\"col\":3}},{\"id\":\"header-2\",\"type\":\"header\",\"data\":{\"text\":\"Stammdaten\",\"level\":4,\"col\":12}},{\"id\":\"shortcut-pincode\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Postleitzahlen\",\"col\":3}},{\"id\":\"shortcut-label-printer\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Etikettendrucker\",\"col\":3}},{\"id\":\"shortcut-supplier\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Lieferanten\",\"col\":3}},{\"id\":\"shortcut-bank-account\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Bankkonten\",\"col\":3}},{\"id\":\"header-3\",\"type\":\"header\",\"data\":{\"text\":\"Optionale Integrationen\",\"level\":4,\"col\":12}},{\"id\":\"shortcut-planzer\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Planzer Einstellungen\",\"col\":3}},{\"id\":\"shortcut-dpd\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"DPD Einstellungen\",\"col\":3}},{\"id\":\"shortcut-datatrans\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Datatrans Einstellungen\",\"col\":3}},{\"id\":\"shortcut-payrexx\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Payrexx Einstellungen\",\"col\":3}}]",
   "creation": "2026-05-10 00:00:00.000000",
   "custom_blocks": [],
   "docstatus": 0,
@@ -13,7 +13,7 @@
   "is_hidden": 0,
   "label": "Schweiz-Einstellungen",
   "links": [
-    {"label": "ERPNextSwiss Einstellungen", "link_to": "ERPNextSwiss Settings", "link_type": "DocType", "type": "Link"},
+    {"label": "App-Einstellungen", "link_to": "ERPNextSwiss Settings", "link_type": "DocType", "type": "Link"},
     {"label": "ZUGFeRD-Einstellungen", "link_to": "ZUGFeRD Settings", "link_type": "DocType", "type": "Link"},
     {"label": "Bankimport-Vorlagen", "link_to": "BankImport Template", "link_type": "DocType", "type": "Link"},
     {"label": "MwSt-Abfragen", "link_to": "VAT query", "link_type": "DocType", "type": "Link"},
@@ -41,7 +41,7 @@
   "route": "schweiz-einstellungen",
   "sequence_id": 24,
   "shortcuts": [
-    {"color": "Grey", "doc_view": "List", "label": "ERPNextSwiss Einstellungen", "link_to": "ERPNextSwiss Settings", "type": "DocType"},
+    {"color": "Grey", "doc_view": "List", "label": "App-Einstellungen", "link_to": "ERPNextSwiss Settings", "type": "DocType"},
     {"color": "Grey", "doc_view": "List", "label": "ZUGFeRD-Einstellungen", "link_to": "ZUGFeRD Settings", "type": "DocType"},
     {"color": "Blue", "doc_view": "List", "label": "Bankimport-Vorlagen", "link_to": "BankImport Template", "type": "DocType"},
     {"color": "Orange", "doc_view": "List", "label": "MwSt-Abfragen", "link_to": "VAT query", "type": "DocType"},

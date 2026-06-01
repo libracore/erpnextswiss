@@ -13,14 +13,14 @@
    "fieldname": "year",
    "fieldtype": "Int",
    "in_list_view": 1,
-   "label": "Year",
+   "label": "Jahr",
    "reqd": 1
   },
   {
    "fieldname": "public_holiday_list",
    "fieldtype": "Link",
    "in_list_view": 1,
-   "label": "Public Holiday List",
+   "label": "Feiertagsliste",
    "options": "Holiday List",
    "reqd": 1
   },
@@ -28,7 +28,7 @@
    "fieldname": "company",
    "fieldtype": "Link",
    "in_list_view": 1,
-   "label": "Company",
+   "label": "Unternehmen",
    "options": "Company",
    "reqd": 1
   }

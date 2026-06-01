@@ -14,34 +14,34 @@
   {
    "fieldname": "daily_hours",
    "fieldtype": "Table",
-   "label": "Daily Hours",
+   "label": "Tagesstunden",
    "options": "Daily Hours",
    "reqd": 1
   },
   {
    "fieldname": "public_holidays",
    "fieldtype": "Table",
-   "label": "Public Holidays",
+   "label": "Feiertage",
    "options": "Public Holiday List"
   },
   {
    "fieldname": "activity_type_determination",
    "fieldtype": "Table",
-   "label": "Activity Type Determination",
+   "label": "Tätigkeitsart-Ermittlung",
    "options": "Activity Type Determination"
   },
   {
    "default": "Timesheet",
    "fieldname": "vacation_hours_based_on",
    "fieldtype": "Select",
-   "label": "Consideration of vacation hours based on",
+   "label": "Ferienstunden berücksichtigen basierend auf",
    "options": "Timesheet\nLeave Application"
   },
   {
    "depends_on": "eval:doc.vacation_hours_based_on=='Leave Application'",
    "fieldname": "leave_application_note",
    "fieldtype": "HTML",
-   "options": "<p>Only Leave types that are not marked as 'Is Leave Without Pay' are included.</p>"
+   "options": "<p>Es werden nur Abwesenheitsarten berücksichtigt, die nicht als unbezahlte Abwesenheit markiert sind.</p>"
   }
  ],
  "issingle": 1,

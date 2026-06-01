@@ -29,7 +29,7 @@
    "default": "0",
    "fieldname": "enabled",
    "fieldtype": "Check",
-   "label": "Enabled"
+   "label": "Aktiviert"
   },
   {
    "fieldname": "col_main",
@@ -43,13 +43,13 @@
   {
    "fieldname": "password",
    "fieldtype": "Password",
-   "label": "Password"
+   "label": "Passwort"
   },
   {
    "default": "de_CH",
    "fieldname": "language",
    "fieldtype": "Data",
-   "label": "Language"
+   "label": "Sprache"
   },
   {
    "default": "0",
@@ -66,12 +66,12 @@
    "default": "A6",
    "fieldname": "paper_format",
    "fieldtype": "Data",
-   "label": "Paper Format"
+   "label": "Papierformat"
   },
   {
    "fieldname": "sender_depot",
    "fieldtype": "Data",
-   "label": "Sender Depot"
+   "label": "Versenderdepot"
   },
   {
    "fieldname": "col_details",
@@ -81,7 +81,7 @@
    "default": "B2C",
    "fieldname": "product",
    "fieldtype": "Data",
-   "label": "Product"
+   "label": "Produkt"
   }
  ],
  "issingle": 1,

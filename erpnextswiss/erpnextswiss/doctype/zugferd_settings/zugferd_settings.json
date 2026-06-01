@@ -14,45 +14,45 @@
  ],
  "fields": [
   {
-   "description": "New items will be created in this group",
+   "description": "Neue Artikel werden in dieser Artikelgruppe erstellt.",
    "fieldname": "item_group",
    "fieldtype": "Link",
-   "label": "Item Group",
+   "label": "Artikelgruppe",
    "options": "Item Group"
   },
   {
    "fieldname": "section_items",
    "fieldtype": "Section Break",
-   "label": "Items"
+   "label": "Artikel"
   },
   {
-   "description": "Add default field values for new records here",
+   "description": "Standardwerte für neue Datensätze hier erfassen.",
    "fieldname": "sec_defaults",
    "fieldtype": "Section Break",
-   "label": "Default"
+   "label": "Standard"
   },
   {
    "fieldname": "defaults",
    "fieldtype": "Table",
-   "label": "Default Values",
+   "label": "Standardwerte",
    "options": "ZUGFeRD Default Value"
   },
   {
    "fieldname": "sec_general",
    "fieldtype": "Section Break",
-   "label": "General"
+   "label": "Allgemein"
   },
   {
    "default": "0",
    "fieldname": "ignore_bill_date",
    "fieldtype": "Check",
-   "label": "Ignore bill date on QR"
+   "label": "Rechnungsdatum auf QR ignorieren"
   },
   {
    "default": "0",
    "fieldname": "ignore_due_date",
    "fieldtype": "Check",
-   "label": "Ignore due date on QR"
+   "label": "Fälligkeitsdatum auf QR ignorieren"
   }
  ],
  "issingle": 1,

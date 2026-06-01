@@ -15,36 +15,36 @@
   {
    "fieldname": "section_quotation",
    "fieldtype": "Section Break",
-   "label": "Quotation"
+   "label": "Offerte"
   },
   {
    "default": "0",
    "fieldname": "activate_automatic_validity_calculation",
    "fieldtype": "Check",
-   "label": "Activate Automatic Validity Calculation"
+   "label": "Automatische Gültigkeitsberechnung aktivieren"
   },
   {
    "depends_on": "eval:doc.activate_automatic_validity_calculation",
    "fieldname": "default_validity_in_months",
    "fieldtype": "Int",
-   "label": "Default Validity In Months"
+   "label": "Standardgültigkeit in Monaten"
   },
   {
    "default": "0",
    "fieldname": "validate_hlk_element_allocation",
    "fieldtype": "Check",
-   "label": "Validate HLK Element Allocation"
+   "label": "HLK-Elementzuordnung validieren"
   },
   {
    "fieldname": "section_general",
    "fieldtype": "Section Break",
-   "label": "General"
+   "label": "Allgemein"
   },
   {
    "fieldname": "structur_element_filter",
    "fieldtype": "Link",
    "in_list_view": 1,
-   "label": "Item Group For Structur Element Filter",
+   "label": "Artikelgruppe für Strukturelement-Filter",
    "options": "Item Group",
    "reqd": 1
   }

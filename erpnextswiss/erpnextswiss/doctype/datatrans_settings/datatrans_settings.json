@@ -23,19 +23,19 @@
    "fieldname": "endpoint",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "Endpoint",
+   "label": "Endpunkt",
    "reqd": 1
   },
   {
-   "description": "These are system-generated credentials from UPP Management &gt; Security",
+   "description": "Diese Zugangsdaten werden im UPP Management unter Security vom System erzeugt.",
    "fieldname": "sec_credentials",
    "fieldtype": "Section Break",
-   "label": "Credentials"
+   "label": "Zugangsdaten"
   },
   {
    "fieldname": "username",
    "fieldtype": "Data",
-   "label": "User name",
+   "label": "Benutzername",
    "reqd": 1
   },
   {
@@ -45,40 +45,40 @@
   {
    "fieldname": "password",
    "fieldtype": "Password",
-   "label": "Password",
+   "label": "Passwort",
    "reqd": 1
   },
   {
    "fieldname": "sec_payment_methods",
    "fieldtype": "Section Break",
-   "label": "Payment methods"
+   "label": "Zahlungsarten"
   },
   {
    "fieldname": "payment_methods",
    "fieldtype": "Table",
-   "label": "Payment methods",
+   "label": "Zahlungsarten",
    "options": "Datatrans Payment Method",
    "reqd": 1
   },
   {
    "fieldname": "sec_redirect",
    "fieldtype": "Section Break",
-   "label": "Redirects"
+   "label": "Weiterleitungen"
   },
   {
    "fieldname": "success_url",
    "fieldtype": "Data",
-   "label": "Success URL"
+   "label": "Erfolgs-URL"
   },
   {
    "fieldname": "error_url",
    "fieldtype": "Data",
-   "label": "Error URL"
+   "label": "Fehler-URL"
   },
   {
    "fieldname": "cancel_url",
    "fieldtype": "Data",
-   "label": "Cancel URL"
+   "label": "Abbruch-URL"
   }
  ],
  "issingle": 1,

@@ -13,7 +13,7 @@
    "fieldname": "company",
    "fieldtype": "Link",
    "in_list_view": 1,
-   "label": "Company",
+   "label": "Unternehmen",
    "options": "Company",
    "reqd": 1
   },
@@ -21,7 +21,7 @@
    "fieldname": "activity_type",
    "fieldtype": "Link",
    "in_list_view": 1,
-   "label": "Activity Type",
+   "label": "Tätigkeitsart",
    "options": "Activity Type",
    "reqd": 1
   },
@@ -29,7 +29,7 @@
    "fieldname": "column_label",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "Column Label",
+   "label": "Spaltenbeschriftung",
    "reqd": 1
   }
  ],

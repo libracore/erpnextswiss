@@ -23,10 +23,10 @@ BANKIMPORT_BANKS = [
     {'doctype': 'BankImport Bank','bank_name': 'Raiffeisen','legacy_ref': 'raiffeisen','file_format': 'CSV(csv)','bank_enabled': 1},
     {'doctype': 'BankImport Bank','bank_name': 'CreditSwiss','legacy_ref': 'cs','file_format': 'CSV(csv)','bank_enabled': 1},
     {'doctype': 'BankImport Bank','bank_name': 'Migrosbank','legacy_ref': 'migrosbank','file_format': 'CSV(csv)','bank_enabled': 1},
-    {'doctype': 'BankImport Bank','bank_name': 'Postfinance','legacy_ref': 'postfinance','file_format': 'CAMT.054 Transaction Notification(camt054)','bank_enabled': 1},
+    {'doctype': 'BankImport Bank','bank_name': 'Postfinance','legacy_ref': 'postfinance','file_format': 'CAMT.054 Belastungs-/Gutschriftsanzeige(camt054)','bank_enabled': 1},
     {'doctype': 'BankImport Bank','bank_name': 'Kreissparkasse','legacy_ref': 'ksk','file_format': 'CSV(csv)','bank_enabled': 1},
     {'doctype': 'BankImport Bank','bank_name': 'Volksbank','legacy_ref': 'voba','file_format': 'CSV(csv)','bank_enabled': 1},
-    {'doctype': 'BankImport Bank','bank_name': 'Aargauische Kantonalbank','legacy_ref': 'akb','file_format': 'CAMT.053 Bank Statement(camt053)','bank_enabled': 1},
+    {'doctype': 'BankImport Bank','bank_name': 'Aargauische Kantonalbank','legacy_ref': 'akb','file_format': 'CAMT.053 Kontoauszug(camt053)','bank_enabled': 1},
 ]
 
 
@@ -40,7 +40,7 @@ def after_migrate():
     ensure_bankimport_banks()
     ensure_v16_desk_records()
     frappe.db.commit()
-    
+
 
 def ensure_bankimport_banks():
     if not frappe.db.exists("DocType", "ERPNextSwiss Settings"):
@@ -219,8 +219,8 @@ def ensure_erpnextswiss_alias_records():
         source.update(
             {
                 "name": "ERPNextSwiss",
-                "label": "ERPNextSwiss",
-                "title": "ERPNextSwiss",
+                "label": "Schweizer Buchhaltung",
+                "title": "Schweizer Buchhaltung",
                 "route": "erpnextswiss",
             }
         )
@@ -231,7 +231,7 @@ def ensure_erpnextswiss_alias_records():
     ):
         sidebar = frappe.get_doc("Workspace Sidebar", "Schweizer Buchhaltung").as_dict()
         _strip_child_row_names(sidebar)
-        sidebar.update({"name": "ERPNextSwiss", "title": "ERPNextSwiss"})
+        sidebar.update({"name": "ERPNextSwiss", "title": "Schweizer Buchhaltung"})
         for item in sidebar.get("items") or []:
             if item.get("label") == "Start" and item.get("link_type") == "Workspace":
                 item["link_to"] = "ERPNextSwiss"
@@ -411,4 +411,4 @@ def _clear_desk_navigation_cache():
     frappe.clear_cache()
     frappe.cache.delete_key("desktop_icons")
     frappe.cache.delete_key("bootinfo")
-    
+

@@ -3,6 +3,8 @@
 
 frappe.ui.form.on('ERPNextSwiss Settings', {
 	refresh: function(frm) {
+        frm.page.set_title('ERPNextSwiss Einstellungen');
+
         // filter intermediate_account
         cur_frm.fields_dict['intermediate_account'].get_query = function(doc) {
             return {

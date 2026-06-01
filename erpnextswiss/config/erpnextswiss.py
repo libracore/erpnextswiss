@@ -16,20 +16,20 @@ def get_data():
                    {
                        "type": "doctype",
                        "name": "Payment Proposal",
-                       "label": _("Payment Proposal"),
-                       "description": _("Payment Proposal")
+                       "label": _("Zahlungsvorschläge"),
+                       "description": _("Zahlungsvorschläge")
                    },
                    {
                        "type": "doctype",
                        "name": "Direct Debit Proposal",
-                       "label": _("Direct Debit Proposal"),
-                       "description": _("Direct Debit Proposal")
+                       "label": _("Lastschriftvorschläge"),
+                       "description": _("Lastschriftvorschläge")
                    },
                    {
                        "type": "doctype",
                        "name": "Payment Reminder",
-                       "label": _("Payment Reminder"),
-                       "description": _("Payment Reminder")
+                       "label": _("Mahnungen"),
+                       "description": _("Mahnungen")
                    },
                    {
                        "type": "page",
@@ -58,8 +58,8 @@ def get_data():
                    {
                        "type": "doctype",
                        "name": "VAT Declaration",
-                       "label": _("VAT Declaration"),
-                       "description": _("VAT Declaration")
+                       "label": _("MwSt-Abrechnung"),
+                       "description": _("MwSt-Abrechnung")
                    },
                    {
                         "type": "report",
@@ -77,7 +77,7 @@ def get_data():
                    {
                         "type": "report",
                         "name": "Account Sheets",
-                        "label": _("Account Sheets"),
+                        "label": _("Kontoblätter"),
                         "doctype": "GL Entry",
                         "is_query_report": True
                    }
@@ -90,67 +90,67 @@ def get_data():
                    {
                        "type": "doctype",
                        "name": "Salary Certificate",
-                       "label": _("Salary Certificate"),
-                       "description": _("Salary Certificate")
+                       "label": _("Lohnausweise"),
+                       "description": _("Lohnausweise")
                    },
                    {
                         "type": "report",
                         "name": "Worktime Overview",
-                        "label": _("Worktime Overview"),
+                        "label": _("Arbeitszeitübersicht"),
                         "doctype": "Timesheet",
                         "is_query_report": True
                    },
                    {
                         "type": "report",
                         "name": "Monthly Worktime",
-                        "label": _("Monthly Worktime"),
+                        "label": _("Monatliche Arbeitszeit"),
                         "doctype": "Timesheet",
                         "is_query_report": True
                    },
                    {
                         "type": "report",
                         "name": "Annual Salary Sheet",
-                        "label": _("Annual Salary Sheet"),
+                        "label": _("Jahreslohnzettel"),
                         "doctype": "Salary Slip",
                         "is_query_report": True
                    }
             ]
         },
         {
-            "label": _("Contracts"),
+            "label": _("Verträge"),
             "icon": "octicon octicon-file-submodule",
             "items": [
                    {
                        "type": "doctype",
                        "name": "Contract",
-                       "label": _("Contract"),
-                       "description": _("Contract")                   
+                       "label": _("Verträge"),
+                       "description": _("Verträge")
                    },
                    {
                         "type": "report",
                         "name": "Service Invoicing",
-                        "label": _("Service Invoicing"),
+                        "label": _("Serviceverrechnung"),
                         "doctype": "Timesheet",
                         "is_query_report": True
                    },
                    {
                        "type": "doctype",
                        "name": "Specification Document",
-                       "label": _("Specification Document"),
-                       "description": _("Specification Document")                   
+                       "label": _("Spezifikationsdokumente"),
+                       "description": _("Spezifikationsdokumente")
                    },
                    {
                        "type": "doctype",
                        "name": "Software Requirement",
-                       "label": _("Software Requirement"),
-                       "description": _("Software Requirement")                   
+                       "label": _("Softwareanforderungen"),
+                       "description": _("Softwareanforderungen")
                    },
                    {
                        "type": "doctype",
                        "name": "Software Specification",
-                       "label": _("Software Specification"),
-                       "description": _("Software Specification")                   
-                   } 
+                       "label": _("Softwarespezifikationen"),
+                       "description": _("Softwarespezifikationen")
+                   }
             ]
         },
         {
@@ -160,50 +160,50 @@ def get_data():
                     {
                        "type": "doctype",
                        "name": "Label Printer",
-                       "label": _("Label Printer"),
-                       "description": _("Label Printer")                   
+                       "label": _("Etikettendrucker"),
+                       "description": _("Etikettendrucker")
                     },
                     {
                        "type": "doctype",
                        "name": "Pincode",
                        "label": _("Pincode"),
-                       "description": _("Pincode")                   
+                       "description": _("Pincode")
                     },
                     {
                        "type": "doctype",
                        "name": "ERPNextSwiss Settings",
-                       "label": _("ERPNextSwiss Settings"),
-                       "description": _("ERPNextSwiss Settings")                   
+                       "label": _("ERPNextSwiss Einstellungen"),
+                       "description": _("ERPNextSwiss Einstellungen")
                     },
                     {
                        "type": "doctype",
                        "name": "Worktime Settings",
-                       "label": _("Worktime Settings"),
-                       "description": _("Worktime Settings")
+                       "label": _("Arbeitszeiteinstellungen"),
+                       "description": _("Arbeitszeiteinstellungen")
                     },
                     {
                        "type": "doctype",
                        "name": "BankImport Template",
-                       "label": _("BankImport Templates"),
-                       "description": _("BankImport Templates")
+                       "label": _("Bankimport-Vorlagen"),
+                       "description": _("Bankimport-Vorlagen")
                     },
                     {
                        "type": "doctype",
                        "name": "VAT query",
-                       "label": _("VAT query"),
-                       "description": _("VAT query")
+                       "label": _("MwSt-Abfragen"),
+                       "description": _("MwSt-Abfragen")
                     },
                     {
                        "type": "doctype",
                        "name": "Salary Certificate Settings",
-                       "label": _("Salary Certificate Settings"),
-                       "description": _("Salary Certificate Settings")
+                       "label": _("Lohnausweis-Einstellungen"),
+                       "description": _("Lohnausweis-Einstellungen")
                     },
                     {
                        "type": "doctype",
                        "name": "ZUGFeRD Settings",
-                       "label": _("ZUGFeRD Settings"),
-                       "description": _("ZUGFeRD Settings")                   
+                       "label": _("ZUGFeRD-Einstellungen"),
+                       "description": _("ZUGFeRD-Einstellungen")
                     }
             ]
         },
@@ -214,68 +214,68 @@ def get_data():
                     {
                        "type": "doctype",
                        "name": "ebics Connection",
-                       "label": _("ebics Connection"),
-                       "description": _("ebics Connection")                   
+                       "label": _("EBICS-Verbindungen"),
+                       "description": _("EBICS-Verbindungen")
                     },
                     {
                        "type": "doctype",
                        "name": "ebics Statement",
-                       "label": _("ebics Statement"),
-                       "description": _("ebics Statement")                   
+                       "label": _("EBICS-Auszüge"),
+                       "description": _("EBICS-Auszüge")
                     },
                     {
                        "type": "doctype",
                        "name": "ZUGFeRD Wizard",
-                       "label": _("ZUGFeRD Wizard"),
-                       "description": _("ZUGFeRD Wizard")                   
+                       "label": _("ZUGFeRD-Assistent"),
+                       "description": _("ZUGFeRD-Assistent")
                     },
                     {
                        "type": "doctype",
                        "name": "Planzer Settings",
-                       "label": _("Planzer Settings"),
-                       "description": _("Planzer Settings")                   
+                       "label": _("Planzer-Einstellungen"),
+                       "description": _("Planzer-Einstellungen")
                     },
                     {
                        "type": "doctype",
                        "name": "DPD Settings",
-                       "label": _("DPD Settings"),
-                       "description": _("DPD Settings")                   
+                       "label": _("DPD-Einstellungen"),
+                       "description": _("DPD-Einstellungen")
                     },
                     {
                        "type": "doctype",
                        "name": "Datatrans Settings",
-                       "label": _("Datatrans Settings"),
-                       "description": _("Datatrans Settings")                   
+                       "label": _("Datatrans-Einstellungen"),
+                       "description": _("Datatrans-Einstellungen")
                     },
                     {
                        "type": "doctype",
                        "name": "Payrexx Settings",
-                       "label": _("Payrexx Settings"),
-                       "description": _("Payrexx Settings")                   
+                       "label": _("Payrexx-Einstellungen"),
+                       "description": _("Payrexx-Einstellungen")
                     },
                     {
                        "type": "doctype",
                        "name": "Worldline TIM",
                        "label": _("Worldline TIM"),
-                       "description": _("Worldline TIM")                   
+                       "description": _("Worldline TIM")
                     },
                     {
                        "type": "doctype",
                        "name": "GitLab Settings",
                        "label": _("GitLab"),
-                       "description": _("GitLab")                   
+                       "description": _("GitLab")
                     },
                     {
                        "type": "doctype",
                        "name": "Mautic Settings",
                        "label": _("Mautic"),
-                       "description": _("Mautic")                   
+                       "description": _("Mautic")
                     },
                     {
                        "type": "doctype",
                        "name": "Abacus Export File",
-                       "label": _("Abacus Export File"),
-                       "description": _("Abacus Export File")                   
+                       "label": _("Abacus-Exportdateien"),
+                       "description": _("Abacus-Exportdateien")
                     },
                     {
                        "type": "page",
@@ -286,8 +286,8 @@ def get_data():
                     {
                        "type": "doctype",
                        "name": "CalDav Feed",
-                       "label": _("CalDav Feed"),
-                       "description": _("CalDav Feed")                   
+                       "label": _("CalDAV-Feed"),
+                       "description": _("CalDAV-Feed")
                     }
             ]
         },
@@ -298,25 +298,25 @@ def get_data():
                    {
                        "type": "doctype",
                        "name": "EDI Connection",
-                       "label": _("EDI Connection"),
-                       "description": _("EDI Connection")                   
+                       "label": _("EDI-Verbindungen"),
+                       "description": _("EDI-Verbindungen")
                    },
                    {
                        "type": "doctype",
                        "name": "EDI File",
-                       "label": _("EDI File"),
-                       "description": _("EDI File")                   
+                       "label": _("EDI-Dateien"),
+                       "description": _("EDI-Dateien")
                    } ,
                    {
                        "type": "doctype",
                        "name": "EDI Sales Report",
-                       "label": _("EDI Sales Report"),
-                       "description": _("EDI Sales Report")                   
+                       "label": _("EDI-Verkaufsberichte"),
+                       "description": _("EDI-Verkaufsberichte")
                    },
                    {
                         "type": "report",
                         "name": "EDI Sales Report Overview",
-                        "label": _("EDI Sales Report Overview"),
+                        "label": _("EDI-Verkaufsbericht Übersicht"),
                         "doctype": "EDI Sales Report",
                         "is_query_report": True
                    }
@@ -329,9 +329,9 @@ def get_data():
                    {
                         "type": "doctype",
                        "name": "Daily Closing Statement",
-                       "label": _("Daily Closing Statement"),
-                       "description": _("Daily Closing Statement")                      
-                   } 
+                       "label": _("Tagesabschluss"),
+                       "description": _("Tagesabschluss")
+                   }
             ]
         },
         {
@@ -341,38 +341,38 @@ def get_data():
                    {
                        "type": "doctype",
                        "name": "Non Conformity Report 8D",
-                       "label": _("Non Conformity Report 8D"),
-                       "description": _("Non Conformity Report 8D")                   
+                       "label": _("8D-Fehlerbericht"),
+                       "description": _("8D-Fehlerbericht")
                    },
                    {
-                       "type": "doctype",              
+                       "type": "doctype",
                        "name": "Inspection Equipment",
-                       "label": _("Inspection Equipment"),
-                       "description": _("Inspection Equipment")                   
+                       "label": _("Prüfmittel"),
+                       "description": _("Prüfmittel")
                    },
                    {
                        "type": "doctype",
                        "name": "Inspection Equipment Transaction",
-                       "label": _("Inspection Equipment Transaction"),
-                       "description": _("Inspection Equipment Transaction")                   
+                       "label": _("Prüfmittelbewegungen"),
+                       "description": _("Prüfmittelbewegungen")
                    },
                    {
                        "type": "doctype",
                        "name": "Inspection Equipment Type",
-                       "label": _("Inspection Equipment Type"),
-                       "description": _("Inspection Equipment Type")                   
+                       "label": _("Prüfmitteltypen"),
+                       "description": _("Prüfmitteltypen")
                    },
                    {
                        "type": "doctype",
                        "name": "Calibration Test",
-                       "label": _("Calibration / Test"),
-                       "description": _("Calibration Test")                   
+                       "label": _("Kalibrierung / Prüfung"),
+                       "description": _("Kalibrierung / Prüfung")
                    },
                    {
                        "type": "doctype",
                        "name": "Calibration Test Set",
-                       "label": _("Calibration / Test-Set"),
-                       "description": _("Calibration Test Set")                   
+                       "label": _("Kalibrierung / Prüf-Set"),
+                       "description": _("Kalibrierung / Prüf-Set")
                    }
             ]
         },
@@ -383,27 +383,27 @@ def get_data():
                    {
                        "type": "doctype",
                        "name": "HLK Settings",
-                       "label": _("HLK Settings"),
-                       "description": _("HLK Settings")                      
+                       "label": _("HLK-Einstellungen"),
+                       "description": _("HLK-Einstellungen")
                    },
                 {
                        "type": "doctype",
                        "name": "HLK Text Template",
-                       "label": _("HLK Text Template"),
-                       "description": _("HLK Text Template")                      
+                       "label": _("HLK-Textvorlagen"),
+                       "description": _("HLK-Textvorlagen")
                    },
                 {
                        "type": "doctype",
                        "name": "HLK Structur Organisation Template",
-                       "label": _("HLK Structur Organisation Template"),
-                       "description": _("HLK Structur Organisation Template")                      
+                       "label": _("HLK-Strukturvorlagen"),
+                       "description": _("HLK-Strukturvorlagen")
                    },
                 {
                        "type": "page",
                        "name": "bkp-importer",
                        "label": _("BKP-Import"),
                        "description": _("BKP-Import")
-                   } 
+                   }
             ]
         }
 ]

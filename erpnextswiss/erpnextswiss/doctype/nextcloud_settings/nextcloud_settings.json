@@ -21,7 +21,7 @@
  ],
  "fields": [
   {
-   "description": "Something like https://cloud.example.com",
+   "description": "Zum Beispiel https://cloud.example.com",
    "fieldname": "host",
    "fieldtype": "Data",
    "label": "Host"
@@ -30,7 +30,7 @@
    "default": "0",
    "fieldname": "enabled",
    "fieldtype": "Check",
-   "label": "Enabled"
+   "label": "Aktiviert"
   },
   {
    "fieldname": "column_break_3",
@@ -39,55 +39,55 @@
   {
    "fieldname": "user",
    "fieldtype": "Data",
-   "label": "User"
+   "label": "Benutzer"
   },
   {
    "fieldname": "password",
    "fieldtype": "Password",
-   "label": "Password"
+   "label": "Passwort"
   },
   {
    "fieldname": "sec_contacts",
    "fieldtype": "Section Break",
-   "label": "Contacts"
+   "label": "Kontakte"
   },
   {
    "default": "0",
    "fieldname": "sync_contacts",
    "fieldtype": "Check",
-   "label": "Sync Contacts to NextCloud"
+   "label": "Kontakte mit NextCloud synchronisieren"
   },
   {
    "fieldname": "address_book",
    "fieldtype": "Data",
-   "label": "Address Book"
+   "label": "Adressbuch"
   },
   {
    "default": "0",
    "fieldname": "verify_ssl",
    "fieldtype": "Check",
-   "label": "Verify SSL"
+   "label": "SSL prüfen"
   },
   {
    "fieldname": "sec_zugferd",
    "fieldtype": "Section Break",
-   "label": "ZUGFeRD Wizard Integration"
+   "label": "ZUGFeRD-Assistent Integration"
   },
   {
    "default": "0",
    "fieldname": "enable_zugferd",
    "fieldtype": "Check",
-   "label": "Enable Invoice fetch from NextCloud"
+   "label": "Rechnungsabruf aus NextCloud aktivieren"
   },
   {
    "fieldname": "invoice_inbox",
    "fieldtype": "Data",
-   "label": "Invoice Inbox Folder Path"
+   "label": "Ordnerpfad Rechnungseingang"
   },
   {
    "fieldname": "processed_invoices",
    "fieldtype": "Data",
-   "label": "Processed Invoices Folder Path"
+   "label": "Ordnerpfad verarbeitete Rechnungen"
   }
  ],
  "issingle": 1,

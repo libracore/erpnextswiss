@@ -4,14 +4,14 @@ from frappe import _
 def get_data():
     return[
         {
-            "label": _("Banking"),
+            "label": _("Bank & Zahlung"),
             "icon": "fa fa-money",
             "items": [
                    {
                        "type": "page",
                        "name": "bank_wizard",
-                       "label": _("Bank Wizard"),
-                       "description": _("Bank Wizard")
+                       "label": _("Bank-Assistent"),
+                       "description": _("Bank-Assistent")
                    },
                    {
                        "type": "doctype",
@@ -34,25 +34,25 @@ def get_data():
                    {
                        "type": "page",
                        "name": "bankimport",
-                       "label": _("Bank import"),
-                       "description": _("Bank import")
+                       "label": _("Bankimport"),
+                       "description": _("Bankimport")
                    },
                    {
                        "type": "page",
                        "name": "match_payments",
-                       "label": _("Match payments"),
-                       "description": _("Match payments")
+                       "label": _("Zahlungen abgleichen"),
+                       "description": _("Zahlungen abgleichen")
                    },
                    {
                        "type": "page",
                        "name": "payment_export",
-                       "label": _("Payment export"),
-                       "description": _("Payment export")
+                       "label": _("Zahlungsexport"),
+                       "description": _("Zahlungsexport")
                    }
             ]
         },
         {
-            "label": _("Taxes"),
+            "label": _("Steuern"),
             "icon": "fa fa-bank",
             "items": [
                    {
@@ -71,7 +71,7 @@ def get_data():
             ]
         },
         {
-            "label": _("Finance"),
+            "label": _("Finanzen"),
             "icon": "fa fa-users",
             "items": [
                    {
@@ -84,7 +84,7 @@ def get_data():
             ]
         },
         {
-            "label": _("Human Resources"),
+            "label": _("Personal"),
             "icon": "fa fa-users",
             "items": [
                    {
@@ -154,7 +154,7 @@ def get_data():
             ]
         },
         {
-            "label": _("Configuration"),
+            "label": _("Einstellungen"),
             "icon": "fa fa-bank",
             "items": [
                     {
@@ -208,7 +208,7 @@ def get_data():
             ]
         },
         {
-            "label": _("Integrations"),
+            "label": _("Integrationen"),
             "icon": "octicon octicon-git-compare",
             "items": [
                     {
@@ -280,8 +280,8 @@ def get_data():
                     {
                        "type": "page",
                        "name": "abacus_export",
-                       "label": _("Abacus Export"),
-                       "description": _("Abacus Export")                   
+                       "label": _("Abacus-Export"),
+                       "description": _("Abacus-Export")
                     },
                     {
                        "type": "doctype",
@@ -335,7 +335,7 @@ def get_data():
             ]
         },
         {
-            "label": _("Quality"),
+            "label": _("Qualität"),
             "icon": "octicon octicon-verified",
             "items": [
                    {
@@ -401,8 +401,8 @@ def get_data():
                 {
                        "type": "page",
                        "name": "bkp-importer",
-                       "label": _("BKP Importer"),
-                       "description": _("BKP Importer")                      
+                       "label": _("BKP-Import"),
+                       "description": _("BKP-Import")
                    } 
             ]
         }

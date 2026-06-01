@@ -1,7 +1,7 @@
 frappe.pages['payment_export'].on_page_load = function(wrapper) {
 	var page = frappe.ui.make_app_page({
 		parent: wrapper,
-		title: __('Payment export'),
+		title: 'Zahlungsexport',
 		single_column: true
 	});
 
@@ -44,7 +44,7 @@ frappe.payment_export = {
                             // log errors if present
                             var parent = page.main.find(".insert-log-messages").empty();
                             if (r.message.skipped.length > 0) {
-                                $('<p>' + __("Some payments were skipped due to errors (check the payment file for details): ") + '</p>').appendTo(parent);
+                                $('<p>Einige Zahlungen wurden wegen Fehlern übersprungen. Details stehen in der Zahlungsdatei:</p>').appendTo(parent);
                                 for (var i = 0; i < r.message.skipped.length; i++) {
 									$('<p><a href="/desk#Form/Payment Entry/'
 									  + r.message.skipped[i] + '">' 
@@ -52,7 +52,7 @@ frappe.payment_export = {
 								}
                             }
                             else {
-                                $('<p>' + __("No errors") + '</p>').appendTo(parent);
+                                $('<p>Keine Fehler</p>').appendTo(parent);
                             }
 
                             // prepare the xml file for download
@@ -66,7 +66,7 @@ frappe.payment_export = {
                 });
                 
             } else {
-                frappe.msgprint( __("Please select at least one payment."), __("Information") );
+                frappe.msgprint("Bitte mindestens eine Zahlung auswählen.", "Information");
             }
 		});
         this.page.main.find(".btn-refresh").on('click', function() {
@@ -85,7 +85,7 @@ frappe.payment_export = {
                     if (r.message.payments.length > 0) {
                         $(frappe.render_template('payment_export_table', r.message)).appendTo(parent);
                     } else {
-                        $('<p class="text-muted">' + __("No payment entries to be paid found with status draft") + '</p>').appendTo(parent);
+                        $('<p class="text-muted">Keine zahlbaren Zahlungseinträge im Entwurfsstatus gefunden.</p>').appendTo(parent);
                     }
 				} 
 			}

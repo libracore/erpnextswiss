@@ -1,7 +1,7 @@
 frappe.pages['match_payments'].on_page_load = function(wrapper) {
 	var page = frappe.ui.make_app_page({
 		parent: wrapper,
-		title: __('Match payments'),
+		title: 'Zahlungen abgleichen',
 		single_column: true
 	});
 
@@ -22,7 +22,7 @@ frappe.match_payments = {
 		$(frappe.render_template('match_payments', data)).appendTo(me.body);
 
         // add menu button
-        this.page.add_menu_item(__("Open bank import"), function() {
+        this.page.add_menu_item("Bankimport öffnen", function() {
             // navigate to bank import tool
             window.location.href="/desk#bankimport";
 		});
@@ -51,7 +51,7 @@ frappe.match_payments = {
                     if (r.message.unpaid_sales_invoices.length > 0) {
                         $(frappe.render_template('sales_invoice_table', r.message)).appendTo(parent);
                     } else {
-                        $('<p class="text-muted">' + __("No unpaid sales invoices found.") + '</p>').appendTo(parent);
+                        $('<p class="text-muted">Keine unbezahlten Ausgangsrechnungen gefunden.</p>').appendTo(parent);
                     }
 				} 
 			}
@@ -66,7 +66,7 @@ frappe.match_payments = {
                     if (r.message.unallocated_payment_entries.length > 0) {
                         $(frappe.render_template('payment_entry_table', r.message)).appendTo(parent);
                     } else {
-                        $('<p class="text-muted">' + __("No unallocated payment entries found.") + '</p>').appendTo(parent);
+                        $('<p class="text-muted">Keine nicht zugewiesenen Zahlungseingänge gefunden.</p>').appendTo(parent);
                     }
 				} 
 			}
@@ -111,11 +111,11 @@ function match(page) {
             }); 
         }
         catch (err) {
-             frappe.msgprint( __("Please select a payment entry.") );
+             frappe.msgprint("Bitte einen Zahlungseingang auswählen.");
         }
     }
     catch (err) {
-        frappe.msgprint( __("Please select a sales invoice.") );
+        frappe.msgprint("Bitte eine Ausgangsrechnung auswählen.");
     }
 }
 
@@ -133,11 +133,11 @@ function auto_match(page, method="docid") {
             callback: function(r) {
                 if (r.message) {   
                     if (r.message.payments.length > 0) {    
-                        frappe.show_alert( __("Matched {0} sales invoices.").replace("{0}", String(r.message.payments.length)));      
+                        frappe.show_alert(String(r.message.payments.length) + " Ausgangsrechnung(en) abgeglichen.");
                         submit_all(r.message.payments, page);
                     } else {
                         completed(page, false);
-                        frappe.show_alert( __("No matches found.") );
+                        frappe.show_alert("Keine Treffer gefunden.");
                     }
                 } 
             }

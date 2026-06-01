@@ -2,9 +2,9 @@ var uploaded_files = [];
 
 frappe.pages['bkp-importer'].on_page_load = function(wrapper) {
 	var page = frappe.ui.make_app_page({
-		parent: wrapper,
-		title: 'BKP Importer',
-		single_column: true
+        parent: wrapper,
+        title: 'BKP-Import',
+        single_column: true
 	});
 	
 	frappe.bkpimporter.make(page);
@@ -24,11 +24,11 @@ frappe.bkpimporter = {
 		$(frappe.render_template('bkp_importer', data)).appendTo(me.body);
 		
 		// add menu button
-		this.page.add_menu_item(__("Upload Files"), function() {
+        this.page.add_menu_item("Dateien hochladen", function() {
 			frappe.bkpimporter.new_attachment();
 		});
 		// add menu button
-		this.page.add_menu_item(__("Import / Update BKP Items from uploaded Files"), function() {
+        this.page.add_menu_item("BKP-Positionen importieren / aktualisieren", function() {
 			frappe.bkpimporter.starting_import(uploaded_files);
 		});
 	},
@@ -80,7 +80,7 @@ frappe.bkpimporter = {
 		}
 		else
 		{
-			frappe.msgprint(__("Please select a file."), __("Information"));
+                frappe.msgprint("Bitte eine Datei auswählen.", "Information");
 		}
 	},
 	starting_import: function(files) {
@@ -122,4 +122,4 @@ function openNav() {
 
 function closeNav() {
   document.getElementById("myNav").style.width = "0%";
-} 
+}

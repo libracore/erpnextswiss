@@ -1,7 +1,7 @@
 frappe.pages['bank_wizard'].on_page_load = function(wrapper) {
     var page = frappe.ui.make_app_page({
         parent: wrapper,
-        title: __('Bank Wizard'),
+        title: 'Bank-Assistent',
         single_column: true
     });
 
@@ -48,14 +48,14 @@ frappe.bank_wizard = {
                     }
                     // assign an error handler event
                     reader.onerror = function (event) {
-                        frappe.msgprint(__("Error reading file"), __("Error"));
+                        frappe.msgprint("Fehler beim Lesen der Datei", "Fehler");
                     }
                     
                     reader.readAsText(file, "ANSI");
                 }
                 else
                 {
-                    frappe.msgprint(__("Please select a file."), __("Information"));
+                    frappe.msgprint("Bitte eine Datei auswählen.", "Information");
                 }
             } else if (file.name.toLowerCase().endsWith(".zip")) {
                 // this is a zip file
@@ -81,10 +81,10 @@ frappe.bank_wizard = {
                         frappe.bank_wizard.parse(content, account);
                     });
                 }, function (e) {
-                    frappe.msgprint( __("Unzip error: ") + e.message, __("Error") );
+                    frappe.msgprint("Fehler beim Entpacken: " + e.message, "Fehler");
                 });
             } else {
-                frappe.msgprint( __("Unsupported file format. Please use an xml or zip camt file"), __("Error") );
+                frappe.msgprint("Nicht unterstütztes Dateiformat. Bitte eine XML- oder ZIP-CAMT-Datei verwenden.", "Fehler");
             }
         });
     },
@@ -99,7 +99,7 @@ frappe.bank_wizard = {
             callback: function(r) {
                 if (r.message) {
                     //try {
-                        frappe.show_alert( r.message.transactions.length + "&nbsp;" + __("transactions found") );
+                        frappe.show_alert(r.message.transactions.length + "&nbsp;Transaktionen gefunden");
                         let bank_account_element = document.getElementById("bank_account");
                         if (r.message.bank != "n/a") {
                             bank_account_element.value = r.message.bank;
@@ -150,7 +150,7 @@ frappe.bank_wizard = {
                 if ((r.message) && (r.message.account != "")) {
                     document.getElementById("intermediate_account").value = r.message.account;
                 } else {
-                    frappe.msgprint( __("Please set the <b>intermediate bank account</b> in <a href=\"/desk#Form/ERPNextSwiss Settings\">ERPNextSwiss Settings</a>.") );
+                    frappe.msgprint("Bitte das <b>Zwischenkonto</b> in den <a href=\"/desk#Form/ERPNextSwiss Settings\">ERPNextSwiss-Einstellungen</a> setzen.");
                 }
             }
         }); 
@@ -160,7 +160,7 @@ frappe.bank_wizard = {
                 if ((r.message) && (r.message.customer != "")) {
                     document.getElementById("default_customer").value = r.message.customer;
                 } else {
-                    frappe.msgprint( __("Please set the <b>default customer</b> in <a href=\"/desk#Form/ERPNextSwiss Settings\">ERPNextSwiss Settings</a>.") );
+                    frappe.msgprint("Bitte den <b>Standardkunden</b> in den <a href=\"/desk#Form/ERPNextSwiss Settings\">ERPNextSwiss-Einstellungen</a> setzen.");
                 }
             }
         }); 
@@ -170,7 +170,7 @@ frappe.bank_wizard = {
                 if ((r.message) && (r.message.supplier != "")) {
                     document.getElementById("default_supplier").value = r.message.supplier;
                 } else {
-                    frappe.msgprint( __("Please set the <b>default supplier</b> in <a href=\"/desk#Form/ERPNextSwiss Settings\">ERPNextSwiss Settings</a>.") );
+                    frappe.msgprint("Bitte den <b>Standardlieferanten</b> in den <a href=\"/desk#Form/ERPNextSwiss Settings\">ERPNextSwiss-Einstellungen</a> setzen.");
                 }
             }
         }); 
@@ -190,7 +190,7 @@ frappe.bank_wizard = {
                     document.getElementById("expense_payable_account").value = r.message.expense_payable_account;
                     document.getElementById("auto_process_matches").value = r.message.auto_process_matches;
                 } else {
-                    frappe.msgprint( __("Please set the <b>default accounts</b> in <a href=\"/desk#Form/Company/{0}\">{0}</a>.").replace("{0}", r.message.company) );
+                    frappe.msgprint("Bitte die <b>Standardkonten</b> in <a href=\"/desk#Form/Company/" + r.message.company + "\">" + r.message.company + "</a> setzen.");
                 }
             }
         }); 
@@ -576,7 +576,7 @@ frappe.bank_wizard = {
             'callback': function(r)
             {
                 // show alert
-                frappe.show_alert( __("Transaction matched") );
+                frappe.show_alert("Transaktion abgeglichen");
                 frappe.bank_wizard.close_entry(txid);
             }
         });    

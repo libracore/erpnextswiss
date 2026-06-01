@@ -1,39 +1,39 @@
 <div style="margin: 5px; margin-top: 0px; border-top: 1px solid white; ">
-	<p class="text-muted">{%= __("Import payment entries from bank account file") %}</p>
+	<p class="text-muted">Importiert Zahlungseinträge aus einer Bankdatei.</p>
 	<div class="section-body">
 		<div class="row">
 			<div class="form-column col-sm-4">
-				<p>{{ __("Bank") }}</p>
+				<p>Bank</p>
 				<select id="bank">
 
 				</select>
 			</div>
 			<div class="form-column col-sm-4">
-				<p>{{ __("Payment account") }}</p>
+				<p>Zahlungskonto</p>
 				<select id="payment_account">
 				</select>
 			</div>
 			<div class="form-column col-sm-4">
-				<p>{{ __("Options") }}</p>
+				<p>Optionen</p>
 				<div class="checkbox">
 					<!-- disabled auto submit, because even when matched, the reference fails  
-					<label><input type="checkbox" id="auto_submit">{{ __("Automatically submit") }}</label>
+					<label><input type="checkbox" id="auto_submit">Automatisch buchen</label>
 					-->
 				</div>
 				<select id="format">
-					<option value="camt053">{{ __("CAMT.053 Bank Statement") }}</option>
-					<option value="camt054">{{ __("CAMT.054 Transaction Notification") }}</option>
-					<option value="csv">{{ __("CSV") }}</option>
+					<option value="camt053">CAMT.053 Kontoauszug</option>
+					<option value="camt054">CAMT.054 Transaktionsmeldung</option>
+					<option value="csv">CSV</option>
 				</select>
 			</div>
 		</div>
 		<div class="row">
 			<div class="form-column col-sm-4">
-				<p>{{ __("File") }} <input type="file" id="input_file" /></p>
+				<p>Datei <input type="file" id="input_file" /></p>
 			</div>
 			<div class="form-column col-sm-4">
-				<p>{{ __("Parse") }}</p>
-				<button type="submit" class="btn btn-sm btn-primary btn-parse-file">{{ __("Parse") }}</button>
+				<p>Einlesen</p>
+				<button type="submit" class="btn btn-sm btn-primary btn-parse-file">Einlesen</button>
 				<div class="waiting-gif hide"><img src="/assets/frappe/images/ui/ajax-loader.gif" /></div>
 			</div>
 			<div class="form-column col-sm-4">
@@ -46,6 +46,6 @@
 	<!-- Overlay content -->
 	<div class="overlay-content">
 		<p><i class="fa fa-spinner fa-spin" style="font-size:80px"></i></p>
-		<p>{{ __("Please wait, parsing data...") }}</p>
+		<p>Bitte warten, Daten werden eingelesen...</p>
 	</div>
 </div>

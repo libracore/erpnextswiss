@@ -2,12 +2,12 @@
   <!-- load the zip extension -->
   <script src="/assets/erpnextswiss/js/jszip.min.js"></script>
   
-  <p class="text-muted">{%= __("Import payment entries from bank account file") %}</p>
+  <p class="text-muted">Importiert Zahlungseinträge aus einer Bankdatei und unterstützt den direkten Abgleich.</p>
 
   <div class="section-body">
     <div class="row"> 
       <div class="form-column col-sm-6">
-        <p>{{ __("File") }} <input type="file" id="input_file" /></p>
+        <p>Datei <input type="file" id="input_file" /></p>
         <p>
             <select id="bank_account" disabled style="visibility: hidden;">
             </select>
@@ -23,7 +23,7 @@
       </div>
 
       <div class="form-column col-sm-6" style="text-align: right; ">	  	
-        <br><button type="submit" id="btn-parse-file" class="btn btn-sm btn-primary btn-parse-file">{{ __("Parse") }}</button>  
+        <br><button type="submit" id="btn-parse-file" class="btn btn-sm btn-primary btn-parse-file">Einlesen</button>
         <i id="waitingScreen" class="fa fa-spinner fa-spin hidden"></i>
       </div>
     </div>
@@ -41,7 +41,7 @@
   <!-- Overlay content -->
   <div class="overlay-content">
     <p><i class="fa fa-spinner fa-spin" style="font-size:80px"></i></p>
-    <p>{{ __("Please wait, parsing data...") }}</p>
+    <p>Bitte warten, Daten werden eingelesen...</p>
     <div class="" id="zipcontent"></div>
   </div>
 </div>

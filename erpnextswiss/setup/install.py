@@ -206,6 +206,15 @@ def _upsert_desktop_icon_record(data):
         update_data.pop("name", None)
         desktop_icon.update(update_data)
         desktop_icon.save(ignore_permissions=True)
+        for fieldname in ("label", "link_to", "link_type"):
+            if fieldname in update_data and desktop_icon.meta.has_field(fieldname):
+                frappe.db.set_value(
+                    "Desktop Icon",
+                    existing_icon,
+                    fieldname,
+                    update_data[fieldname],
+                    update_modified=False,
+                )
     else:
         frappe.get_doc(data).insert(ignore_permissions=True)
 

@@ -10,7 +10,7 @@ app_icon = "fa fa-diamond"
 app_color = "#92d050"
 app_email = "info@libracore.com"
 app_license = "AGPL"
-app_home = "/desk/erpnextswiss"
+app_home = "/desk/schweizer-buchhaltung"
 app_logo_url = "/assets/erpnextswiss/images/schweizer_buchhaltung.svg"
 
 add_to_apps_screen = [
@@ -18,7 +18,7 @@ add_to_apps_screen = [
         "name": "erpnextswiss",
         "logo": "/assets/erpnextswiss/images/schweizer_buchhaltung.svg",
         "title": "Schweizer Buchhaltung",
-        "route": "erpnextswiss",
+        "route": "schweizer-buchhaltung",
     }
 ]
 

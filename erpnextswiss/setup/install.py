@@ -74,7 +74,6 @@ def install_basic_docs():
 def ensure_v16_desk_records():
     ensure_workspace_records()
     ensure_workspace_sidebar_records()
-    ensure_erpnextswiss_alias_records()
     ensure_desktop_icon_records()
     _clear_desk_navigation_cache()
 
@@ -212,26 +211,29 @@ def _upsert_desktop_icon_record(data):
 
 
 def ensure_erpnextswiss_alias_records():
-    """Keep the app tile route /desk/erpnextswiss wired to the Swiss accounting workspace."""
-    if frappe.db.exists("Workspace", "Schweizer Buchhaltung"):
+    """Keep existing legacy /desk/erpnextswiss records valid without showing them in navigation."""
+    if frappe.db.exists("Workspace", "ERPNextSwiss") and frappe.db.exists("Workspace", "Schweizer Buchhaltung"):
         source = frappe.get_doc("Workspace", "Schweizer Buchhaltung").as_dict()
         _strip_child_row_names(source)
         source.update(
             {
                 "name": "ERPNextSwiss",
-                "label": "Schweizer Buchhaltung",
-                "title": "Schweizer Buchhaltung",
+                "label": "ERPNextSwiss",
+                "title": "ERPNextSwiss",
                 "route": "erpnextswiss",
+                "is_hidden": 1,
             }
         )
         _upsert_workspace_record(_prepare_workspace_data(source))
 
     if frappe.db.exists("DocType", "Workspace Sidebar") and frappe.db.exists(
+        "Workspace Sidebar", "ERPNextSwiss"
+    ) and frappe.db.exists(
         "Workspace Sidebar", "Schweizer Buchhaltung"
     ):
         sidebar = frappe.get_doc("Workspace Sidebar", "Schweizer Buchhaltung").as_dict()
         _strip_child_row_names(sidebar)
-        sidebar.update({"name": "ERPNextSwiss", "title": "Schweizer Buchhaltung"})
+        sidebar.update({"name": "ERPNextSwiss", "title": "ERPNextSwiss"})
         for item in sidebar.get("items") or []:
             if item.get("label") == "Start" and item.get("link_type") == "Workspace":
                 item["link_to"] = "ERPNextSwiss"
@@ -411,4 +413,3 @@ def _clear_desk_navigation_cache():
     frappe.clear_cache()
     frappe.cache.delete_key("desktop_icons")
     frappe.cache.delete_key("bootinfo")
-

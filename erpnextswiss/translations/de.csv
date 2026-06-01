@@ -196,7 +196,7 @@ No general ledger entries found.,Keine Transaktionen gefunden.,Page: abacus_expo
 Export flags reset,Export-Markierungen entfernt,Page: abacus_export
 Exported to Abacus,Nach Abacus exportiert,Page: abacus_export
 Reset export flags,Export-Markierungen entfernen,Page: abacus_export
-ERPNextSwiss Settings,ERPNextSwiss Einstellungen,DocType: ERPNextSwiss Settings
+ERPNextSwiss Settings,App-Einstellungen,DocType: ERPNextSwiss Settings
 Default Customer,Standardkunde,DocType: ERPNextSwiss Settings
 Use this to define a default customer,Setzt einen Standardkunden,DocType: ERPNextSwiss Settings
 Invoice Code Line Scanning,Rechnungsscanner,DocType: ERPNextSwiss Settings
@@ -266,7 +266,7 @@ IBAN missing in pay from account.,Die IBAN des Zahlungskontos ist nicht hinterle
 "ESR: missing transaction information (participant number or reference) in <a href=\/desk#Form/Purchase Invoice/{0}\"">{0}</a>""","ESR: Transaktionsdetails fehlen (Teilnehmernummer oder Referenznummer) für <a href=\/desk#Form/Purchase Invoice/{0}\"">{0}</a>""",DocType: Payment Proposal
 "Missing IBAN for purchase invoice <a href=\/desk#Form/Purchase Invoice/{0}\"">{0}</a>""","Bei Eingangsrechnung <a href=\/desk#Form/Purchase Invoice/{0}\"">{0}</a> fehlt die IBAN""",DocType: Payment Proposal
 "Employee <a href=\/desk#Form/Employee/{0}\"">{0}</a> has no bank account number.""","Für Mitarbeiter <a href=\/desk#Form/Employee/{0}\"">{0}</a> ist kein Bankkonto hinterlegt.""",DocType: Payment Proposal
-Please configure the planning period in ERPNextSwiss Settings.,Bitte das Planungsintervall in den ERPNextSwiss-Einstellungen einstellen.,DocType: Payment Proposal
+Please configure the planning period in ERPNextSwiss Settings.,Bitte das Planungsintervall in den App-Einstellungen einstellen.,DocType: Payment Proposal
 Purchase Invoices,Eingangsrechnungen,DocType: Payment Proposal
 Salaries,Löhne,DocType: Payment Proposal
 Overview,Übersicht,DocType: Payment Proposal
@@ -279,9 +279,9 @@ Bank Wizard,Bankassistent,Page: Bank Wizard
 Transaction matched,Zahlung zugewiesen,Page: Bank Wizard
 transactions found,Zahlungen gefunden,Page: Bank Wizard
 Page: Bank Wizard,"Please set the <b>default accounts</b> in <a href=\""/desk#Form/Company/{0}\"">{0}</a>.Bitte setzten Sie <b>Standardkonten</b> unter <a href=\""/desk#Form/Company/{0}\"">{0}</a>."
-"Please set the <b>default supplier</b> in <a href=\""/desk#Form/ERPNextSwiss Settings\"">ERPNextSwiss Settings</a>.","Bitte setzen Sie den <b>Standardlieferant</b> unter <a href=\""/desk#Form/ERPNextSwiss Settings\"">ERPNextSwiss Settings</a>.",Page: Bank Wizard
-"Please set the <b>default customer</b> in <a href=\""/desk#Form/ERPNextSwiss Settings\"">ERPNextSwiss Settings</a>.","Bitte setzen Sie den <b>Standardkunden</b> unter <a href=\""/desk#Form/ERPNextSwiss Settings\"">ERPNextSwiss Settings</a>.",Page: Bank Wizard
-"Please set the <b>intermediate bank account</b> in <a href=\""/desk#Form/ERPNextSwiss Settings\"">ERPNextSwiss Settings</a>.","Bitte setzen Sie ein <b>Zwischenkonto</b> unter <a href=\""/desk#Form/ERPNextSwiss Settings\"">ERPNextSwiss Settings</a>.",Page: Bank Wizard
+"Please set the <b>default supplier</b> in <a href=\""/desk#Form/ERPNextSwiss Settings\"">ERPNextSwiss Settings</a>.","Bitte setzen Sie den <b>Standardlieferant</b> unter <a href=\""/desk#Form/ERPNextSwiss Settings\"">App-Einstellungen</a>.",Page: Bank Wizard
+"Please set the <b>default customer</b> in <a href=\""/desk#Form/ERPNextSwiss Settings\"">ERPNextSwiss Settings</a>.","Bitte setzen Sie den <b>Standardkunden</b> unter <a href=\""/desk#Form/ERPNextSwiss Settings\"">App-Einstellungen</a>.",Page: Bank Wizard
+"Please set the <b>intermediate bank account</b> in <a href=\""/desk#Form/ERPNextSwiss Settings\"">ERPNextSwiss Settings</a>.","Bitte setzen Sie ein <b>Zwischenkonto</b> unter <a href=\""/desk#Form/ERPNextSwiss Settings\"">App-Einstellungen</a>.",Page: Bank Wizard
 An error occurred while parsing. Please check the log files.,Es ist ein Fehler aufgetreten. Bitte prüfen Sie die Fehlerprotokolle.,Page: Bank Wizard
 Unsupported file format. Please use an xml or zip camt file,Dieses Format wird nicht unterstützt. Bitte verwenden Sie eine gültige XML- oder ZIP-Datei,Page: Bank Wizard
 Bank account has no IBAN.,Das Bankkonto hat keine IBAN hinterlegt.,Page: Bank Wizard
@@ -389,10 +389,10 @@ From Zefix,Von Zefix,DocType: ERPNextSwiss Settings
 Enable Zefix,Zefix aktivieren,DocType: ERPNextSwiss Settings
 Bank Settings,Bankeinstellungen,DocType: ERPNextSwiss Settings
 User name,Benutzername,DocType: ERPNextSwiss Settings
-Use this to define a default supplier,Diesen Lieferanten als Standardlieferanten evrwenden,DocType: ERPNextSwiss Settings
+Use this to define a default supplier,Diesen Lieferanten als Standardlieferanten verwenden,DocType: ERPNextSwiss Settings
 Participant Number,Teilnehmernummer,DocType: ERPNextSwiss Settings
-Number of days the payment rpoposal will look ahead. Payments with due date further ahead will not be proposed.,"Anzahl Tage in der Zukunft, die für den Zahlugnsvorschlag einbezogen werden.",DocType: ERPNextSwiss Settings
-apps/erpnextswiss/erpnextswiss/scripts/esr_qr_tools.py,{missing_values} not found. Please configure this in the <a href='/desk#Form/ERPNextSwiss Settings'>ERPNextSwiss settings</a>.,{missing_values} nicht gefunden. Bitte konfigurieren Sie dies in den <a href='/desk#Form/ERPNextSwiss Settings'>ERPNextSwiss Einstellungen</a>.
+Number of days the payment rpoposal will look ahead. Payments with due date further ahead will not be proposed.,"Anzahl Tage in der Zukunft, die für den Zahlungsvorschlag einbezogen werden.",DocType: ERPNextSwiss Settings
+apps/erpnextswiss/erpnextswiss/scripts/esr_qr_tools.py,{missing_values} not found. Please configure this in the <a href='/desk#Form/ERPNextSwiss Settings'>ERPNextSwiss settings</a>.,{missing_values} nicht gefunden. Bitte konfigurieren Sie dies in den <a href='/desk#Form/ERPNextSwiss Settings'>App-Einstellungen</a>.
 Worktime Overview,Arbeitszeitübersicht,Report: Worktime Overview
 Ignore previous year,Vorjahr ignorieren,Report: Worktime Overview
 Worktime Settings,Arbeitszeiteinstellungen,DocType: Worktime Settings
@@ -828,7 +828,7 @@ Invalid Abacus File reference,Ungültige Abacus-Dateireferenz,Module: ERPNextSwi
 Invalid document reference,Ungültige Dokumentreferenz,Module: ERPNextSwiss
 Invalid source field. Please use an existing field of {0}.,Ungültiges Quellfeld. Bitte ein bestehendes Feld von {0} verwenden.,Module: ERPNextSwiss
 Invoiced Amount (Exclusive Tax),Verrechneter Betrag (exkl. Steuer),Module: ERPNextSwiss
-Invoicing configuration is missing the invoice item. Please set under ERPNextSwiss Settings > Invoice Item.,In der Rechnungskonfiguration fehlt der Rechnungsartikel. Bitte unter ERPNextSwiss-Einstellungen > Rechnungsartikel setzen.,Module: ERPNextSwiss
+Invoicing configuration is missing the invoice item. Please set under ERPNextSwiss Settings > Invoice Item.,In der Rechnungskonfiguration fehlt der Rechnungsartikel. Bitte unter App-Einstellungen > Rechnungsartikel setzen.,Module: ERPNextSwiss
 Line valid,Zeile gültig,Module: ERPNextSwiss
 Line {0} has a field count of {1}. Min is ({2}),Zeile {0} hat {1} Felder. Minimum ist ({2}),Module: ERPNextSwiss
 Month,Monat,Module: ERPNextSwiss

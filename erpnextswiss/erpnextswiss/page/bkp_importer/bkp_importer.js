@@ -11,7 +11,7 @@ frappe.pages['bkp-importer'].on_page_load = function(wrapper) {
 	frappe.bkpimporter.run();
 	
 	// add the application reference
-	frappe.breadcrumbs.add("ERPNextSwiss");
+	frappe.breadcrumbs.add("Schweizer Buchhaltung");
 }
 
 frappe.bkpimporter = {

@@ -9,7 +9,7 @@ frappe.pages['bank_wizard'].on_page_load = function(wrapper) {
     frappe.bank_wizard.run();
     
     // add the application reference
-    frappe.breadcrumbs.add("ERPNextSwiss");
+    frappe.breadcrumbs.add("Schweizer Buchhaltung");
 }
 
 frappe.bank_wizard = {
@@ -150,7 +150,7 @@ frappe.bank_wizard = {
                 if ((r.message) && (r.message.account != "")) {
                     document.getElementById("intermediate_account").value = r.message.account;
                 } else {
-                    frappe.msgprint("Bitte das <b>Zwischenkonto</b> in den <a href=\"/desk#Form/ERPNextSwiss Settings\">ERPNextSwiss-Einstellungen</a> setzen.");
+                    frappe.msgprint("Bitte das <b>Zwischenkonto</b> in den <a href=\"/desk#Form/ERPNextSwiss Settings\">App-Einstellungen</a> setzen.");
                 }
             }
         }); 
@@ -160,7 +160,7 @@ frappe.bank_wizard = {
                 if ((r.message) && (r.message.customer != "")) {
                     document.getElementById("default_customer").value = r.message.customer;
                 } else {
-                    frappe.msgprint("Bitte den <b>Standardkunden</b> in den <a href=\"/desk#Form/ERPNextSwiss Settings\">ERPNextSwiss-Einstellungen</a> setzen.");
+                    frappe.msgprint("Bitte den <b>Standardkunden</b> in den <a href=\"/desk#Form/ERPNextSwiss Settings\">App-Einstellungen</a> setzen.");
                 }
             }
         }); 
@@ -170,7 +170,7 @@ frappe.bank_wizard = {
                 if ((r.message) && (r.message.supplier != "")) {
                     document.getElementById("default_supplier").value = r.message.supplier;
                 } else {
-                    frappe.msgprint("Bitte den <b>Standardlieferanten</b> in den <a href=\"/desk#Form/ERPNextSwiss Settings\">ERPNextSwiss-Einstellungen</a> setzen.");
+                    frappe.msgprint("Bitte den <b>Standardlieferanten</b> in den <a href=\"/desk#Form/ERPNextSwiss Settings\">App-Einstellungen</a> setzen.");
                 }
             }
         }); 

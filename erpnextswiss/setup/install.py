@@ -17,6 +17,16 @@ WORKSPACE_ROUTES = {
     "Schweiz-Einstellungen": "schweiz-einstellungen",
 }
 
+PAGE_TITLES = {
+    "abacus_export": "Abacus-Export",
+    "bank_wizard": "Bank-Assistent",
+    "bankimport": "Bankimport",
+    "bkp-importer": "BKP-Import",
+    "match_payments": "Zahlungen abgleichen",
+    "payment_export": "Zahlungsexport",
+    "worldline-tim-test": "Worldline TIM-Test",
+}
+
 BANKIMPORT_BANKS = [
     {'doctype': 'BankImport Bank','bank_name': 'UBS','legacy_ref': 'ubs','file_format': 'CSV(csv)','bank_enabled': 1},
     {'doctype': 'BankImport Bank','bank_name': 'ZKB','legacy_ref': 'zkb','file_format': 'CSV(csv)','bank_enabled': 1},
@@ -75,7 +85,18 @@ def ensure_v16_desk_records():
     ensure_workspace_records()
     ensure_workspace_sidebar_records()
     ensure_desktop_icon_records()
+    ensure_page_titles()
     _clear_desk_navigation_cache()
+
+
+def ensure_page_titles():
+    if not frappe.db.exists("DocType", "Page"):
+        return
+
+    for page_name, title in PAGE_TITLES.items():
+        if not frappe.db.exists("Page", page_name):
+            continue
+        frappe.db.set_value("Page", page_name, "title", title, update_modified=False)
 
 
 def ensure_workspace_records():

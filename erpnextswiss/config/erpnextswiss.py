@@ -172,8 +172,8 @@ def get_data():
                     {
                        "type": "doctype",
                        "name": "ERPNextSwiss Settings",
-                       "label": _("ERPNextSwiss Einstellungen"),
-                       "description": _("ERPNextSwiss Einstellungen")
+                       "label": _("App-Einstellungen"),
+                       "description": _("App-Einstellungen")
                     },
                     {
                        "type": "doctype",

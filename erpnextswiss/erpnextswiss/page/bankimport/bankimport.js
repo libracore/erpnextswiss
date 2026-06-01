@@ -9,7 +9,7 @@ frappe.pages['bankimport'].on_page_load = function(wrapper) {
 	frappe.bankimport.run();
 	
 	// add the application reference
-	frappe.breadcrumbs.add("ERPNextSwiss");
+	frappe.breadcrumbs.add("Schweizer Buchhaltung");
 }
 
 frappe.bankimport = {

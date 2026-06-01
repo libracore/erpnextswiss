@@ -55,7 +55,7 @@
    "default": "0",
    "fieldname": "debug",
    "fieldtype": "Check",
-   "label": "Debug"
+   "label": "Debug-Modus"
   },
   {
    "fieldname": "sec_details",

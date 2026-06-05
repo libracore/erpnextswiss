@@ -27,6 +27,15 @@ PAGE_TITLES = {
     "worldline-tim-test": "Worldline TIM-Test",
 }
 
+WORKSPACE_ROUTE_PAGES = {
+    "erpnextswiss": "Schweizer Buchhaltung",
+    "schweizer-buchhaltung": "Schweizer Buchhaltung",
+    "zahlungsverkehr": "Zahlungsverkehr",
+    "qr-rechnung-e-rechnung": "QR-Rechnung & E-Rechnung",
+    "schweizer-mwst": "Schweizer MwSt",
+    "schweiz-einstellungen": "Schweiz-Einstellungen",
+}
+
 SWISS_ACCOUNTING_ICON = {
     "label": "Schweizer Buchhaltung",
     "icon_type": "App",
@@ -105,6 +114,7 @@ def ensure_v16_desk_records():
     ensure_workspace_sidebar_records()
     ensure_desktop_icon_records()
     ensure_desktop_layout_records()
+    ensure_workspace_route_pages()
     ensure_page_titles()
     _clear_desk_navigation_cache()
 
@@ -113,10 +123,51 @@ def ensure_page_titles():
     if not frappe.db.exists("DocType", "Page"):
         return
 
-    for page_name, title in PAGE_TITLES.items():
+    for page_name, title in {**PAGE_TITLES, **WORKSPACE_ROUTE_PAGES}.items():
         if not frappe.db.exists("Page", page_name):
             continue
         frappe.db.set_value("Page", page_name, "title", title, update_modified=False)
+
+
+def ensure_workspace_route_pages():
+    """Keep legacy /desk/<workspace-slug> URLs valid in Frappe v16.
+
+    The Desk router only treats /desk/foo as a Workspace when foo is present in
+    boot's workspace map. If a user lacks that boot entry or the cache is cold,
+    Frappe falls through to the Page router and shows "Page foo not found".
+    These tiny standard Pages redirect the old URLs to the real Workspace route.
+    """
+    if not frappe.db.exists("DocType", "Page"):
+        return
+
+    for page_name, workspace_name in WORKSPACE_ROUTE_PAGES.items():
+        roles = _workspace_page_roles(workspace_name)
+        if frappe.db.exists("Page", page_name):
+            page = frappe.get_doc("Page", page_name)
+            if page.meta.has_field("roles"):
+                page.set("roles", [])
+        else:
+            page = frappe.new_doc("Page")
+            page.name = page_name
+
+        page.system_page = 0
+        page.page_name = page_name
+        page.title = workspace_name
+        page.module = "ERPNextSwiss"
+        page.standard = "Yes"
+        if page.meta.has_field("roles"):
+            for role in roles:
+                page.append("roles", {"role": role})
+        page.save(ignore_permissions=True)
+
+
+def _workspace_page_roles(workspace_name):
+    if frappe.db.exists("Workspace", workspace_name):
+        workspace = frappe.get_doc("Workspace", workspace_name)
+        roles = [row.role for row in workspace.get("roles") or [] if row.role]
+        if roles:
+            return roles
+    return ["System Manager"]
 
 
 def ensure_workspace_records():

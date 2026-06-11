@@ -74,13 +74,20 @@ def get_data():
             "label": _("Finance"),
             "icon": "fa fa-users",
             "items": [
-                   {
+                    {
                         "type": "report",
                         "name": "Account Sheets",
                         "label": _("Account Sheets"),
                         "doctype": "GL Entry",
                         "is_query_report": True
-                   }
+                    },
+                    {
+                        "type": "report",
+                        "name": "Betriebserfolg",
+                        "label": _("Betriebserfolg"),
+                        "doctype": "GL Entry",
+                        "is_query_report": True
+                    }
             ]
         },
         {

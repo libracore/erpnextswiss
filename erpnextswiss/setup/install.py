@@ -6,6 +6,7 @@ import re
 from pathlib import Path
 
 import frappe
+from erpnextswiss.setup.email_templates import sync_email_templates
 
 
 WORKSPACE_ROUTES = {
@@ -71,12 +72,14 @@ BANKIMPORT_BANKS = [
 def after_install():
     ensure_bankimport_banks()
     ensure_v16_desk_records()
+    sync_email_templates()
     frappe.db.commit()
 
 
 def after_migrate():
     ensure_bankimport_banks()
     ensure_v16_desk_records()
+    sync_email_templates()
     frappe.db.commit()
 
 

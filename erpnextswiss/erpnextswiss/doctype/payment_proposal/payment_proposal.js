@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2024, libracore (https://www.libracore.com) and contributors
+// Copyright (c) 2018-2026, libracore (https://www.libracore.com) and contributors
 // For license information, please see license.txt
 
 frappe.ui.form.on('Payment Proposal', {
@@ -52,6 +52,9 @@ frappe.ui.form.on('Payment Proposal', {
         for (var b = 0; b < grid_add_btns.length; b++) {
             grid_add_btns[b].style.visibility = "Hidden";
         }
+     },
+     before_save: function(frm) {
+        recalculate_total(frm);
      },
      validate: function(frm) {
         if (frm.doc.pay_from_account == null) {
@@ -147,6 +150,9 @@ function recalculate_total(frm) {
     }
     for (var i = 0; i < frm.doc.expenses.length; i++) {
         total += frm.doc.expenses[i].amount
+    }
+    for (var i = 0; i < frm.doc.salaries.length; i++) {
+        total += frm.doc.salaries[i].amount
     }
     cur_frm.set_value('total', total);
 }

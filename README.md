@@ -104,4 +104,4 @@ Refer to [https://github.com/libracore/erpnextswiss/wiki/Release-Notes](https://
 ## Data protection
 Please note that the provided sample QR code invoice uses a libracore server to process QR codes according to ISO 20022. The server is located in Switzerland, the invoice details will be transmitted to the server for processing.
 
-Please use a personal QR-code generation server to prevent data being sent to libracore. The source code is available from [https://github.com/lasalesi/phpqrcode](PhpQrCode)
+Please use a personal QR-code generation server to prevent data being sent to libracore. The source code is available from [https://github.com/lasalesi/phpqrcode](https://github.com/lasalesi/phpqrcode)

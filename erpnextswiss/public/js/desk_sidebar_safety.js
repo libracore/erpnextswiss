@@ -11,8 +11,7 @@
 			return typeof item.condition === "function"
 				? item.condition()
 				: frappe.utils.eval(item.condition);
-		} catch (error) {
-			console.warn("Skipped sidebar menu item with invalid condition", item, error);
+		} catch {
 			return false;
 		}
 	}

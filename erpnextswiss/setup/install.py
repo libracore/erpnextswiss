@@ -72,6 +72,7 @@ BANKIMPORT_BANKS = [
 def after_install():
     ensure_bankimport_banks()
     ensure_v16_desk_records()
+    remove_production_unsafe_navbar_items()
     sync_email_templates()
     frappe.db.commit()
 
@@ -79,6 +80,7 @@ def after_install():
 def after_migrate():
     ensure_bankimport_banks()
     ensure_v16_desk_records()
+    remove_production_unsafe_navbar_items()
     sync_email_templates()
     frappe.db.commit()
 
@@ -120,6 +122,27 @@ def ensure_v16_desk_records():
     ensure_workspace_route_pages()
     ensure_page_titles()
     _clear_desk_navigation_cache()
+
+
+def remove_production_unsafe_navbar_items():
+    if not frappe.db.exists("DocType", "Navbar Item"):
+        return
+
+    removed = False
+    for item_name in frappe.get_all(
+        "Navbar Item",
+        filters={
+            "parent": "Navbar Settings",
+            "parentfield": "settings_dropdown",
+            "item_label": ["in", ["Delete Demo Data"]],
+        },
+        pluck="name",
+    ):
+        frappe.delete_doc("Navbar Item", item_name, ignore_permissions=True, force=True)
+        removed = True
+
+    if removed:
+        _clear_desk_navigation_cache()
 
 
 def ensure_page_titles():

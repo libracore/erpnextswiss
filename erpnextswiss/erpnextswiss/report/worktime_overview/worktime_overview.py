@@ -128,14 +128,18 @@ def get_target_time(filters, employee):
                 data["degree"] = degrees[i].degree
             degree_list.append(data)
             i += 1
-            
-        employee_joining_date = frappe.get_doc("Employee", employee).date_of_joining
+        
+        employee_joining_date = frappe.db.get_value("Employee", employee, "date_of_joining")
+        employee_relieving_date = frappe.db.get_value("Employee", employee, "relieving_date")
         if getdate(employee_joining_date) < getdate(filters.from_date):
             start_date = getdate(filters.from_date)
         else:
             start_date = getdate(employee_joining_date)
-            
-        end_date = getdate(filters.to_date)
+        if not employee_relieving_date or (getdate(employee_relieving_date) > getdate(filters.to_date)):
+            end_date = getdate(filters.to_date)
+        else:
+            end_date = getdate(employee_relieving_date)
+        
         delta = timedelta(days=1)
         while start_date <= end_date:
             for degree_range in degree_list:
@@ -146,14 +150,19 @@ def get_target_time(filters, employee):
         
     # if only one degree or no degrees
     else:
-        employee_joining_date = frappe.get_doc("Employee", employee).date_of_joining
+        employee_joining_date = frappe.db.get_value("Employee", employee, "date_of_joining")
+        employee_relieving_date = frappe.db.get_value("Employee", employee, "relieving_date")
         if getdate(employee_joining_date) < getdate(filters.from_date):
             start_date = filters.from_date
         else:
             start_date = employee_joining_date
+        if not employee_relieving_date or (getdate(employee_relieving_date) > getdate(filters.to_date)):
+            end_date = getdate(filters.to_date)
+        else:
+            end_date = getdate(employee_relieving_date)
             
-        days = date_diff(filters.to_date, start_date) + 1
-        off_days = get_off_days(start_date, filters.to_date, filters.company, employee)
+        days = date_diff(end_date, start_date) + 1
+        off_days = get_off_days(start_date, end_date, filters.company, employee)
         if len(degrees) > 0:
             target_per_day = (get_daily_hours(filters) / 100) * degrees[0].degree
         else:

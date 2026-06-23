@@ -30,7 +30,8 @@ add_to_apps_screen = [
 app_include_js = [
     "/assets/erpnextswiss/js/swiss_common.js",
     "/assets/erpnextswiss/js/iban.js",
-    "/assets/erpnextswiss/js/email.js"
+    "/assets/erpnextswiss/js/email.js",
+    "/assets/erpnextswiss/js/desk_sidebar_safety.js"
 ]
 
 # include js, css files in header of web template

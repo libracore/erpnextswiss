@@ -135,7 +135,7 @@ def get_target_time(filters, employee):
             start_date = getdate(filters.from_date)
         else:
             start_date = getdate(employee_joining_date)
-        if employee_relieving_date and getdate(employee_relieving_date) > getdate(filters.to_date):
+        if not employee_relieving_date or (getdate(employee_relieving_date) > getdate(filters.to_date)):
             end_date = getdate(filters.to_date)
         else:
             end_date = getdate(employee_relieving_date)
@@ -156,7 +156,7 @@ def get_target_time(filters, employee):
             start_date = filters.from_date
         else:
             start_date = employee_joining_date
-        if employee_relieving_date and getdate(employee_relieving_date) > getdate(filters.to_date):
+        if not employee_relieving_date or (getdate(employee_relieving_date) > getdate(filters.to_date)):
             end_date = getdate(filters.to_date)
         else:
             end_date = getdate(employee_relieving_date)

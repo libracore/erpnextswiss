@@ -1,0 +1,60 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2026-06-24 11:43:47.744596",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "abaninja_api_section",
+  "account_uuid",
+  "api_key",
+  "customer_sync_url"
+ ],
+ "fields": [
+  {
+   "fieldname": "abaninja_api_section",
+   "fieldtype": "Section Break",
+   "label": "AbaNinja API"
+  },
+  {
+   "fieldname": "account_uuid",
+   "fieldtype": "Data",
+   "label": "Account UUID"
+  },
+  {
+   "fieldname": "api_key",
+   "fieldtype": "Password",
+   "label": "API Key"
+  },
+  {
+   "fieldname": "customer_sync_url",
+   "fieldtype": "Data",
+   "label": "Customer Sync URL"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-06-24 11:45:14.649667",
+ "modified_by": "Administrator",
+ "module": "ERPNextSwiss",
+ "name": "AbaNinja Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

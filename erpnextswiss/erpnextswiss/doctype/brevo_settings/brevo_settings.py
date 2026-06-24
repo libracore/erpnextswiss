@@ -485,32 +485,32 @@ class BrevoSettings(Document):
         
 @frappe.whitelist()
 def fetch_contacts():
-    brevo = frappe.get_doc("Brevo", "Brevo")
+    brevo = frappe.get_doc("Brevo Settings", "Brevo Settings")
     return brevo.get_all_contacts()
     
 def sync_contacts():
-    brevo = frappe.get_doc("Brevo", "Brevo")
+    brevo = frappe.get_doc("Brevo Settings", "Brevo Settings")
     brevo.get_all_contacts(sync=True)
     return
     
 @frappe.whitelist()
 def fetch_lists(with_folders=False):
-    brevo = frappe.get_doc("Brevo", "Brevo")
+    brevo = frappe.get_doc("Brevo Settings", "Brevo Settings")
     return brevo.get_all_lists(with_folders)
 
 @frappe.whitelist()
 def create_update_contact(contact, list_ids=[]):
     if type(list_ids) == str:
         list_ids = json.loads(list_ids)
-    brevo = frappe.get_doc("Brevo", "Brevo")
+    brevo = frappe.get_doc("Brevo Settings", "Brevo Settings")
     return brevo.create_update_contact(contact, list_ids)
 
 @frappe.whitelist()
 def fetch_campaigns():
-    brevo = frappe.get_doc("Brevo", "Brevo")
+    brevo = frappe.get_doc("Brevo Settings", "Brevo Settings")
     return brevo.get_all_campaigns()
 
 @frappe.whitelist()
 def fetch_contact_stats(contact_email):
-    brevo = frappe.get_doc("Brevo", "Brevo")
+    brevo = frappe.get_doc("Brevo Settings", "Brevo Settings")
     return brevo.get_contact_campaign_stats(contact_email)

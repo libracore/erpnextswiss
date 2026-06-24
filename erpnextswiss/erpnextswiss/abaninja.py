@@ -118,17 +118,124 @@ def save_or_update_customer(company_data):
 
     # sync related contacts and addresses
     sync_linked_addresses(customer_doc, company_data)
-    sync_linked_contacts(customer_doc, company_data)
+    #sync_linked_contacts(customer_doc, company_data)
 
     return is_new
 
 def sync_linked_addresses(customer_doc, company_data):
-    # TODO: link customer and contacts/addresses
+    addresses = company_data.get("addresses", [])
+    
+    for addr in addresses:
+        abaninja_id = addr.get("uuid")
+        street = addr.get("address", "")
+        street_num = addr.get("street_number", "")
+        extension = addr.get("extension", "")
+        additional_field = addr.get("additional_field", "")
+        city = addr.get("city")
+        zip_code = addr.get("zip_code")
+        country_iso = addr.get("country_code", "CH")
+
+        if not street and not city:
+            continue
+
+        # format address lines
+        full_street = street + " " +street_num
+        parts = [p for p in [extension, additional_field] if p]
+        additional_info = " ".join(parts)
+        address_title = customer_doc.customer_name + "-" + "Billing"
+        
+        address_name = frappe.db.get_value("Address", {"abaninja_id": abaninja_id}, "name")
+        if address_name:
+            address = frappe.get_doc("Address", address_name)
+        else:
+            address = frappe.new_doc("Address")
+            address.address_title = address_title
+            address.address_type = "Billing"
+
+        address.abaninja_id = abaninja_id
+        address.address_line1 = full_street
+        address.address_line2 = additional_info
+        address.city = city
+        address.pincode = zip_code
+        
+        # get country from iso_code
+        # TODO: handle country (there are a lot)
+        address.country = "Switzerland" if country_iso == "CH" else ("Germany" if country_iso == "DE" else country_iso)
+        address.save(ignore_permissions=True)
+
+        # map address to company
+        if not frappe.db.exists("Dynamic Link", {"parent": address.name, "link_doctype": "Customer", "link_name": customer_doc.name}):
+            address.append("links", {
+                "link_doctype": "Customer",
+                "link_name": customer_doc.name
+            })
+            address.save(ignore_permissions=True)
     return
 
 def sync_linked_contacts(customer_doc, company_data):
+    company_email = None
+    company_phone = None
+
+    for contact_value in company_data.get("contacts", []):
+        if contact_value.get("type") == "email":
+            company_email = contact_value.get("value")
+        elif contact_value.get("type") == "phone":
+            company_phone = contact_value.get("value")
+    
+    # create a default contact for the company
 
 
-    # TODO: link customer and contacts/addresses
+    persons = company_data.get("contact_persons", [])
 
+    for person in persons:
+        first_name = person.get("first_name", "")
+        last_name = person.get("last_name", "")
+        
+        person_email = None
+        person_phone = None
+        for c in person.get("contacts", []):
+            if c.get("type") == "email":
+                person_email = c.get("value")
+            elif c.get("type") == "phone":
+                person_phone = c.get("value")
+                
+        # Fallback to general company phone if person lacks a direct phone extension
+        if not person_phone:
+            person_phone = company_phone
+
+        create_or_update_contact(
+            customer_doc=customer_doc,
+            first_name=first_name,
+            last_name=last_name,
+            email=person_email or company_email,
+            phone=person_phone
+        )
+
+    return 
+
+def create_or_update_contact(customer_doc, first_name, last_name, email, phone):
+    contact_name = None
+    if email:
+        contact_name = frappe.db.get_value("Contact", {"email_id": email}, "name")
+    elif phone:
+        contact_name = frappe.db.get_value("Contact", {"phone": phone}, "name")
+
+    if contact_name:
+        contact = frappe.get_doc("Contact", contact_name)
+    else:
+        contact = frappe.new_doc("Contact")
+        contact.first_name = first_name or customer_doc.customer_name
+        contact.last_name = last_name
+
+    if email: contact.email_id = email
+    if phone: contact.phone = phone
+    contact.save(ignore_permissions=True)
+    
+    # Create reference map link to Customer record
+    if not frappe.db.exists("Dynamic Link", {"parent": contact.name, "link_doctype": "Customer", "link_name": customer_doc.name}):
+        contact.append("links", {
+            "link_doctype": "Customer",
+            "link_name": customer_doc.name
+        })
+        contact.save(ignore_permissions=True)
     return

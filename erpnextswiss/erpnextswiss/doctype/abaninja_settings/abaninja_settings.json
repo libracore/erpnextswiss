@@ -22,7 +22,7 @@
   },
   {
    "fieldname": "api_key",
-   "fieldtype": "Password",
+   "fieldtype": "Data",
    "label": "API Key"
   }
  ],
@@ -30,7 +30,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2026-06-24 13:25:21.765866",
+ "modified": "2026-06-24 15:58:39.791146",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "AbaNinja Settings",

@@ -7,8 +7,7 @@
  "field_order": [
   "abaninja_api_section",
   "account_uuid",
-  "api_key",
-  "customer_sync_url"
+  "api_key"
  ],
  "fields": [
   {
@@ -25,18 +24,13 @@
    "fieldname": "api_key",
    "fieldtype": "Password",
    "label": "API Key"
-  },
-  {
-   "fieldname": "customer_sync_url",
-   "fieldtype": "Data",
-   "label": "Customer Sync URL"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2026-06-24 11:45:14.649667",
+ "modified": "2026-06-24 13:25:21.765866",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "AbaNinja Settings",

@@ -84,6 +84,52 @@ def find_existing_customer(abaninja_id, tax_id, company_name):
     
     return None
 
+def get_or_create_payment_terms_template(days):
+    template_name = str(days).strip()
+    
+    if template_name == "-1":
+        term_days = 0
+        term_name = "0 Days"
+    else:
+        try:
+            term_days = int(template_name)
+            term_name = "{term_days} Days".format(term_days=term_days)
+        except ValueError:
+            frappe.log_error("AbaNinja Terms Error", "Invalid days value received: {days_raw}".format(days_raw=days_raw))
+            return None
+
+    if not frappe.db.exists("Payment Term", term_name):
+        try:
+            term_doc = frappe.new_doc("Payment Term")
+            term_doc.payment_term_name = term_name
+            term_doc.credit_days = term_days
+            term_doc.invoice_portion = 100.0
+            term_doc.due_date_based_on = "Day(s) after invoice date"
+            term_doc.insert(ignore_permissions=True)
+        except Exception as e:
+            frappe.log_error("Failed to Create Payment Term", frappe.get_traceback())
+            return None
+
+    if frappe.db.exists("Payment Terms Template", template_name):
+        return template_name
+
+    try:
+        template_doc = frappe.new_doc("Payment Terms Template")
+        template_doc.template_name = template_name
+        
+        template_doc.append("terms", {
+            "payment_term": term_name,
+            "invoice_portion": 100.0,
+            "credit_days": term_days
+        })
+        
+        template_doc.insert(ignore_permissions=True)
+        return template_doc.name
+
+    except Exception as e:
+        frappe.log_error("Failed to Create Payment Terms Template", "Could not build template '{template_name}'. Error:".format(template_name=template_name) + " " + {frappe.get_traceback()})
+        return None
+
 def save_or_update_customer(company_data):             
     abaninja_id = company_data.get("uuid", "")
     company_name = company_data.get("company_name")
@@ -104,6 +150,11 @@ def save_or_update_customer(company_data):
             customer_doc.name = company_data.get('customer_number')
         is_new = True
 
+    # find/generate payment terms
+    payment_terms = None
+    if company_data.get("payment_terms"):
+        payment_terms = get_or_create_payment_terms_template(company_data.get("payment_terms"))
+
     # add the necessary values
     customer_doc.customer_name = company_name
     customer_doc.abaninja_id = abaninja_id
@@ -111,7 +162,7 @@ def save_or_update_customer(company_data):
     customer_doc.default_currency = company_data.get("currency_code", "")
     customer_doc.language = company_data.get("language", "")
     customer_doc.customer_details = company_data.get("private_notes", "")
-    customer_doc.payment_terms = company_data.get("payment_terms", "")
+    customer_doc.payment_terms = payment_terms
     customer_doc.disabled = 1 if company_data.get("is_archived") else 0
 
     customer_doc.save(ignore_permissions=True)

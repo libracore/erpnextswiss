@@ -7,6 +7,7 @@
  "field_order": [
   "abaninja_api_section",
   "account_uuid",
+  "column_break_fgxe",
   "api_key"
  ],
  "fields": [
@@ -24,13 +25,17 @@
    "fieldname": "api_key",
    "fieldtype": "Password",
    "label": "API Key"
+  },
+  {
+   "fieldname": "column_break_fgxe",
+   "fieldtype": "Column Break"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2026-06-26 10:45:56.996230",
+ "modified": "2026-06-26 20:00:16.703679",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "AbaNinja Settings",

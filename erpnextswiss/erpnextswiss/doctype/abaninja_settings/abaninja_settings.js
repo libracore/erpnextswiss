@@ -4,11 +4,11 @@
 frappe.ui.form.on("AbaNinja Settings", {
     refresh(frm) {
         frm.add_custom_button(__('Sync customers'), function () {
-            frappe.dom.freeze(__('Fetching customer records from AbaNinja, please wait...'));
             frappe.call({
                 'method': 'erpnextswiss.erpnextswiss.abaninja.sync_abaninja_customers',
+                'freeze': true,
+                'freeze_message': __('Fetching customer records from AbaNinja, please wait...'),
                 'callback': function (response) {
-                    frappe.dom.unfreeze();
                     if (response.message) {
                         let res = response.message;
 
@@ -36,7 +36,6 @@ frappe.ui.form.on("AbaNinja Settings", {
                     }
                 },
                 'error': function (response) {
-                    frappe.dom.unfreeze();
                     frappe.msgprint({
                         title: __('Critical Error'),
                         indicator: 'red',

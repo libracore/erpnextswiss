@@ -4,7 +4,8 @@ from frappe import _
 
 def get_api_credentials():
     account_uuid = frappe.db.get_single_value("AbaNinja Settings", "account_uuid")
-    api_key = frappe.get_single_value("AbaNinja Settings", "api_key")
+    abaninja_settings = frappe.get_single("AbaNinja Settings")
+    api_key = abaninja_settings.get_password('api_key')  
 
     return account_uuid, api_key
 

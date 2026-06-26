@@ -69,9 +69,9 @@ class BrevoSettings(Document):
         settings = frappe.get_doc("Brevo Settings", "Brevo Settings")
         
         # map fields
-        for m in settings.mapping:
+        for m in settings.mappings:
             if m.dt == "Contact":
-                contact.update({m.fieldname: attribues.get(m.attribute)})
+                contact.update({m.fieldname: attributes.get(m.attribute)})
                     
         contact.flags.ignore_mandatory = True
         contact.flags.ignore_validate = True
@@ -487,7 +487,8 @@ class BrevoSettings(Document):
 def fetch_contacts():
     brevo = frappe.get_doc("Brevo Settings", "Brevo Settings")
     return brevo.get_all_contacts()
-    
+
+@frappe.whitelist()
 def sync_contacts():
     brevo = frappe.get_doc("Brevo Settings", "Brevo Settings")
     brevo.get_all_contacts(sync=True)

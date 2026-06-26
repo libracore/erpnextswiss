@@ -19,7 +19,8 @@ frappe.ui.form.on('Brevo Settings', {
 
 function fetch_contacts(frm) {
     frappe.call({
-        'method': 'erpnextswiss.erpnextswiss.doctype.brevo_settings.brevo_settings.fetch_contacts',
+        //'method': 'erpnextswiss.erpnextswiss.doctype.brevo_settings.brevo_settings.fetch_contacts',
+        'method': 'erpnextswiss.erpnextswiss.doctype.brevo_settings.brevo_settings.sync_contacts',
         'freeze': true,
         'freeze_message': __("Retrieving contacts... please stay tuned..."),
         'callback': function(response) {

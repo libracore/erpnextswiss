@@ -468,7 +468,7 @@
    "hidden": 0,
    "is_query_report": 0,
    "label": "Integrations",
-   "link_count": 10,
+   "link_count": 11,
    "link_type": "DocType",
    "onboard": 0,
    "type": "Card Break"
@@ -572,9 +572,19 @@
    "link_type": "DocType",
    "onboard": 0,
    "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Brevo Settings",
+   "link_count": 0,
+   "link_to": "Brevo Settings",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
   }
  ],
- "modified": "2026-06-26 19:58:33.501032",
+ "modified": "2026-06-26 20:24:28.953709",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "ERPNextSwiss",

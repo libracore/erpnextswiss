@@ -96,6 +96,8 @@ In case you update from the sources and observe an error, make sure to update de
         * Interface to DPD
     * CalDav-feed for CRM (Lead/Customer) and ToDos
     * Mautic Integration
+    * AbaNinja Integration
+    * Brevo Integration
  * Business Intelligence
     * Data Provider for Looker Studio (refer to the libracore Connector to connect to your data)
  * Productivity

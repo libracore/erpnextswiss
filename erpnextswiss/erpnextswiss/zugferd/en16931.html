@@ -194,6 +194,58 @@
         <ram:RateApplicablePercent>0</ram:RateApplicablePercent>                       
       </ram:ApplicableTradeTax>
 {%- endif %}
+{%- if discount %}
+      <ram:SpecifiedTradeAllowanceCharge>
+        <ram:ChargeIndicator>
+          <udt:Indicator>false</udt:Indicator>
+        </ram:ChargeIndicator>
+        <ram:ActualAmount>{{ "{:.2f}".format(discount) }}</ram:ActualAmount>
+        <ram:Reason>Discount</ram:Reason>
+        {%- if taxes %}
+        {%- for tax in taxes %}
+        <ram:CategoryTradeTax>
+          <ram:TypeCode>VAT</ram:TypeCode>
+          {%- if tax_category == "AE" %}
+          <ram:ExemptionReason>Reverse Charge</ram:ExemptionReason>
+          {%- elif tax_category == "E" %}
+          <ram:ExemptionReason>Not subject to VAT</ram:ExemptionReason>
+          {%- elif tax_category == "K" %}
+          <ram:ExemptionReason>Intra-community supply</ram:ExemptionReason>
+          {%- endif %}
+          <ram:CategoryCode>{{ tax_category or "S" }}</ram:CategoryCode>
+          {%- if tax_category == "AE" %}
+          <ram:ExemptionReasonCode>VATEX-EU-AE</ram:ExemptionReasonCode>
+          {%- elif tax_category == "E" %}
+          <ram:ExemptionReasonCode>VATEX-EU-O</ram:ExemptionReasonCode>
+          {%- elif tax_category == "K" %}
+          <ram:ExemptionReasonCode>VATEX-EU-IC</ram:ExemptionReasonCode>
+          {%- endif %}
+          <ram:RateApplicablePercent>{{ "{:.2f}".format(tax.rate) }}</ram:RateApplicablePercent>
+        </ram:CategoryTradeTax>
+        {%- endfor %}
+        {%- else %}
+        <ram:CategoryTradeTax>
+          <ram:TypeCode>VAT</ram:TypeCode>
+          {%- if tax_category == "AE" %}
+          <ram:ExemptionReason>Reverse Charge</ram:ExemptionReason>
+          {%- elif tax_category == "E" %}
+          <ram:ExemptionReason>Not subject to VAT</ram:ExemptionReason>
+          {%- elif tax_category == "K" %}
+          <ram:ExemptionReason>Intra-community supply</ram:ExemptionReason>
+          {%- endif %}
+          <ram:CategoryCode>{{ tax_category or "S" }}</ram:CategoryCode>
+          {%- if tax_category == "AE" %}
+          <ram:ExemptionReasonCode>VATEX-EU-AE</ram:ExemptionReasonCode>
+          {%- elif tax_category == "E" %}
+          <ram:ExemptionReasonCode>VATEX-EU-O</ram:ExemptionReasonCode>
+          {%- elif tax_category == "K" %}
+          <ram:ExemptionReasonCode>VATEX-EU-IC</ram:ExemptionReasonCode>
+          {%- endif %}
+        <ram:RateApplicablePercent>0</ram:RateApplicablePercent>                       
+        </ram:CategoryTradeTax>
+        {%- endif %}
+      </ram:SpecifiedTradeAllowanceCharge>
+{%- endif %}
       <ram:SpecifiedTradePaymentTerms>
         <ram:Description>{{ payment_terms }}</ram:Description>
         <ram:DueDateDateTime>
@@ -202,8 +254,8 @@
       </ram:SpecifiedTradePaymentTerms>
       <ram:SpecifiedTradeSettlementHeaderMonetarySummation>
         <ram:LineTotalAmount>{{ "{:.2f}".format(total) }}</ram:LineTotalAmount>
-        <ram:ChargeTotalAmount>{{ "{:.2f}".format(discount) }}</ram:ChargeTotalAmount>
-        <ram:AllowanceTotalAmount>0.00</ram:AllowanceTotalAmount>
+        <ram:ChargeTotalAmount>0.00</ram:ChargeTotalAmount>
+        <ram:AllowanceTotalAmount>{{ "{:.2f}".format(discount) }}</ram:AllowanceTotalAmount>
         <ram:TaxBasisTotalAmount>{{ "{:.2f}".format(net_total) }}</ram:TaxBasisTotalAmount>
         <ram:TaxTotalAmount currencyID='{{ currency }}'>{{ "{:.2f}".format(total_tax) }}</ram:TaxTotalAmount>
         <ram:GrandTotalAmount>{{ "{:.2f}".format(grand_total) }}</ram:GrandTotalAmount>

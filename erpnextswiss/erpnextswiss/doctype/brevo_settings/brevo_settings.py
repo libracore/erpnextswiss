@@ -515,3 +515,19 @@ def fetch_campaigns():
 def fetch_contact_stats(contact_email):
     brevo = frappe.get_doc("Brevo Settings", "Brevo Settings")
     return brevo.get_contact_campaign_stats(contact_email)
+
+def migrate_contacts()
+    """
+    In case the email is only in the child table, but not on the head, use this function to update
+    
+    bench execute erpnextswiss.erpnextswiss.doctype.brevo_settings.brevo_settings.migrate_contacts
+    """
+    from tqdm import tqdm
+    contacts = frappe.db.sql("""SELECT `name` FROM `tabContact` WHERE `email_id` IS NULL;""", as_dict=True)
+    for c in tqdm(contacts, desc="Updating...", unit="contact"):
+        doc = frappe.get_doc("Contact", c['name'])
+        doc.save()
+        frappe.db.commit()
+    
+    return
+    

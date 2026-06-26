@@ -72,7 +72,19 @@ class BrevoSettings(Document):
         for m in settings.mappings:
             if m.dt == "Contact":
                 contact.update({m.fieldname: attributes.get(m.attribute)})
-                    
+                
+                if m.fieldname in ["phone", "mobile_no"] and attributes.get(m.attribute):
+                    has_phone_already = False
+                    for c in (contact.phone_nos or []):
+                        if c.phone == attributes.get(m.attribute):
+                            has_phone_already = True
+                            break
+                    if not has_phone_already:
+                        contact.append('phone_nos', {
+                            'phone': brevo_contact.get("email"),
+                            'is_primary_phone': 1 if m.fieldname == "phone" else 0,
+                            'is_primary_mobile_no': 1 if m.fieldname == "mobile_no" else 0
+                        })
         contact.flags.ignore_mandatory = True
         contact.flags.ignore_validate = True
         contact.save()
@@ -516,7 +528,7 @@ def fetch_contact_stats(contact_email):
     brevo = frappe.get_doc("Brevo Settings", "Brevo Settings")
     return brevo.get_contact_campaign_stats(contact_email)
 
-def migrate_contacts()
+def migrate_contacts():
     """
     In case the email is only in the child table, but not on the head, use this function to update
     

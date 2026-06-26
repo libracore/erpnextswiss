@@ -74,6 +74,7 @@ class BrevoSettings(Document):
                 contact.update({m.fieldname: attributes.get(m.attribute)})
                 
                 if m.fieldname in ["phone", "mobile_no"] and attributes.get(m.attribute):
+                    
                     has_phone_already = False
                     for c in (contact.phone_nos or []):
                         if c.phone == attributes.get(m.attribute):
@@ -87,7 +88,10 @@ class BrevoSettings(Document):
                         })
         contact.flags.ignore_mandatory = True
         contact.flags.ignore_validate = True
-        contact.save()
+        try:
+            contact.save()
+        except Exception as err:
+            frappe.log_error("Brevo import failed", "Import failed for {0} with {1}".format(brevo_contact, err))
         frappe.db.commit()
         return
             

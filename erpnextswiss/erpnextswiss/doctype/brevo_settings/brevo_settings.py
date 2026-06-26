@@ -74,7 +74,8 @@ class BrevoSettings(Document):
                 contact.update({m.fieldname: attributes.get(m.attribute)})
                 
                 if m.fieldname in ["phone", "mobile_no"] and attributes.get(m.attribute):
-                    
+                    if "@" in attributes.get(m.attribute):
+                        continue                        # skip, if email is entered in phone field (prevent crash)
                     has_phone_already = False
                     for c in (contact.phone_nos or []):
                         if c.phone == attributes.get(m.attribute):

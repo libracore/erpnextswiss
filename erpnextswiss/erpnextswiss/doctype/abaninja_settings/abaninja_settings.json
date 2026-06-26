@@ -1,0 +1,66 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2026-06-24 11:43:47.744596",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "abaninja_api_section",
+  "account_uuid",
+  "column_break_fgxe",
+  "api_key"
+ ],
+ "fields": [
+  {
+   "fieldname": "abaninja_api_section",
+   "fieldtype": "Section Break",
+   "label": "AbaNinja API"
+  },
+  {
+   "fieldname": "account_uuid",
+   "fieldtype": "Data",
+   "label": "Account UUID"
+  },
+  {
+   "fieldname": "api_key",
+   "fieldtype": "Password",
+   "label": "API Key"
+  },
+  {
+   "fieldname": "column_break_fgxe",
+   "fieldtype": "Column Break"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-06-26 20:00:16.703679",
+ "modified_by": "Administrator",
+ "module": "ERPNextSwiss",
+ "name": "AbaNinja Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "Sales Manager",
+   "share": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

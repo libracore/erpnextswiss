@@ -330,105 +330,6 @@
   {
    "hidden": 0,
    "is_query_report": 0,
-   "label": "Integrations",
-   "link_count": 9,
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Card Break"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "ZUGFeRD Wizard",
-   "link_count": 0,
-   "link_to": "ZUGFeRD Wizard",
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Planzer Settings",
-   "link_count": 0,
-   "link_to": "Planzer Settings",
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Datatrans Settings",
-   "link_count": 0,
-   "link_to": "Datatrans Settings",
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Payrexx Settings",
-   "link_count": 0,
-   "link_to": "Payrexx Settings",
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Worldline TIM",
-   "link_count": 0,
-   "link_to": "Worldline TIM",
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "GitLab Settings",
-   "link_count": 0,
-   "link_to": "GitLab Settings",
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Abacus Export File",
-   "link_count": 0,
-   "link_to": "Abacus Export File",
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Abacus Export",
-   "link_count": 0,
-   "link_to": "abacus_export",
-   "link_type": "Page",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "CalDav Feed",
-   "link_count": 0,
-   "link_to": "CalDav Feed",
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
    "label": "EDI",
    "link_count": 4,
    "link_type": "DocType",
@@ -562,9 +463,118 @@
    "link_type": "DocType",
    "onboard": 0,
    "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Integrations",
+   "link_count": 10,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "ZUGFeRD Wizard",
+   "link_count": 0,
+   "link_to": "ZUGFeRD Wizard",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Planzer Settings",
+   "link_count": 0,
+   "link_to": "Planzer Settings",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Datatrans Settings",
+   "link_count": 0,
+   "link_to": "Datatrans Settings",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Payrexx Settings",
+   "link_count": 0,
+   "link_to": "Payrexx Settings",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Worldline TIM",
+   "link_count": 0,
+   "link_to": "Worldline TIM",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "GitLab Settings",
+   "link_count": 0,
+   "link_to": "GitLab Settings",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Abacus Export File",
+   "link_count": 0,
+   "link_to": "Abacus Export File",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Abacus Export",
+   "link_count": 0,
+   "link_to": "abacus_export",
+   "link_type": "Page",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "AbaNinja Settings",
+   "link_count": 0,
+   "link_to": "AbaNinja Settings",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "CalDav Feed",
+   "link_count": 0,
+   "link_to": "CalDav Feed",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
   }
  ],
- "modified": "2025-07-31 16:41:27.217623",
+ "modified": "2026-06-26 19:58:33.501032",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "ERPNextSwiss",
@@ -574,7 +584,7 @@
  "public": 1,
  "quick_lists": [],
  "roles": [],
- "sequence_id": 39.0,
+ "sequence_id": 33.0,
  "shortcuts": [],
  "title": "ERPNextSwiss"
 }

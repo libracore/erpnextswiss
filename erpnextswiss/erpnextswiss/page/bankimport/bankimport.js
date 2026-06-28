@@ -1,7 +1,7 @@
 frappe.pages['bankimport'].on_page_load = function(wrapper) {
 	var page = frappe.ui.make_app_page({
 		parent: wrapper,
-		title: __('Bank import'),
+		title: 'Bankimport',
 		single_column: true
 	});
 
@@ -9,7 +9,7 @@ frappe.pages['bankimport'].on_page_load = function(wrapper) {
 	frappe.bankimport.run();
 	
 	// add the application reference
-	frappe.breadcrumbs.add("ERPNextSwiss");
+	frappe.breadcrumbs.add("Schweizer Buchhaltung");
 }
 
 frappe.bankimport = {
@@ -22,11 +22,11 @@ frappe.bankimport = {
 		$(frappe.render_template('bankimport', data)).appendTo(me.body);
 
 		// add menu button
-		this.page.add_menu_item(__("Match payments"), function() {
+		this.page.add_menu_item("Zahlungen abgleichen", function() {
 			// navigate to bank import tool
 			window.location.href="/desk#match_payments";
 		});
-		this.page.add_menu_item(__("Debug Template"), function() {
+		this.page.add_menu_item("Vorlage debuggen", function() {
 			// navigate to bank import tool
 			$('.btn-parse-file').trigger('click', [true]);
 		});
@@ -113,19 +113,19 @@ frappe.bankimport = {
 							}
 						});
 					} else {
-						frappe.msgprint("Unknown format. Please contact your system manager");
+						frappe.msgprint("Unbekanntes Format. Bitte den Systemadministrator kontaktieren.");
 					}
 				}
 				// assign an error handler event
 				reader.onerror = function (event) {
-					frappe.msgprint(__("Error reading file"), __("Error"));
+					frappe.msgprint("Fehler beim Lesen der Datei", "Fehler");
 				}
 				reader.readAsArrayBuffer(file);
 				//reader.readAsText(file, "ANSI");
 			}
 			else
 			{
-				frappe.msgprint(__("Please select a file."), __("Information"));
+				frappe.msgprint("Bitte eine Datei auswählen.", "Information");
 			}
 			
 		});

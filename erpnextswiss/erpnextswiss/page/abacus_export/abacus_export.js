@@ -1,7 +1,7 @@
 frappe.pages['abacus_export'].on_page_load = function(wrapper) {
     var page = frappe.ui.make_app_page({
         parent: wrapper,
-        title: __('Abacus Export'),
+        title: 'Abacus-Export',
         single_column: true
     });
 
@@ -10,7 +10,7 @@ frappe.pages['abacus_export'].on_page_load = function(wrapper) {
     frappe.abacus_export.update_preview();
     
     // add the application reference
-    frappe.breadcrumbs.add("ERPNextSwiss");
+    frappe.breadcrumbs.add("Schweizer Buchhaltung");
 }
 
 
@@ -29,7 +29,7 @@ frappe.abacus_export = {
         });
         
         // add menu button
-        this.page.add_menu_item(__("Reset export flags"), function() {
+        this.page.add_menu_item("Export-Markierungen zurücksetzen", function() {
             frappe.abacus_export.reset_export_flags();
         });
     },
@@ -86,10 +86,10 @@ frappe.abacus_export = {
                         preview_container.innerHTML += frappe.render_template('gl_entry_table', response);
                     } 
                     if (response.message.length == 20) {
-                        preview_container.innerHTML += '<p class="text-muted">' + __("more records available (not shown)") + '</p>';
+                        preview_container.innerHTML += '<p class="text-muted">Weitere Datensätze vorhanden (nicht angezeigt)</p>';
                     }
                 } else {
-                    preview_container.innerHTML += '<p class="text-muted">' + __("No general ledger entries found.") + '</p>';
+                    preview_container.innerHTML += '<p class="text-muted">Keine Hauptbucheinträge gefunden.</p>';
                 }
             }
         });
@@ -142,7 +142,7 @@ frappe.abacus_export = {
             method: 'erpnextswiss.erpnextswiss.page.abacus_export.abacus_export.reset_export_flags',
             callback: function(r) {
                 if (r.message) {
-                    frappe.show_alert( __("Export flags reset") );
+                    frappe.show_alert("Export-Markierungen zurückgesetzt");
 		    frappe.abacus_export.update_preview();
                 } 
             }

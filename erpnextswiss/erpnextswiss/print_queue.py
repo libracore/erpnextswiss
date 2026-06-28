@@ -178,7 +178,7 @@ def _fetch_waiting_jobs_for_printers(printer_names, limit):
         ],
         fields=["name", "printer", "raw_data", "pdf_file"],
         order_by="creation asc",
-        limit_page_length=limit
+        limit=limit,
     )
 
     useful_jobs = []

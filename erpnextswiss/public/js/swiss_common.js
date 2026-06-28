@@ -1,3 +1,82 @@
+(function() {
+    function migrate_legacy_desktop_icon() {
+        if (!window.frappe || !frappe.session || !frappe.session.user || !window.localStorage) {
+            return;
+        }
+
+        var key = frappe.session.user + ":desktop";
+        var raw = localStorage.getItem(key);
+        if (!raw || raw === "undefined" || raw === "null") {
+            return;
+        }
+
+        try {
+            var icons = JSON.parse(raw);
+            if (!Array.isArray(icons)) {
+                return;
+            }
+
+            var firstPosition = -1;
+            var firstIdx = null;
+            var changed = false;
+            var migrated = [];
+
+            icons.forEach(function(icon) {
+                var isSwissAccountingIcon = icon && (
+                    icon.label === "ERPNextSwiss" ||
+                    icon.label === "Schweizer Buchhaltung" ||
+                    icon.name === "ERPNextSwiss" ||
+                    icon.name === "Schweizer Buchhaltung" ||
+                    (icon.app === "erpnextswiss" && icon.icon_type === "App")
+                );
+
+                if (!isSwissAccountingIcon) {
+                    migrated.push(icon);
+                    return;
+                }
+
+                if (firstPosition === -1) {
+                    firstPosition = migrated.length;
+                    firstIdx = icon.idx;
+                }
+                changed = true;
+            });
+
+            if (changed) {
+                var swissIcon = {
+                    label: "Schweizer Buchhaltung",
+                    bg_color: null,
+                    link: "",
+                    link_type: "Workspace Sidebar",
+                    app: "erpnextswiss",
+                    icon_type: "App",
+                    parent_icon: null,
+                    icon: "erpnextswiss",
+                    link_to: "Schweizer Buchhaltung",
+                    idx: firstIdx,
+                    standard: 1,
+                    logo_url: "/assets/erpnextswiss/images/schweizer_buchhaltung.svg",
+                    hidden: 0,
+                    name: "ERPNextSwiss",
+                    restrict_removal: 0,
+                    icon_image: null,
+                    child_icons: []
+                };
+                migrated.splice(firstPosition, 0, swissIcon);
+                localStorage.setItem(key, JSON.stringify(migrated));
+            }
+        } catch (e) {
+            // Ignore broken local desktop layouts; Frappe will fall back to boot data.
+        }
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", migrate_legacy_desktop_icon);
+    } else {
+        migrate_legacy_desktop_icon();
+    }
+})();
+
 // this function checks if an ESR code is valid
 function check_esr(esr_raw) {
     esr_code = esr_raw.replace(/ /g, '');

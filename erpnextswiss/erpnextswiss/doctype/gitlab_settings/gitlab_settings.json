@@ -14,7 +14,7 @@
    "default": "0",
    "fieldname": "enabled",
    "fieldtype": "Check",
-   "label": "Enable GitLab"
+   "label": "GitLab aktivieren"
   },
   {
    "fieldname": "url",
@@ -24,12 +24,12 @@
   {
    "fieldname": "private_token",
    "fieldtype": "Password",
-   "label": "Private Token"
+   "label": "Privater Token"
   },
   {
    "fieldname": "project_id",
    "fieldtype": "Int",
-   "label": "Project ID"
+   "label": "Projekt-ID"
   }
  ],
  "issingle": 1,

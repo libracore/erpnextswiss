@@ -13,7 +13,7 @@
   {
    "fieldname": "payrexx_api_key",
    "fieldtype": "Data",
-   "label": "Payrexx API Key"
+   "label": "Payrexx API-Schlüssel"
   },
   {
    "fieldname": "col_main",
@@ -22,12 +22,12 @@
   {
    "fieldname": "success_url",
    "fieldtype": "Data",
-   "label": "Success URL"
+   "label": "Erfolgs-URL"
   },
   {
    "fieldname": "payrexx_instance",
    "fieldtype": "Data",
-   "label": "Payrexx Instance"
+   "label": "Payrexx-Instanz"
   }
  ],
  "issingle": 1,

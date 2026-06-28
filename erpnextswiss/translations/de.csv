@@ -1,467 +1,1113 @@
-Module: ERPNextSwiss,Fullsize,Ganzer Bildschirm
-Module: ERPNextSwiss,Fullsize View,Ganzer Bildschirm
-Module: ERPNextSwiss,Normal View,Normale Ansicht
-Module: ERPNextSwiss,Customer name,Kundenname
-Module: ERPNextSwiss,Item name,Artikelname
-Module: ERPNextSwiss,Always use entry transaction type,Immer Transaktionstyp des Eintrags verwenden
-Module: ERPNextSwiss,Automatically process full macthes,Eindeutige Treffer automatisch verarbeiten
-Page: bankimport,Bank import,Bankdaten importieren
-DocType: VAT Declaration,VAT Declaration,Mehrwertsteuerdeklaration
-Page: payment_export,Payment export,Zahlungsdatei erstellen
-DocType: VAT Declaration,Taxes,Steuern
-DocType: Payment Entry,Transaction Type,Transaktionstyp
-DocType: Payment Entry,ESR Participant Number,ESR-Teilnehmernummer
-DocType: Payment Entry,ESR Reference,ESR-Referenz
-DocType: Payment Entry,Supplier data added,Lieferantendetails hinzugefügt
-DocType: Payment Entry,Invoice details added,Rechnungsdetails hinzugefügt
-DocType: Account,Payment Files,Transferdateien
-Page: payment_export,No payment entries to be paid found with status draft,Es wurden keine offenen Zahlungen (Entwurf) gefunden.
-Page: payment_export,Exports the selected payment entries for execution by file transfer to a bank,Exportiert die gewählten Zahlungen zur Ausführung durch eine Bank
-Page: payment_export,Payment entries,Zahlungen
-Page: payment_export,Create payment file,Zahlungsdatei erstellen
-Page: bankimport,Import payment entries from bank account file,Importiert Zahlungen aus einer Bankkonto-Datei
-Page: bankimport,Payment account,Konto
-Page: bankimport,Automatically submit,Automatisch buchen
-Page: bankimport,Parse,Einlesen
-Page: bankimport,File,Datei
-Page: bankimport,Please select a file.,Bitte eine Datei wählen
-Page: bankimport,Error reading file,Fehler beim lesen der Datei
-Page: bankimport,Successfully imported {0} payments.,{0} Zahlugen erfolgreich importiert.
-Page: bankimport,CAMT.054 Transaction Notification,CAMT.054 Zahlungsinformationen
-Page: bankimport,CAMT.053 Bank Statement,CAMT.053 Kontoauszug
-Page: bankimport,Unable to read structure. Please make sure that you have selected the correct format.,"Struktur kann nicht gelesen werden. Bitte prüfen Sie, ob Sie das korrekte Format ausgewählt haben."
-Page: payment_export,Please select at least one payment.,Bitte mindestens eine Zahlung auswählen.
-Page: payment_export,No payment entries to be paid found with status draft,Es wurden keine Zahlungen mit Status Entwurf gefunden
-DocType: VAT Declaration,End,Ende
-DocType: VAT Declaration,VAT type,Abrechnungstyp
-DocType: VAT Declaration,effective,Effektiv
-DocType: VAT Declaration,flat,Saldo
-DocType: VAT Declaration,Revenue,Umsatz
-DocType: VAT Declaration,Get values,Werte holen
-DocType: VAT Declaration,Recalculate,Neu berechnen
-DocType: VAT Declaration,Total revenue (200),"Total der vereinbarten bzw. vereinnahmten Entgelte (Art. 39), inkl. Entgelte aus Übertragungen im Meldeverfahren sowie aus Leistungen im Ausland (200)"
-DocType: VAT Declaration,Non-taxable revenue (205),Nicht steuerpflichtige Umsätze (205)
-DocType: VAT Declaration,Tax-free services (220),"Von der Steuer befreite Leistungen (u.a. Exporte; Art. 23), von der Steuer befreite Leistungen an begünstigte Einrichtungen und Personen (220)"
-DocType: VAT Declaration,Revenue abroad (221),Leistungen im Ausland (221)
-DocType: VAT Declaration,Transfers (225),"Übertragung im Meldeverfahren (Art. 38, bitte zusätzlich Form. 764 einreichen) (225)"
-DocType: VAT Declaration,Non-taxable services (230),"Nicht steuerbare Leistungen (Art 21), für die nicht nach Art. 22 optiert wird (230)"
-DocType: VAT Declaration,Losses (235),Entgeltsminderung (235)
-DocType: VAT Declaration,Miscellaneous (280),Diverses (z.B. Wert des Bodens) (280)
-DocType: VAT Declaration,Total deductions (289),Total Abzüge (289)
-DocType: VAT Declaration,Taxable revenue (299),Steuerbarer Gesamtumsatz (299)
-DocType: VAT Declaration,Tax calculation,Steuerberechnung
-DocType: VAT Declaration,Normal (301),Normal (301)
-DocType: VAT Declaration,Reduced (311),Reduziert (311)
-DocType: VAT Declaration,Lodging (341),Beherbergung (341)
-DocType: VAT Declaration,Amount 1 (321),1. Satz (321)
-DocType: VAT Declaration,Amount 2 (331),2. Satz (331)
-DocType: VAT Declaration,Additional (381),Bezugsteuer (381)
-DocType: VAT Declaration,Normal (302),Normal (302)
-DocType: VAT Declaration,Reduced (312),Reduziert (312)
-DocType: VAT Declaration,Lodging (342),Beherbergung (342)
-DocType: VAT Declaration,Amount 1 (322),1. Satz (322)
-DocType: VAT Declaration,Amount 2 (332),2. Satz (332)
-DocType: VAT Declaration,Additional (382),Bezugsteuer (382)
-DocType: VAT Declaration,Normal (303),Normal (303)
-DocType: VAT Declaration,Reduced (313),Reduziert (313)
-DocType: VAT Declaration,Lodging (343),Beherbergung (343)
-DocType: VAT Declaration,Amount 1 (323),1. Satz (323)
-DocType: VAT Declaration,Amount 2 (333),2. Satz (333)
-DocType: VAT Declaration,Additional (383),Bezugsteuer (383)
-DocType: VAT Declaration,Normal rate (%),Normal (%)
-DocType: VAT Declaration,Reduced rate (%),Reduziert (%)
-DocType: VAT Declaration,Lodging rate (%),Beherbergung (%)
-DocType: VAT Declaration,Rate 1 (%),1. Satz (%)
-DocType: VAT Declaration,Rate 2 (%),2. Satz (%)
-DocType: VAT Declaration,Normal rate - 2024 (%),Normal - 2024 (%)
-DocType: VAT Declaration,Reduced rate - 2024 (%),Reduziert - 2024 (%)
-DocType: VAT Declaration,Lodging rate - 2024 (%),Beherbergung - 2024 (%)
-DocType: VAT Declaration,Rate 1 - 2024 (%),1. Satz - 2024 (%)
-DocType: VAT Declaration,Rate 2 - 2024 (%),2. Satz - 2024 (%)
-DocType: VAT Declaration,Normal tax (300),Normale Steuer (300)
-DocType: VAT Declaration,Reduced tax (310),Reduzierte Steuer (310)
-DocType: VAT Declaration,Lodging tax (340),Beherbergungssteuer (340)
-DocType: VAT Declaration,Tax 1 (320),Steuer Satz 1 (320)
-DocType: VAT Declaration,Tax 2 (330),Steuer Satz 2 (330)
-DocType: VAT Declaration,Additional tax (380),Bezugssteuer (380)
-DocType: VAT Declaration,Summary,Zusammenfassung
-DocType: VAT Declaration,Total tax (399),Total geschuldete Steuer (399)
-DocType: VAT Declaration,Pretax material and services (400),Vorsteuer auf Material- und Dienstleistungsaufwand (400)
-DocType: VAT Declaration,Pretax investments (405),Vorsteuer auf Investitionen und übrigem Betriebsaufwand (405)
-DocType: VAT Declaration,Missing pretax (410),"Einlageentsteuerung (Art. 32, bitte detaillierte Aufstellung beilegen) (410)"
-DocType: VAT Declaration,Pretax correction mixed (415),"Vorsteuerkorrekturen: gemischte Verwendung (Art. 30), Eigenverbrauch (Art. 31) (415)"
-DocType: VAT Declaration,Pretax correction other (420),"Vorsteuerkorrekturen: Nicht-Entgelte wie Subventionen, Tourismusabgaben (Art. 33 Abs 2) (420)"
-DocType: VAT Declaration,Form 1050 (470),Steueranrechnung gemäss Formular Nr. 1050 (470)
-DocType: VAT Declaration,Form 1055 (471),Steueranrechnung gemäss Formular Nr. 1055 (471)
-DocType: VAT Declaration,Total pretax reductions (479),Total Vorsteuer (479)
-DocType: VAT Declaration,Payable tax (500),An die Eigd. Steuerverwaltung zu bezahlender Betrag (500)
-DocType: VAT Declaration,Balance (510),Guthaben der steuerpflichtigen Person (510)
-DocType: VAT Declaration,Other cashflows,Andere Mittelflüsse (Art. 18 Abs 2)
-DocType: VAT Declaration,Grants (900),"Subventionen, durch Kurvereine eingenommene Toursimusabgaben, Entsorgungs- und Wasserwerkbeiträge (Bst. a-c) (900)"
-DocType: VAT Declaration,Donations (910),"Spenden, Dividenden, Schadenersatz usw. (Bst. d-l) (910)"
-DocType: ERPNextSwiss VAT configuration,VAT tax mode,Steuerabrechnungsart
-DocType: ERPNextSwiss VAT configuration,Effective tax,Effektive Steuer
-DocType: ERPNextSwiss VAT configuration,Normal rate tax template,Steuervorlage normal
-DocType: ERPNextSwiss VAT configuration,Reduced rate tax template,Steuervorlage reduziert
-DocType: ERPNextSwiss VAT configuration,Lodging rate tax template,Steuervorlage Beherbergung
-DocType: ERPNextSwiss VAT configuration,Abroad tax template,Steuervorlage Auslandumsatz
-DocType: ERPNextSwiss VAT configuration,Tax-free tax template,Steuervorlage steuerfrei
-DocType: ERPNextSwiss VAT configuration,Pretax account,Abrechnungskonto MWST
-DocType: ERPNextSwiss VAT configuration,Flat tax,Saldobesteuerung
-DocType: ERPNextSwiss VAT configuration,Rate 1 tax template,Steuertemplate Satz 1
-DocType: ERPNextSwiss VAT configuration,Rate 2 tax template,Steuertemplate Satz 2
-DocType: ERPNextSwiss VAT configuration,Configuration,Einstellungen
-DocType: ERPNextSwiss VAT configuration,VAT configuration,Mehrwertsteuereinstellungen
-Page: match_payments,Match payments,Zahlungen zuordnen
-Page: match_payments,Helps to match unpaid sales invoices against received payments,Hilft Zahlungseingänge unbezahlten Ausgangsrechnungen zu zu ordnen
-Page: match_payments,Sales invoices,Rechnungen
-Page: match_payments,Sales invoice,Rechnung
-Page: match_payments,Due date,Zahlbarkeit
-Page: match_payments,Payment entries,Zahlungseingänge
-Page: match_payments,Payment entry,Zahlung
-Page: match_payments,Match,Zuordnen
-Page: match_payments,Please select a sales invoice.,Bitte eine Rechnung wählen
-Page: match_payments,Please select a payment entry.,Bitte einen Zahlungseingang wählen
-Page: match_payments,Payment entry not found,Zahlung nicht gefunden
-Page: match_payments,Customer not found,Kunde nicht gefunden
-Page: match_payments,Done,Fertig
-Page: match_payments,No unpaid sales invoices found.,Es wurden keine unbezahlten Rechnungen gefunden.
-Page: match_payments,No unallocated payment entries found.,Es wurden keine nicht-zugewiesene Zahlungen gefunden.
-Page: match_payments,Open bank import,Bankdaten importieren
-Page: match_payments,Matched {0} sales invoices.,{0} Rechnungen abgeglichen
-Page: match_payments,No matches found.,Keine Treffer gefunden
-Page: match_payments,Auto match by ID,Abgleich per ID
-Page: match_payments,Auto match by ESR,Abgleich per ESR
-Page: payment_export,Some payments were skipped due to errors (check the payment file for details):,Einige Zahlungen wurden wegen Fehlern übersprungen (Zahlungsdatei enthält Details):
-DocType: Supplier,ESR Participation Number / QR-IBAN,ESR Teilnehmernummer/QR-IBAN
-DocType: Purchase Invoice,ESR Reference Number,ESR Referenznummer
-DocType: Salary Certificate,Salary Certificate,Lohnausweis
-DocType: Salary Certificate,Please save the record before populating it with data,Bitte speichern Sie den Datensatz bevor Daten eingelesen werden
-DocType: Salary Certificate,Salary slip information collected,Lohnauszüge eingelesen
-DocType: Salary Certificate,Calculate totals,Summen berechnen
-DocType: Salary Certificate,Totals have been updated,Summen wurden aktualisiert
-DocType: Salary Certificate,Please select a valid employee.,Bitte einen gültigen Mitarbeiter wählen
-DocType: Salary Certificate,Start date,Von Datum
-DocType: Salary Certificate,End date,Bis Datum
-DocType: Salary Certificate,Benefits,Vorteile
-DocType: Salary Certificate,Certificate type,Lohnausweisart
-DocType: Salary Certificate,Pension,Rente
-DocType: Salary Certificate,Free transport,Unentgeltliche Beförderung zwischen Wohn- und Arbeitsort
-DocType: Salary Certificate,Lunch checks,Kantinenverpflegung/Lunch-Checks
-DocType: Salary Certificate,Section salary,Abschnitt Lohn
-DocType: Salary Certificate,1. Salary,1. Lohn/Rente
-DocType: Salary Certificate,2.1 Catering,"2.1 Verpflegung, Unterkunft"
-DocType: Salary Certificate,2.2 Car,2.2 Privatanteil Geschäftswagen
-DocType: Salary Certificate,2.3 Other salary,2.3 Andere
-DocType: Salary Certificate,3 Irregular,3. Unregelmässige Leistungen
-DocType: Salary Certificate,4 Capital,4. Kapitalleistungen
-DocType: Salary Certificate,2.3 Other salary description,2.3 Beschreibung Andere
-DocType: Salary Certificate,3 Irregular description,3. Beschreibung unregelmässige Leistungen
-DocType: Salary Certificate,4 Capital description,4. Beschreibung Kapitalleistungen
-DocType: Salary Certificate,5 Participation,5. Beteiligungsrechte gemäss Beiblatt
-DocType: Salary Certificate,6 Board,6. Verwaltungsratsentschädigungen
-DocType: Salary Certificate,7 Other,7. Andere Leistungen
-DocType: Salary Certificate,7 Other description,7. Beschreibung andere Leistungen
-DocType: Salary Certificate,8 Gross salary,8. Bruttolohn total
-DocType: Salary Certificate,9 Deductions AHV/IV/EO/ALV/NBUV,9. Beiträge AHV/IV/EO/ALV/NBUV
-DocType: Salary Certificate,10.1 Deduction pension,10.1 Ordentliche Beiträge berufliche Vorsorge
-DocType: Salary Certificate,10.2 Deduction pension additional,10.2 Beiträge für den Einkauf
-DocType: Salary Certificate,11 Net salary,11. Nettolohn/Rente
-DocType: Salary Certificate,12 Source tax deduction,12. Quellensteuerabzug
-DocType: Salary Certificate,13.1.1 Effective expenses travel,"13.1.1 Effektive Spesen Reise, Verppflegung, Übernachtung"
-DocType: Salary Certificate,13.1.2 Effective other expenses,13.1.2 Effektive Spesen andere
-DocType: Salary Certificate,13.2.1 Representation expenses,13.2.1 Pauschalspesen Repräsentation
-DocType: Salary Certificate,13.2.2 Car expenses,13.2.2 Pauschalspesen Auto
-DocType: Salary Certificate,13.2.3 Other net expenses,13.2.3 Pauschalspesen übrige
-DocType: Salary Certificate,13.3 Education,13.3 Beiträge an die Weiterbildung
-DocType: Salary Certificate,14 Other salary sides,14. Gehaltsnebenleistungen Art
-DocType: Salary Certificate,15 Remarks,15. Bemerkungen
-DocType: Label Printer,Label Printer,Etikettendrucker
-DocType: Label Printer,Create Test PDF,Test-PDF erstellen
-DocType: Label Printer,Create Label,Etikett erstellen
-DocType: Pincode,Canton,Kanton
-DocType: Pincode,Canton Code,Kantonsabkürzung
-DocType: Pincode,Country Code,Länderabkürzung
-DocType: Pincode,Set,Setzen
-DocType: Pincode,Import Pincodes,Postleitzahlen einlesen
-DocType: Pincode,Import started...,Import gestartet...
-DocType: Pincode,Successfully imported,Erfolgreich importiert
-DocType: Pincode,Open Map,Karte öffnen
-Page: abacus_export,Abacus Export,Abacus Transferdatei
-Page: abacus_export,Export General Ledger to an Abacus transfer file,Exportiert Transaktionen in eine Abacus Transferdatei
-Page: abacus_export,to,bis
-Page: abacus_export,Create File,Datei erstellen
-Page: abacus_export,more records available (not shown),es gibt weitere Einträge (nicht angezeigt)
-Page: abacus_export,No general ledger entries found.,Keine Transaktionen gefunden.
-Page: abacus_export,Export flags reset,Export-Markierungen entfernt
-Page: abacus_export,Exported to Abacus,Nach Abacus exportiert
-Page: abacus_export,Reset export flags,Export-Markierungen entfernen
-DocType: ERPNextSwiss Settings,ERPNextSwiss Settings,ERPNextSwiss Einstellungen
-DocType: ERPNextSwiss Settings,Default Customer,Standardkunde
-DocType: ERPNextSwiss Settings,Use this to define a default customer,Setzt einen Standardkunden
-DocType: ERPNextSwiss Settings,Invoice Code Line Scanning,Rechnungsscanner
-DocType: ERPNextSwiss Settings,Default Item,Standardartikel
-DocType: ERPNextSwiss Settings,Enable salary payment,Lohnzahlungen ausführen
-DocType: ERPNextSwiss Settings,Numeric-only debtor reference matching,Rein-numerische Debitorenreferenzen verwenden
-DocType: ERPNextSwiss Settings,Uses only the numeric part of a sales invoice number for matching,Verwendet nur den numerischen Teil der Rechnugnsreferenz zum Abgleich
-DocType: ERPNextSwiss Settings,Debug Mode,Debug-Modus
-DocType: ERPNextSwiss Settings,No Reminder on Credit Balance,Keine Mahnung bei Kundenguthaben
-DocType: ERPNextSwiss Settings,Ignore special characters,Spezialzeichen ignorieren
-DocType: Contract,Contract,Vertrag
-DocType: Contract,Contracts,Verträge
-DocType: ERPNextSwiss Settings,Automated Payments,Automatische Zahlungsabwicklung
-DocType: ERPNextSwiss Settings,Planning Period (Days),Planungszeitraum (Tage)
-DocType: ERPNextSwiss Settings,Reminder Minimum Threshold,Grenzwert für Mahnungen (ab Betrag)
-DocType: Payment Reminder,Payment Reminder,Mahnung
-DocType: Payment Reminder,Payment Reminder Level,Mahnungsstufe
-DocType: Payment Reminder,Exclude From Payment Reminder Until,Von Mahnungsläufen ausschliessen bis
-DocType: Payment Reminder,Level,Stufe
-DocType: Payment Reminder,Create Payment Reminders,Mahnlauf durchführen
-DocType: Payment Reminder,Payment Reminders created,Mahnlauf durchgeführt
-DocType: Payment Reminder,Reminder Level,Mahnstufe
-DocType: Payment Reminder,Reminder Charge,Mahngebühr
-DocType: Payment Reminder,Auto Submit,Automatisch buchen
-DocType: Payment Reminder,Reminder Charges,Mahngebühren
-DocType: Payment Reminder,Highest Level,Höchste Stufe
-DocType: Payment Reminder,Total before Charge,Zwischensumme
-DocType: Payment Reminder,Total with Charge,Gesamtsumme
-DocType: Payment Reminder,Are you sure you want to create payment reminders?,"Sind Sie sicher, dass Sie Mahnungen erstellen möchten?"
-Module: ERPNextSwiss,Is proposed,Abgeholt
-Module: ERPNextSwiss,Skonto Percent,Skonto-Prozent
-Module: ERPNextSwiss,Skonto Days,Skonto-Tage
-Module: ERPNextSwiss,Skonto Account,Skonto-Konto
-Module: ERPNextSwiss,Skonto Cost Center,Skonto-Kostenstelle
-Module: ERPNextSwiss,Enable LSV,LSV aktivieren
-DocType: Direct Debit Proposal,Direct Debit Proposal,Lastschrifteinzugsvorschlag
-DocType: Direct Debit Proposal,Create Direct Debit Proposal,Lastschrifteinzug vorbereiten
-DocType: Direct Debit Proposal,No available sales invoices found.,Keine verfügbaren Zahlungen gefunden.
-DocType: Direct Debit Proposal,Download bank file,Bankdatei herunterladen
-DocType: Direct Debit Proposal,Receive to Account,Empfangendes Bankkonto
-DocType: Direct Debit Proposal,Banking,Bankverbindung
-DocType: Direct Debit Proposal,LSV Code,LSV-Code
-DocType: Direct Debit Proposal,LSV Date,LSV-Datum
-DocType: Direct Debit Proposal,Please provide an intermediate account.,Bitte geben Sie ein Zwischenkonto an.
-DocType: Direct Debit Proposal,Please provide a skonto account and cost center.,Bitte geben Sie für den Skontoabzug ein Skonto-Konto und eine Kostenstelle an.
-DocType: Direct Debit Proposal,Please select an account to receive to.,Bitte wählen Sie ein Zielkonto aus.
-DocType: Direct Debit Proposal,Close Invoice on Intermediate Account,Rechnungen gegen Zwischenkonto schliessen
-DocType: Direct Debit Proposal,Intermediate,Zw.Konto
-DocType: Payment Proposal,Create Payment Proposal,Zahlungsvorschlag erstellen
-DocType: Payment Proposal,Payment Proposal,Zahlungsvorschlag
-DocType: Payment Proposal,No suitable invoices found.,Keine passenden Rechnungen gefunden.
-DocType: Payment Proposal,Intermediate Account,Zwischenkonto
-DocType: Payment Proposal,Close Invoive on Intermediate Account,Rechnung auf Zwischenkonto schliessen
-DocType: Payment Proposal,Please select an intermediate account.,Bitte ein Zwischenkonto wählen.
-DocType: Payment Proposal,Set Payment Date,Zahlungsdatum setzen
-DocType: Payment Proposal,Pay from Account,Zahlungen von diesem Konto ausführen
-DocType: Payment Proposal,Execute Payments On,Zahlungen an diesem Datum ausführen
-DocType: Payment Proposal,Invoice Amount,Rechnungsbetrag
-DocType: Payment Proposal,External Reference,Externe Referenz
-DocType: Payment Proposal,Skonto Date,Skonto-Datum
-DocType: Payment Proposal,Skonto Amount,Betrag mit Skonto
-DocType: Payment Proposal,Individual payments,Jede Rechnung einzeln bezahlen
-DocType: Payment Proposal,"Employee <a href=\"/desk#Form/Employee/{0}\">{0}</a> has no address.","Für den Mitarbeiter <a href=\"/desk#Form/Employee/{0}\">{0}</a> ist keine Adresse hinterlegt."
-DocType: Payment Proposal,"Company address missing or incomplete.","Unternehmensadresse fehlt oder ist unvollständig."
-DocType: Payment Proposal,"IBAN missing in pay from account.","Die IBAN des Zahlungskontos ist nicht hinterlegt."
-DocType: Payment Proposal,"Address missing for purchase invoice <a href=\"/desk#Form/Purchase Invoice/{0}\">{0}</a>","Für Eingangsrechnung <a href=\"/desk#Form/Purchase Invoice/{0}\">{0}</a> fehlt die Adresse."
-DocType: Payment Proposal,"ESR: missing transaction information (participant number or reference) in <a href=\"/desk#Form/Purchase Invoice/{0}\">{0}</a>","ESR: Transaktionsdetails fehlen (Teilnehmernummer oder Referenznummer) für <a href=\"/desk#Form/Purchase Invoice/{0}\">{0}</a>"
-DocType: Payment Proposal,"Missing IBAN for purchase invoice <a href=\"/desk#Form/Purchase Invoice/{0}\">{0}</a>","Bei Eingangsrechnung <a href=\"/desk#Form/Purchase Invoice/{0}\">{0}</a> fehlt die IBAN"
-DocType: Payment Proposal,"Employee <a href=\"/desk#Form/Employee/{0}\">{0}</a> has no bank account number.","Für Mitarbeiter <a href=\"/desk#Form/Employee/{0}\">{0}</a> ist kein Bankkonto hinterlegt."
-DocType: Payment Proposal,"Please configure the planning period in ERPNextSwiss Settings.","Bitte das Planungsintervall in den ERPNextSwiss-Einstellungen einstellen."
-DocType: Payment Proposal,Purchase Invoices,Eingangsrechnungen
-DocType: Payment Proposal,Salaries,Löhne
-DocType: Payment Proposal,Overview,Übersicht
-DocType: Payment Proposal,Target date,Zieldatum
-DocType: Payment Proposal,Employee name,Mitarbeitername
-DocType: Payment Proposal,Include Payments Until,Fälligkeiten einschliessen bis
-DocType: Payment Proposal,Execute as one single payment,Als eine einzige Zahlung ausführen
-DocType: Payment Proposal,in Payment Proposal,in Zahlungslauf
-Page: Bank Wizard,Bank Wizard,Bankassistent
-Page: Bank Wizard,Transaction matched,Zahlung zugewiesen
-Page: Bank Wizard,transactions found,Zahlungen gefunden
-Page: Bank Wizard,Please set the <b>default accounts</b> in <a href=\"/desk#Form/Company/{0}\">{0}</a>.Bitte setzten Sie <b>Standardkonten</b> unter <a href=\"/desk#Form/Company/{0}\">{0}</a>.
-Page: Bank Wizard,Please set the <b>default supplier</b> in <a href=\"/desk#Form/ERPNextSwiss Settings\">ERPNextSwiss Settings</a>.,Bitte setzen Sie den <b>Standardlieferant</b> unter <a href=\"/desk#Form/ERPNextSwiss Settings\">ERPNextSwiss Settings</a>.
-Page: Bank Wizard,Please set the <b>default customer</b> in <a href=\"/desk#Form/ERPNextSwiss Settings\">ERPNextSwiss Settings</a>.,Bitte setzen Sie den <b>Standardkunden</b> unter <a href=\"/desk#Form/ERPNextSwiss Settings\">ERPNextSwiss Settings</a>.
-Page: Bank Wizard,Please set the <b>intermediate bank account</b> in <a href=\"/desk#Form/ERPNextSwiss Settings\">ERPNextSwiss Settings</a>.,Bitte setzen Sie ein <b>Zwischenkonto</b> unter <a href=\"/desk#Form/ERPNextSwiss Settings\">ERPNextSwiss Settings</a>.
-Page: Bank Wizard,An error occurred while parsing. Please check the log files.,Es ist ein Fehler aufgetreten. Bitte prüfen Sie die Fehlerprotokolle.
-Page: Bank Wizard,Unsupported file format. Please use an xml or zip camt file,Dieses Format wird nicht unterstützt. Bitte verwenden Sie eine gültige XML- oder ZIP-Datei
-Page: Bank Wizard,Bank account has no IBAN.,Das Bankkonto hat keine IBAN hinterlegt.
-Page: Bank Wizard,IBAN check mandatory,IBAN-Prüfung zwingend erforderlich
-Page: Bank Wizard,"No account found for IBAN {0}. Make sure there is an account in the chart of accounts with this IBAN, account type Bank and not disabled.","Kein Bankkonto für IBAN {0} gefunden. Bitte sicherstellen, das im Kontenplan ein Konto vom Type Bank mit dieser IBAN existiert und nicht deaktiviert ist."
-Page: Bank Wizard,"Always use entry amount","Immer den Buchungsbetrag verwenden"
-Page: Bank Wizard,"Use this to always book in account currency. This should not be used if the bank uses collective transactions.","Mit dieser Einstellung wird immer der Transaktionbetrag verwendet in Kontowährung. Sollte nicht verwendet werden, wenn es Sammeltransaktionen gibt"
-DocType: Daily Closing Statement,Daily Closing Statement,Tagesabschluss
-DocType: Daily Closing Statement,Statistics,Statistik
-DocType: Daily Closing Statement,Total Sales,Total Umsatz
-DocType: Daily Closing Statement,Average Sales,Durchschnittlicher Umsatz
-DocType: Daily Closing Statement,Number of Customers,Anzahl Kunden
-DocType: Daily Closing Statement,Highest Sale,Höchster Umsatz
-DocType: Daily Closing Statement,Discounts,Rabatte
-DocType: Daily Closing Statement,Count,Anzahl
-DocType: Daily Closing Statement,Currencies,Währungen
-DocType: Daily Closing Statement,Payment Modes,Zahlungsweisen
-DocType: Inspection Equipment,Inspection Equipment,Prüfmittel
-DocType: Inspection Equipment,Transaction,Transaktion
-DocType: Inspection Equipment,Calibration / Test,Kalibration / Test
-DocType: Inspection Equipment,Inspection Equipment Transaction,Prüfmittel Transaktion
-DocType: Inspection Equipment,General,Allgemein
-DocType: Inspection Equipment,Type,Typ
-DocType: Inspection Equipment,Manufacturer,Hersteller
-DocType: Inspection Equipment,Inventory Number,Inventar Nummer
-DocType: Inspection Equipment,Location,Ort
-DocType: Inspection Equipment,Measurement Range,Messbereich
-DocType: Inspection Equipment,Usage,Verwendung
-DocType: Inspection Equipment,Purchase Price,Einkaufspreis
-DocType: Inspection Equipment,Purchase Date,Beschaffungsdatum
-DocType: Inspection Equipment,Transaction Status,Transaktionsstatus
-DocType: Inspection Equipment,On Stock,An Lager
-DocType: Inspection Equipment,Taken,Entnommen
-DocType: Inspection Equipment,Calibration,Kalibration
-DocType: Inspection Equipment,Last Calibration,Letzte Kalibration
-DocType: Inspection Equipment,Next Calibration,Nächste Kalibration
-DocType: Inspection Equipment,Calibration Test Set,Kalibration Test Set
-DocType: Inspection Equipment,Calibration Test,Kalibration Test
-DocType: Inspection Equipment,Calibration Interval,Kalibrations Interval
-DocType: Inspection Equipment,Current Inspection Equipment Status,Aktueller Prüfmittel Transaktionsstatus
-DocType: Inspection Equipment,New Inspection Equipment Status,Neuer Prüfmittel Transaktionsstatus
-DocType: Inspection Equipment,Inspection Equipment Type,Prüfmitteltyp
-DocType: Inspection Equipment,Perform Test, Test durchführen
-DocType: Inspection Equipment,Test Plan Items, Testschritte
-DocType: Inspection Equipment,Operating Instructions, Ausführungsanweisung
-DocType: Inspection Equipment,Test based on,Test basierend auf
-DocType: Inspection Equipment,Inspection Decision OK?,Prüfkriterium OK?
-DocType: Inspection Equipment,Inspection Decision OK,Prüfkriterium OK
-DocType: Inspection Equipment,Calibration / Test-Set,Kalibration / Test-Set
-DocType: Inspection Equipment,Caution; the actual value is not between OTG and UTG!,Achtung; der gemessene Wert liegt ausserhalb der Toleranzgrenzen!
-DocType: Inspection Equipment,To Calibrate,Zu Kalibrieren
-DocType: Inspection Equipment,Calibrated,Kalibriert
-DocType: Inspection Equipment,Without Calibration,Ohne Kalibration
-DocType: Inspection Equipment,Scrap,Verschrottet
-DocType: Inspection Equipment,Blocked,Gesperrt
-DocType: Inspection Equipment,in months,in Monaten
-DocType: Inspection Equipment,Taken by,Entnommen von
-DocType: VAT query,VAT query,MwSt-Abfrage
-DocType: Non Conformity Report 8D,Non Conformity Report 8D,8D-Bericht
-DocType: Non Conformity Report 8D,"D1 Use a Team","D1 Zusammenstellen eines Teams für die Problemlösung"
-DocType: Non Conformity Report 8D,"D2 Describe the Problem","D2 Problembeschreibung"
-DocType: Non Conformity Report 8D,"D3 Develop Interim Containment Plan","D3 Sofortmassnahmen festlegen"
-DocType: Non Conformity Report 8D,"D4 Determine and Verify Root Causes and Escape Points","D4 Fehlerursache(n) feststellen"
-DocType: Non Conformity Report 8D,"D5 Verify Permanent Corrections (PCs) for Problem will resolve problem for the customer","D5 Planen von Abstellmassnahmen"
-DocType: Non Conformity Report 8D,"D6 Define and Implement Corrective Actions","D6 Einführen der Abstellmassnahmen"
-DocType: Non Conformity Report 8D,"D7 Prevent Recurrence / System Problems","D7 Fehlerwiederholung verhindern"
-DocType: Non Conformity Report 8D,"D8 Congratulate the Main Contributors to your Team","D8 Würdigen der Teamleistung"
-DocType: Non Conformity Report 8D,"Establish a team of people with product/process knowledge.","Die Mitglieder des Teams sollten über ausreichende Prozess- und Produktkenntnisse verfügen. Ebenso sollten sie zur Mitarbeit bereit sein und mit den notwendigen Kenntnissen und Kompetenzen ausgestattet sein, um das Problem auf seine Ursachen zu analysieren, Korrekturmassnahmen einzuleiten und ihre Wirksamkeit überwachen zu können."
-DocType: Non Conformity Report 8D,"Specify the problem by identifying in quantifiable terms the who, what, where, when, why, how, and how many (5W2H) for the problem.","Das Problem ist so genau wie möglich zu definieren, wobei der Kern des Problems herausgearbeitet und quantifiziert werden sollte."
-DocType: Non Conformity Report 8D,"Problem Description","Problembeschreibung"
-DocType: Non Conformity Report 8D,"Define and implement containment actions to isolate the problem from any customer.","Sofortmassnahmen dienen der Schadensbegrenzung, sollen zumindest vorläufig die Lieferfähigkeit sicherstellen und die weitere Ausbreitung des Problems verhindern, bis eine dauerhafte Lösung gefunden ist (z. B. Absonderung durch Sortierprüfung oder 100 %-Prüfung fehlerverdächtigen Materials)."
-DocType: Non Conformity Report 8D,"Interim Containment Plan","Kurzfristiger Plan"
-DocType: Non Conformity Report 8D,"Identify all applicable causes that could explain why the problem has occurred. Also identify why the problem was not noticed at the time it occurred. All causes shall be verified or proved. One can use five whys or Ishikawa diagrams to map causes against the effect or problem identified.","Es wird nach Fehlerursachen gesucht und die wahrscheinlichste(n) Grundursache(n) durch Experimente, Tests und Vergleiche identifiziert und nachgewiesen."
-DocType: Non Conformity Report 8D,"Root Cause Analysis","Ursachenanalyse"
-DocType: Non Conformity Report 8D,"Using pre-production programs, quantitatively confirm that the selected correction will resolve the problem. (Verify that the correction will actually solve the problem.)","Es werden Massnahmen ermittelt, die die Grundursachen beseitigen können. Die optimale(n) Massnahme(n) werden ausgewählt und durch Versuche nachgewiesen, dass das Problem effektiv und auch effizient gelöst werden kann sowie keine unerwünschten Nebenwirkungen entstehen werden. Bei der Festlegung von Massnahmen steht die Fehlervermeidung und nicht die Fehlerentdeckung im Vordergrund."
-DocType: Non Conformity Report 8D,"Remedial Actions","Abstellmassnahmen"
-DocType: Non Conformity Report 8D,"Define and Implement the best corrective actions.","Die Abstellmassnahmen können sich auf Prozessparameter, Produktspezifikationen und andere Vorgabedokumente sowie auf Prüfmethoden und die Mitarbeiterqualifikation auswirken. Nach erfolgreicher Einführung der Abstellmassnahme(n) wird/werden die Sofortmassnahme(n) aufgehoben."
-DocType: Non Conformity Report 8D,"Modify the management systems, operation systems, practices, and procedures to prevent recurrence of this and similar problems.","Es muss durch Vorbeugemassnahmen sichergestellt werden, dass gleiche oder ähnliche Fehler zukünftig ausgeschlossen werden. Die Wirksamkeit der getroffenen Massnahmen wird – z. B. durch Erhöhen der Prüfschärfe – über einen angemessenen Zeitraum überwacht. Hersteller von Produkten für die Automobil- und Luftfahrtindustrie sind aufgefordert, die im Rahmen der Ursachenfindung neu erkannten Risiken im Entwicklungs- und Herstellprozess nach der FMEA-Methode – failure mode and effects analysis (Fehlermöglichkeits- und Einflussanalyse) – (Risikoanalyse) zu bewerten und zu minimieren. Auch das Qualitätsmanagementsystem mit seinen festgelegten Verfahren und Regelungen wird möglicherweise an neue Anforderungen angepasst werden müssen."
-DocType: Non Conformity Report 8D,"Recognize the collective efforts of the team. The team needs to be formally thanked by the organization.","Die gemeinsame Anstrengung wird gewürdigt und die Erfahrungen ausgetauscht."
-DocType: Purchase Invoice,Invalid ESR Code Line,Ungültige ESR-Zeile
-DocType: Purchase Invoice,Scan Invoice,Rechnung scannen
-DocType: Purchase Invoice,ESR Amount,ESR Betrag
-DocType: Purchase Invoice,Amount Deviation,Betrags Abweichung
-DocType: Purchase Invoice,Add negative deviation as discount,Negative Abweichung als Rabatt hinzufügen
-DocType: Purchase Invoice,Add positive deviation as additional item,Positive Abweichung als Artikel hinzufügen
-DocType: Purchase Invoice,Positive Deviation Item,Artikel für positive Abweichung
-DocType: Purchase Invoice,Default Item,Standard-Artikel
-DocType: Purchase Invoice,Tax Rate in %,MWST in %
-DocType: Purchase Invoice,ESR Reference,ESR Referenz
-DocType: Purchase Invoice,ESR Participant,ESR Teilnehmer
-DocType: Purchase Invoice,ESR code not valid,ESR-Referenznummer ist ungültig
-DocType: Purchase Invoice,ESR code missing,ESR-Referenznummer fehlt
-DocType: Pruchase Invoice,This invoice is already recorded in,Diese Rechnung wurde bereits erfasst in
-DocType: Purchase Invoice,Process,Verarbeiten
-DocType: Purchase Invoice,Supplier matched,Lieferant gefunden
-DocType: Purchase Invoice,"Supplier found, but does not match with Invoice Supplier!","Lieferant gefunden, er stimmt aber nicht mit dem Lieferant auf der Rechnung überein!"
-DocType: Purchase Invoice,"No Supplier found! Fetched default Supplier.","Kein Lieferant gefunden! Der Standard-Lieferant wurde geladen."
-DocType: Purchase Invoice,"Multiple Supplier found, please choose one!","Mehere Lieferanten gefunden, bitte Auswahl treffen!"
-DocType: Purchase Invoice,"ESR / Invoice amount matched","ESR- / Rechnungs-Betrag stimmt überein"
-DocType: Purchase Invoice,"Invalid ESR Code Line or QR-Code","Ungültige ESR-Zeile oder ungültiger ESR-Code"
-DocType: Purchase Invoice,This document has been transmitted to the bank for payment,Dieses Dokument wurde zur Zahlung an die Bank übermittelt
-DocType: ERPNextSwiss Settings,Default Positive Deviation Item,Standard-Artikel für positive Abweichung
-DocType: ERPNextSwiss Settings,Default Tax Rate,Standard MWST-Satz
-DocType: ERPNextSwiss Settings,From Zefix,Von Zefix
-DocType: ERPNextSwiss Settings,Enable Zefix,Zefix aktivieren
-DocType: ERPNextSwiss Settings,Bank Settings,Bankeinstellungen
-DocType: ERPNextSwiss Settings,User name,Benutzername
-DocType: ERPNextSwiss Settings,Use this to define a default supplier,Diesen Lieferanten als Standardlieferanten evrwenden
-DocType: ERPNextSwiss Settings,Participant Number,Teilnehmernummer
-DocType: ERPNextSwiss Settings,"Number of days the payment rpoposal will look ahead. Payments with due date further ahead will not be proposed.","Anzahl Tage in der Zukunft, die für den Zahlugnsvorschlag einbezogen werden."
-apps/erpnextswiss/erpnextswiss/scripts/esr_qr_tools.py,"{missing_values} not found. Please configure this in the <a href='/desk#Form/ERPNextSwiss Settings'>ERPNextSwiss settings</a>.","{missing_values} nicht gefunden. Bitte konfigurieren Sie dies in den <a href='/desk#Form/ERPNextSwiss Settings'>ERPNextSwiss Einstellungen</a>."
-Report: Worktime Overview,Worktime Overview,Arbeitszeitübersicht
-Report: Worktime Overview,Ignore previous year,Vorjahr ignorieren
-DocType: Worktime Settings,Worktime Settings,Arbeitszeiteinstellungen
-DocType: Worktime Settings,Daily Hours,Tägliche Stunden
-DocType: Worktime Settings,Degree,Anstellungsgrad
-DocType: Worktime Settings,Public Holidays,Öffentliche Ferientage
-DocType: Worktime Settings,Activity Type Determination,Aktivitätsartzuweisung
-DocType: Worktime Settings,Column Label,Spaltenbeschriftung
-DocType: Worktime Settings,Target time in hours,Sollzeit (Stunden)
-DocType: Worktime Settings,Actual time in hours,Istzeit (Stunden)
-DocType: Worktime Settings,Difference in hours,Zeitabweichung (Stunden)
-DocType: Worktime Settings,Current holiday balance in days,Urlaubssaldo (Tage)
-DocType: Worktime Settings,Worktime Details,Arbeitszeitdetails
-DocType: Worktime Settings,Employment Degrees,Anstellungsgrade
-DocType: Worktime Settings,Carryover and Payouts,Überträge und Auszahlungen
-Report: Monthly Worktime,Monthly Worktime,Arbeitszeit im Monat
-Report: Annual Salary Sheet,Annual Salary Sheet,Jahreslohnzettel
-Report: Account Sheets,Account Sheets,Kontenblätter
-Report: Account Sheets with Tax Codes,Account Sheets with Tax Codes,Kontenblätter mit Steuercodes
-DocType: ERPNextSwiss Settings,Blocking period in days,Sperrfrist in Tagen
-DocType: ERPNextSwiss Settings,Payment Reminder Level Blocking Period,Mahnstufen Sperrfristen
-DocType: ERPNextSwiss Settings,Use unidecoded formats,Unidecodierte Formate verwenden
-DocType: ERPNextSwiss Settings,Validate XML,XML validieren
-Report: Budget Control,Budget Control,Budgetkontrolle
-Report: Service Invoicing,Service Invoicing,Dienstleistungsabrechnug
-Report: Service Invoicing,Create invoice,Rechnung erstellen
-Report: Service Invoicing,Created,Erstellt
-Report: Service Invoicing,Service Item,Dienstleistungsartikel
-Report: Service Invoicing,Invoicing,Abrechnung
-DocType: Salary Certificate Settings,Salary Certificate Settings,Lohnausweis Einstellungen
-DocType: Payment Reminder,Final reminder,Letzte Mahnung
-DocType: Payment Reminder,First reminder,Erste Mahnung
-DocType: Payment Reminder,Second reminder,Zweite Mahnung
-DocType: Payrexx Settings,Payrexx Settings,Payrexx-Einstellungen
-DocType: Payrexx Settings,Please set payrexx API key in the Payrexx settings.,Bitte den Payrexx API Key in den Payrexx-Einstellungen eintragen.
-DocType: Payrexx Settings,Payrexx Instance,Payrexx-Instanz
-DocType: Payrexx Settings,Payrexx API Key,Payrexx API-Schlüssel
-DocType: Payrexx Settings,Success URL,Erfolgs-URL
-DocType: ZUGFeRD Wizard,ZUGFeRD Wizard,Kreditoren-Assistent
-DocType: ZUGFeRD Wizard,Default Tax,Standard-Steuer
-DocType: ZUGFeRD Wizard,Please load a file...,Bitte eine Datei laden...
-DocType: ZUGFeRD Wizard,Ready for import,Bereit zum Einlesen
-DocType: ZUGFeRD Wizard,Create invoice,Rechnung erstellen
-DocType: ZUGFeRD Wizard,Manually create invoice,Rechnung manuell erstellen
-DocType: ZUGFeRD Wizard,This invoice cannot be interpreted automatically.,Diese Rechnung kann nicht automatisch verarbeitet werden
-DocType: ZUGFeRD Wizard,Import successful,Import erfolgreich
-DocType: ZUGFeRD Wizard,Creating invoice...,Rechnung erstellen...
-DocType: ZUGFeRD Wizard,Reading invoice...,Rechnung lesen...
-DocType: ZUGFeRD Wizard,Ignore bill date on QR,Rechnungsdatum bei QR-Rechnungen ignorieren
-DocType: ZUGFeRD Wizard,Ignore due date on QR,Fälligkeitsdatum bei QR-Rechnungen ignorieren
-DocType: Planzer Settings,Planzer Settings,Planzer-Einstellungen
-DocType: Planzer Settings,Shipment transmitted,Sendung übermittelt
-DocType: Planzer Settings,"If this is marked, submitting a Shipment will transfer it through the Planzer interface","Wenn diese Option aktiviert ist, wird eine Sendung beim Buchen automatisch an Planzer übertragen"
-DocType: ebics Connection,ebics Connection,ebics-Verbindung
-DocType: ebics Connection,Configuration prepared,Konfiguration vorbereitet
-DocType: ebics Connection,Keys created,Schlüssel erzeugt
-DocType: ebics Connection,Signature sent,Signatur übermittelt
-DocType: ebics Connection,Keys sent,Schlüssel übermittelt
-DocType: ebics Connection,INI Letter created,INI-Letter erzeugt
-DocType: ebics Connection,Public keys downloaded,Öffentlicher Schlüssel heruntergeladen
-DocType: ebics Connection,Account activated,Verbindung aktiviert
-DocType: ebics Connection,This ebics connection is activated.,Diese ebics-Verbindung ist aktiviert.
-DocType: ebics Connection,Activation Wizard,Aktivierungs-Assistent
-DocType: ebics Connection,Please fill in the configuration fields of the connection.,Bitte füllen Sie das Konfigurations-Formular aus.
-DocType: ebics Connection,Click next to create keys.,Weiter klicken um die Schlüssel zu erzeugen.
-DocType: ebics Connection,Click next to send the signature to the bank.,Weiter klicken um die Signatur zu übermitteln.
-DocType: ebics Connection,Click next to send the keys to the bank.,Weiter klicken umd die Schlüssel zu übertragen.
-DocType: ebics Connection,"Click next to create the INI letter, sign and send it to the bank.","Weiter klicken um den Ini-Brief zu erstellen, den Sie dann unterzeichnen und an die Bank senden."
-DocType: ebics Connection,"Once you have received the confirmation from the bank, click next to download the public keys.","Nachdem Sie die Betsätigung der Bank erhalten haben, klicken Sie weiter um die öffentlichen Schlüssel herunter zu laden."
-DocType: ebics Connection,Click next to activate this connection.,Weiter klicken um die Verbindung zu aktivieren
-DocType: ebics Connection,All set.,Alles bereit
-DocType: ebics Connection,Transmit by ebics,Per ebics übertragen
+Fullsize,Ganzer Bildschirm,Module: ERPNextSwiss
+Fullsize View,Ganzer Bildschirm,Module: ERPNextSwiss
+Normal View,Normale Ansicht,Module: ERPNextSwiss
+Customer name,Kundenname,Module: ERPNextSwiss
+Item name,Artikelname,Module: ERPNextSwiss
+Always use entry transaction type,Immer Transaktionstyp des Eintrags verwenden,Module: ERPNextSwiss
+Automatically process full macthes,Eindeutige Treffer automatisch verarbeiten,Module: ERPNextSwiss
+Bank import,Bankdaten importieren,Page: bankimport
+VAT Declaration,Mehrwertsteuerdeklaration,DocType: VAT Declaration
+Payment export,Zahlungsdatei erstellen,Page: payment_export
+Taxes,Steuern,DocType: VAT Declaration
+Transaction Type,Transaktionstyp,DocType: Payment Entry
+ESR Participant Number,ESR-Teilnehmernummer,DocType: Payment Entry
+ESR Reference,ESR-Referenz,DocType: Payment Entry
+Supplier data added,Lieferantendetails hinzugefügt,DocType: Payment Entry
+Invoice details added,Rechnungsdetails hinzugefügt,DocType: Payment Entry
+Payment Files,Transferdateien,DocType: Account
+No payment entries to be paid found with status draft,Es wurden keine offenen Zahlungen (Entwurf) gefunden.,Page: payment_export
+Exports the selected payment entries for execution by file transfer to a bank,Exportiert die gewählten Zahlungen zur Ausführung durch eine Bank,Page: payment_export
+Payment entries,Zahlungen,Page: payment_export
+Create payment file,Zahlungsdatei erstellen,Page: payment_export
+Import payment entries from bank account file,Importiert Zahlungen aus einer Bankkonto-Datei,Page: bankimport
+Payment account,Konto,Page: bankimport
+Automatically submit,Automatisch buchen,Page: bankimport
+Parse,Einlesen,Page: bankimport
+File,Datei,Page: bankimport
+Please select a file.,Bitte eine Datei wählen,Page: bankimport
+Error reading file,Fehler beim lesen der Datei,Page: bankimport
+Successfully imported {0} payments.,{0} Zahlugen erfolgreich importiert.,Page: bankimport
+CAMT.054 Transaction Notification,CAMT.054 Zahlungsinformationen,Page: bankimport
+CAMT.053 Bank Statement,CAMT.053 Kontoauszug,Page: bankimport
+Unable to read structure. Please make sure that you have selected the correct format.,"Struktur kann nicht gelesen werden. Bitte prüfen Sie, ob Sie das korrekte Format ausgewählt haben.",Page: bankimport
+Please select at least one payment.,Bitte mindestens eine Zahlung auswählen.,Page: payment_export
+No payment entries to be paid found with status draft,Es wurden keine Zahlungen mit Status Entwurf gefunden,Page: payment_export
+End,Ende,DocType: VAT Declaration
+VAT type,Abrechnungstyp,DocType: VAT Declaration
+effective,Effektiv,DocType: VAT Declaration
+flat,Saldo,DocType: VAT Declaration
+Revenue,Umsatz,DocType: VAT Declaration
+Get values,Werte holen,DocType: VAT Declaration
+Recalculate,Neu berechnen,DocType: VAT Declaration
+Total revenue (200),"Total der vereinbarten bzw. vereinnahmten Entgelte (Art. 39), inkl. Entgelte aus Übertragungen im Meldeverfahren sowie aus Leistungen im Ausland (200)",DocType: VAT Declaration
+Non-taxable revenue (205),Nicht steuerpflichtige Umsätze (205),DocType: VAT Declaration
+Tax-free services (220),"Von der Steuer befreite Leistungen (u.a. Exporte; Art. 23), von der Steuer befreite Leistungen an begünstigte Einrichtungen und Personen (220)",DocType: VAT Declaration
+Revenue abroad (221),Leistungen im Ausland (221),DocType: VAT Declaration
+Transfers (225),"Übertragung im Meldeverfahren (Art. 38, bitte zusätzlich Form. 764 einreichen) (225)",DocType: VAT Declaration
+Non-taxable services (230),"Nicht steuerbare Leistungen (Art 21), für die nicht nach Art. 22 optiert wird (230)",DocType: VAT Declaration
+Losses (235),Entgeltsminderung (235),DocType: VAT Declaration
+Miscellaneous (280),Diverses (z.B. Wert des Bodens) (280),DocType: VAT Declaration
+Total deductions (289),Total Abzüge (289),DocType: VAT Declaration
+Taxable revenue (299),Steuerbarer Gesamtumsatz (299),DocType: VAT Declaration
+Tax calculation,Steuerberechnung,DocType: VAT Declaration
+Normal (301),Normal (301),DocType: VAT Declaration
+Reduced (311),Reduziert (311),DocType: VAT Declaration
+Lodging (341),Beherbergung (341),DocType: VAT Declaration
+Amount 1 (321),1. Satz (321),DocType: VAT Declaration
+Amount 2 (331),2. Satz (331),DocType: VAT Declaration
+Additional (381),Bezugsteuer (381),DocType: VAT Declaration
+Normal (302),Normal (302),DocType: VAT Declaration
+Reduced (312),Reduziert (312),DocType: VAT Declaration
+Lodging (342),Beherbergung (342),DocType: VAT Declaration
+Amount 1 (322),1. Satz (322),DocType: VAT Declaration
+Amount 2 (332),2. Satz (332),DocType: VAT Declaration
+Additional (382),Bezugsteuer (382),DocType: VAT Declaration
+Normal (303),Normal (303),DocType: VAT Declaration
+Reduced (313),Reduziert (313),DocType: VAT Declaration
+Lodging (343),Beherbergung (343),DocType: VAT Declaration
+Amount 1 (323),1. Satz (323),DocType: VAT Declaration
+Amount 2 (333),2. Satz (333),DocType: VAT Declaration
+Additional (383),Bezugsteuer (383),DocType: VAT Declaration
+Normal rate (%),Normal (%),DocType: VAT Declaration
+Reduced rate (%),Reduziert (%),DocType: VAT Declaration
+Lodging rate (%),Beherbergung (%),DocType: VAT Declaration
+Rate 1 (%),1. Satz (%),DocType: VAT Declaration
+Rate 2 (%),2. Satz (%),DocType: VAT Declaration
+Normal rate - 2024 (%),Normal - 2024 (%),DocType: VAT Declaration
+Reduced rate - 2024 (%),Reduziert - 2024 (%),DocType: VAT Declaration
+Lodging rate - 2024 (%),Beherbergung - 2024 (%),DocType: VAT Declaration
+Rate 1 - 2024 (%),1. Satz - 2024 (%),DocType: VAT Declaration
+Rate 2 - 2024 (%),2. Satz - 2024 (%),DocType: VAT Declaration
+Normal tax (300),Normale Steuer (300),DocType: VAT Declaration
+Reduced tax (310),Reduzierte Steuer (310),DocType: VAT Declaration
+Lodging tax (340),Beherbergungssteuer (340),DocType: VAT Declaration
+Tax 1 (320),Steuer Satz 1 (320),DocType: VAT Declaration
+Tax 2 (330),Steuer Satz 2 (330),DocType: VAT Declaration
+Additional tax (380),Bezugssteuer (380),DocType: VAT Declaration
+Summary,Zusammenfassung,DocType: VAT Declaration
+Total tax (399),Total geschuldete Steuer (399),DocType: VAT Declaration
+Pretax material and services (400),Vorsteuer auf Material- und Dienstleistungsaufwand (400),DocType: VAT Declaration
+Pretax investments (405),Vorsteuer auf Investitionen und übrigem Betriebsaufwand (405),DocType: VAT Declaration
+Missing pretax (410),"Einlageentsteuerung (Art. 32, bitte detaillierte Aufstellung beilegen) (410)",DocType: VAT Declaration
+Pretax correction mixed (415),"Vorsteuerkorrekturen: gemischte Verwendung (Art. 30), Eigenverbrauch (Art. 31) (415)",DocType: VAT Declaration
+Pretax correction other (420),"Vorsteuerkorrekturen: Nicht-Entgelte wie Subventionen, Tourismusabgaben (Art. 33 Abs 2) (420)",DocType: VAT Declaration
+Form 1050 (470),Steueranrechnung gemäss Formular Nr. 1050 (470),DocType: VAT Declaration
+Form 1055 (471),Steueranrechnung gemäss Formular Nr. 1055 (471),DocType: VAT Declaration
+Total pretax reductions (479),Total Vorsteuer (479),DocType: VAT Declaration
+Payable tax (500),An die Eigd. Steuerverwaltung zu bezahlender Betrag (500),DocType: VAT Declaration
+Balance (510),Guthaben der steuerpflichtigen Person (510),DocType: VAT Declaration
+Other cashflows,Andere Mittelflüsse (Art. 18 Abs 2),DocType: VAT Declaration
+Grants (900),"Subventionen, durch Kurvereine eingenommene Toursimusabgaben, Entsorgungs- und Wasserwerkbeiträge (Bst. a-c) (900)",DocType: VAT Declaration
+Donations (910),"Spenden, Dividenden, Schadenersatz usw. (Bst. d-l) (910)",DocType: VAT Declaration
+VAT tax mode,Steuerabrechnungsart,DocType: ERPNextSwiss VAT configuration
+Effective tax,Effektive Steuer,DocType: ERPNextSwiss VAT configuration
+Normal rate tax template,Steuervorlage normal,DocType: ERPNextSwiss VAT configuration
+Reduced rate tax template,Steuervorlage reduziert,DocType: ERPNextSwiss VAT configuration
+Lodging rate tax template,Steuervorlage Beherbergung,DocType: ERPNextSwiss VAT configuration
+Abroad tax template,Steuervorlage Auslandumsatz,DocType: ERPNextSwiss VAT configuration
+Tax-free tax template,Steuervorlage steuerfrei,DocType: ERPNextSwiss VAT configuration
+Pretax account,Abrechnungskonto MWST,DocType: ERPNextSwiss VAT configuration
+Flat tax,Saldobesteuerung,DocType: ERPNextSwiss VAT configuration
+Rate 1 tax template,Steuertemplate Satz 1,DocType: ERPNextSwiss VAT configuration
+Rate 2 tax template,Steuertemplate Satz 2,DocType: ERPNextSwiss VAT configuration
+Configuration,Einstellungen,DocType: ERPNextSwiss VAT configuration
+VAT configuration,Mehrwertsteuereinstellungen,DocType: ERPNextSwiss VAT configuration
+Match payments,Zahlungen zuordnen,Page: match_payments
+Helps to match unpaid sales invoices against received payments,Hilft Zahlungseingänge unbezahlten Ausgangsrechnungen zu zu ordnen,Page: match_payments
+Sales invoices,Rechnungen,Page: match_payments
+Sales invoice,Rechnung,Page: match_payments
+Due date,Zahlbarkeit,Page: match_payments
+Payment entries,Zahlungseingänge,Page: match_payments
+Payment entry,Zahlung,Page: match_payments
+Match,Zuordnen,Page: match_payments
+Please select a sales invoice.,Bitte eine Rechnung wählen,Page: match_payments
+Please select a payment entry.,Bitte einen Zahlungseingang wählen,Page: match_payments
+Payment entry not found,Zahlung nicht gefunden,Page: match_payments
+Customer not found,Kunde nicht gefunden,Page: match_payments
+Done,Fertig,Page: match_payments
+No unpaid sales invoices found.,Es wurden keine unbezahlten Rechnungen gefunden.,Page: match_payments
+No unallocated payment entries found.,Es wurden keine nicht-zugewiesene Zahlungen gefunden.,Page: match_payments
+Open bank import,Bankdaten importieren,Page: match_payments
+Matched {0} sales invoices.,{0} Rechnungen abgeglichen,Page: match_payments
+No matches found.,Keine Treffer gefunden,Page: match_payments
+Auto match by ID,Abgleich per ID,Page: match_payments
+Auto match by ESR,Abgleich per ESR,Page: match_payments
+Some payments were skipped due to errors (check the payment file for details):,Einige Zahlungen wurden wegen Fehlern übersprungen (Zahlungsdatei enthält Details):,Page: payment_export
+ESR Participation Number / QR-IBAN,ESR Teilnehmernummer/QR-IBAN,DocType: Supplier
+ESR Reference Number,ESR Referenznummer,DocType: Purchase Invoice
+Salary Certificate,Lohnausweis,DocType: Salary Certificate
+Please save the record before populating it with data,Bitte speichern Sie den Datensatz bevor Daten eingelesen werden,DocType: Salary Certificate
+Salary slip information collected,Lohnauszüge eingelesen,DocType: Salary Certificate
+Calculate totals,Summen berechnen,DocType: Salary Certificate
+Totals have been updated,Summen wurden aktualisiert,DocType: Salary Certificate
+Please select a valid employee.,Bitte einen gültigen Mitarbeiter wählen,DocType: Salary Certificate
+Start date,Von Datum,DocType: Salary Certificate
+End date,Bis Datum,DocType: Salary Certificate
+Benefits,Vorteile,DocType: Salary Certificate
+Certificate type,Lohnausweisart,DocType: Salary Certificate
+Pension,Rente,DocType: Salary Certificate
+Free transport,Unentgeltliche Beförderung zwischen Wohn- und Arbeitsort,DocType: Salary Certificate
+Lunch checks,Kantinenverpflegung/Lunch-Checks,DocType: Salary Certificate
+Section salary,Abschnitt Lohn,DocType: Salary Certificate
+1. Salary,1. Lohn/Rente,DocType: Salary Certificate
+2.1 Catering,"2.1 Verpflegung, Unterkunft",DocType: Salary Certificate
+2.2 Car,2.2 Privatanteil Geschäftswagen,DocType: Salary Certificate
+2.3 Other salary,2.3 Andere,DocType: Salary Certificate
+3 Irregular,3. Unregelmässige Leistungen,DocType: Salary Certificate
+4 Capital,4. Kapitalleistungen,DocType: Salary Certificate
+2.3 Other salary description,2.3 Beschreibung Andere,DocType: Salary Certificate
+3 Irregular description,3. Beschreibung unregelmässige Leistungen,DocType: Salary Certificate
+4 Capital description,4. Beschreibung Kapitalleistungen,DocType: Salary Certificate
+5 Participation,5. Beteiligungsrechte gemäss Beiblatt,DocType: Salary Certificate
+6 Board,6. Verwaltungsratsentschädigungen,DocType: Salary Certificate
+7 Other,7. Andere Leistungen,DocType: Salary Certificate
+7 Other description,7. Beschreibung andere Leistungen,DocType: Salary Certificate
+8 Gross salary,8. Bruttolohn total,DocType: Salary Certificate
+9 Deductions AHV/IV/EO/ALV/NBUV,9. Beiträge AHV/IV/EO/ALV/NBUV,DocType: Salary Certificate
+10.1 Deduction pension,10.1 Ordentliche Beiträge berufliche Vorsorge,DocType: Salary Certificate
+10.2 Deduction pension additional,10.2 Beiträge für den Einkauf,DocType: Salary Certificate
+11 Net salary,11. Nettolohn/Rente,DocType: Salary Certificate
+12 Source tax deduction,12. Quellensteuerabzug,DocType: Salary Certificate
+13.1.1 Effective expenses travel,"13.1.1 Effektive Spesen Reise, Verppflegung, Übernachtung",DocType: Salary Certificate
+13.1.2 Effective other expenses,13.1.2 Effektive Spesen andere,DocType: Salary Certificate
+13.2.1 Representation expenses,13.2.1 Pauschalspesen Repräsentation,DocType: Salary Certificate
+13.2.2 Car expenses,13.2.2 Pauschalspesen Auto,DocType: Salary Certificate
+13.2.3 Other net expenses,13.2.3 Pauschalspesen übrige,DocType: Salary Certificate
+13.3 Education,13.3 Beiträge an die Weiterbildung,DocType: Salary Certificate
+14 Other salary sides,14. Gehaltsnebenleistungen Art,DocType: Salary Certificate
+15 Remarks,15. Bemerkungen,DocType: Salary Certificate
+Label Printer,Etikettendrucker,DocType: Label Printer
+Create Test PDF,Test-PDF erstellen,DocType: Label Printer
+Create Label,Etikett erstellen,DocType: Label Printer
+Canton,Kanton,DocType: Pincode
+Canton Code,Kantonsabkürzung,DocType: Pincode
+Country Code,Länderabkürzung,DocType: Pincode
+Set,Setzen,DocType: Pincode
+Import Pincodes,Postleitzahlen einlesen,DocType: Pincode
+Import started...,Import gestartet...,DocType: Pincode
+Successfully imported,Erfolgreich importiert,DocType: Pincode
+Open Map,Karte öffnen,DocType: Pincode
+Abacus Export,Abacus Transferdatei,Page: abacus_export
+Export General Ledger to an Abacus transfer file,Exportiert Transaktionen in eine Abacus Transferdatei,Page: abacus_export
+to,bis,Page: abacus_export
+Create File,Datei erstellen,Page: abacus_export
+more records available (not shown),es gibt weitere Einträge (nicht angezeigt),Page: abacus_export
+No general ledger entries found.,Keine Transaktionen gefunden.,Page: abacus_export
+Export flags reset,Export-Markierungen entfernt,Page: abacus_export
+Exported to Abacus,Nach Abacus exportiert,Page: abacus_export
+Reset export flags,Export-Markierungen entfernen,Page: abacus_export
+ERPNextSwiss Settings,App-Einstellungen,DocType: ERPNextSwiss Settings
+Default Customer,Standardkunde,DocType: ERPNextSwiss Settings
+Use this to define a default customer,Setzt einen Standardkunden,DocType: ERPNextSwiss Settings
+Invoice Code Line Scanning,Rechnungsscanner,DocType: ERPNextSwiss Settings
+Default Item,Standardartikel,DocType: ERPNextSwiss Settings
+Enable salary payment,Lohnzahlungen ausführen,DocType: ERPNextSwiss Settings
+Numeric-only debtor reference matching,Rein-numerische Debitorenreferenzen verwenden,DocType: ERPNextSwiss Settings
+Uses only the numeric part of a sales invoice number for matching,Verwendet nur den numerischen Teil der Rechnugnsreferenz zum Abgleich,DocType: ERPNextSwiss Settings
+Debug Mode,Debug-Modus,DocType: ERPNextSwiss Settings
+No Reminder on Credit Balance,Keine Mahnung bei Kundenguthaben,DocType: ERPNextSwiss Settings
+Ignore special characters,Spezialzeichen ignorieren,DocType: ERPNextSwiss Settings
+Contract,Vertrag,DocType: Contract
+Contracts,Verträge,DocType: Contract
+Automated Payments,Automatische Zahlungsabwicklung,DocType: ERPNextSwiss Settings
+Planning Period (Days),Planungszeitraum (Tage),DocType: ERPNextSwiss Settings
+Reminder Minimum Threshold,Grenzwert für Mahnungen (ab Betrag),DocType: ERPNextSwiss Settings
+Payment Reminder,Mahnung,DocType: Payment Reminder
+Payment Reminder Level,Mahnungsstufe,DocType: Payment Reminder
+Exclude From Payment Reminder Until,Von Mahnungsläufen ausschliessen bis,DocType: Payment Reminder
+Level,Stufe,DocType: Payment Reminder
+Create Payment Reminders,Mahnlauf durchführen,DocType: Payment Reminder
+Payment Reminders created,Mahnlauf durchgeführt,DocType: Payment Reminder
+Reminder Level,Mahnstufe,DocType: Payment Reminder
+Reminder Charge,Mahngebühr,DocType: Payment Reminder
+Auto Submit,Automatisch buchen,DocType: Payment Reminder
+Reminder Charges,Mahngebühren,DocType: Payment Reminder
+Highest Level,Höchste Stufe,DocType: Payment Reminder
+Total before Charge,Zwischensumme,DocType: Payment Reminder
+Total with Charge,Gesamtsumme,DocType: Payment Reminder
+Are you sure you want to create payment reminders?,"Sind Sie sicher, dass Sie Mahnungen erstellen möchten?",DocType: Payment Reminder
+Is proposed,Abgeholt,Module: ERPNextSwiss
+Skonto Percent,Skonto-Prozent,Module: ERPNextSwiss
+Skonto Days,Skonto-Tage,Module: ERPNextSwiss
+Skonto Account,Skonto-Konto,Module: ERPNextSwiss
+Skonto Cost Center,Skonto-Kostenstelle,Module: ERPNextSwiss
+Enable LSV,LSV aktivieren,Module: ERPNextSwiss
+Direct Debit Proposal,Lastschrifteinzugsvorschlag,DocType: Direct Debit Proposal
+Create Direct Debit Proposal,Lastschrifteinzug vorbereiten,DocType: Direct Debit Proposal
+No available sales invoices found.,Keine verfügbaren Zahlungen gefunden.,DocType: Direct Debit Proposal
+Download bank file,Bankdatei herunterladen,DocType: Direct Debit Proposal
+Receive to Account,Empfangendes Bankkonto,DocType: Direct Debit Proposal
+Banking,Bankverbindung,DocType: Direct Debit Proposal
+LSV Code,LSV-Code,DocType: Direct Debit Proposal
+LSV Date,LSV-Datum,DocType: Direct Debit Proposal
+Please provide an intermediate account.,Bitte geben Sie ein Zwischenkonto an.,DocType: Direct Debit Proposal
+Please provide a skonto account and cost center.,Bitte geben Sie für den Skontoabzug ein Skonto-Konto und eine Kostenstelle an.,DocType: Direct Debit Proposal
+Please select an account to receive to.,Bitte wählen Sie ein Zielkonto aus.,DocType: Direct Debit Proposal
+Close Invoice on Intermediate Account,Rechnungen gegen Zwischenkonto schliessen,DocType: Direct Debit Proposal
+Intermediate,Zw.Konto,DocType: Direct Debit Proposal
+Create Payment Proposal,Zahlungsvorschlag erstellen,DocType: Payment Proposal
+Payment Proposal,Zahlungsvorschlag,DocType: Payment Proposal
+No suitable invoices found.,Keine passenden Rechnungen gefunden.,DocType: Payment Proposal
+Intermediate Account,Zwischenkonto,DocType: Payment Proposal
+Close Invoive on Intermediate Account,Rechnung auf Zwischenkonto schliessen,DocType: Payment Proposal
+Please select an intermediate account.,Bitte ein Zwischenkonto wählen.,DocType: Payment Proposal
+Set Payment Date,Zahlungsdatum setzen,DocType: Payment Proposal
+Pay from Account,Zahlungen von diesem Konto ausführen,DocType: Payment Proposal
+Execute Payments On,Zahlungen an diesem Datum ausführen,DocType: Payment Proposal
+Invoice Amount,Rechnungsbetrag,DocType: Payment Proposal
+External Reference,Externe Referenz,DocType: Payment Proposal
+Skonto Date,Skonto-Datum,DocType: Payment Proposal
+Skonto Amount,Betrag mit Skonto,DocType: Payment Proposal
+Individual payments,Jede Rechnung einzeln bezahlen,DocType: Payment Proposal
+"Employee <a href=\/desk#Form/Employee/{0}\"">{0}</a> has no address.""","Für den Mitarbeiter <a href=\/desk#Form/Employee/{0}\"">{0}</a> ist keine Adresse hinterlegt.""",DocType: Payment Proposal
+Company address missing or incomplete.,Unternehmensadresse fehlt oder ist unvollständig.,DocType: Payment Proposal
+IBAN missing in pay from account.,Die IBAN des Zahlungskontos ist nicht hinterlegt.,DocType: Payment Proposal
+"Address missing for purchase invoice <a href=\/desk#Form/Purchase Invoice/{0}\"">{0}</a>""","Für Eingangsrechnung <a href=\/desk#Form/Purchase Invoice/{0}\"">{0}</a> fehlt die Adresse.""",DocType: Payment Proposal
+"ESR: missing transaction information (participant number or reference) in <a href=\/desk#Form/Purchase Invoice/{0}\"">{0}</a>""","ESR: Transaktionsdetails fehlen (Teilnehmernummer oder Referenznummer) für <a href=\/desk#Form/Purchase Invoice/{0}\"">{0}</a>""",DocType: Payment Proposal
+"Missing IBAN for purchase invoice <a href=\/desk#Form/Purchase Invoice/{0}\"">{0}</a>""","Bei Eingangsrechnung <a href=\/desk#Form/Purchase Invoice/{0}\"">{0}</a> fehlt die IBAN""",DocType: Payment Proposal
+"Employee <a href=\/desk#Form/Employee/{0}\"">{0}</a> has no bank account number.""","Für Mitarbeiter <a href=\/desk#Form/Employee/{0}\"">{0}</a> ist kein Bankkonto hinterlegt.""",DocType: Payment Proposal
+Please configure the planning period in ERPNextSwiss Settings.,Bitte das Planungsintervall in den App-Einstellungen einstellen.,DocType: Payment Proposal
+Purchase Invoices,Eingangsrechnungen,DocType: Payment Proposal
+Salaries,Löhne,DocType: Payment Proposal
+Overview,Übersicht,DocType: Payment Proposal
+Target date,Zieldatum,DocType: Payment Proposal
+Employee name,Mitarbeitername,DocType: Payment Proposal
+Include Payments Until,Fälligkeiten einschliessen bis,DocType: Payment Proposal
+Execute as one single payment,Als eine einzige Zahlung ausführen,DocType: Payment Proposal
+in Payment Proposal,in Zahlungslauf,DocType: Payment Proposal
+Bank Wizard,Bankassistent,Page: Bank Wizard
+Transaction matched,Zahlung zugewiesen,Page: Bank Wizard
+transactions found,Zahlungen gefunden,Page: Bank Wizard
+Page: Bank Wizard,"Please set the <b>default accounts</b> in <a href=\""/desk#Form/Company/{0}\"">{0}</a>.Bitte setzten Sie <b>Standardkonten</b> unter <a href=\""/desk#Form/Company/{0}\"">{0}</a>."
+"Please set the <b>default supplier</b> in <a href=\""/desk#Form/ERPNextSwiss Settings\"">ERPNextSwiss Settings</a>.","Bitte setzen Sie den <b>Standardlieferant</b> unter <a href=\""/desk#Form/ERPNextSwiss Settings\"">App-Einstellungen</a>.",Page: Bank Wizard
+"Please set the <b>default customer</b> in <a href=\""/desk#Form/ERPNextSwiss Settings\"">ERPNextSwiss Settings</a>.","Bitte setzen Sie den <b>Standardkunden</b> unter <a href=\""/desk#Form/ERPNextSwiss Settings\"">App-Einstellungen</a>.",Page: Bank Wizard
+"Please set the <b>intermediate bank account</b> in <a href=\""/desk#Form/ERPNextSwiss Settings\"">ERPNextSwiss Settings</a>.","Bitte setzen Sie ein <b>Zwischenkonto</b> unter <a href=\""/desk#Form/ERPNextSwiss Settings\"">App-Einstellungen</a>.",Page: Bank Wizard
+An error occurred while parsing. Please check the log files.,Es ist ein Fehler aufgetreten. Bitte prüfen Sie die Fehlerprotokolle.,Page: Bank Wizard
+Unsupported file format. Please use an xml or zip camt file,Dieses Format wird nicht unterstützt. Bitte verwenden Sie eine gültige XML- oder ZIP-Datei,Page: Bank Wizard
+Bank account has no IBAN.,Das Bankkonto hat keine IBAN hinterlegt.,Page: Bank Wizard
+IBAN check mandatory,IBAN-Prüfung zwingend erforderlich,Page: Bank Wizard
+"No account found for IBAN {0}. Make sure there is an account in the chart of accounts with this IBAN, account type Bank and not disabled.","Kein Bankkonto für IBAN {0} gefunden. Bitte sicherstellen, das im Kontenplan ein Konto vom Type Bank mit dieser IBAN existiert und nicht deaktiviert ist.",Page: Bank Wizard
+Always use entry amount,Immer den Buchungsbetrag verwenden,Page: Bank Wizard
+Use this to always book in account currency. This should not be used if the bank uses collective transactions.,"Mit dieser Einstellung wird immer der Transaktionbetrag verwendet in Kontowährung. Sollte nicht verwendet werden, wenn es Sammeltransaktionen gibt",Page: Bank Wizard
+Daily Closing Statement,Tagesabschluss,DocType: Daily Closing Statement
+Statistics,Statistik,DocType: Daily Closing Statement
+Total Sales,Total Umsatz,DocType: Daily Closing Statement
+Average Sales,Durchschnittlicher Umsatz,DocType: Daily Closing Statement
+Number of Customers,Anzahl Kunden,DocType: Daily Closing Statement
+Highest Sale,Höchster Umsatz,DocType: Daily Closing Statement
+Discounts,Rabatte,DocType: Daily Closing Statement
+Count,Anzahl,DocType: Daily Closing Statement
+Currencies,Währungen,DocType: Daily Closing Statement
+Payment Modes,Zahlungsweisen,DocType: Daily Closing Statement
+Inspection Equipment,Prüfmittel,DocType: Inspection Equipment
+Transaction,Transaktion,DocType: Inspection Equipment
+Calibration / Test,Kalibration / Test,DocType: Inspection Equipment
+Inspection Equipment Transaction,Prüfmittel Transaktion,DocType: Inspection Equipment
+General,Allgemein,DocType: Inspection Equipment
+Type,Typ,DocType: Inspection Equipment
+Manufacturer,Hersteller,DocType: Inspection Equipment
+Inventory Number,Inventar Nummer,DocType: Inspection Equipment
+Location,Ort,DocType: Inspection Equipment
+Measurement Range,Messbereich,DocType: Inspection Equipment
+Usage,Verwendung,DocType: Inspection Equipment
+Purchase Price,Einkaufspreis,DocType: Inspection Equipment
+Purchase Date,Beschaffungsdatum,DocType: Inspection Equipment
+Transaction Status,Transaktionsstatus,DocType: Inspection Equipment
+On Stock,An Lager,DocType: Inspection Equipment
+Taken,Entnommen,DocType: Inspection Equipment
+Calibration,Kalibration,DocType: Inspection Equipment
+Last Calibration,Letzte Kalibration,DocType: Inspection Equipment
+Next Calibration,Nächste Kalibration,DocType: Inspection Equipment
+Calibration Test Set,Kalibration Test Set,DocType: Inspection Equipment
+Calibration Test,Kalibration Test,DocType: Inspection Equipment
+Calibration Interval,Kalibrations Interval,DocType: Inspection Equipment
+Current Inspection Equipment Status,Aktueller Prüfmittel Transaktionsstatus,DocType: Inspection Equipment
+New Inspection Equipment Status,Neuer Prüfmittel Transaktionsstatus,DocType: Inspection Equipment
+Inspection Equipment Type,Prüfmitteltyp,DocType: Inspection Equipment
+Perform Test, Test durchführen,DocType: Inspection Equipment
+Test Plan Items, Testschritte,DocType: Inspection Equipment
+Operating Instructions, Ausführungsanweisung,DocType: Inspection Equipment
+Test based on,Test basierend auf,DocType: Inspection Equipment
+Inspection Decision OK?,Prüfkriterium OK?,DocType: Inspection Equipment
+Inspection Decision OK,Prüfkriterium OK,DocType: Inspection Equipment
+Calibration / Test-Set,Kalibration / Test-Set,DocType: Inspection Equipment
+Caution; the actual value is not between OTG and UTG!,Achtung; der gemessene Wert liegt ausserhalb der Toleranzgrenzen!,DocType: Inspection Equipment
+To Calibrate,Zu Kalibrieren,DocType: Inspection Equipment
+Calibrated,Kalibriert,DocType: Inspection Equipment
+Without Calibration,Ohne Kalibration,DocType: Inspection Equipment
+Scrap,Verschrottet,DocType: Inspection Equipment
+Blocked,Gesperrt,DocType: Inspection Equipment
+in months,in Monaten,DocType: Inspection Equipment
+Taken by,Entnommen von,DocType: Inspection Equipment
+VAT query,MwSt-Abfrage,DocType: VAT query
+Non Conformity Report 8D,8D-Bericht,DocType: Non Conformity Report 8D
+D1 Use a Team,D1 Zusammenstellen eines Teams für die Problemlösung,DocType: Non Conformity Report 8D
+D2 Describe the Problem,D2 Problembeschreibung,DocType: Non Conformity Report 8D
+D3 Develop Interim Containment Plan,D3 Sofortmassnahmen festlegen,DocType: Non Conformity Report 8D
+D4 Determine and Verify Root Causes and Escape Points,D4 Fehlerursache(n) feststellen,DocType: Non Conformity Report 8D
+D5 Verify Permanent Corrections (PCs) for Problem will resolve problem for the customer,D5 Planen von Abstellmassnahmen,DocType: Non Conformity Report 8D
+D6 Define and Implement Corrective Actions,D6 Einführen der Abstellmassnahmen,DocType: Non Conformity Report 8D
+D7 Prevent Recurrence / System Problems,D7 Fehlerwiederholung verhindern,DocType: Non Conformity Report 8D
+D8 Congratulate the Main Contributors to your Team,D8 Würdigen der Teamleistung,DocType: Non Conformity Report 8D
+Establish a team of people with product/process knowledge.,"Die Mitglieder des Teams sollten über ausreichende Prozess- und Produktkenntnisse verfügen. Ebenso sollten sie zur Mitarbeit bereit sein und mit den notwendigen Kenntnissen und Kompetenzen ausgestattet sein, um das Problem auf seine Ursachen zu analysieren, Korrekturmassnahmen einzuleiten und ihre Wirksamkeit überwachen zu können.",DocType: Non Conformity Report 8D
+"Specify the problem by identifying in quantifiable terms the who, what, where, when, why, how, and how many (5W2H) for the problem.","Das Problem ist so genau wie möglich zu definieren, wobei der Kern des Problems herausgearbeitet und quantifiziert werden sollte.",DocType: Non Conformity Report 8D
+Problem Description,Problembeschreibung,DocType: Non Conformity Report 8D
+Define and implement containment actions to isolate the problem from any customer.,"Sofortmassnahmen dienen der Schadensbegrenzung, sollen zumindest vorläufig die Lieferfähigkeit sicherstellen und die weitere Ausbreitung des Problems verhindern, bis eine dauerhafte Lösung gefunden ist (z. B. Absonderung durch Sortierprüfung oder 100 %-Prüfung fehlerverdächtigen Materials).",DocType: Non Conformity Report 8D
+Interim Containment Plan,Kurzfristiger Plan,DocType: Non Conformity Report 8D
+Identify all applicable causes that could explain why the problem has occurred. Also identify why the problem was not noticed at the time it occurred. All causes shall be verified or proved. One can use five whys or Ishikawa diagrams to map causes against the effect or problem identified.,"Es wird nach Fehlerursachen gesucht und die wahrscheinlichste(n) Grundursache(n) durch Experimente, Tests und Vergleiche identifiziert und nachgewiesen.",DocType: Non Conformity Report 8D
+Root Cause Analysis,Ursachenanalyse,DocType: Non Conformity Report 8D
+"Using pre-production programs, quantitatively confirm that the selected correction will resolve the problem. (Verify that the correction will actually solve the problem.)","Es werden Massnahmen ermittelt, die die Grundursachen beseitigen können. Die optimale(n) Massnahme(n) werden ausgewählt und durch Versuche nachgewiesen, dass das Problem effektiv und auch effizient gelöst werden kann sowie keine unerwünschten Nebenwirkungen entstehen werden. Bei der Festlegung von Massnahmen steht die Fehlervermeidung und nicht die Fehlerentdeckung im Vordergrund.",DocType: Non Conformity Report 8D
+Remedial Actions,Abstellmassnahmen,DocType: Non Conformity Report 8D
+Define and Implement the best corrective actions.,"Die Abstellmassnahmen können sich auf Prozessparameter, Produktspezifikationen und andere Vorgabedokumente sowie auf Prüfmethoden und die Mitarbeiterqualifikation auswirken. Nach erfolgreicher Einführung der Abstellmassnahme(n) wird/werden die Sofortmassnahme(n) aufgehoben.",DocType: Non Conformity Report 8D
+"Modify the management systems, operation systems, practices, and procedures to prevent recurrence of this and similar problems.","Es muss durch Vorbeugemassnahmen sichergestellt werden, dass gleiche oder ähnliche Fehler zukünftig ausgeschlossen werden. Die Wirksamkeit der getroffenen Massnahmen wird – z. B. durch Erhöhen der Prüfschärfe – über einen angemessenen Zeitraum überwacht. Hersteller von Produkten für die Automobil- und Luftfahrtindustrie sind aufgefordert, die im Rahmen der Ursachenfindung neu erkannten Risiken im Entwicklungs- und Herstellprozess nach der FMEA-Methode – failure mode and effects analysis (Fehlermöglichkeits- und Einflussanalyse) – (Risikoanalyse) zu bewerten und zu minimieren. Auch das Qualitätsmanagementsystem mit seinen festgelegten Verfahren und Regelungen wird möglicherweise an neue Anforderungen angepasst werden müssen.",DocType: Non Conformity Report 8D
+Recognize the collective efforts of the team. The team needs to be formally thanked by the organization.,Die gemeinsame Anstrengung wird gewürdigt und die Erfahrungen ausgetauscht.,DocType: Non Conformity Report 8D
+Invalid ESR Code Line,Ungültige ESR-Zeile,DocType: Purchase Invoice
+Scan Invoice,Rechnung scannen,DocType: Purchase Invoice
+ESR Amount,ESR Betrag,DocType: Purchase Invoice
+Amount Deviation,Betrags Abweichung,DocType: Purchase Invoice
+Add negative deviation as discount,Negative Abweichung als Rabatt hinzufügen,DocType: Purchase Invoice
+Add positive deviation as additional item,Positive Abweichung als Artikel hinzufügen,DocType: Purchase Invoice
+Positive Deviation Item,Artikel für positive Abweichung,DocType: Purchase Invoice
+Default Item,Standard-Artikel,DocType: Purchase Invoice
+Tax Rate in %,MWST in %,DocType: Purchase Invoice
+ESR Reference,ESR Referenz,DocType: Purchase Invoice
+ESR Participant,ESR Teilnehmer,DocType: Purchase Invoice
+ESR code not valid,ESR-Referenznummer ist ungültig,DocType: Purchase Invoice
+ESR code missing,ESR-Referenznummer fehlt,DocType: Purchase Invoice
+This invoice is already recorded in,Diese Rechnung wurde bereits erfasst in,DocType: Pruchase Invoice
+Process,Verarbeiten,DocType: Purchase Invoice
+Supplier matched,Lieferant gefunden,DocType: Purchase Invoice
+"Supplier found, but does not match with Invoice Supplier!","Lieferant gefunden, er stimmt aber nicht mit dem Lieferant auf der Rechnung überein!",DocType: Purchase Invoice
+No Supplier found! Fetched default Supplier.,Kein Lieferant gefunden! Der Standard-Lieferant wurde geladen.,DocType: Purchase Invoice
+"Multiple Supplier found, please choose one!","Mehere Lieferanten gefunden, bitte Auswahl treffen!",DocType: Purchase Invoice
+ESR / Invoice amount matched,ESR- / Rechnungs-Betrag stimmt überein,DocType: Purchase Invoice
+Invalid ESR Code Line or QR-Code,Ungültige ESR-Zeile oder ungültiger ESR-Code,DocType: Purchase Invoice
+This document has been transmitted to the bank for payment,Dieses Dokument wurde zur Zahlung an die Bank übermittelt,DocType: Purchase Invoice
+Default Positive Deviation Item,Standard-Artikel für positive Abweichung,DocType: ERPNextSwiss Settings
+Default Tax Rate,Standard MWST-Satz,DocType: ERPNextSwiss Settings
+From Zefix,Von Zefix,DocType: ERPNextSwiss Settings
+Enable Zefix,Zefix aktivieren,DocType: ERPNextSwiss Settings
+Bank Settings,Bankeinstellungen,DocType: ERPNextSwiss Settings
+User name,Benutzername,DocType: ERPNextSwiss Settings
+Use this to define a default supplier,Diesen Lieferanten als Standardlieferanten verwenden,DocType: ERPNextSwiss Settings
+Participant Number,Teilnehmernummer,DocType: ERPNextSwiss Settings
+Number of days the payment rpoposal will look ahead. Payments with due date further ahead will not be proposed.,"Anzahl Tage in der Zukunft, die für den Zahlungsvorschlag einbezogen werden.",DocType: ERPNextSwiss Settings
+apps/erpnextswiss/erpnextswiss/scripts/esr_qr_tools.py,{missing_values} not found. Please configure this in the <a href='/desk#Form/ERPNextSwiss Settings'>ERPNextSwiss settings</a>.,{missing_values} nicht gefunden. Bitte konfigurieren Sie dies in den <a href='/desk#Form/ERPNextSwiss Settings'>App-Einstellungen</a>.
+Worktime Overview,Arbeitszeitübersicht,Report: Worktime Overview
+Ignore previous year,Vorjahr ignorieren,Report: Worktime Overview
+Worktime Settings,Arbeitszeiteinstellungen,DocType: Worktime Settings
+Daily Hours,Tägliche Stunden,DocType: Worktime Settings
+Degree,Anstellungsgrad,DocType: Worktime Settings
+Public Holidays,Öffentliche Ferientage,DocType: Worktime Settings
+Activity Type Determination,Aktivitätsartzuweisung,DocType: Worktime Settings
+Column Label,Spaltenbeschriftung,DocType: Worktime Settings
+Target time in hours,Sollzeit (Stunden),DocType: Worktime Settings
+Actual time in hours,Istzeit (Stunden),DocType: Worktime Settings
+Difference in hours,Zeitabweichung (Stunden),DocType: Worktime Settings
+Current holiday balance in days,Urlaubssaldo (Tage),DocType: Worktime Settings
+Worktime Details,Arbeitszeitdetails,DocType: Worktime Settings
+Employment Degrees,Anstellungsgrade,DocType: Worktime Settings
+Carryover and Payouts,Überträge und Auszahlungen,DocType: Worktime Settings
+Monthly Worktime,Arbeitszeit im Monat,Report: Monthly Worktime
+Annual Salary Sheet,Jahreslohnzettel,Report: Annual Salary Sheet
+Account Sheets,Kontenblätter,Report: Account Sheets
+Account Sheets with Tax Codes,Kontenblätter mit Steuercodes,Report: Account Sheets with Tax Codes
+Blocking period in days,Sperrfrist in Tagen,DocType: ERPNextSwiss Settings
+Payment Reminder Level Blocking Period,Mahnstufen Sperrfristen,DocType: ERPNextSwiss Settings
+Use unidecoded formats,Unidecodierte Formate verwenden,DocType: ERPNextSwiss Settings
+Validate XML,XML validieren,DocType: ERPNextSwiss Settings
+Budget Control,Budgetkontrolle,Report: Budget Control
+Service Invoicing,Dienstleistungsabrechnug,Report: Service Invoicing
+Create invoice,Rechnung erstellen,Report: Service Invoicing
+Created,Erstellt,Report: Service Invoicing
+Service Item,Dienstleistungsartikel,Report: Service Invoicing
+Invoicing,Abrechnung,Report: Service Invoicing
+Salary Certificate Settings,Lohnausweis Einstellungen,DocType: Salary Certificate Settings
+Final reminder,Letzte Mahnung,DocType: Payment Reminder
+First reminder,Erste Mahnung,DocType: Payment Reminder
+Second reminder,Zweite Mahnung,DocType: Payment Reminder
+Payrexx Settings,Payrexx-Einstellungen,DocType: Payrexx Settings
+Please set payrexx API key in the Payrexx settings.,Bitte den Payrexx API Key in den Payrexx-Einstellungen eintragen.,DocType: Payrexx Settings
+Payrexx Instance,Payrexx-Instanz,DocType: Payrexx Settings
+Payrexx API Key,Payrexx API-Schlüssel,DocType: Payrexx Settings
+Success URL,Erfolgs-URL,DocType: Payrexx Settings
+ZUGFeRD Wizard,Kreditoren-Assistent,DocType: ZUGFeRD Wizard
+Default Tax,Standard-Steuer,DocType: ZUGFeRD Wizard
+Please load a file...,Bitte eine Datei laden...,DocType: ZUGFeRD Wizard
+Ready for import,Bereit zum Einlesen,DocType: ZUGFeRD Wizard
+Create invoice,Rechnung erstellen,DocType: ZUGFeRD Wizard
+Manually create invoice,Rechnung manuell erstellen,DocType: ZUGFeRD Wizard
+This invoice cannot be interpreted automatically.,Diese Rechnung kann nicht automatisch verarbeitet werden,DocType: ZUGFeRD Wizard
+Import successful,Import erfolgreich,DocType: ZUGFeRD Wizard
+Creating invoice...,Rechnung erstellen...,DocType: ZUGFeRD Wizard
+Reading invoice...,Rechnung lesen...,DocType: ZUGFeRD Wizard
+Ignore bill date on QR,Rechnungsdatum bei QR-Rechnungen ignorieren,DocType: ZUGFeRD Wizard
+Ignore due date on QR,Fälligkeitsdatum bei QR-Rechnungen ignorieren,DocType: ZUGFeRD Wizard
+Planzer Settings,Planzer-Einstellungen,DocType: Planzer Settings
+Shipment transmitted,Sendung übermittelt,DocType: Planzer Settings
+"If this is marked, submitting a Shipment will transfer it through the Planzer interface","Wenn diese Option aktiviert ist, wird eine Sendung beim Buchen automatisch an Planzer übertragen",DocType: Planzer Settings
+ebics Connection,ebics-Verbindung,DocType: ebics Connection
+Configuration prepared,Konfiguration vorbereitet,DocType: ebics Connection
+Keys created,Schlüssel erzeugt,DocType: ebics Connection
+Signature sent,Signatur übermittelt,DocType: ebics Connection
+Keys sent,Schlüssel übermittelt,DocType: ebics Connection
+INI Letter created,INI-Letter erzeugt,DocType: ebics Connection
+Public keys downloaded,Öffentlicher Schlüssel heruntergeladen,DocType: ebics Connection
+Account activated,Verbindung aktiviert,DocType: ebics Connection
+This ebics connection is activated.,Diese ebics-Verbindung ist aktiviert.,DocType: ebics Connection
+Activation Wizard,Aktivierungs-Assistent,DocType: ebics Connection
+Please fill in the configuration fields of the connection.,Bitte füllen Sie das Konfigurations-Formular aus.,DocType: ebics Connection
+Click next to create keys.,Weiter klicken um die Schlüssel zu erzeugen.,DocType: ebics Connection
+Click next to send the signature to the bank.,Weiter klicken um die Signatur zu übermitteln.,DocType: ebics Connection
+Click next to send the keys to the bank.,Weiter klicken umd die Schlüssel zu übertragen.,DocType: ebics Connection
+"Click next to create the INI letter, sign and send it to the bank.","Weiter klicken um den Ini-Brief zu erstellen, den Sie dann unterzeichnen und an die Bank senden.",DocType: ebics Connection
+"Once you have received the confirmation from the bank, click next to download the public keys.","Nachdem Sie die Betsätigung der Bank erhalten haben, klicken Sie weiter um die öffentlichen Schlüssel herunter zu laden.",DocType: ebics Connection
+Click next to activate this connection.,Weiter klicken um die Verbindung zu aktivieren,DocType: ebics Connection
+All set.,Alles bereit,DocType: ebics Connection
+Transmit by ebics,Per ebics übertragen,DocType: ebics Connection
+Payment Details,Zahlungsdetails,Module: ERPNextSwiss
+ESR Participant Number / QR-IBAN,ESR-Teilnehmernummer / QR-IBAN,Module: ERPNextSwiss
+Social security number,AHV-Nummer,Module: ERPNextSwiss
+Old social security number,Alte AHV-Nummer,Module: ERPNextSwiss
+Payment,Zahlung,Module: ERPNextSwiss
+Payment Type,Zahlungsart,Module: ERPNextSwiss
+Taxes and Charges,Steuern und Gebühren,Module: ERPNextSwiss
+CAMT Amount,CAMT-Betrag,Module: ERPNextSwiss
+Tax Code,Steuercode,Module: ERPNextSwiss
+Branch GLN,Niederlassungs-GLN,Module: ERPNextSwiss
+Print Format,Druckformat,Module: ERPNextSwiss
+Is Pre Order,Ist Vorbestellung,Module: ERPNextSwiss
+EDI Article Group Number Code,EDI-Warengruppencode,Module: ERPNextSwiss
+Delivery Date,Lieferdatum,Module: ERPNextSwiss
+Full Reference Number,Vollständige Referenznummer,Module: ERPNextSwiss
+Reference Number,Referenznummer,Module: ERPNextSwiss
+Timesheet,Zeitnachweis,Module: ERPNextSwiss
+TS Detail,Zeitnachweis-Detail,Module: ERPNextSwiss
+Remarks,Bemerkungen,Module: ERPNextSwiss
+Disabled,Deaktiviert,Module: ERPNextSwiss
+Description,Beschreibung,Module: ERPNextSwiss
+Tax Class,Steuerklasse,Module: ERPNextSwiss
+Default Payment Method,Standard-Zahlungsart,Module: ERPNextSwiss
+Advanced Sales Partners Commission,Erweiterte Vertriebspartnerprovision,Module: ERPNextSwiss
+Advanced Sales Partners Commission Detail,Detail Vertriebspartnerprovision,Module: ERPNextSwiss
+EDI Sales Report Overview,EDI-Verkaufsbericht Übersicht,Module: ERPNextSwiss
+Printable Price List,Druckbare Preisliste,Module: ERPNextSwiss
+Revenue per Item Group,Umsatz pro Artikelgruppe,Module: ERPNextSwiss
+Sold Items per Customer,Verkaufte Artikel pro Kunde,Module: ERPNextSwiss
+Timesheet Month per Activity,Zeitnachweis pro Monat und Tätigkeit,Module: ERPNextSwiss
+Timesheet Month per Project,Zeitnachweis pro Monat und Projekt,Module: ERPNextSwiss
+BKP Importer,BKP-Import,Module: ERPNextSwiss
+Worldline TIM Test,Worldline TIM-Test,Module: ERPNextSwiss
+Finance,Finanzen,Module: ERPNextSwiss
+Human Resources,Personal,Module: ERPNextSwiss
+Integrations,Integrationen,Module: ERPNextSwiss
+Quality,Qualität,Module: ERPNextSwiss
+POS,POS,Module: ERPNextSwiss
+Mautic,Mautic,Module: ERPNextSwiss
+GitLab,GitLab,Module: ERPNextSwiss
+HLK,HLK,Module: ERPNextSwiss
+From Date,Von Datum,Module: ERPNextSwiss
+From date,Von Datum,Module: ERPNextSwiss
+To Date,Bis Datum,Module: ERPNextSwiss
+To date,Bis Datum,Module: ERPNextSwiss
+Company,Unternehmen,Module: ERPNextSwiss
+Transactions,Transaktionen,Module: ERPNextSwiss
+Amended From,Geändert von,Module: ERPNextSwiss
+References,Referenzen,Module: ERPNextSwiss
+Aggregated,Aggregiert,Module: ERPNextSwiss
+Debtors only,Nur Debitoren,Module: ERPNextSwiss
+Exclude zero-sum invoices,Nullsummenrechnungen ausschliessen,Module: ERPNextSwiss
+Currency,Währung,Module: ERPNextSwiss
+Account Balances,Kontosalden,Module: ERPNextSwiss
+Balances,Salden,Module: ERPNextSwiss
+Account,Konto,Module: ERPNextSwiss
+Debit,Soll,Module: ERPNextSwiss
+Credit,Haben,Module: ERPNextSwiss
+Balance,Saldo,Module: ERPNextSwiss
+Account Number,Kontonummer,Module: ERPNextSwiss
+Reference Doctype,Referenz-Dokumenttyp,Module: ERPNextSwiss
+Reference Document,Referenzdokument,Module: ERPNextSwiss
+Activity Type,Tätigkeitsart,Module: ERPNextSwiss
+Bank Name,Bankname,Module: ERPNextSwiss
+Format,Format,Module: ERPNextSwiss
+Reference Name,Referenzname,Module: ERPNextSwiss
+Template,Vorlage,Module: ERPNextSwiss
+Enabled,Aktiviert,Module: ERPNextSwiss
+Titel,Titel,Module: ERPNextSwiss
+Regex Match,Regex-Treffer,Module: ERPNextSwiss
+Regex Substitution,Regex-Ersetzung,Module: ERPNextSwiss
+Line Seperator,Zeilentrenner,Module: ERPNextSwiss
+Delimiter,Trennzeichen,Module: ERPNextSwiss
+The minimum field count per line.,Minimale Feldanzahl pro Zeile.,Module: ERPNextSwiss
+Minimum Fields,Mindestanzahl Felder,Module: ERPNextSwiss
+Date Format,Datumsformat,Module: ERPNextSwiss
+Define how many lines are part of the csv header. Used after spliting lines.,Anzahl Zeilen des CSV-Headers. Wird nach dem Aufteilen der Zeilen verwendet.,Module: ERPNextSwiss
+Header Skip,Header überspringen,Module: ERPNextSwiss
+Define how many lines should be skipped at the end of the file.,"Anzahl Zeilen, die am Dateiende übersprungen werden.",Module: ERPNextSwiss
+Footer Skip,Footer überspringen,Module: ERPNextSwiss
+Encoding,Kodierung,Module: ERPNextSwiss
+Advanced Settings,Erweiterte Einstellungen,Module: ERPNextSwiss
+Content,Inhalt,Module: ERPNextSwiss
+Line,Zeile,Module: ERPNextSwiss
+Validation,Validierung,Module: ERPNextSwiss
+Field ID,Feld-ID,Module: ERPNextSwiss
+Amount,Betrag,Module: ERPNextSwiss
+Thousand Separator,Tausendertrennzeichen,Module: ERPNextSwiss
+Operator,Operator,Module: ERPNextSwiss
+Decimal Separator,Dezimaltrennzeichen,Module: ERPNextSwiss
+Value,Wert,Module: ERPNextSwiss
+Required Fields,Pflichtfelder,Module: ERPNextSwiss
+Booked at Field ID,Buchungsdatum-Feld-ID,Module: ERPNextSwiss
+Amount Field ID,Betrags-Feld-ID,Module: ERPNextSwiss
+Customer Mapping ID,Kundenmapping-ID,Module: ERPNextSwiss
+Transaction Nr. Field ID,Transaktionsnummer-Feld-ID,Module: ERPNextSwiss
+Generated by hashing available fields,Aus verfügbaren Feldern per Hash erzeugt,Module: ERPNextSwiss
+Transaction Nr. by hash,Transaktionsnummer per Hash,Module: ERPNextSwiss
+Optional Fields,Optionale Felder,Module: ERPNextSwiss
+Remarks Field ID,Bemerkungen-Feld-ID,Module: ERPNextSwiss
+IBAN Field ID,IBAN-Feld-ID,Module: ERPNextSwiss
+BIC Field ID,BIC-Feld-ID,Module: ERPNextSwiss
+Valuta Field ID,Valuta-Feld-ID,Module: ERPNextSwiss
+Target Field,Zielfeld,Module: ERPNextSwiss
+Action,Aktion,Module: ERPNextSwiss
+Deduction,Abzug,Module: ERPNextSwiss
+Deduction Account,Abzugskonto,Module: ERPNextSwiss
+Deduction Cost Center,Abzugs-Kostenstelle,Module: ERPNextSwiss
+Target needs to have a contact_date or follow_up field,Ziel benötigt ein Feld contact_date oder follow_up,Module: ERPNextSwiss
+Source,Quelle,Module: ERPNextSwiss
+Secret,Geheimer Schlüssel,Module: ERPNextSwiss
+Source Field,Quellfeld,Module: ERPNextSwiss
+ToDos,Aufgaben,Module: ERPNextSwiss
+Designation,Bezeichnung,Module: ERPNextSwiss
+Nominal Value,Sollwert,Module: ERPNextSwiss
+Actual Value,Istwert,Module: ERPNextSwiss
+Name,Name,Module: ERPNextSwiss
+Test Plan,Prüfplan,Module: ERPNextSwiss
+Year,Jahr,Module: ERPNextSwiss
+Title,Titel,Module: ERPNextSwiss
+Start Date,Startdatum,Module: ERPNextSwiss
+End Date,Enddatum,Module: ERPNextSwiss
+Status,Status,Module: ERPNextSwiss
+Customer,Kunde,Module: ERPNextSwiss
+Customer Name,Kundenname,Module: ERPNextSwiss
+Services,Dienstleistungen,Module: ERPNextSwiss
+Periods,Perioden,Module: ERPNextSwiss
+Letter Head,Briefkopf,Module: ERPNextSwiss
+Invoice,Rechnung,Module: ERPNextSwiss
+Item,Artikel,Module: ERPNextSwiss
+Items,Artikel,Module: ERPNextSwiss
+Qty,Menge,Module: ERPNextSwiss
+Rate,Ansatz,Module: ERPNextSwiss
+Employee,Mitarbeiter,Module: ERPNextSwiss
+Employee Name,Mitarbeitername,Module: ERPNextSwiss
+Knowledge,Kenntnisse,Module: ERPNextSwiss
+Responsible,Verantwortlich,Module: ERPNextSwiss
+Due Date,Fälligkeitsdatum,Module: ERPNextSwiss
+Groups,Gruppen,Module: ERPNextSwiss
+Item Group,Artikelgruppe,Module: ERPNextSwiss
+Item Code,Artikelcode,Module: ERPNextSwiss
+Item Name,Artikelname,Module: ERPNextSwiss
+Sales Invoice,Ausgangsrechnung,Module: ERPNextSwiss
+Sales Invoices,Ausgangsrechnungen,Module: ERPNextSwiss
+Purchase Invoice,Eingangsrechnung,Module: ERPNextSwiss
+Mode of Payment,Zahlungsart,Module: ERPNextSwiss
+Method,Methode,Module: ERPNextSwiss
+Endpoint,Endpunkt,Module: ERPNextSwiss
+Credentials,Zugangsdaten,Module: ERPNextSwiss
+Password,Passwort,Module: ERPNextSwiss
+Payment methods,Zahlungsarten,Module: ERPNextSwiss
+Redirects,Weiterleitungen,Module: ERPNextSwiss
+Error URL,Fehler-URL,Module: ERPNextSwiss
+Cancel URL,Abbruch-URL,Module: ERPNextSwiss
+Date,Datum,Module: ERPNextSwiss
+Payments,Zahlungen,Module: ERPNextSwiss
+Total,Total,Module: ERPNextSwiss
+Reference,Referenz,Module: ERPNextSwiss
+Outstanding Amount,Offener Betrag,Module: ERPNextSwiss
+Host,Host,Module: ERPNextSwiss
+Language,Sprache,Module: ERPNextSwiss
+Debug,Debug,Module: ERPNextSwiss
+Details,Details,Module: ERPNextSwiss
+Paper Format,Papierformat,Module: ERPNextSwiss
+Sender Depot,Sender-Depot,Module: ERPNextSwiss
+Product,Produkt,Module: ERPNextSwiss
+Host ID,Host-ID,Module: ERPNextSwiss
+Partner ID,Partner-ID,Module: ERPNextSwiss
+User ID,Benutzer-ID,Module: ERPNextSwiss
+Ini Letter created,INI-Brief erstellt,Module: ERPNextSwiss
+Key password,Schlüsselpasswort,Module: ERPNextSwiss
+Sync,Synchronisierung,Module: ERPNextSwiss
+Synced until,Synchronisiert bis,Module: ERPNextSwiss
+Enable Sync,Synchronisierung aktivieren,Module: ERPNextSwiss
+Version,Version,Module: ERPNextSwiss
+Scope,Bereich,Module: ERPNextSwiss
+Bank Account,Bankkonto,Module: ERPNextSwiss
+File name,Dateiname,Module: ERPNextSwiss
+XML Content,XML-Inhalt,Module: ERPNextSwiss
+Opening Balance,Anfangssaldo,Module: ERPNextSwiss
+Closing Balance,Schlusssaldo,Module: ERPNextSwiss
+Payment Entry,Zahlungseintrag,Module: ERPNextSwiss
+Party,Geschäftspartner,Module: ERPNextSwiss
+Party Address,Geschäftspartneradresse,Module: ERPNextSwiss
+Unique Reference,Eindeutige Referenz,Module: ERPNextSwiss
+Transaction Reference,Transaktionsreferenz,Module: ERPNextSwiss
+Credit Debit,Haben/Soll,Module: ERPNextSwiss
+Party IBAN,IBAN Geschäftspartner,Module: ERPNextSwiss
+Party Match,Geschäftspartner-Treffer,Module: ERPNextSwiss
+Invoice Matches,Rechnungstreffer,Module: ERPNextSwiss
+Employee Match,Mitarbeiter-Treffer,Module: ERPNextSwiss
+Expense Matches,Spesen-Treffer,Module: ERPNextSwiss
+Matched Amount,Zugeordneter Betrag,Module: ERPNextSwiss
+Matching,Abgleich,Module: ERPNextSwiss
+EDI Type,EDI-Typ,Module: ERPNextSwiss
+Price List,Preisliste,Module: ERPNextSwiss
+GLN Sender,GLN-Absender,Module: ERPNextSwiss
+GLN Recipient,GLN-Empfänger,Module: ERPNextSwiss
+Charset,Zeichensatz,Module: ERPNextSwiss
+Transmission,Übertragung,Module: ERPNextSwiss
+Mode,Modus,Module: ERPNextSwiss
+Email Recipient,E-Mail-Empfänger,Module: ERPNextSwiss
+EAN version,EAN-Version,Module: ERPNextSwiss
+Retail Price List,Endkunden-Preisliste,Module: ERPNextSwiss
+This allows to replace units for the transmision,Erlaubt das Ersetzen von Einheiten für die Übertragung,Module: ERPNextSwiss
+Unit replacement,Einheitenersetzung,Module: ERPNextSwiss
+Units,Einheiten,Module: ERPNextSwiss
+System unit,Systemeinheit,Module: ERPNextSwiss
+EDI unit,EDI-Einheit,Module: ERPNextSwiss
+EDI Connection,EDI-Verbindung,Module: ERPNextSwiss
+Naming Series,Nummernkreis,Module: ERPNextSwiss
+Develop,Entwicklung,Module: ERPNextSwiss
+Test,Test,Module: ERPNextSwiss
+Add item,Artikel hinzufügen,Module: ERPNextSwiss
+Add Item,Artikel hinzufügen,Module: ERPNextSwiss
+Add,Hinzufügen,Module: ERPNextSwiss
+Delivery Note,Lieferschein,Module: ERPNextSwiss
+Incoming,Eingehend,Module: ERPNextSwiss
+Subject,Betreff,Module: ERPNextSwiss
+Communication,Kommunikation,Module: ERPNextSwiss
+Filename,Dateiname,Module: ERPNextSwiss
+Item code,Artikelcode,Module: ERPNextSwiss
+Min Qty,Mindestmenge,Module: ERPNextSwiss
+Qty per Pack,Menge pro Packung,Module: ERPNextSwiss
+Pricing,Preisfindung,Module: ERPNextSwiss
+Retail Rate,Endkundenpreis,Module: ERPNextSwiss
+Size,Grösse,Module: ERPNextSwiss
+Colour,Farbe,Module: ERPNextSwiss
+Location GLN,Standort-GLN,Module: ERPNextSwiss
+Barcode,Barcode,Module: ERPNextSwiss
+Degree in %,Grad in %,Module: ERPNextSwiss
+Default Supplier,Standardlieferant,Module: ERPNextSwiss
+Number of days the payment proposal will look ahead. Payments with a due date further ahead will not be proposed.,"Anzahl Tage, die der Zahlungsvorschlag vorausblickt. Zahlungen mit späterer Fälligkeit werden nicht vorgeschlagen.",Module: ERPNextSwiss
+SEPA Private ID,SEPA-Privat-ID,Module: ERPNextSwiss
+Banking Region,Banking-Region,Module: ERPNextSwiss
+Bank Import,Bankimport,Module: ERPNextSwiss
+Automatically process full matches,Vollständige Treffer automatisch verarbeiten,Module: ERPNextSwiss
+Zefix,ZEFIX,Module: ERPNextSwiss
+ZUGFeRD Default Value,ZUGFeRD-Standardwert,Module: ERPNextSwiss
+ZUGFeRD Wizard Integration,ZUGFeRD-Assistent-Integration,Module: ERPNextSwiss
+Abacus Export File,Abacus-Exportdatei,Module: ERPNextSwiss
+Abacus Export File Account Balance,Abacus-Exportdatei Kontosaldo,Module: ERPNextSwiss
+Abacus Export File Reference,Abacus-Exportdatei Referenz,Module: ERPNextSwiss
+Bank Wizard Pattern,Bankassistent-Muster,Module: ERPNextSwiss
+Bank Wizard Pattern Account,Bankassistent-Musterkonto,Module: ERPNextSwiss
+BankImport Bank,Bankimport Bank,Module: ERPNextSwiss
+BankImport Substitution,Bankimport-Ersetzung,Module: ERPNextSwiss
+BankImport Template,Bankimport-Vorlage,Module: ERPNextSwiss
+BankImport Templates,Bankimport-Vorlagen,Module: ERPNextSwiss
+CalDav Feed,CalDAV-Feed,Module: ERPNextSwiss
+Calibration Test Item,Kalibrierprüfposition,Module: ERPNextSwiss
+Contract Period,Vertragsperiode,Module: ERPNextSwiss
+Contract Service,Vertragsleistung,Module: ERPNextSwiss
+D1 Team,D1-Team,Module: ERPNextSwiss
+D3 Interim Containment Plan,D3 Sofortmassnahmenplan,Module: ERPNextSwiss
+D5 Remedial Actions,D5 Abstellmassnahmen,Module: ERPNextSwiss
+Daily Closing Statement Currency,Tagesabschluss-Währung,Module: ERPNextSwiss
+Daily Closing Statement Group,Tagesabschluss-Gruppe,Module: ERPNextSwiss
+Daily Closing Statement Item,Tagesabschluss-Position,Module: ERPNextSwiss
+Daily Closing Statement Payment Mode,Tagesabschluss-Zahlungsart,Module: ERPNextSwiss
+Datatrans Payment Method,Datatrans-Zahlungsart,Module: ERPNextSwiss
+Datatrans Settings,Datatrans-Einstellungen,Module: ERPNextSwiss
+Direct Debit Proposal Payment,Lastschriftvorschlag Zahlung,Module: ERPNextSwiss
+Direct Debit Proposal Sales Invoice,Lastschriftvorschlag Ausgangsrechnung,Module: ERPNextSwiss
+DPD Settings,DPD-Einstellungen,Module: ERPNextSwiss
+ebics Statement,EBICS-Auszug,Module: ERPNextSwiss
+EBICS Connection,EBICS-Verbindung,Module: ERPNextSwiss
+EBICS Statement,EBICS-Auszug,Module: ERPNextSwiss
+EBICS Statement Transaction,EBICS-Auszugstransaktion,Module: ERPNextSwiss
+EDI File,EDI-Datei,Module: ERPNextSwiss
+EDI File PRICAT Item,EDI-PRICAT-Position,Module: ERPNextSwiss
+EDI Sales Report,EDI-Verkaufsbericht,Module: ERPNextSwiss
+EDI Sales Report Item,EDI-Verkaufsbericht-Position,Module: ERPNextSwiss
+Employment Degree,Beschäftigungsgrad,Module: ERPNextSwiss
+GitLab Settings,GitLab-Einstellungen,Module: ERPNextSwiss
+HLK Settings,HLK-Einstellungen,Module: ERPNextSwiss
+HLK Structur Organisation Template,HLK-Strukturorganisationsvorlage,Module: ERPNextSwiss
+HLK Structur Organisation,HLK-Strukturorganisation,Module: ERPNextSwiss
+HLK Text Template,HLK-Textvorlage,Module: ERPNextSwiss
+Label Printer Group,Etikettendruckergruppe,Module: ERPNextSwiss
+Label Printer Job,Etikettendruckauftrag,Module: ERPNextSwiss
+Mautic Settings,Mautic-Einstellungen,Module: ERPNextSwiss
+Municipality,Gemeinde,Module: ERPNextSwiss
+Nextcloud Settings,Nextcloud-Einstellungen,Module: ERPNextSwiss
+Payment Proposal Expense,Zahlungsvorschlag Spese,Module: ERPNextSwiss
+Payment Proposal Payment,Zahlungsvorschlag Zahlung,Module: ERPNextSwiss
+Payment Proposal Purchase Invoice,Zahlungsvorschlag Eingangsrechnung,Module: ERPNextSwiss
+Payment Proposal Salary Slip,Zahlungsvorschlag Lohnabrechnung,Module: ERPNextSwiss
+Payment Reminder Invoice,Mahnungsrechnung,Module: ERPNextSwiss
+Pincode,Postleitzahl,Module: ERPNextSwiss
+Planzer Log,Planzer-Protokoll,Module: ERPNextSwiss
+Public Holiday List,Feiertagsliste,Module: ERPNextSwiss
+Salary Component Link,Lohnarten-Verknüpfung,Module: ERPNextSwiss
+Software Requirement,Softwareanforderung,Module: ERPNextSwiss
+Software Specification,Softwarespezifikation,Module: ERPNextSwiss
+Specification Document,Spezifikationsdokument,Module: ERPNextSwiss
+Specification Document Specification,Spezifikationsdokument-Spezifikation,Module: ERPNextSwiss
+VAT Declaration DE,MwSt-Abrechnung DE,Module: ERPNextSwiss
+VAT Query,MWST-Abfrage,Module: ERPNextSwiss
+<div>No data found</div>,<div>Keine Daten gefunden</div>,Module: ERPNextSwiss
+No data found,Keine Daten gefunden,Module: ERPNextSwiss
+Abacus Result File,Abacus-Ergebnisdatei,Module: ERPNextSwiss
+Against,Gegenkonto,Module: ERPNextSwiss
+Annual: {0} h,Jährlich: {0} h,Module: ERPNextSwiss
+Auto submit,Automatisch buchen,Module: ERPNextSwiss
+Bank Import IBAN validation,Bankimport IBAN-Prüfung,Module: ERPNextSwiss
+Bill No,Rechnungsnummer,Module: ERPNextSwiss
+Billing Hours,Verrechenbare Stunden,Module: ERPNextSwiss
+Breaks,Pausen,Module: ERPNextSwiss
+Budget FY,Budget Geschäftsjahr,Module: ERPNextSwiss
+Cannot parse this file: {0}. No content found.,Diese Datei kann nicht gelesen werden: {0}. Kein Inhalt gefunden.,Module: ERPNextSwiss
+Clipboard access failed,Zugriff auf Zwischenablage fehlgeschlagen,Module: ERPNextSwiss
+Close,Schliessen,Module: ERPNextSwiss
+Closing,Schluss,Module: ERPNextSwiss
+Code,Code,Module: ERPNextSwiss
+Compare,Vergleichen,Module: ERPNextSwiss
+Compare Result,Vergleichsergebnis,Module: ERPNextSwiss
+Comparison,Vergleich,Module: ERPNextSwiss
+Completed,Abgeschlossen,Module: ERPNextSwiss
+Complete,Abgeschlossen,Module: ERPNextSwiss
+Configuration missing,Konfiguration fehlt,Module: ERPNextSwiss
+Copy,Kopieren,Module: ERPNextSwiss
+Cost Center,Kostenstelle,Module: ERPNextSwiss
+Could not parse amount with value {0} check thousand and decimal separator. Error: {1},Betrag mit Wert {0} konnte nicht gelesen werden. Tausender- und Dezimaltrennzeichen prüfen. Fehler: {1},Module: ERPNextSwiss
+Create,Erstellen,Module: ERPNextSwiss
+Create EDI ORDERS,EDI ORDERS erstellen,Module: ERPNextSwiss
+Create EDI SLSRPT,EDI SLSRPT erstellen,Module: ERPNextSwiss
+Creation Date,Erstellungsdatum,Module: ERPNextSwiss
+Day,Tag,Module: ERPNextSwiss
+Debit and credit not equal in {0},Soll und Haben stimmen in {0} nicht überein,Module: ERPNextSwiss
+Debug Template,Debug-Vorlage,Module: ERPNextSwiss
+Download,Herunterladen,Module: ERPNextSwiss
+Download Transfer File,Übertragungsdatei herunterladen,Module: ERPNextSwiss
+Download Wise file,Wise-Datei herunterladen,Module: ERPNextSwiss
+Dynamic newsletter,Dynamischer Newsletter,Module: ERPNextSwiss
+ebics Interface Error,EBICS-Schnittstellenfehler,Module: ERPNextSwiss
+ebics statement parsing failed,EBICS-Auszug konnte nicht gelesen werden,Module: ERPNextSwiss
+EDI create order,EDI-Auftrag erstellen,Module: ERPNextSwiss
+Error,Fehler,Module: ERPNextSwiss
+Error while generating xml. Make sure that you made required customisations to the DocTypes.,Fehler beim Erstellen der XML-Datei. Bitte prüfen Sie die erforderlichen Anpassungen an den DocTypes.,Module: ERPNextSwiss
+Evaluating result file... hang tight...,Ergebnisdatei wird ausgewertet... bitte warten...,Module: ERPNextSwiss
+Execution Date,Ausführungsdatum,Module: ERPNextSwiss
+Expense Claim,Spesenabrechnung,Module: ERPNextSwiss
+Export Sales Invoices and Payment Entries to an Abacus transfer file,Ausgangsrechnungen und Zahlungseinträge in eine Abacus-Transferdatei exportieren,Module: ERPNextSwiss
+Failed to parse lines with error: {0},Zeilen konnten nicht gelesen werden: {0},Module: ERPNextSwiss
+Fetch invoice...,Rechnung abrufen...,Module: ERPNextSwiss
+Files,Dateien,Module: ERPNextSwiss
+Fiscal Year,Geschäftsjahr,Module: ERPNextSwiss
+Found Nextcloud Invoices,Nextcloud-Rechnungen gefunden,Module: ERPNextSwiss
+From Account,Von Konto,Module: ERPNextSwiss
+General Ledger,Hauptbuch,Module: ERPNextSwiss
+Get invoice from Nextcloud,Rechnung aus Nextcloud abrufen,Module: ERPNextSwiss
+Get invoices...,Rechnungen abrufen...,Module: ERPNextSwiss
+Group not found,Gruppe nicht gefunden,Module: ERPNextSwiss
+HTML copied to clipboard,HTML in die Zwischenablage kopiert,Module: ERPNextSwiss
+Import,Importieren,Module: ERPNextSwiss
+Import / Update BKP Items from uploaded Files,BKP-Positionen aus hochgeladenen Dateien importieren / aktualisieren,Module: ERPNextSwiss
+Import Municipality,Gemeinden importieren,Module: ERPNextSwiss
+Information,Information,Module: ERPNextSwiss
+Invalid Abacus File reference,Ungültige Abacus-Dateireferenz,Module: ERPNextSwiss
+Invalid document reference,Ungültige Dokumentreferenz,Module: ERPNextSwiss
+Invalid source field. Please use an existing field of {0}.,Ungültiges Quellfeld. Bitte ein bestehendes Feld von {0} verwenden.,Module: ERPNextSwiss
+Invoiced Amount (Exclusive Tax),Verrechneter Betrag (exkl. Steuer),Module: ERPNextSwiss
+Invoicing configuration is missing the invoice item. Please set under ERPNextSwiss Settings > Invoice Item.,In der Rechnungskonfiguration fehlt der Rechnungsartikel. Bitte unter App-Einstellungen > Rechnungsartikel setzen.,Module: ERPNextSwiss
+Line valid,Zeile gültig,Module: ERPNextSwiss
+Line {0} has a field count of {1}. Min is ({2}),Zeile {0} hat {1} Felder. Minimum ist ({2}),Module: ERPNextSwiss
+Month,Monat,Module: ERPNextSwiss
+Monthly worktime,Monatliche Arbeitszeit,Module: ERPNextSwiss
+Monthly: {0} h,Monatlich: {0} h,Module: ERPNextSwiss
+Net Total,Netto total,Module: ERPNextSwiss
+New,Neu,Module: ERPNextSwiss
+NEW,NEU,Module: ERPNextSwiss
+Next,Weiter,Module: ERPNextSwiss
+No address for employee {0} found.,Keine Adresse für Mitarbeiter {0} gefunden.,Module: ERPNextSwiss
+No Employee found.,Kein Mitarbeiter gefunden.,Module: ERPNextSwiss
+No errors,Keine Fehler,Module: ERPNextSwiss
+No matching EDI Connection found for {0},Keine passende EDI-Verbindung für {0} gefunden,Module: ERPNextSwiss
+No printers in group,Keine Drucker in der Gruppe,Module: ERPNextSwiss
+No suitable parser found,Kein passender Parser gefunden,Module: ERPNextSwiss
+No terms available,Keine Konditionen verfügbar,Module: ERPNextSwiss
+No transactions found. You can remove this entry.,Keine Transaktionen gefunden. Dieser Eintrag kann entfernt werden.,Module: ERPNextSwiss
+Not supported shipping type (other than Customer),Nicht unterstützte Versandart (nur Kunde wird unterstützt),Module: ERPNextSwiss
+Notification,Benachrichtigung,Module: ERPNextSwiss
+Only select queries are allowed,Nur SELECT-Abfragen sind erlaubt,Module: ERPNextSwiss
+Only valid alphanumeric characters are allowed: {0},Nur gültige alphanumerische Zeichen sind erlaubt: {0},Module: ERPNextSwiss
+Opening,Eröffnung,Module: ERPNextSwiss
+Options,Optionen,Module: ERPNextSwiss
+Order of unknown item: {0}: {1},Bestellung eines unbekannten Artikels: {0}: {1},Module: ERPNextSwiss
+Overtime,Überzeit,Module: ERPNextSwiss
+Parse file by template,Datei mit Vorlage lesen,Module: ERPNextSwiss
+Parsing error. Make sure the correct bank is selected.,"Lesefehler. Bitte prüfen, ob die richtige Bank gewählt ist.",Module: ERPNextSwiss
+Payables,Verbindlichkeiten,Module: ERPNextSwiss
+Payments transferred using ebics,Zahlungen per EBICS übertragen,Module: ERPNextSwiss
+Period,Periode,Module: ERPNextSwiss
+Please define a target email address for transmission mode Email,Bitte Ziel-E-Mail-Adresse für Übertragungsmodus E-Mail definieren,Module: ERPNextSwiss
+Please enable pop-ups,Bitte Pop-ups aktivieren,Module: ERPNextSwiss
+Please provide a reference with max. 21 characters,Bitte eine Referenz mit max. 21 Zeichen angeben,Module: ERPNextSwiss
+Please provide an Abacus Result XML file,Bitte eine Abacus-Ergebnis-XML-Datei angeben,Module: ERPNextSwiss
+Please select a file,Bitte eine Datei auswählen,Module: ERPNextSwiss
+Please select an account to pay from.,Bitte ein Zahlungskonto auswählen.,Module: ERPNextSwiss
+Please start by loading a document.,Bitte zuerst ein Dokument laden.,Module: ERPNextSwiss
+"Please wait, parsing data...","Bitte warten, Daten werden gelesen...",Module: ERPNextSwiss
+Posting Date,Buchungsdatum,Module: ERPNextSwiss
+Posting date,Buchungsdatum,Module: ERPNextSwiss
+Print Fiscal Year,Geschäftsjahr drucken,Module: ERPNextSwiss
+Print job execution failed,Druckauftrag fehlgeschlagen,Module: ERPNextSwiss
+Project,Projekt,Module: ERPNextSwiss
+Purchase Invoice Number,Eingangsrechnungsnummer,Module: ERPNextSwiss
+Reading zugferd xml failed,ZUGFeRD-XML konnte nicht gelesen werden,Module: ERPNextSwiss
+Receivables,Forderungen,Module: ERPNextSwiss
+Record limit,Datensatzlimit,Module: ERPNextSwiss
+Refresh,Aktualisieren,Module: ERPNextSwiss
+Reopen 8D,8D wieder öffnen,Module: ERPNextSwiss
+Retry,Erneut versuchen,Module: ERPNextSwiss
+Sales Partner,Vertriebspartner,Module: ERPNextSwiss
+"Selection invalid, cannot be same as decimal seperator","Auswahl ungültig, darf nicht dem Dezimaltrennzeichen entsprechen",Module: ERPNextSwiss
+"Selection invalid, cannot be same as thousand seperator","Auswahl ungültig, darf nicht dem Tausendertrennzeichen entsprechen",Module: ERPNextSwiss
+Sending failed: unable to load newsletter {0},Senden fehlgeschlagen: Newsletter {0} konnte nicht geladen werden,Module: ERPNextSwiss
+Shipment {0} not found.,Sendung {0} nicht gefunden.,Module: ERPNextSwiss
+Show disabled,Deaktivierte anzeigen,Module: ERPNextSwiss
+Show Printing Queue,Druckwarteschlange anzeigen,Module: ERPNextSwiss
+Show Test Site,Testseite anzeigen,Module: ERPNextSwiss
+Started...,Gestartet...,Module: ERPNextSwiss
+Supplier,Lieferant,Module: ERPNextSwiss
+Supplier Address,Lieferantenadresse,Module: ERPNextSwiss
+Supplier Name,Lieferantenname,Module: ERPNextSwiss
+Supplier name,Lieferantenname,Module: ERPNextSwiss
+Suppress empty lines,Leere Zeilen unterdrücken,Module: ERPNextSwiss
+Target: {0} h,Soll: {0} h,Module: ERPNextSwiss
+Tax Amount,Steuerbetrag,Module: ERPNextSwiss
+Tax ID/UID missing or invalid. Please configure for company {0}.,Steuer-ID/UID fehlt oder ist ungültig. Bitte für Unternehmen {0} konfigurieren.,Module: ERPNextSwiss
+Tax rate,Steuersatz,Module: ERPNextSwiss
+Terms,Konditionen,Module: ERPNextSwiss
+The following invoices were found in Nextcloud.<br>Click on them to process them.<br><br>,"In Nextcloud wurden folgende Rechnungen gefunden.<br>Klicken Sie darauf, um sie zu verarbeiten.<br><br>",Module: ERPNextSwiss
+The ZUGFeRD <> NextCloud interface is disabled.,Die ZUGFeRD-Nextcloud-Schnittstelle ist deaktiviert.,Module: ERPNextSwiss
+There are no invoices ready for collection in {SRC_DIR}.,In {SRC_DIR} liegen keine Rechnungen zur Abholung bereit.,Module: ERPNextSwiss
+This Inspection Equipment has to be calibrated.,Dieses Prüfmittel muss kalibriert werden.,Module: ERPNextSwiss
+To Account,Nach Konto,Module: ERPNextSwiss
+Total validation failed,Totalvalidierung fehlgeschlagen,Module: ERPNextSwiss
+Totel,Total,Module: ERPNextSwiss
+Unable to create payment reminder,Mahnung konnte nicht erstellt werden,Module: ERPNextSwiss
+Unable to find matching account: please check your accounts and set IBAN {0},Kein passendes Konto gefunden: Bitte Konten prüfen und IBAN {0} setzen,Module: ERPNextSwiss
+Unexpected job status: {0},Unerwarteter Auftragsstatus: {0},Module: ERPNextSwiss
+Unknown parameter. Error: {0},Unbekannter Parameter. Fehler: {0},Module: ERPNextSwiss
+Unzip error:,Fehler beim Entpacken:,Module: ERPNextSwiss
+Updating newsletter failed: error {0},Newsletter konnte nicht aktualisiert werden: Fehler {0},Module: ERPNextSwiss
+Upload Files,Dateien hochladen,Module: ERPNextSwiss
+Validation failed with error: {0},Validierung fehlgeschlagen: {0},Module: ERPNextSwiss
+Voucher,Beleg,Module: ERPNextSwiss
+Voucher type,Belegart,Module: ERPNextSwiss
+Work End,Arbeitsende,Module: ERPNextSwiss
+Work Start,Arbeitsbeginn,Module: ERPNextSwiss
+Working Hours,Arbeitsstunden,Module: ERPNextSwiss
+XML validation failed for {0},XML-Validierung fehlgeschlagen für {0},Module: ERPNextSwiss
+{0}: no address (or country) found,{0}: Keine Adresse (oder kein Land) gefunden,Module: ERPNextSwiss
+{0}: no ESR participation number found,{0}: Keine ESR-Teilnehmernummer gefunden,Module: ERPNextSwiss
+{0}: no ESR reference found,{0}: Keine ESR-Referenz gefunden,Module: ERPNextSwiss
+{0}: no IBAN found,{0}: Keine IBAN gefunden,Module: ERPNextSwiss
+Net price,Nettopreis,Module: ERPNextSwiss
+Quantity,Menge,Module: ERPNextSwiss
+Amount before taxes,Betrag vor Steuern,Module: ERPNextSwiss
+Total taxes,Steuern total,Module: ERPNextSwiss
+Grand total,Gesamttotal,Module: ERPNextSwiss
+Address,Adresse,Module: ERPNextSwiss
+Bank,Bank,Module: ERPNextSwiss
+Document,Dokument,Module: ERPNextSwiss
+Done!,Erledigt!,Module: ERPNextSwiss
+Payment Method,Zahlungsart,Module: ERPNextSwiss
+"Planzer Settings are missing connection details (host, username, password)","In den Planzer-Einstellungen fehlen Verbindungsdaten (Host, Benutzername, Passwort)",Module: ERPNextSwiss
+Taxes and Charges Template,Steuern-und-Gebühren-Vorlage,Module: ERPNextSwiss
+A printer group consists of all printers that are reachable via the same on-site host (running a client script).,"Eine Druckergruppe umfasst alle Drucker, die über denselben lokalen Host erreichbar sind (Client-Skript).",Module: ERPNextSwiss
+Accepted Input,Akzeptierte Eingabe,Module: ERPNextSwiss
+Account ID,Konto-ID,Module: ERPNextSwiss
+Activate Automatic Validity Calculation,Automatische Gültigkeitsberechnung aktivieren,Module: ERPNextSwiss
+Add default field values for new records here,Standard-Feldwerte für neue Datensätze hier eintragen,Module: ERPNextSwiss
+Additional Revenue,Zusätzlicher Umsatz,Module: ERPNextSwiss
+Address Book,Adressbuch,Module: ERPNextSwiss
+Amount 21,Betrag 21,Module: ERPNextSwiss
+Amount 42,Betrag 42,Module: ERPNextSwiss
+Amount 45,Betrag 45,Module: ERPNextSwiss
+Amount 46,Betrag 46,Module: ERPNextSwiss
+Amount 60,Betrag 60,Module: ERPNextSwiss
+Amount 73,Betrag 73,Module: ERPNextSwiss
+Amount 76,Betrag 76,Module: ERPNextSwiss
+Amount 77,Betrag 77,Module: ERPNextSwiss
+Amount 84,Betrag 84,Module: ERPNextSwiss
+Amount 91,Betrag 91,Module: ERPNextSwiss
+Applicable on,Anwendbar auf,Module: ERPNextSwiss
+Auto Commit,Automatisch bestätigen,Module: ERPNextSwiss
+Charged,Verrechnet,Module: ERPNextSwiss
+City,Ort,Module: ERPNextSwiss
+Closing Text,Schlusstext,Module: ERPNextSwiss
+Company abbreviation,Unternehmenskürzel,Module: ERPNextSwiss
+Component,Komponente,Module: ERPNextSwiss
+Connection IP,Verbindungs-IP,Module: ERPNextSwiss
+Connection Port,Verbindungsport,Module: ERPNextSwiss
+Consideration of vacation hours based on,Berücksichtigung von Ferienzeiten basierend auf,Module: ERPNextSwiss
+Contacts,Kontakte,Module: ERPNextSwiss
+Content dict,Inhalts-Dictionary,Module: ERPNextSwiss
+Correction on pretax,Korrektur der Vorsteuer,Module: ERPNextSwiss
+Country,Land,Module: ERPNextSwiss
+Customer No,Kundennummer,Module: ERPNextSwiss
+Debit Account,Sollkonto,Module: ERPNextSwiss
+Debit Currency,Sollwährung,Module: ERPNextSwiss
+Deduction for delayed tax,Abzug für verspätete Steuer,Module: ERPNextSwiss
+Deductions,Abzüge,Module: ERPNextSwiss
+Default,Standard,Module: ERPNextSwiss
+Default Validity In Months,Standardgültigkeit in Monaten,Module: ERPNextSwiss
+Default Values,Standardwerte,Module: ERPNextSwiss
+Department No,Abteilungsnummer,Module: ERPNextSwiss
+Dimensions,Abmessungen,Module: ERPNextSwiss
+Discount,Rabatt,Module: ERPNextSwiss
+Discount in Percent,Rabatt in Prozent,Module: ERPNextSwiss
+Discount Type,Rabattart,Module: ERPNextSwiss
+Discounting,Rabattierung,Module: ERPNextSwiss
+Dynamic Configuration,Dynamische Konfiguration,Module: ERPNextSwiss
+Email,E-Mail,Module: ERPNextSwiss
+Enable GitLab,GitLab aktivieren,Module: ERPNextSwiss
+Enable Invoice fetch from NextCloud,Rechnungsabruf aus Nextcloud aktivieren,Module: ERPNextSwiss
+Enable Printouts,Ausdrucke aktivieren,Module: ERPNextSwiss
+Equipment Image,Prüfmittelbild,Module: ERPNextSwiss
+ESR Participation Number,ESR-Teilnehmernummer,Module: ERPNextSwiss
+Estimation,Schätzung,Module: ERPNextSwiss
+Expected effort,Erwarteter Aufwand,Module: ERPNextSwiss
+Expenses,Spesen,Module: ERPNextSwiss
+Field,Feld,Module: ERPNextSwiss
+Geocodes,Geocodes,Module: ERPNextSwiss
+Group name,Gruppenname,Module: ERPNextSwiss
+Height (mm),Höhe (mm),Module: ERPNextSwiss
+IG other rate,IG anderer Satz,Module: ERPNextSwiss
+Innercommunal purchases,Innergemeinschaftliche Einkäufe,Module: ERPNextSwiss
+Innercommunal revenue,Innergemeinschaftlicher Umsatz,Module: ERPNextSwiss
+Integrator ID,Integrator-ID,Module: ERPNextSwiss
+Interval,Intervall,Module: ERPNextSwiss
+Introduction,Einleitung,Module: ERPNextSwiss
+Invoice Inbox Folder Path,Ordnerpfad Rechnungseingang,Module: ERPNextSwiss
+Is Cumulativ,Ist kumulativ,Module: ERPNextSwiss
+Is Negativ,Ist negativ,Module: ERPNextSwiss
+Is Salary,Ist Lohn,Module: ERPNextSwiss
+Item Group For Structur Element Filter,Artikelgruppe für Strukturelement-Filter,Module: ERPNextSwiss
+Latitude,Breitengrad,Module: ERPNextSwiss
+Longitude,Längengrad,Module: ERPNextSwiss
+Needed to print Shift-Activations and Daily-Closings,Wird für den Druck von Schichtaktivierungen und Tagesabschlüssen benötigt,Module: ERPNextSwiss
+Net total,Netto total,Module: ERPNextSwiss
+New items will be created in this group,Neue Artikel werden in dieser Gruppe erstellt,Module: ERPNextSwiss
+New vehicules,Neue Fahrzeuge,Module: ERPNextSwiss
+Others,Andere,Module: ERPNextSwiss
+Page Breake After Element,Seitenumbruch nach Element,Module: ERPNextSwiss
+Page Breake Before Element,Seitenumbruch vor Element,Module: ERPNextSwiss
+Parent Element,Übergeordnetes Element,Module: ERPNextSwiss
+Payable Account,Kreditorenkonto,Module: ERPNextSwiss
+PDF Direct printing resolution (DPI),PDF-Direktdruck-Auflösung (DPI),Module: ERPNextSwiss
+PDF file,PDF-Datei,Module: ERPNextSwiss
+Percentage,Prozentsatz,Module: ERPNextSwiss
+Preliminay tax,Vorläufige Steuer,Module: ERPNextSwiss
+Pretax,Vorsteuer,Module: ERPNextSwiss
+Pretax 63,Vorsteuer 63,Module: ERPNextSwiss
+Pretax 67,Vorsteuer 67,Module: ERPNextSwiss
+Pretax export,Vorsteuer Export,Module: ERPNextSwiss
+Pretax IG,Vorsteuer IG,Module: ERPNextSwiss
+Pretax IG vehicles,Vorsteuer IG Fahrzeuge,Module: ERPNextSwiss
+Pretax on import,Vorsteuer auf Import,Module: ERPNextSwiss
+Pretax vehicles without UID,Vorsteuer Fahrzeuge ohne UID,Module: ERPNextSwiss
+Pretax vehicules outside company,Vorsteuer Fahrzeuge ausserhalb Unternehmen,Module: ERPNextSwiss
+Pretax with UID,Vorsteuer mit UID,Module: ERPNextSwiss
+Preview,Vorschau,Module: ERPNextSwiss
+Printer,Drucker,Module: ERPNextSwiss
+Printer group,Druckergruppe,Module: ERPNextSwiss
+Printer hostname,Drucker-Hostname,Module: ERPNextSwiss
+Printer IP,Drucker-IP,Module: ERPNextSwiss
+Printer port,Druckerport,Module: ERPNextSwiss
+Printing method,Druckmethode,Module: ERPNextSwiss
+Printouts,Ausdrucke,Module: ERPNextSwiss
+Private Token,Privates Token,Module: ERPNextSwiss
+Processed Invoices Folder Path,Ordnerpfad verarbeitete Rechnungen,Module: ERPNextSwiss
+Productiv,Produktiv,Module: ERPNextSwiss
+Project ID,Projekt-ID,Module: ERPNextSwiss
+Query,Abfrage,Module: ERPNextSwiss
+Quotation,Offerte,Module: ERPNextSwiss
+Raw data,Rohdaten,Module: ERPNextSwiss
+Receiver,Empfänger,Module: ERPNextSwiss
+Receiver Address Line 1,Empfänger Adresse Zeile 1,Module: ERPNextSwiss
+Receiver Address Line 2,Empfänger Adresse Zeile 2,Module: ERPNextSwiss
+Receiver City,Empfänger Ort,Module: ERPNextSwiss
+Receiver Country,Empfänger Land,Module: ERPNextSwiss
+Receiver ID,Empfänger-ID,Module: ERPNextSwiss
+Receiver Pincode,Empfänger PLZ,Module: ERPNextSwiss
+Revenue at other tax rates,Umsatz zu anderen Steuersätzen,Module: ERPNextSwiss
+Revenue at tax rate 19%,Umsatz zum Steuersatz 19%,Module: ERPNextSwiss
+Revenue at tax rate 7%,Umsatz zum Steuersatz 7%,Module: ERPNextSwiss
+Revenue without pretax,Umsatz ohne Vorsteuer,Module: ERPNextSwiss
+Reverse Charge,Reverse Charge,Module: ERPNextSwiss
+Salary,Lohn,Module: ERPNextSwiss
+Salary Slip,Lohnabrechnung,Module: ERPNextSwiss
+Sales Order,Kundenauftrag,Module: ERPNextSwiss
+Show Discount,Rabatt anzeigen,Module: ERPNextSwiss
+Show Main Total After This Position,Haupttotal nach dieser Position anzeigen,Module: ERPNextSwiss
+Show Total After This Position,Total nach dieser Position anzeigen,Module: ERPNextSwiss
+Software Requirement Title,Titel Softwareanforderung,Module: ERPNextSwiss
+Something like https://cloud.example.com,Zum Beispiel https://cloud.example.com,Module: ERPNextSwiss
+Specification,Spezifikation,Module: ERPNextSwiss
+Specification Title,Spezifikationstitel,Module: ERPNextSwiss
+Specifications,Spezifikationen,Module: ERPNextSwiss
+Status Message,Statusmeldung,Module: ERPNextSwiss
+Sync Contacts to NextCloud,Kontakte mit Nextcloud synchronisieren,Module: ERPNextSwiss
+Tax 35,Steuer 35,Module: ERPNextSwiss
+Tax 46 (47),Steuer 46 (47),Module: ERPNextSwiss
+Tax 65,Steuer 65,Module: ERPNextSwiss
+Tax 69,Steuer 69,Module: ERPNextSwiss
+Tax 73 (74),Steuer 73 (74),Module: ERPNextSwiss
+Tax 76,Steuer 76,Module: ERPNextSwiss
+Tax 77,Steuer 77,Module: ERPNextSwiss
+Tax 81,Steuer 81,Module: ERPNextSwiss
+Tax 84 (85),Steuer 84 (85),Module: ERPNextSwiss
+Tax 86,Steuer 86,Module: ERPNextSwiss
+Tax 89,Steuer 89,Module: ERPNextSwiss
+Tax 93,Steuer 93,Module: ERPNextSwiss
+Tax 94 (96),Steuer 94 (96),Module: ERPNextSwiss
+Tax 95 (98),Steuer 95 (98),Module: ERPNextSwiss
+Tax amount,Steuerbetrag,Module: ERPNextSwiss
+Tax due,Geschuldete Steuer,Module: ERPNextSwiss
+Team,Team,Module: ERPNextSwiss
+Testing,Testen,Module: ERPNextSwiss
+These are system-generated credentials from UPP Management &gt; Security,Dies sind systemgenerierte Zugangsdaten aus UPP Management &gt; Security,Module: ERPNextSwiss
+Total pretax,Vorsteuer total,Module: ERPNextSwiss
+Total Revenue,Umsatz total,Module: ERPNextSwiss
+Total revenue tax,Umsatzsteuer total,Module: ERPNextSwiss
+Trace,Nachverfolgung,Module: ERPNextSwiss
+Used to calculate the printing width of Zebra printers,Wird zur Berechnung der Druckbreite von Zebra-Druckern verwendet,Module: ERPNextSwiss
+User,Benutzer,Module: ERPNextSwiss
+Username,Benutzername,Module: ERPNextSwiss
+Validate HLK Element Allocation,HLK-Elementzuordnung validieren,Module: ERPNextSwiss
+Verify SSL,SSL prüfen,Module: ERPNextSwiss
+Width (mm),Breite (mm),Module: ERPNextSwiss
+13.1.2 Effective other expenses description,13.1.2 Bezeichnung effektive Spesen übrige,Module: ERPNextSwiss
+13.2.3 Other net exenses description,13.2.3 Bezeichnung Pauschalspesen übrige,Module: ERPNextSwiss
+15 Remark Prefix Text,15 Präfixtext Bemerkungen,Module: ERPNextSwiss
+DocType,Dokumenttyp,Module: ERPNextSwiss
+E.g.: ECR-01,z.B.: ECR-01,Module: ERPNextSwiss
+Element,Element,Module: ERPNextSwiss
+ESR Code,ESR-Code,Module: ERPNextSwiss
+Typically lobplalb02.planzer.ch for PROD and lobplatestlb02.planzer.ch for TEST,Typisch lobplalb02.planzer.ch für PROD und lobplatestlb02.planzer.ch für TEST,Module: ERPNextSwiss
+ZUGFeRD Settings,ZUGFeRD-Einstellungen,Module: ERPNextSwiss
+Worldline TIM,Worldline TIM,Module: ERPNextSwiss
+YTD,laufendes Jahr,Module: ERPNextSwiss
+YTD %,laufendes Jahr %,Module: ERPNextSwiss

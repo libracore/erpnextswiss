@@ -1,0 +1,45 @@
+[project]
+name = "erpnextswiss"
+authors = [
+    { name = "libracore AG", email = "info@libracore.com"}
+]
+description = "ERPNext extension for Switzerland"
+requires-python = ">=3.10"
+readme = "README.md"
+dynamic = ["version"]
+dependencies = [
+    # dependencies
+    "bs4",
+    "factur-x>=2.3,<5",
+    "unidecode",
+    "opencv-python",
+    "pymupdf",
+    "fintech",
+    "pysftp",
+    "icalendar",
+    "lxml",
+    "paramiko<4",
+]
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.dynamic]
+version = { attr = "erpnextswiss.__version__" }
+
+[tool.bench.frappe-dependencies]
+frappe = ">=16.0.0,<17.0.0"
+erpnext = ">=16.0.0,<17.0.0"
+
+[project.urls]
+Homepage = "https://git.libracore.io/libracore/erpnextswiss"
+Repository = "https://git.libracore.io/libracore/erpnextswiss.git"
+"Bug Reports" = "https://git.libracore.io/libracore/erpnextswiss/issues"
+
+[deploy.dependencies.apt]
+packages = [
+    "ffmpeg",
+    "libsm6",
+    "libxext6",
+]

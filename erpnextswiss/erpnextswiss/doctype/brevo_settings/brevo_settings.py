@@ -10,6 +10,7 @@ import json
 from frappe.utils.background_jobs import enqueue
 from frappe.utils import cint
 from datetime import datetime
+from frappe.desk.doctype.tag.tag import add_tag
 
 API_HOST = "https://api.brevo.com/v3/"
 
@@ -181,6 +182,50 @@ class BrevoSettings(Document):
         """
         
         return lists
+    
+    def get_all_list_members(self, list_id):
+        members = []
+        limit = 50
+        offset = 0
+        _members = self.get_list_members(list_id, limit, offset)
+        while _members:
+            for m in _members:
+                members.append(m)
+                    
+            offset += limit
+            _members = self.get_list_members(list_id, limit, offset)
+                        
+        return members
+    
+    def get_list_members(self, list_id, limit, offset):
+        parameters = {
+            # 'modifiedSince': 'YYYY-MM-DDTHH:mm:ss.SSSZ',
+            'limit': '{0}'.format(limit),
+            'offset': '{0}'.format(offset),
+            #'sort': 'desc',
+        }
+        endpoint = "{0}contacts/lists/{1}/contacts".format(API_HOST, list_id)
+
+        response = requests.get(endpoint, headers=self.get_headers(), params=parameters)
+        
+        members = response.json().get('contacts')      # list of contacts
+        
+        """
+        Structure
+            {
+    ​​            'id': 42
+                'email': "john.smith@libracore.com"
+                'emailBlacklisted': false
+                'smsBlacklisted': false
+                'createdAt': "2026-07-02T08:44:24.468+02:00",
+                'modifiedAt': "2026-07-02T08:44:24.468+02:00",
+                'attributes': {
+                    "OPT_IN": false
+                }
+            }
+        """
+        
+        return members
         
     def create_list(self, list_name):
         parameters = {
@@ -499,6 +544,20 @@ class BrevoSettings(Document):
         """
         
         return campaigns
+    
+    def get_list_to_tags(self):
+        lists = self.get_all_lists(with_folders=False)
+        
+        for l in lists:
+            members = self.get_all_list_members(l.get('id'))
+            
+            for m in members:
+                contact = frappe.get_all("Contact", filters={'email_id': m.get('email')}, fields=['name'])
+                if len(contact) > 0:
+                    add_tag(l.get('name'), "Contact", contact[0]['name'])
+                    frappe.db.commit()
+        
+        return
         
 @frappe.whitelist()
 def fetch_contacts():
@@ -507,6 +566,9 @@ def fetch_contacts():
 
 @frappe.whitelist()
 def sync_contacts():
+    """
+    bench execute erpnextswiss.erpnextswiss.doctype.brevo_settings.brevo_settings.sync_contacts
+    """
     brevo = frappe.get_doc("Brevo Settings", "Brevo Settings")
     brevo.get_all_contacts(sync=True)
     return
@@ -548,3 +610,12 @@ def migrate_contacts():
     
     return
     
+@frappe.whitelist()
+def get_list_to_tags():
+    """
+    Server-side:
+    
+    bench execute erpnextswiss.erpnextswiss.doctype.brevo_settings.brevo_settings.get_list_to_tags
+    """
+    brevo = frappe.get_doc("Brevo Settings", "Brevo Settings")
+    return brevo.get_list_to_tags()

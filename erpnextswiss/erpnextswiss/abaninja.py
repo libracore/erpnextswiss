@@ -321,4 +321,55 @@ def sync_linked_contacts(customer_doc, company_data):
 
 @frappe.whitelist()
 def sync_abaninja_items():
+    # get credentials
+    account_uuid, api_key = get_api_credentials()
+
+    if not account_uuid or not api_key:
+        frappe.log_error("AbaNinja Sync Failed", "Syncing AbaNinja Customers failed: Missing UUID or API Key in settings.")
+        return {
+            "success": False,
+            "message": _("Error in UUID/key configuration. Please check your AbaNinja Settings.")
+        }
+    
+    url = "https://api.abaninja.ch/accounts/{0}/products/v2/products".format(account_uuid)
+    headers = get_abaninja_headers(api_key)
+
+    stats = {"success": True, "inserted": 0, "updated": 0, "message": ""}
+
+    # get data from AbaNinja API
+    try:
+        response = requests.get(url, headers=headers, timeout=15)
+        if response.status_code != 200:
+            frappe.log_error("AbaNinja Sync API Failure", "Status: {0}\nResponse: {1}".format(response.status_code, response.text))
+            return {
+                "success": False,
+                "message": _("AbaNinja API responded with status {0}. Check System Error Logs.").format(response.status_code)
+            }
+        
+        response_payload = response.json()
+        companies = response_payload.get('data', response_payload) if isinstance(response_payload, dict) else response_payload
+
+        # loop through items and handle data
+        for item in items:
+            is_new = save_or_update_item(item)
+
+            if is_new:
+                stats["inserted"] += 1
+            else:
+                stats["updated"] += 1
+
+        frappe.db.commit()
+        stats["message"] = _("Customers synchronized successfully.")
+        return stats
+
+    except Exception as e:
+        frappe.db.rollback()
+        frappe.log_error("AbaNinja Sync Exception", frappe.get_traceback())
+        return {
+            "success": False,
+            "message": _("An unexpected execution crash occurred: {0}").format(str(e))
+        }
+
+def save_or_update_item(item):
+    # TODO: implement
     return

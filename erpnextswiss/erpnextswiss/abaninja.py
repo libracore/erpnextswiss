@@ -318,3 +318,7 @@ def sync_linked_contacts(customer_doc, company_data):
             contact.save(ignore_permissions=True)
 
     return 
+
+@frappe.whitelist()
+def sync_abaninja_items():
+    return

@@ -347,10 +347,18 @@ def sync_abaninja_items():
             }
         
         response_payload = response.json()
-        companies = response_payload.get('data', response_payload) if isinstance(response_payload, dict) else response_payload
+        items = response_payload.get('data', response_payload) if isinstance(response_payload, dict) else response_payload
 
         # loop through items and handle data
         for item in items:
+            product_name = (
+                item.get("translations", {}).get("de", {}).get("productName") or 
+                item.get("translations", {}).get("en", {}).get("productName") or 
+                item.get("productKey")
+            )
+            if not product_name:
+                continue
+
             is_new = save_or_update_item(item)
 
             if is_new:
@@ -359,7 +367,7 @@ def sync_abaninja_items():
                 stats["updated"] += 1
 
         frappe.db.commit()
-        stats["message"] = _("Customers synchronized successfully.")
+        stats["message"] = _("Items synchronized successfully.")
         return stats
 
     except Exception as e:
@@ -371,5 +379,110 @@ def sync_abaninja_items():
         }
 
 def save_or_update_item(item):
-    # TODO: implement
-    return
+    abaninja_id = item.get("productUuid") or item.get("uuid")
+    product_key = item.get("productKey")
+
+    # get german product name and description
+    translations = item.get("translations", {})
+    de_trans = translations.get("de", {})
+
+    item_name = de_trans.get("productName") or product_key
+    description = de_trans.get("productDescription") or ""
+
+    if product_key:
+        item_code = frappe.db.get_value("Item", {"item_code": product_key}, "name")
+
+    is_new = False
+    
+    if item_code:
+        item_doc = frappe.get_doc("Item", item_code)
+    else:
+        item_doc = frappe.new_doc("Item")
+        item_doc.item_code = product_key
+        is_new = True
+
+    # handle UOM
+    uom = "Nos" # default
+    unit_data = item.get("productUnit")
+    if unit_data:
+        uom = get_or_create_uom(unit_data)
+
+    # handle item group
+    item_group_name = "All Item Groups" # default
+    group_data = item.get("productGroup")
+    if group_data:
+        item_group_name = get_or_create_item_group(group_data)
+
+    item_doc.item_name = item_name[:140] # truncate item_name, as ERPNext only allows up to 140 characters
+    item_doc.abaninja_id = abaninja_id
+    item_doc.item_group = item_group_name
+    item_doc.stock_uom = uom
+    item_doc.description = description
+    
+    # service item -> remove 'is_stock_item'
+    if item.get("isService"):
+        item_doc.is_stock_item = 0
+    else:
+        item_doc.is_stock_item = 1
+
+    item_doc.disabled = 1 if item.get("archivedAt") else 0
+    
+    if item.get("eanCode"):
+        item_doc.set("barcodes", [])
+        item_doc.append("barcodes", {
+            "barcode": item.get("eanCode"),
+            "barcode_type": "EAN"
+        })
+
+    item_doc.save(ignore_permissions=True)
+
+    if item.get("cost"):
+        update_item_price_or_cost(item_doc.name, item.get("cost"))
+
+    return is_new
+
+def get_or_create_uom(unit_data):
+    uom_id = unit_data.get("translations", {}).get("de", {}).get("unit")
+    
+    if not uom_id:
+        return "Nos"
+        
+    if not frappe.db.exists("UOM", uom_id):
+        try:
+            uom_doc = frappe.new_doc("UOM")
+            uom_doc.uom_name = uom_id
+            uom_doc.must_be_whole_number = 0
+            uom_doc.insert(ignore_permissions=True)
+        except frappe.DuplicateEntryError:
+            pass
+            
+    return uom_id
+
+def get_or_create_item_group(group_data):
+    group_name = group_data if isinstance(group_data, str) else group_data.get("productGroupDescription")
+    
+    if not group_name:
+        return "All Item Groups"
+
+    if not frappe.db.exists("Item Group", group_name):
+        try:
+            ig_doc = frappe.new_doc("Item Group")
+            ig_doc.item_group_name = group_name
+            ig_doc.parent_item_group = "All Item Groups"
+            ig_doc.is_group = 0
+            ig_doc.insert(ignore_permissions=True)
+        except frappe.DuplicateEntryError:
+            pass
+            
+    return group_name
+
+def update_item_price_or_cost(item_code, cost_price):    
+    price_list = "Standard Buying"
+    if not frappe.db.exists("Item Price", {"item_code": item_code, "price_list": price_list}):
+        ip = frappe.new_doc("Item Price")
+        ip.item_code = item_code
+        ip.price_list = price_list
+        ip.price_list_rate = cost_price
+        ip.insert(ignore_permissions=True)
+
+

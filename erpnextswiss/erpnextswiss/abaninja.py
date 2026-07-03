@@ -476,13 +476,35 @@ def get_or_create_item_group(group_data):
             
     return group_name
 
-def update_item_price_or_cost(item_code, cost_price):    
-    price_list = "Standard Buying"
-    if not frappe.db.exists("Item Price", {"item_code": item_code, "price_list": price_list}):
-        ip = frappe.new_doc("Item Price")
-        ip.item_code = item_code
-        ip.price_list = price_list
-        ip.price_list_rate = cost_price
-        ip.insert(ignore_permissions=True)
+def update_item_price_or_cost(item_code, cost_price):
+    try:
+        abaninja_settings = frappe.get_single("AbaNinja Settings")
+        price_list = abaninja_settings.get("item_price_list")
+
+        if not price_list or not frappe.db.exists("Price List", price_list):
+            raise frappe.ValidationError(
+                _("AbaNinja Sync Failed: Missing or invalid Price List in AbaNinja Settings.")
+            )
+        
+        existing_price = frappe.db.get_value(
+            "Item Price", 
+            {"item_code": item_code, "price_list": price_list}, 
+            "name"
+        )
+        
+        if existing_price:
+            frappe.db.set_value("Item Price", existing_price, "price_list_rate", cost_price)
+        else:
+            ip = frappe.new_doc("Item Price")
+            ip.item_code = item_code
+            ip.price_list = price_list
+            ip.price_list_rate = cost_price
+            ip.insert(ignore_permissions=True)
+    except Exception as e:
+        frappe.log_error(
+            "AbaNinja Price Sync Exception", 
+            "Failed to update price for item {0}: {1}\n{2}".format(item_code, str(e), frappe.get_traceback())
+        )
+        raise e
 
 

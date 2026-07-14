@@ -408,11 +408,18 @@ class PaymentProposal(Document):
         data['payments'] = []
         for payment in self.payments:
             payment_content = ""
+            execution_date = payment.execution_date
+            if isinstance(execution_date, datetime):
+                execution_date = execution_date.date().isoformat()
+            elif hasattr(execution_date, "isoformat"):
+                execution_date = execution_date.isoformat()
+            else:
+                execution_date = str(execution_date).split(" ")[0]
             payment_record = {
                 'id': "PMTINF-{0}-{1}".format(self.name, transaction_count),   # unique (in this file) identification for the payment ( e.g. PMTINF-01, PMTINF-PE-00005 )
                 'method': "TRF",             # payment method (TRF or TRA, no impact in Switzerland)
                 'batch': "true",             # batch booking (true or false; recommended true)
-                'required_execution_date': "{0}".format(payment.execution_date.split(" ")[0]),         # Requested Execution Date (e.g. 2010-02-22, remove time element)
+                'required_execution_date': execution_date,         # Requested Execution Date (e.g. 2010-02-22, remove time element)
                 'debtor': {                    # debitor (technically ignored, but recommended)  
                     'name': html.escape(self.company),
                     'account': "{0}".format(payment_account.iban.replace(" ", "")),

@@ -4,8 +4,9 @@
 from __future__ import unicode_literals
 import frappe
 from frappe import _
+from frappe.utils import flt
 import datetime, calendar
-from erpnextswiss.erpnextswiss.report.worktime_overview.worktime_overview import get_employee_overtime, get_target_time
+from erpnextswiss.scripts.worktime_utils import get_worktime_overview
 
 def execute(filters=None):
     columns = get_columns()
@@ -27,6 +28,7 @@ def get_data(filters):
     # get all days
     num_days = calendar.monthrange(filters.year, filters.month)[1]
     days = [datetime.date(filters.year, filters.month, day) for day in range(1, num_days+1)]
+
     # take off-time from activity determination
     off_types = []
     for t in frappe.db.sql("""
@@ -34,6 +36,7 @@ def get_data(filters):
         FROM `tabActivity Type Determination`
         WHERE `company` = "{company}";""".format(company=filters.company), as_dict=True):
         off_types.append(t['activity_type'])
+    
     # expand all days
     data = []
     total_working_hours = 0
@@ -93,7 +96,7 @@ def get_data(filters):
             if len(holidays) > 0:
                 remarks = holidays[0]['description']
                 
-        total_working_hours += working_hours    
+        total_working_hours += working_hours
         data.append({
             'day': day,
             'work_start': work_start,
@@ -104,29 +107,67 @@ def get_data(filters):
         })
     
     # totals
-    lookup_filters = frappe._dict()
-    lookup_filters.employee = filters.employee
-    lookup_filters.from_date = datetime.date(filters.year, filters.month, 1)
-    lookup_filters.to_date = datetime.date(filters.year, filters.month, num_days)
-    lookup_filters.company = filters.company
+    worktime_overview = get_worktime_overview(filters.employee, filters.company, datetime.date(filters.year, filters.month, 1), datetime.date(filters.year, filters.month, num_days))
+    target_hours = flt(worktime_overview.get('target_time'), 2)
+    actual_time = flt(worktime_overview.get('actual_time'), 2)
+    monthly_overtime = flt(worktime_overview.get('overtime'), 2)
+    holiday_hours_check = worktime_overview.get('holiday_hours_check')
+    holidays_in_hours = flt(worktime_overview.get('holidays_in_hours'), 2)
+    opening_balance = flt(worktime_overview.get('opening_balance'), 2)
+    closing_balance = flt(worktime_overview.get('closing_balance'), 2)
+    total_working_hours = flt((worktime_overview.get('actual_time') + worktime_overview.get('holidays_in_hours')), 2)
+    warning = 'Keine'
     
-    target_hours = get_target_time(lookup_filters, filters.employee)
-    monthly_overtime = get_employee_overtime(lookup_filters, ignore_carryover=True)
-    
-    # set full year
-    lookup_filters.from_date = datetime.date(filters.year, 1, 1)
-    annual_overtime = get_employee_overtime(lookup_filters)
+    if holiday_hours_check:
+        summary = holiday_hours_check.get("summary", {})
+
+        invalid_days = summary.get("number_of_invalid_days", 0)
+        deviation = summary.get("deviation_hours", {})
+
+        if invalid_days:
+            deviation_min = deviation.get("min")
+            deviation_max = deviation.get("max")
+
+            if deviation_min == deviation_max:
+                warning = _("{0} fehlerhafte Ferientage; Abweichung: {1} Std.").format(invalid_days, deviation_min)
+            else:
+                warning = _("{0} fehlerhafte Ferientage; Abweichung: {1} bis {2} Std.").format(invalid_days, deviation_min, deviation_max)
         
     data.append({
+        'working_hours': actual_time,
+        'work_start': _("Working hours")
+    })
+
+    data.append({
+        'working_hours': holidays_in_hours,
+        'work_start': _("Holidays in hours")
+    })
+
+    data.append({
         'working_hours': total_working_hours,
-        'work_start': _("Totel"),
+        'work_start': _("Total"),
         'work_end': _("Target: {0} h").format(target_hours)
     })
     
     data.append({
-        'work_start': _("Overtime"),
-        'work_end': _("Annual: {0} h").format(annual_overtime),
-        'breaks': _("Monthly: {0} h").format(monthly_overtime),
-        'remarks': frappe.get_value("Employee", filters.employee, "employee_name")
+        'work_start': _("Opening Balance"),
+        'work_end': opening_balance
     })
+
+    data.append({
+        'work_start': _("Difference in hours"),
+        'work_end': monthly_overtime
+    })
+    
+    data.append({
+        'work_start': _("Closing Balance"),
+        'work_end': closing_balance
+    })
+    
+    data.append({
+        'work_start': _("Warnings"),
+        'work_end': warning,
+        'breaks': frappe.get_value("Employee", filters.employee, "employee_name")
+    })
+
     return data

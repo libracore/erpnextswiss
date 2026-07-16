@@ -116,6 +116,13 @@ def get_data():
                    },
                    {
                         "type": "report",
+                        "name": "Holiday Hours Troubleshoot",
+                        "label": _("Holiday Hours Troubleshoot"),
+                        "doctype": "Timesheet",
+                        "is_query_report": True
+                   },
+                   {
+                        "type": "report",
                         "name": "Annual Salary Sheet",
                         "label": _("Annual Salary Sheet"),
                         "doctype": "Salary Slip",

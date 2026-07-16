@@ -4,10 +4,10 @@
 from __future__ import unicode_literals
 import frappe
 from frappe import _
-from frappe.utils.data import date_diff, getdate, add_days
-from datetime import date, timedelta
+from frappe.utils import flt
+from frappe.utils.data import getdate
 from erpnext.hr.doctype.leave_application.leave_application import get_leave_details
-from frappe.utils import cint
+from erpnextswiss.scripts.worktime_utils import get_worktime_overview
 
 def execute(filters=None):
     if "HR Manager" in frappe.get_roles(frappe.session.user):
@@ -37,10 +37,15 @@ def get_columns(filters):
         {"label": _("Employee Name"), "fieldname": "employee_name", "fieldtype": "Data", "width": 150},
         {"label": _("Target time in hours"), "fieldname": "target_time", "fieldtype": "Float", "width": 150},
         {"label": _("Actual time in hours"), "fieldname": "actual_time", "fieldtype": "Float", "width": 150},
+        {"label": _("Opening Balance"), "fieldname": "opening_balance", "fieldtype": "Float", "width": 150},
         {"label": _("Difference in hours"), "fieldname": "difference", "fieldtype": "Float", "width": 150},
+        {"label": _("Closing Balance"), "fieldname": "closing_balance", "fieldtype": "Float", "width": 150},
+        {"label": _("Warnungen"), "fieldname": "warnings", "fieldtype": "Data", "width": 150},
         {"label": _("Current holiday balance in days"), "fieldname": "holiday_balance", "fieldtype": "Float", "width": 202}
     ]
+
     columns = add_activity_type_determination(filters, columns)
+
     return columns
     
 def get_data_of_employee(filters, ignore_carryover=False):
@@ -49,22 +54,47 @@ def get_data_of_employee(filters, ignore_carryover=False):
     else:
         employee_name = get_employee_name(frappe.session.user)
         employee = frappe.get_doc("Employee", employee_name)
-        
-    actual = get_actual_time(filters, employee.name, ignore_carryover=ignore_carryover)
-    target = get_target_time(filters, employee.name)
-    diff = actual - target
+    
     data = []
+    worktime_overview = get_worktime_overview(employee.name, filters.company, filters.from_date, filters.to_date)
+    actual = flt(worktime_overview.get('actual_time', 0)) + flt(worktime_overview.get('holidays_in_hours', 0), 2)
+    target = flt(worktime_overview.get('target_time'), 2)
+    opening_balance = flt(worktime_overview.get('opening_balance'), 2)
+    diff = flt(worktime_overview.get('overtime'), 2)
+    closing_balance = flt(worktime_overview.get('closing_balance'), 2)
+    
+    holiday_hours_check = worktime_overview.get('holiday_hours_check')
+    warning = 'Keine'
+
+    if holiday_hours_check:
+        summary = holiday_hours_check.get("summary", {})
+
+        invalid_days = summary.get("number_of_invalid_days", 0)
+        deviation = summary.get("deviation_hours", {})
+
+        if invalid_days:
+            deviation_min = flt(deviation.get("min"))
+            deviation_max = flt(deviation.get("max"))
+
+            if deviation_min == deviation_max:
+                warning = _("{0} fehlerhafte Ferientage; Abweichung: {1} Std.").format(invalid_days, deviation_min)
+            else:
+                warning = _("{0} fehlerhafte Ferientage; Abweichung: {1} bis {2} Std.").format(invalid_days, deviation_min, deviation_max)
     
     _data = [
         employee.name,
         employee.employee_name,
         target,
         actual,
+        opening_balance,
         diff,
+        closing_balance,
+        warning,
         get_holiday_balance(employee.name, filters.to_date)
     ]
     
     activity_type_determinations = get_activity_type_determinations(filters, employee.name)
+
     for activity_type_determination in activity_type_determinations:
         _data.append(activity_type_determination)
         
@@ -84,164 +114,51 @@ def get_data_of_all_employees(filters):
     
     for _employee in employees:
         employee = frappe.get_doc("Employee", _employee.name)
-        actual = get_actual_time(filters, employee.name)
-        target = get_target_time(filters, employee.name)
-        diff = actual - target
+        worktime_overview = get_worktime_overview(employee.name, filters.company, filters.from_date, filters.to_date)
+        actual = flt(worktime_overview.get('actual_time', 0)) + flt(worktime_overview.get('holidays_in_hours', 0), 2)
+        target = flt(worktime_overview.get('target_time'), 2)
+        opening_balance = flt(worktime_overview.get('opening_balance'), 2)
+        diff = flt(worktime_overview.get('overtime'), 2)
+        closing_balance = flt(worktime_overview.get('closing_balance'), 2)
+
+        holiday_hours_check = worktime_overview.get('holiday_hours_check')
+        warning = 'Keine'
+        
+        if holiday_hours_check:
+            summary = holiday_hours_check.get("summary", {})
+
+            invalid_days = summary.get("number_of_invalid_days", 0)
+            deviation = summary.get("deviation_hours", {})
+
+            if invalid_days:
+                deviation_min = flt(deviation.get("min"))
+                deviation_max = flt(deviation.get("max"))
+
+                if deviation_min == deviation_max:
+                    warning = _("{0} fehlerhafte Ferientage; Abweichung: {1} Std.").format(invalid_days, deviation_min)
+                else:
+                    warning = _("{0} fehlerhafte Ferientage; Abweichung: {1} bis {2} Std.").format(invalid_days, deviation_min, deviation_max)
         
         _data = [
             employee.name,
             employee.employee_name,
             target,
             actual,
+            opening_balance,
             diff,
+            closing_balance,
+            warning,
             get_holiday_balance(employee.name, filters.to_date)
         ]
         
         activity_type_determinations = get_activity_type_determinations(filters, employee.name)
+        
         for activity_type_determination in activity_type_determinations:
             _data.append(activity_type_determination)
             
         data.append(_data)
     
     return data
-
-
-def get_target_time(filters, employee):
-    degrees = get_degrees(employee)
-    
-    # if more than one degree
-    if len(degrees) > 1:
-        working_hours = 0
-        target_per_day = get_daily_hours(filters)
-        degree_list = []
-        i = 0
-        i_max = len(degrees) - 1
-        while i < len(degrees):
-            data = {}
-            if i != i_max:
-                data["start"] = degrees[i].date.strftime("%Y-%m-%d")
-                data["end"] = add_days(degrees[i + 1].date.strftime("%Y-%m-%d"), -1)
-                data["degree"] = degrees[i].degree
-            else:
-                data["start"] = degrees[i].date.strftime("%Y-%m-%d")
-                data["end"] = filters.to_date
-                data["degree"] = degrees[i].degree
-            degree_list.append(data)
-            i += 1
-        
-        employee_joining_date = frappe.db.get_value("Employee", employee, "date_of_joining")
-        employee_relieving_date = frappe.db.get_value("Employee", employee, "relieving_date")
-        if getdate(employee_joining_date) < getdate(filters.from_date):
-            start_date = getdate(filters.from_date)
-        else:
-            start_date = getdate(employee_joining_date)
-        if not employee_relieving_date or (getdate(employee_relieving_date) > getdate(filters.to_date)):
-            end_date = getdate(filters.to_date)
-        else:
-            end_date = getdate(employee_relieving_date)
-        
-        delta = timedelta(days=1)
-        while start_date <= end_date:
-            for degree_range in degree_list:
-                if getdate(degree_range["start"]) <= start_date <= getdate(degree_range["end"]):
-                    working_hours += (((1 - get_off_days(start_date.strftime("%Y-%m-%d"), start_date.strftime("%Y-%m-%d"), filters.company, employee)) * target_per_day) / 100 ) * degree_range["degree"]
-            start_date += delta
-        target_time = working_hours
-        
-    # if only one degree or no degrees
-    else:
-        employee_joining_date = frappe.db.get_value("Employee", employee, "date_of_joining")
-        employee_relieving_date = frappe.db.get_value("Employee", employee, "relieving_date")
-        if getdate(employee_joining_date) < getdate(filters.from_date):
-            start_date = filters.from_date
-        else:
-            start_date = employee_joining_date
-        if not employee_relieving_date or (getdate(employee_relieving_date) > getdate(filters.to_date)):
-            end_date = getdate(filters.to_date)
-        else:
-            end_date = getdate(employee_relieving_date)
-            
-        days = date_diff(end_date, start_date) + 1
-        off_days = get_off_days(start_date, end_date, filters.company, employee)
-        if len(degrees) > 0:
-            target_per_day = (get_daily_hours(filters) / 100) * degrees[0].degree
-        else:
-            target_per_day = get_daily_hours(filters)
-        target_time = (days - off_days) * target_per_day
-    
-    return target_time
-    
-def get_degrees(employee):
-    degrees = frappe.db.sql("""SELECT `degree`, `date` FROM `tabEmployment Degree` WHERE `parent` = '{employee}' ORDER BY `date` ASC""".format(employee=employee), as_dict=True)
-    return degrees
-    
-def get_off_days(from_date, to_date, company, employee=None):
-    off_days = 0
-    year = getdate(from_date).strftime("%Y")
-
-    check_leave_application = False
-    if employee and frappe.get_doc("Worktime Settings", "Worktime Settings").vacation_hours_based_on == 'Leave Application':
-        check_leave_application = True
-    
-    holiday_lists = frappe.db.sql("""SELECT `year`, `public_holiday_list` FROM `tabPublic Holiday List` WHERE `year` = '{year}' AND `company` = '{company}' LIMIT 1""".format(year=year, company=company), as_dict=True)
-    if len(holiday_lists) > 0:
-        holiday_list = holiday_lists[0].public_holiday_list
-        _holiday_list_entries = frappe.db.sql("""SELECT `holiday_date` FROM `tabHoliday` WHERE `parent` = '{holiday_list}'""".format(holiday_list=holiday_list), as_list=True)
-        holiday_list_entries = []
-        for entry in _holiday_list_entries:
-            holiday_list_entries.append(entry[0])
-            
-        start_date = getdate(from_date)
-        end_date = getdate(to_date)
-        delta = timedelta(days=1)
-        while start_date <= end_date:
-            if start_date in holiday_list_entries:
-                off_days += 1
-            start_date += delta
-    
-    if check_leave_application:
-        leave_applications = frappe.db.sql("""
-            SELECT
-                `from_date`,
-                `to_date`,
-                `half_day`,
-                `half_day_date`
-            FROM `tabLeave Application`
-            WHERE `employee` = '{employee}'
-            AND `status` = 'Approved'
-            AND `company` = '{company}'
-            AND `docstatus` = 1
-            AND `leave_type` NOT IN (
-                SELECT `name`
-                FROM `tabLeave Type`
-                WHERE `is_lwp` = 1
-            )
-        """.format(employee=employee, company=company), as_dict=True)
-        full_day_off = []
-        half_day_of = []
-
-        for leave_application in leave_applications:
-            if cint(leave_application.half_day) == 1 and leave_application.half_day_date:
-                half_day_of.append(leave_application.half_day_date)
-            start_date = getdate(leave_application.from_date)
-            end_date = getdate(leave_application.to_date)
-            delta = timedelta(days=1)
-            while start_date <= end_date:
-                if start_date not in half_day_of:
-                    full_day_off.append(start_date)
-                start_date += delta
-
-        start_date = getdate(from_date)
-        end_date = getdate(to_date)
-        delta = timedelta(days=1)
-        while start_date <= end_date:
-            if start_date in full_day_off:
-                off_days += 1
-            elif start_date in half_day_of:
-                off_days += 0.5
-            start_date += delta
-            
-    return off_days
     
 def get_holiday_balance(employee, to_date):
     leave_details = get_leave_details(employee, to_date)
@@ -252,34 +169,6 @@ def get_holiday_balance(employee, to_date):
         remaining_days += float(leave_details["leave_allocation"][key]["remaining_leaves"])
     
     return float(remaining_days)
-    
-def get_actual_time(filters, employee, ignore_carryover=False):
-    from_date = filters.from_date
-    to_date = filters.to_date
-    try:
-        actual_time = frappe.db.sql("""SELECT SUM(`hours`) FROM `tabTimesheet Detail`
-                                        WHERE DATE(`from_time`) >= '{from_date}' AND DATE(`from_time`) <= '{to_date}'
-                                        AND `docstatus` = 1 AND `parent` IN (
-                                            SELECT `name` FROM `tabTimesheet` WHERE `employee` = '{employee}'
-                                        )""".format(from_date=from_date, to_date=to_date, employee=employee), as_list=True)[0][0]
-        if not actual_time:
-            actual_time = 0
-    except:
-        actual_time = 0
-        
-    if cint(filters.get('ignore_py')) == 1:
-        return actual_time
-    
-    # handle carryover and payouts
-    if not ignore_carryover:
-        employee = frappe.get_doc("Employee", employee)
-        if employee.carryover_and_payouts:
-            year = getdate(from_date).strftime("%Y")
-            for cp in employee.carryover_and_payouts:
-                if str(cp.year) == year:
-                    actual_time += cp.amount
-                
-    return actual_time
 
 def add_activity_type_determination(filters, columns):
     additions = frappe.db.sql("""SELECT `company`, `activity_type`, `column_label` FROM `tabActivity Type Determination` WHERE `company` = '{company}' ORDER BY `idx` ASC""".format(company=filters.company), as_dict=True)
@@ -309,14 +198,6 @@ def get_activity_type_determinations(filters, employee):
         times.append(actual_time)
         
     return times
-    
-def get_daily_hours(filters):
-    try:
-        daily_hours = frappe.db.sql("""SELECT `daily_hours` FROM `tabDaily Hours` WHERE `company` = '{company}' LIMIT 1""".format(company=filters.company), as_list=True)[0][0]
-    except:
-        # fallback
-        daily_hours = 8
-    return daily_hours
     
 @frappe.whitelist()
 def get_company():
@@ -352,7 +233,3 @@ def get_employee_overview_html(employee, company, from_date, to_date):
         html = _('<div>No data found</div>')
     
     return html
-
-def get_employee_overtime(filters, ignore_carryover=False):
-    data = get_data_of_employee(filters, ignore_carryover=ignore_carryover)
-    return round(data[0][4], 3)

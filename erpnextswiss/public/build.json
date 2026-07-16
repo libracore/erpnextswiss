@@ -3,8 +3,5 @@
         "public/js/swiss_common.js",
         "public/js/iban.js",
         "public/js/email.js"
-    ],
-    "js/erpnextswiss_templates.min.js": [
-        "erpnextswiss/page/bank_wizard/transaction_table.html"
     ]
 }

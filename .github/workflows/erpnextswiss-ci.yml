@@ -1,0 +1,169 @@
+name: ERPNextSwiss CI
+
+on:
+  push:
+    branches:
+      - v16
+      - main
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: erpnextswiss-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FRAPPE_BRANCH: version-16
+  ERPNEXT_BRANCH: version-16
+  PYTHON_VERSION: "3.14"
+  NODE_VERSION: "24"
+  TEST_SITE: test_site
+
+jobs:
+  python-syntax:
+    name: Python syntax
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Compile Python files
+        run: python -m compileall erpnextswiss
+
+  static-assets:
+    name: JSON and JavaScript syntax
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Validate JSON files
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          for path in Path(".").rglob("*.json"):
+              json.loads(path.read_text(encoding="utf-8"))
+          PY
+
+      - name: Check JavaScript syntax
+        run: |
+          while IFS= read -r file; do
+            node --check "$file"
+          done < <(find erpnextswiss -name "*.js" -type f)
+
+  frappe-tests:
+    name: Frappe v16 install and tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    services:
+      mariadb:
+        image: mariadb:11.8
+        env:
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mariadb-admin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=30
+      redis-cache:
+        image: redis:8.6-alpine
+        ports:
+          - 13000:6379
+      redis-queue:
+        image: redis:8.6-alpine
+        ports:
+          - 11000:6379
+      redis-socketio:
+        image: redis:8.6-alpine
+        ports:
+          - 12000:6379
+
+    steps:
+      - name: Checkout app
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install system packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg libgl1 libmariadb-dev libsm6 libxext6 mariadb-client redis-tools rsync
+          npm install -g yarn
+
+      - name: Install Bench CLI
+        run: python -m pip install frappe-bench
+
+      - name: Create Frappe bench
+        run: bench init --skip-redis-config-generation --frappe-branch "$FRAPPE_BRANCH" frappe-bench
+
+      - name: Configure bench services
+        working-directory: frappe-bench
+        run: |
+          bench set-config -g db_host 127.0.0.1
+          bench set-config -g db_port 3306
+          bench set-config -g redis_cache redis://127.0.0.1:13000
+          bench set-config -g redis_queue redis://127.0.0.1:11000
+          bench set-config -g redis_socketio redis://127.0.0.1:12000
+
+      - name: Install ERPNext
+        working-directory: frappe-bench
+        run: bench get-app --branch "$ERPNEXT_BRANCH" erpnext https://github.com/frappe/erpnext
+
+      - name: Copy ERPNextSwiss app into bench
+        run: |
+          mkdir -p frappe-bench/apps/erpnextswiss
+          rsync -a --delete \
+            --exclude ".git" \
+            --exclude ".github" \
+            --exclude "frappe-bench" \
+            ./ frappe-bench/apps/erpnextswiss/
+
+      - name: Install app requirements
+        working-directory: frappe-bench
+        run: |
+          bench setup requirements --dev
+          ./env/bin/pip install -e apps/erpnextswiss
+          printf '\nerpnextswiss\n' >> sites/apps.txt
+          awk 'NF && !seen[$0]++ { print }' sites/apps.txt > sites/apps.txt.tmp
+          mv sites/apps.txt.tmp sites/apps.txt
+
+      - name: Create test site without HRMS
+        working-directory: frappe-bench
+        run: |
+          bench new-site "$TEST_SITE" \
+            --admin-password admin \
+            --db-root-username root \
+            --db-root-password root \
+            --db-host 127.0.0.1 \
+            --db-port 3306 \
+            --no-mariadb-socket
+          bench --site "$TEST_SITE" install-app erpnext
+          bench --site "$TEST_SITE" install-app erpnextswiss
+          bench --site "$TEST_SITE" set-config allow_tests true
+
+      - name: Run ERPNextSwiss tests
+        working-directory: frappe-bench
+        run: bench --site "$TEST_SITE" run-tests --app erpnextswiss

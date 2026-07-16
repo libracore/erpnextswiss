@@ -1,0 +1,1 @@
+# Workspace route redirect page.

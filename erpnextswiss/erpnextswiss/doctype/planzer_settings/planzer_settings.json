@@ -17,17 +17,17 @@
   {
    "fieldname": "account_id",
    "fieldtype": "Data",
-   "label": "Account ID"
+   "label": "Konto-ID"
   },
   {
    "fieldname": "customer_no",
    "fieldtype": "Data",
-   "label": "Customer No"
+   "label": "Kundennummer"
   },
   {
    "fieldname": "department_no",
    "fieldtype": "Data",
-   "label": "Department No"
+   "label": "Abteilungsnummer"
   },
   {
    "fieldname": "col_main",
@@ -35,7 +35,7 @@
   },
   {
    "default": "lobplalb02.planzer.ch",
-   "description": "Typically lobplalb02.planzer.ch for PROD and lobplatestlb02.planzer.ch for TEST",
+   "description": "Üblicherweise lobplalb02.planzer.ch für PROD und lobplatestlb02.planzer.ch für TEST.",
    "fieldname": "host",
    "fieldtype": "Data",
    "label": "Host"
@@ -43,19 +43,19 @@
   {
    "fieldname": "username",
    "fieldtype": "Data",
-   "label": "User"
+   "label": "Benutzer"
   },
   {
    "fieldname": "password",
    "fieldtype": "Password",
-   "label": "Password"
+   "label": "Passwort"
   },
   {
    "default": "0",
-   "description": "If this is marked, submitting a Shipment will transfer it through the Planzer interface",
+   "description": "Wenn aktiv, wird eine Sendung beim Einreichen über die Planzer-Schnittstelle übertragen.",
    "fieldname": "enabled",
    "fieldtype": "Check",
-   "label": "Enabled"
+   "label": "Aktiviert"
   }
  ],
  "issingle": 1,

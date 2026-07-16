@@ -9,7 +9,11 @@ import frappe
 from frappe.utils.pdf import get_pdf
 from frappe.utils import flt, cint
 from erpnextswiss.erpnextswiss.zugferd.zugferd_xml import create_zugferd_xml
-from facturx import generate_from_binary, get_facturx_xml_from_pdf, generate_facturx_from_file
+try:            # factur-x v3.0 onwards
+    from facturx import generate_from_binary
+except ImportError:         # factur-x before v3.0
+    from facturx import generate_facturx_from_binary as generate_from_binary
+from facturx import get_facturx_xml_from_pdf
 try:            # factur-x v3.0 onwards
     from facturx import xml_check_xsd
 except:         # factur-x before v3.0 
@@ -17,6 +21,15 @@ except:         # factur-x before v3.0
 from datetime import datetime, date
 from bs4 import BeautifulSoup
 from frappe import _
+
+def import_pdf(pdf):
+    """Backward-compatible wrapper for extracting Factur-X/ZUGFeRD XML from a PDF."""
+    if isinstance(pdf, str):
+        with open(pdf, "rb") as file:
+            pdf = file.read()
+
+    _xml_filename, xml_content = get_facturx_xml_from_pdf(pdf)
+    return xml_content
 
 """
 Creates an XML file from a sales invoice

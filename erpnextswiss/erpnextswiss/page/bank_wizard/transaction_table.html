@@ -1,10 +1,10 @@
 <table class="table">
     <tr>
-        <th style="width: 100px; ">{{ _("Date") }}</th>
-        <th style="width: 125px; text-align: right; " >{{ _("Amount") }}</th>
-        <th>{{ _("Party") }}</th>
-        <th>{{ _("Reference") }}</th>
-        <th>{{ _("Action") }}</th>
+        <th style="width: 100px; ">Datum</th>
+        <th style="width: 125px; text-align: right; " >Betrag</th>
+        <th>Geschäftspartner</th>
+        <th>Referenz</th>
+        <th>Aktion</th>
     </tr>
     {% for transaction in transactions %}
     <tr id="row-transaction-{{ transaction.txid }}">
@@ -34,18 +34,18 @@
                <button type="submit" class="btn btn-xs btn-primary" id="btn-quick-pattern-pay-{{ transaction.txid }}"><i class="fa fa-magic"></i></button>
             {% endif %}
             {% if transaction.invoice_matches %}
-             <button type="submit" class="btn btn-xs btn-success" id="btn-close-pinv-{{ transaction.txid }}">{{ _("Purchase Invoice") }}</button>
+             <button type="submit" class="btn btn-xs btn-success" id="btn-close-pinv-{{ transaction.txid }}">Eingangsrechnung</button>
             {% endif %}
             {% if transaction.party_match %}
-             <button type="submit" class="btn btn-xs btn-warning" id="btn-close-supplier-{{ transaction.txid }}">{{ _("Supplier") }}</button>
+             <button type="submit" class="btn btn-xs btn-warning" id="btn-close-supplier-{{ transaction.txid }}">Lieferant</button>
             {% endif %}
             {% if transaction.expense_matches %}
-             <button type="submit" class="btn btn-xs btn-success" id="btn-close-exp-{{ transaction.txid }}">{{ _("Expense Claim") }}</button>
+             <button type="submit" class="btn btn-xs btn-success" id="btn-close-exp-{{ transaction.txid }}">Spesenabrechnung</button>
             {% endif %}
             {% if transaction.employee_match %}
-             <button type="submit" class="btn btn-xs btn-warning" id="btn-close-employee-{{ transaction.txid }}">{{ _("Employee") }}</button>
+             <button type="submit" class="btn btn-xs btn-warning" id="btn-close-employee-{{ transaction.txid }}">Mitarbeiter</button>
             {% endif %}
-            <button type="submit" class="btn btn-xs btn-default" id="btn-close-payable-{{ transaction.txid }}">{{ _("Payables") }}</button>
+            <button type="submit" class="btn btn-xs btn-default" id="btn-close-payable-{{ transaction.txid }}">Verbindlichkeiten</button>
           {% else %}
             <!-- Customer -->
             {% if transaction.amount == transaction.matched_amount %}
@@ -54,14 +54,14 @@
                <button type="submit" class="btn btn-xs btn-primary" id="btn-quick-pattern-rec-{{ transaction.txid }}"><i class="fa fa-magic"></i></button>
             {% endif %}
             {% if transaction.invoice_matches %}
-             <button type="submit" class="btn btn-xs btn-success" id="btn-close-sinv-{{ transaction.txid }}">{{ _("Sales Invoice") }}</button>
+             <button type="submit" class="btn btn-xs btn-success" id="btn-close-sinv-{{ transaction.txid }}">Ausgangsrechnung</button>
             {% endif %}
             {% if transaction.party_match %}
-             <button type="submit" class="btn btn-xs btn-warning" id="btn-close-customer-{{ transaction.txid }}">{{ _("Customer") }}</button>
+             <button type="submit" class="btn btn-xs btn-warning" id="btn-close-customer-{{ transaction.txid }}">Kunde</button>
             {% endif %}
-            <button type="submit" class="btn btn-xs btn-default" id="btn-close-receivable-{{ transaction.txid }}">{{ _("Receivables") }}</button>
+            <button type="submit" class="btn btn-xs btn-default" id="btn-close-receivable-{{ transaction.txid }}">Forderungen</button>
           {% endif %}
-          <button type="submit" class="btn btn-xs btn-default" id="btn-close-intermediate-{{ transaction.txid }}">{{ _("Intermediate") }}</button>
+          <button type="submit" class="btn btn-xs btn-default" id="btn-close-intermediate-{{ transaction.txid }}">Zwischenkonto</button>
         </td>
     </tr>
     {% endfor %}

@@ -24,7 +24,7 @@ def generate_payment_file(payments):
 
     try:
         # convert JavaScript parameter into Python array
-        payments = eval(payments)
+        payments = frappe.parse_json(payments) if isinstance(payments, str) else payments
         # remove empty items in case there should be any (bigfix for issue #2)
         payments = list(filter(None, payments))
         

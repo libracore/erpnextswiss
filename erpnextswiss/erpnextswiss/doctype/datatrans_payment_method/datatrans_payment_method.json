@@ -12,7 +12,7 @@
    "fieldname": "method",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "Method",
+   "label": "Methode",
    "reqd": 1
   },
   {

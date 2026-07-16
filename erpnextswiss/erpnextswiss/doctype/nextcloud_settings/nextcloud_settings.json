@@ -1,4 +1,5 @@
 {
+ "actions": [],
  "creation": "2024-01-03 08:56:44.266406",
  "doctype": "DocType",
  "editable_grid": 1,
@@ -12,11 +13,15 @@
   "password",
   "sec_contacts",
   "sync_contacts",
-  "address_book"
+  "address_book",
+  "sec_zugferd",
+  "enable_zugferd",
+  "invoice_inbox",
+  "processed_invoices"
  ],
  "fields": [
   {
-   "description": "Something like https://cloud.example.com",
+   "description": "Zum Beispiel https://cloud.example.com",
    "fieldname": "host",
    "fieldtype": "Data",
    "label": "Host"
@@ -25,7 +30,7 @@
    "default": "0",
    "fieldname": "enabled",
    "fieldtype": "Check",
-   "label": "Enabled"
+   "label": "Aktiviert"
   },
   {
    "fieldname": "column_break_3",
@@ -34,38 +39,60 @@
   {
    "fieldname": "user",
    "fieldtype": "Data",
-   "label": "User"
+   "label": "Benutzer"
   },
   {
    "fieldname": "password",
    "fieldtype": "Password",
-   "label": "Password"
+   "label": "Passwort"
   },
   {
    "fieldname": "sec_contacts",
    "fieldtype": "Section Break",
-   "label": "Contacts"
+   "label": "Kontakte"
   },
   {
    "default": "0",
    "fieldname": "sync_contacts",
    "fieldtype": "Check",
-   "label": "Sync Contacts to NextCloud"
+   "label": "Kontakte mit NextCloud synchronisieren"
   },
   {
    "fieldname": "address_book",
    "fieldtype": "Data",
-   "label": "Address Book"
+   "label": "Adressbuch"
   },
   {
    "default": "0",
    "fieldname": "verify_ssl",
    "fieldtype": "Check",
-   "label": "Verify SSL"
+   "label": "SSL prüfen"
+  },
+  {
+   "fieldname": "sec_zugferd",
+   "fieldtype": "Section Break",
+   "label": "ZUGFeRD-Assistent Integration"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_zugferd",
+   "fieldtype": "Check",
+   "label": "Rechnungsabruf aus NextCloud aktivieren"
+  },
+  {
+   "fieldname": "invoice_inbox",
+   "fieldtype": "Data",
+   "label": "Ordnerpfad Rechnungseingang"
+  },
+  {
+   "fieldname": "processed_invoices",
+   "fieldtype": "Data",
+   "label": "Ordnerpfad verarbeitete Rechnungen"
   }
  ],
  "issingle": 1,
- "modified": "2024-01-04 19:39:57.496834",
+ "links": [],
+ "modified": "2025-11-07 17:09:43.827156",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "NextCloud Settings",
@@ -105,7 +132,9 @@
   }
  ],
  "quick_entry": 1,
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
+ "states": [],
  "track_changes": 1
 }

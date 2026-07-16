@@ -12,7 +12,7 @@
    "fieldname": "company",
    "fieldtype": "Link",
    "in_list_view": 1,
-   "label": "Company",
+   "label": "Unternehmen",
    "options": "Company",
    "reqd": 1
   },
@@ -20,7 +20,7 @@
    "fieldname": "daily_hours",
    "fieldtype": "Float",
    "in_list_view": 1,
-   "label": "Daily Hours",
+   "label": "Tagesstunden",
    "reqd": 1
   }
  ],

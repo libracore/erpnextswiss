@@ -69,7 +69,7 @@ def parse_ubs(content, account, auto_submit=False):
         
         return new_payment_entries
     except IndexError:
-        frappe.throw( _("Parsing error. Make sure the correct bank is selected.") )
+        frappe.throw("Einlesefehler. Bitte prüfen, ob die richtige Bank ausgewählt ist.")
 
 def parse_zkb(content, account, auto_submit=False):
     # parse a zkb bank extract csv
@@ -140,7 +140,7 @@ def parse_zkb(content, account, auto_submit=False):
         
         return new_payment_entries
     except IndexError:
-        frappe.throw( _("Parsing error. Make sure the correct bank is selected.") )
+        frappe.throw("Einlesefehler. Bitte prüfen, ob die richtige Bank ausgewählt ist.")
 
 def parse_raiffeisen(content, account, auto_submit=False):
     # parse a raiffeisen bank extract csv
@@ -224,7 +224,7 @@ def parse_raiffeisen(content, account, auto_submit=False):
         
         return new_payment_entries
     except IndexError:
-        frappe.throw( _("Parsing error. Make sure the correct bank is selected.") )
+        frappe.throw("Einlesefehler. Bitte prüfen, ob die richtige Bank ausgewählt ist.")
         
 def parse_cs(content, account, auto_submit=False):
     # parse a credit suisse bank extract csv
@@ -278,7 +278,7 @@ def parse_cs(content, account, auto_submit=False):
         
         return new_payment_entries
     except IndexError:
-        frappe.throw( _("Parsing error. Make sure the correct bank is selected.") )
+        frappe.throw("Einlesefehler. Bitte prüfen, ob die richtige Bank ausgewählt ist.")
 
 def parse_migrosbank(content, account, auto_submit=False):
     # parse a migrosbank bank extract csv
@@ -325,7 +325,7 @@ def parse_migrosbank(content, account, auto_submit=False):
         
         return new_payment_entries
     except IndexError:
-        frappe.throw( _("Parsing error. Make sure the correct bank is selected.") )
+        frappe.throw("Einlesefehler. Bitte prüfen, ob die richtige Bank ausgewählt ist.")
 
 def parse_voba(content, account, auto_submit=False):
     # parse a volksbank bank extract csv
@@ -409,7 +409,7 @@ def parse_voba(content, account, auto_submit=False):
 
         return new_payment_entries
     except IndexError:
-        frappe.throw( _("Parsing error. Make sure the correct bank is selected.") )
+        frappe.throw("Einlesefehler. Bitte prüfen, ob die richtige Bank ausgewählt ist.")
 
 def parse_ksk(content, account, auto_submit=False):
     # parse a kreissparkasse bank extract in csv format
@@ -488,7 +488,7 @@ def parse_ksk(content, account, auto_submit=False):
                             new_payment_entries.append(inserted_payment_entry.name)
         return new_payment_entries
     except IndexError:
-        frappe.throw( _("Parsing error. Make sure the correct bank is selected.") )
+        frappe.throw("Einlesefehler. Bitte prüfen, ob die richtige Bank ausgewählt ist.")
 
 # this function tries to match the amount to an open sales invoice
 #
@@ -628,7 +628,7 @@ def get_bank_settings():
     bank_settings = frappe.get_doc("ERPNextSwiss Settings", "ERPNextSwiss Settings").bankimport_table
     # check result
     if not bank_settings:
-        frappe.throw("No Bank settings found")
+        frappe.throw("Keine Bankimport-Einstellungen gefunden")
     # return bank settings objects
     selectable_banks = []
     for bank in bank_settings:
@@ -654,7 +654,7 @@ def parse_file(content, bank, account, auto_submit=False, debug=False):
     except:
         bank_doc = None
     if bank_doc and bank_doc[0]['csv_template']:
-        if debug: frappe.msgprint(_("Parse file by template"))
+        if debug: frappe.msgprint("Datei per Vorlage einlesen")
         new_records = parse_by_template(content, bank_doc[0]['csv_template'], account, auto_submit, debug)
     else:
         # Decode content with default ascii encoding in Python 2.x
@@ -676,16 +676,16 @@ def parse_file(content, bank, account, auto_submit=False, debug=False):
         elif bank == "ksk":
             new_records = parse_ksk(content, account, auto_submit)
         else:
-            frappe.msgprint( _("No suitable parser found") )
+            frappe.msgprint("Kein passender Parser gefunden")
 
-    message = "Completed"
+    message = "Abgeschlossen"
     if len(new_records) == 0:
-        if not debug: message = "No new transactions found"
+        if not debug: message = "Keine neuen Transaktionen gefunden"
         
     if not debug:
         return { "message": message, "records": new_records }
     else:
-        return { "message": "Debug Completed", "records": new_records }
+        return { "message": "Debug abgeschlossen", "records": new_records }
 
 # this function tries to process the content by csv template information
 # 
@@ -724,7 +724,7 @@ def parse_by_template(content, bank, account, auto_submit=False, debug=False):
                 else:
                     return None
             else:
-                frappe.throw(_("Unknown parameter. Error: {0}").format(str(e)))
+                frappe.throw("Unbekannter Parameter. Fehler: {0}".format(str(e)))
         else:
             return value
     # this function checks the available field properties and process them
@@ -746,17 +746,17 @@ def parse_by_template(content, bank, account, auto_submit=False, debug=False):
                         # Return empty string if regex did not match
                         if(not field_definition["regired"]):
                             return ""
-                        frappe.throw(_("Regex of '{0}' did not match with error: {1}").format(fieldname, str(e)))
+                        frappe.throw("Regex von '{0}' passte nicht. Fehler: {1}".format(fieldname, str(e)))
                 else:
                     return field_value
             elif not field_value and field_definition["regired"]:
-                frappe.throw(_("Value not found for '{0}' and index: {1}").format(fieldname, field_definition["field_index"]))
+                frappe.throw("Wert für '{0}' und Index {1} nicht gefunden".format(fieldname, field_definition["field_index"]))
             else:
                 return ""
         elif not field_definition["regired"]:
             return ""
         else:
-            frappe.throw(_("Undefined condition for '{0}'").format(fieldname))
+            frappe.throw("Undefinierte Bedingung für '{0}'".format(fieldname))
     
     # collect field mapping information from 'BankImport Template'
     field_definitions = {
@@ -792,12 +792,12 @@ def parse_by_template(content, bank, account, auto_submit=False, debug=False):
         else:
             lines = content.split(bytearray(template.line_seperator, "utf-8").decode("unicode_escape"))
     except Exception as e:
-        frappe.throw(_("Could not split lines by \"{0}\" with error: {1}").format(bytearray(template.line_seperator, "utf-8").decode("unicode_escape"), str(e)))
+        frappe.throw("Zeilen konnten nicht mit \"{0}\" getrennt werden. Fehler: {1}".format(bytearray(template.line_seperator, "utf-8").decode("unicode_escape"), str(e)))
     if debug:
         frappe.msgprint("Content: {1}, Lines: {0}, separator: {2}".format(len(lines), content, template.line_seperator))
     try:
-        if debug: frappe.msgprint(_("Header line:<br>" + lines[template.header_skip - 1]))
-        if debug: frappe.msgprint(_("Last line:<br>" + lines[len(lines) - template.footer_skip - 1]))
+        if debug: frappe.msgprint("Header-Zeile:<br>" + lines[template.header_skip - 1])
+        if debug: frappe.msgprint("Letzte Zeile:<br>" + lines[len(lines) - template.footer_skip - 1])
         for i in range(template.header_skip, (len(lines) - template.footer_skip)):
             # Process advanced line regex substitution
             if template.advanced_settings:
@@ -818,7 +818,7 @@ def parse_by_template(content, bank, account, auto_submit=False, debug=False):
                     string = string + str(f) + ": " + fields[f] + " "
                 frappe.msgprint(string)
             # Validate line by the minimum field count
-            if debug: frappe.msgprint(_("Line {0} has a field count of {1}. Min is ({2})").format(
+            if debug: frappe.msgprint("Zeile {0} hat {1} Felder. Minimum ist ({2})".format(
                 str(i),
                 str(len(fields)),
                 str(template.min_field_count))
@@ -834,14 +834,14 @@ def parse_by_template(content, bank, account, auto_submit=False, debug=False):
                         # Get function from operator module and run validation
                         if not getattr(operator, template.valid_operator)(fields[validationField], template.valid_value):
                             if debug: 
-                                frappe.msgprint(_("Line not valid. Field value '{0}' and '{1}' with operator '{2}' evaluates false").format(
+                                frappe.msgprint("Zeile nicht gültig. Feldwert '{0}' und '{1}' mit Operator '{2}' ergibt falsch".format(
                                     fields[validationField],
                                     template.valid_value,
                                     template.valid_operator
                                 ))
                             valid = False
                         if valid and debug:
-                            frappe.msgprint(_("Line valid"))
+                            frappe.msgprint("Zeile gültig")
                 # Assign payment entry values
                 amount = getProcessedValue("AMOUNT",field_definitions["AMOUNT"], fields)
                 if valid and amount != "":
@@ -857,7 +857,7 @@ def parse_by_template(content, bank, account, auto_submit=False, debug=False):
                             decimal_separator = "."
                         received_amount = float(amount.replace(k_separator,"").replace(decimal_separator,"."))
                     except Exception as e:
-                        frappe.throw(_("Could not parse amount with value {0} check thousand and decimal separator. Error: {1}").format(amount, str(e)))
+                        frappe.throw("Betrag mit Wert {0} konnte nicht gelesen werden. Tausender- und Dezimaltrennzeichen prüfen. Fehler: {1}".format(amount, str(e)))
                     if received_amount > 0:
                         booked_at = datetime.strptime(getProcessedValue("BOOKED_AT",field_definitions["BOOKED_AT"], fields),template.date_format)
                         try:
@@ -911,13 +911,13 @@ def parse_by_template(content, bank, account, auto_submit=False, debug=False):
                                 new_payment_entries.append(inserted_payment_entry.name)
         return new_payment_entries
     except Exception as e:
-        frappe.throw(_("Failed to parse lines with error: {0}").format(str(e)))
+        frappe.throw("Zeilen konnten nicht eingelesen werden. Fehler: {0}".format(str(e)))
 
 def tpl_regex_replace(reg_find, reg_replace, content, stage, reg_group=""):
     # Validate arguments
     try:
         if not isinstance(reg_find, six.string_types) and not reg_find:
-            frappe.throw("Template parameter invalid, please check regex find setting")
+            frappe.throw("Vorlagenparameter ungültig. Bitte Regex-Sucheinstellung prüfen.")
         else:
             if six.PY2:
                 reg_find = reg_find.decode("unicode_escape")
@@ -933,12 +933,12 @@ def tpl_regex_replace(reg_find, reg_replace, content, stage, reg_group=""):
             else:
                 reg_replace = bytearray(reg_replace, "utf-8").decode("unicode_escape")
     except Exception as e:
-        frappe.throw(_("Validation failed with error: {0}").format(str(e)))
+        frappe.throw("Validierung fehlgeschlagen. Fehler: {0}".format(str(e)))
     # Substitute content with regex
     try:
         return re_sub(reg_find, reg_replace, content)
     except Exception as e:
-        frappe.throw(_("Could not manipulate argument at stage \"{0}\" with error: {1}").format(stage, str(e)))
+        frappe.throw("Argument konnte in Schritt \"{0}\" nicht bearbeitet werden. Fehler: {1}".format(stage, str(e)))
 
 #https://gist.github.com/gromgull/3922244
 def re_sub(pattern, replacement, string):
@@ -986,14 +986,14 @@ def read_camt053(content, bank, account, auto_submit=False):
         iban = soup.document.bktocstmrstmt.stmt.acct.id.iban.get_text()
     except:
         # node not found, probably wrong format
-        return { "message": _("Unable to read structure. Please make sure that you have selected the correct format."), "records": None }
+        return { "message": "Struktur konnte nicht gelesen werden. Bitte prüfen, ob das richtige Format ausgewählt ist.", "records": None }
             
     # transactions
     #new_payment_entries = read_camt_transactions(doc['Document']['BkToCstmrStmt']['Stmt']['Ntry'], bank, account, auto_submit)
     entries = soup.find_all('ntry')
     new_payment_entries = read_camt_transactions(entries, bank, account, auto_submit)
     
-    message = _("Successfully imported {0} payments.".format(len(new_payment_entries)))
+    message = "{0} Zahlungen erfolgreich importiert.".format(len(new_payment_entries))
     
     return { "message": message, "records": new_payment_entries } 
     
@@ -1006,11 +1006,11 @@ def read_camt054(content, bank, account, auto_submit=False):
         iban = soup.document.bktocstmrdbtcdtntfctn.ntfctn.acct.id.iban.get_text()
     except:
         # node not found, probably wrong format
-        return { "message": _("Unable to read structure. Please make sure that you have selected the correct format."), "records": None }
+        return { "message": "Struktur konnte nicht gelesen werden. Bitte prüfen, ob das richtige Format ausgewählt ist.", "records": None }
         
     # transactions
     new_payment_entries = read_camt_transactions(soup.find_all('ntry'), bank, account, auto_submit)
-    message = _("Successfully imported {0} payments.".format(len(new_payment_entries)))
+    message = "{0} Zahlungen erfolgreich importiert.".format(len(new_payment_entries))
     
     return { "message": message, "records": new_payment_entries } 
     
@@ -1097,6 +1097,6 @@ def read_camt_transactions(transaction_entries, bank, account, auto_submit=False
                     if inserted_payment_entry:
                         new_payment_entries.append(inserted_payment_entry.name)
             except Exception as e:
-                frappe.msgprint("Parsing error: {0}:{1}".format(six.text_type(transaction), e))
+                frappe.msgprint("Einlesefehler: {0}:{1}".format(six.text_type(transaction), e))
                 pass
     return new_payment_entries

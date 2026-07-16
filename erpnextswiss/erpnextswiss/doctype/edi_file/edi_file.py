@@ -4,20 +4,22 @@
 
 from __future__ import unicode_literals
 import frappe
+from frappe import _
+from frappe.core.api.file import create_new_folder
 from frappe.model.document import Document
 from erpnextswiss.erpnextswiss.edi import download_pricat, download_desadv, get_gtin
 from erpnextswiss.erpnextswiss.attach_pdf import create_folder
 from frappe.utils import cint
 from frappe.utils.file_manager import save_file
-from frappe.email.queue import send
+from frappe.email.queue import flush
 
 class EDIFile(Document):
     def on_submit(self):
         # create and transmit file
         self.transmit_file()
-        
+
         return
-        
+
     def download_file(self):
         content = None
         if self.edi_type == "PRICAT":
@@ -25,7 +27,7 @@ class EDIFile(Document):
         if self.edi_type == "DESADV":
             content = download_desadv(self.name)
         return { 'content': content }
-        
+
     def get_item_details(self, item_code):
         item = frappe.get_doc("Item", item_code)
         price_list = frappe.get_value("EDI Connection", self.edi_connection, "price_list")
@@ -37,12 +39,12 @@ class EDIFile(Document):
         }
         # check action
         previous_occurrences = frappe.db.sql("""
-            SELECT 
+            SELECT
                 `tabEDI File Pricat Item`.`item_code`,
                 `tabEDI File Pricat Item`.`action`
             FROM `tabEDI File Pricat Item`
             LEFT JOIN `tabEDI File` ON `tabEDI File`.`name` = `tabEDI File Pricat Item`.`parent`
-            WHERE 
+            WHERE
                 `tabEDI File Pricat Item`.`item_code` = "{item_code}"
                 AND `tabEDI File`.`edi_connection` = "{edi_connection}"
             ORDER BY `tabEDI File`.`modified` DESC;
@@ -57,10 +59,10 @@ class EDIFile(Document):
             details['action'] = "1=Add"
         # get price
         rates = frappe.db.sql("""
-            SELECT 
+            SELECT
                 `tabItem Price`.`price_list_rate` AS `rate`
             FROM `tabItem Price`
-            WHERE 
+            WHERE
                 `tabItem Price`.`price_list` = "{price_list}"
                 AND `tabItem Price`.`item_code` = "{item_code}"
                 AND (`tabItem Price`.`valid_from` IS NULL OR `tabItem Price`.`valid_from` <= CURDATE())
@@ -73,10 +75,10 @@ class EDIFile(Document):
             details['rate'] = 0
         # get retail price
         retail_rates = frappe.db.sql("""
-            SELECT 
+            SELECT
                 `tabItem Price`.`price_list_rate` AS `rate`
             FROM `tabItem Price`
-            WHERE 
+            WHERE
                 `tabItem Price`.`price_list` = "{price_list}"
                 AND `tabItem Price`.`item_code` = "{item_code}"
                 AND (`tabItem Price`.`valid_from` IS NULL OR `tabItem Price`.`valid_from` <= CURDATE())
@@ -93,7 +95,7 @@ class EDIFile(Document):
             details['retail_rate'] = 0
         # get GTIN
         details['gtin'] = get_gtin(item)
-                
+
         return details
 
     """
@@ -108,23 +110,23 @@ class EDIFile(Document):
                 folder = create_folder("edi_file", "Home")
                 # store EDI File
                 f = save_file(
-                    "{0}.edi".format(self.name), 
-                    content['content'], 
-                    "EDI File", 
-                    self.name, 
-                    folder=folder, 
+                    "{0}.edi".format(self.name),
+                    content['content'],
+                    "EDI File",
+                    self.name,
+                    folder=folder,
                     is_private=True
                 )
                 # send mail
                 send(
-                    recipients=frappe.get_value("EDI Connection", self.edi_connection, "email_recipient"), 
-                    subject=self.name, 
-                    message=self.name, 
-                    reference_doctype="EDI File", 
+                    recipients=frappe.get_value("EDI Connection", self.edi_connection, "email_recipient"),
+                    subject=self.name,
+                    message=self.name,
+                    reference_doctype="EDI File",
                     reference_name=self.name,
                     attachments=[{'fid': f.name}]
                 )
-                
+
             else:
                 frappe.log_error("No content found: {0}".format(self.name), "Transmit EDI File")
         return

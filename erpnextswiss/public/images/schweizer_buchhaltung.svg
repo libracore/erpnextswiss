@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Schweizer Buchhaltung">
+  <rect width="64" height="64" rx="14" fill="#0f766e"/>
+  <path d="M18 17h28a4 4 0 0 1 4 4v22a4 4 0 0 1-4 4H18a4 4 0 0 1-4-4V21a4 4 0 0 1 4-4Z" fill="#ffffff" opacity=".95"/>
+  <path d="M21 25h22M21 32h22M21 39h13" stroke="#0f766e" stroke-width="4" stroke-linecap="round"/>
+  <path d="M41 37h8v8h-8z" fill="#ef4444"/>
+  <path d="M45 34v14M38 41h14" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round"/>
+</svg>

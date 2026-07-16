@@ -9,7 +9,7 @@ def get_data():
 			"color": "#92d050",
 			"icon": "icon erpnextswiss-blue",
 			"type": "module",
-			"label": _("ERPNextSwiss"),
-            "description": "Banking integration and Swiss applications"
+			"label": _("Schweizer Buchhaltung"),
+            "description": _("Schweizer Banking, QR-Rechnung, MwSt und E-Rechnung")
 		}
 	]

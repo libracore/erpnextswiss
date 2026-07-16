@@ -12,14 +12,14 @@
    "fieldname": "reminder_level",
    "fieldtype": "Int",
    "in_list_view": 1,
-   "label": "Reminder Level",
+   "label": "Mahnstufe",
    "reqd": 1
   },
   {
    "fieldname": "blocking_days",
    "fieldtype": "Int",
    "in_list_view": 1,
-   "label": "Blocking period in days",
+   "label": "Sperrfrist in Tagen",
    "reqd": 1
   }
  ],

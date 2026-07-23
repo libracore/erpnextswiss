@@ -73,7 +73,7 @@ function generate_bank_file(frm) {
           'callback': function(r) {
                if (r.message) {
                     // prepare the xml file for download
-                    download("payments.xml", r.message.content);
+                    download(r.message.file_name || "payments.xml", r.message.content);
                } 
           }
      });     

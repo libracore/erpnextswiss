@@ -7,6 +7,7 @@ import frappe
 from frappe import throw, _
 import time
 from erpnextswiss.erpnextswiss.common_functions import get_building_number, get_street_name, get_pincode, get_city
+from erpnextswiss.erpnextswiss.iso20022 import create_message_id, create_payment_file_name
 import html              # used to escape xml content
 
 @frappe.whitelist()
@@ -41,7 +42,8 @@ def generate_payment_file(payments):
         # create group header
         content += make_line("    <GrpHdr>")
         # message ID (unique, SWIFT-characters only)
-        content += make_line("      <MsgId>MSG-" + time.strftime("%Y%m%d%H%M%S") + "</MsgId>")
+        message_id = create_message_id()
+        content += make_line("      <MsgId>" + message_id + "</MsgId>")
         # creation date and time ( e.g. 2010-02-15T07:30:00 )
         content += make_line("      <CreDtTm>" + time.strftime("%Y-%m-%dT%H:%M:%S") + "</CreDtTm>")
         # number of transactions in the file
@@ -235,7 +237,12 @@ def generate_payment_file(payments):
         content = content.replace(transaction_count_identifier, "{0}".format(transaction_count))
         content = content.replace(control_sum_identifier, "{:.2f}".format(control_sum))
         
-        return { 'content': content, 'skipped': skipped }
+        return {
+            'content': content,
+            'skipped': skipped,
+            'file_name': create_payment_file_name(message_id),
+            'message_id': message_id
+        }
     except IndexError:
         frappe.msgprint( _("Please select at least one payment."), _("Information") )
         return

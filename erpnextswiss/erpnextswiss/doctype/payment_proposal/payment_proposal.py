@@ -9,9 +9,15 @@ from frappe import _
 from datetime import datetime, timedelta
 import time
 from erpnextswiss.erpnextswiss.common_functions import get_building_number, get_street_name, get_pincode, get_city, get_primary_address, split_address_to_street_and_building
+from erpnextswiss.erpnextswiss.iso20022 import (
+    create_message_id,
+    create_payment_file_name,
+    is_qr_iban,
+    is_valid_qr_reference,
+)
 from erpnextswiss.erpnextswiss.xml import validate_xml_against_xsd
 import html          # used to escape xml content
-from frappe.utils import cint, get_url_to_form, rounded
+from frappe.utils import cint, get_url_to_form, getdate, rounded
 from unidecode import unidecode     # used to remove German/French-type special characters from bank identifieres
 import os
 
@@ -50,6 +56,11 @@ class PaymentProposal(Document):
         # perform some checks to improve file quality/stability
         for purchase_invoice in self.purchase_invoices: 
             pinv = frappe.get_doc("Purchase Invoice", purchase_invoice.purchase_invoice)
+            supplier = frappe.get_doc("Supplier", pinv.supplier)
+            qr_iban = purchase_invoice.esr_participation_number or supplier.iban
+            if is_qr_iban(qr_iban):
+                purchase_invoice.payment_type = "ESR"
+                purchase_invoice.esr_participation_number = qr_iban
             # check addresses (mandatory in ISO 20022
             if not pinv.supplier_address:
                 frappe.throw( _("Address missing for purchase invoice <a href=\"/desk#Form/Purchase Invoice/{0}\">{0}</a>").format(pinv.name) )
@@ -57,9 +68,10 @@ class PaymentProposal(Document):
             if purchase_invoice.payment_type == "ESR":
                 if not purchase_invoice.esr_reference or not purchase_invoice.esr_participation_number:
                     frappe.throw( _("ESR: missing transaction information (participant number or reference) in <a href=\"/desk#Form/Purchase Invoice/{0}\">{0}</a>").format(pinv.name) )
+                if is_qr_iban(purchase_invoice.esr_participation_number) and not is_valid_qr_reference(purchase_invoice.esr_reference):
+                    frappe.throw( _("QRR: invalid 27-digit QR reference in <a href=\"/desk#Form/Purchase Invoice/{0}\">{0}</a>").format(pinv.name) )
             else:
-                supl = frappe.get_doc("Supplier", pinv.supplier)
-                if not supl.iban:
+                if not supplier.iban:
                     frappe.throw( _("Missing IBAN for purchase invoice <a href=\"/desk#Form/Purchase Invoice/{0}\">{0}</a>").format(pinv.name) )
         # check expense records
         for expense_claim in self.expenses:
@@ -88,7 +100,7 @@ class PaymentProposal(Document):
             address = ""
             payment_type = "SEPA"
             # try executing in 90 days (will be reduced by actual due dates)
-            exec_date = datetime.strptime(self.date, "%Y-%m-%d") + timedelta(days=90)
+            exec_date = datetime.combine(getdate(self.date), datetime.min.time()) + timedelta(days=90)
             for purchase_invoice in self.purchase_invoices:
                 if purchase_invoice.supplier == supplier:
                     currency = purchase_invoice.currency
@@ -96,9 +108,14 @@ class PaymentProposal(Document):
                     address = pinv.supplier_address
                     references.append(purchase_invoice.external_reference)
                     # find if skonto applies
+                    skonto_date = None
                     if purchase_invoice.skonto_date:
-                        skonto_date = datetime.strptime(purchase_invoice.skonto_date, "%Y-%m-%d")
-                    due_date = datetime.strptime(purchase_invoice.due_date, "%Y-%m-%d")
+                        skonto_date = datetime.combine(
+                            getdate(purchase_invoice.skonto_date), datetime.min.time()
+                        )
+                    due_date = datetime.combine(
+                        getdate(purchase_invoice.due_date), datetime.min.time()
+                    )
                     if (purchase_invoice.skonto_date) and (skonto_date.date() >= datetime.now().date()):  
                         this_amount = purchase_invoice.skonto_amount    
                         if exec_date.date() > skonto_date.date():
@@ -373,7 +390,7 @@ class PaymentProposal(Document):
         settings = frappe.get_doc("ERPNextSwiss Settings", "ERPNextSwiss Settings")
         data['xml_version'] = settings.get("xml_version")
         data['xml_region'] = settings.get("banking_region")
-        data['msgid'] = "MSG-" + time.strftime("%Y%m%d%H%M%S")                # message ID (unique, SWIFT-characters only)
+        data['msgid'] = create_message_id()                                  # message ID (unique, SWIFT-characters only)
         data['date'] = time.strftime("%Y-%m-%dT%H:%M:%S")                    # creation date and time ( e.g. 2010-02-15T07:30:00 )
         # number of transactions in the file
         transaction_count = 0
@@ -408,6 +425,16 @@ class PaymentProposal(Document):
         data['payments'] = []
         for payment in self.payments:
             payment_content = ""
+            payment_type = payment.payment_type
+            qr_iban = payment.esr_participation_number or payment.iban
+            if is_qr_iban(qr_iban):
+                if not is_valid_qr_reference(payment.esr_reference):
+                    frappe.throw(
+                        _("Payment {0}: a QR-IBAN requires a valid 27-digit QR reference.").format(
+                            payment.idx
+                        )
+                    )
+                payment_type = "ESR"
             execution_date = payment.execution_date
             if isinstance(execution_date, datetime):
                 execution_date = execution_date.date().isoformat()
@@ -441,17 +468,17 @@ class PaymentProposal(Document):
                 },
                 'is_salary': payment.is_salary
             }
-            if payment.payment_type == "SEPA":
+            if payment_type == "SEPA":
                 # service level code (e.g. SEPA)
                 payment_record['service_level'] = "SEPA"
                 payment_record['iban'] = payment.iban.replace(" ", "")
                 payment_record['reference'] = payment.reference
-            elif payment.payment_type == "ESR":
+            elif payment_type == "ESR":
                 # Decision whether ESR or QRR
-                if 'CH' in payment.esr_participation_number:
+                if is_qr_iban(qr_iban):
                     # It is a QRR
                     payment_record['service_level'] = "QRR"                    # only internal information
-                    payment_record['esr_participation_number'] = payment.esr_participation_number.replace(" ", "")                    # handle esr_participation_number as QR-IBAN
+                    payment_record['esr_participation_number'] = qr_iban.replace(" ", "")                    # handle esr_participation_number as QR-IBAN
                     payment_record['esr_reference'] = payment.esr_reference.replace(" ", "")                    # handle esr_reference as QR-Reference
                 else:
                     # proprietary (nothing or CH01 for ESR)            
@@ -494,7 +521,11 @@ class PaymentProposal(Document):
                 frappe.log_error("{0}\n\n{1}".format(errors, content), "XML validation failed (pain.001)")
                 frappe.throw("Validation error: {0}".format(errors))
         
-        return { 'content': content }
+        return {
+            'content': content,
+            'file_name': create_payment_file_name(data['msgid']),
+            'message_id': data['msgid']
+        }
     
     def create_wise_file(self):
         data = {
@@ -612,6 +643,9 @@ def create_payment_proposal(date=None, company=None, currency=None):
     for invoice in purchase_invoices:
         if not currency or invoice.currency == currency:
             reference = invoice.external_reference or invoice.name
+            payment_type = invoice.payment_type
+            if is_qr_iban(invoice.esr_participation_number):
+                payment_type = "ESR"
             new_invoice = { 
                 'supplier': invoice.supplier,
                 'purchase_invoice': invoice.name,
@@ -620,7 +654,7 @@ def create_payment_proposal(date=None, company=None, currency=None):
                 'currency': invoice.currency,
                 'skonto_date': invoice.skonto_date,
                 'skonto_amount': invoice.skonto_amount,
-                'payment_type': invoice.payment_type,
+                'payment_type': payment_type,
                 'esr_reference': invoice.esr_reference,
                 'esr_participation_number': invoice.esr_participation_number,
                 'external_reference': unidecode(reference)

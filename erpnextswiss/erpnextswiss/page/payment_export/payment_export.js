@@ -56,7 +56,7 @@ frappe.payment_export = {
                             }
 
                             // prepare the xml file for download
-                            download("payments.xml", r.message.content);
+                            download(r.message.file_name || "payments.xml", r.message.content);
                             
                             // remove create file button to prevent double payments
                             page.main.find(".btn-create-file").addClass("hide");

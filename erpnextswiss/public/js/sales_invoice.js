@@ -19,6 +19,7 @@ try {
     });
 } catch {
     // do nothing
+    console.log("scheisse!")
 }
 
 // normal scripts

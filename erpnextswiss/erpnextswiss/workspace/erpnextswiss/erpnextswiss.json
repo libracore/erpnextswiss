@@ -10,7 +10,7 @@
  "icon": "quality-3",
  "idx": 0,
  "indicator_color": "green",
- "is_hidden": 0,
+ "is_hidden": 1,
  "label": "ERPNextSwiss",
  "links": [
   {
@@ -136,55 +136,6 @@
    "label": "Account Sheets with Tax Codes",
    "link_count": 0,
    "link_to": "Account Sheets with Tax Codes",
-   "link_type": "Report",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Human Resources",
-   "link_count": 4,
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Card Break"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Salary Certificate",
-   "link_count": 0,
-   "link_to": "Salary Certificate",
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 1,
-   "label": "Worktime Overview",
-   "link_count": 0,
-   "link_to": "Worktime Overview",
-   "link_type": "Report",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 1,
-   "label": "Monthly Worktime",
-   "link_count": 0,
-   "link_to": "Monthly Worktime",
-   "link_type": "Report",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 1,
-   "label": "Annual Salary Sheet",
-   "link_count": 0,
-   "link_to": "Annual Salary Sheet",
    "link_type": "Report",
    "onboard": 0,
    "type": "Link"
@@ -582,9 +533,68 @@
    "link_type": "DocType",
    "onboard": 0,
    "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Human Resources",
+   "link_count": 5,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Salary Certificate",
+   "link_count": 0,
+   "link_to": "Salary Certificate",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Worktime Overview",
+   "link_count": 0,
+   "link_to": "Worktime Overview",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Monthly Worktime",
+   "link_count": 0,
+   "link_to": "Monthly Worktime",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Holiday Hours Troubleshoot",
+   "link_count": 0,
+   "link_to": "Holiday Hours Troubleshoot",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Annual Salary Sheet",
+   "link_count": 0,
+   "link_to": "Annual Salary Sheet",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
   }
  ],
- "modified": "2026-06-26 20:24:28.953709",
+ "modified": "2026-07-16 20:55:40.691397",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "ERPNextSwiss",

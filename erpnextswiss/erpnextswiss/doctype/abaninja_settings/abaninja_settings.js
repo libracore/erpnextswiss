@@ -43,6 +43,48 @@ frappe.ui.form.on("AbaNinja Settings", {
                     });
                 }
             });
-        }).addClass('btn-primary');
-    },
+        }, __('AbaNinja Sync'));
+
+        frm.add_custom_button(__('Sync Items'), function () {
+            frappe.call({
+                'method': 'erpnextswiss.erpnextswiss.abaninja.sync_abaninja_items',
+                'freeze': true,
+                'freeze_message': __('Fetching product records from AbaNinja, please wait...'),
+                'callback': function (response) {
+                    if (response.message) {
+                        let res = response.message;
+
+                        if (res.success === false) {
+                            frappe.msgprint({
+                                title: __('Sync Failed'),
+                                indicator: 'red',
+                                message: `<p class="text-danger">${res.message}</p>`
+                            });
+                            return;
+                        }
+
+                        frappe.msgprint({
+                            title: __('Sync Completed'),
+                            indicator: 'green',
+                            message: `
+                                <p>${res.message}</p>
+                                <hr>
+                                <ul>
+                                    <li><b>Items Inserted:</b> ${res.inserted || 0}</li>
+                                    <li><b>Items Updated:</b> ${res.updated || 0}</li>
+                                </ul>
+                            `
+                        });
+                    }
+                },
+                'error': function (response) {
+                    frappe.msgprint({
+                        title: __('Critical Error'),
+                        indicator: 'red',
+                        message: __('Could not establish connection to server.')
+                    });
+                }
+            });
+        }, __('AbaNinja Sync'));
+    }
 });

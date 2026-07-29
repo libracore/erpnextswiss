@@ -1,0 +1,89 @@
+{
+ "charts": [],
+ "content": "[{\"id\":\"aBWEImDI1s\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">HLK</span>\",\"col\":12}},{\"id\":\"Tz-hA4Jq5O\",\"type\":\"card\",\"data\":{\"card_name\":\"Settings\",\"col\":4}},{\"id\":\"oHOWcqtxLA\",\"type\":\"card\",\"data\":{\"card_name\":\"BKP\",\"col\":4}}]",
+ "creation": "2026-07-10 11:11:25.257891",
+ "custom_blocks": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "icon": "setting-gear",
+ "idx": 0,
+ "indicator_color": "green",
+ "is_hidden": 0,
+ "label": "HLK",
+ "links": [
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Settings",
+   "link_count": 3,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "HLK Settings",
+   "link_count": 0,
+   "link_to": "HLK Settings",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "HLK Text Template",
+   "link_count": 0,
+   "link_to": "HLK Text Template",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "HLK Structur Organisation Template",
+   "link_count": 0,
+   "link_to": "HLK Structur Organisation Template",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "BKP",
+   "link_count": 1,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "BKP Importer",
+   "link_count": 0,
+   "link_to": "bkp-importer",
+   "link_type": "Page",
+   "onboard": 0,
+   "type": "Link"
+  }
+ ],
+ "modified": "2026-07-10 11:15:48.671017",
+ "modified_by": "Administrator",
+ "module": "ERPNextSwiss",
+ "name": "HLK",
+ "number_cards": [],
+ "owner": "Administrator",
+ "parent_page": "ERPNextSwiss",
+ "public": 1,
+ "quick_lists": [],
+ "restrict_to_domain": "HLK",
+ "roles": [],
+ "sequence_id": 40.0,
+ "shortcuts": [],
+ "title": "HLK"
+}

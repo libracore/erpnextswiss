@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018-2025, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2018-6, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
 
 from __future__ import unicode_literals
@@ -36,36 +36,39 @@ XML_SCHEMA_FILES = {
 
 class PaymentProposal(Document):
     def validate(self):
+        document_errors = []
         # check company settigs
         company_address = get_primary_address(target_name=self.company, target_type="Company")
         if (not company_address
             or not company_address.address_line1
             or not company_address.pincode
             or not company_address.city):
-                frappe.throw( _("Company address missing or incomplete.") )
+                document_errors.append( _("Company address missing or incomplete.") )
         if self.pay_from_account:
             payment_account = frappe.get_doc('Account', self.pay_from_account)
             if not payment_account.iban:
-                frappe.throw( _("IBAN missing in pay from account.") )
+                document_errors.append( _("IBAN missing in pay from account.") )
         # perform some checks to improve file quality/stability
         for purchase_invoice in self.purchase_invoices: 
             pinv = frappe.get_doc("Purchase Invoice", purchase_invoice.purchase_invoice)
             # check addresses (mandatory in ISO 20022
             if not pinv.supplier_address:
-                frappe.throw( _("Address missing for purchase invoice <a href=\"/desk#Form/Purchase Invoice/{0}\">{0}</a>").format(pinv.name) )
+                document_errors.append( _("Address missing for purchase invoice <a href=\"/desk#Form/Purchase Invoice/{0}\">{0}</a>").format(pinv.name) )
             # check target account info
             if purchase_invoice.payment_type == "ESR":
                 if not purchase_invoice.esr_reference or not purchase_invoice.esr_participation_number:
-                    frappe.throw( _("ESR: missing transaction information (participant number or reference) in <a href=\"/desk#Form/Purchase Invoice/{0}\">{0}</a>").format(pinv.name) )
+                    document_errors.append( _("ESR: missing transaction information (participant number or reference) in <a href=\"/desk#Form/Purchase Invoice/{0}\">{0}</a>").format(pinv.name) )
             else:
                 supl = frappe.get_doc("Supplier", pinv.supplier)
                 if not supl.iban:
-                    frappe.throw( _("Missing IBAN for purchase invoice <a href=\"/desk#Form/Purchase Invoice/{0}\">{0}</a>").format(pinv.name) )
+                    document_errors.append( _("Missing IBAN for purchase invoice <a href=\"/desk#Form/Purchase Invoice/{0}\">{0}</a>").format(pinv.name) )
         # check expense records
         for expense_claim in self.expenses:
             emp = frappe.get_doc("Employee", expense_claim.employee)
             if not emp.bank_ac_no:
-                frappe.throw( _("Employee <a href=\"/desk#Form/Employee/{0}\">{0}</a> has no bank account number.").format(emp.name) )
+                document_errors.append( _("Employee <a href=\"/desk#Form/Employee/{0}\">{0}</a> has no bank account number.").format(emp.name) )
+        if document_errors:
+            frappe.throw( _("The following data issues prevent the creation of a valid payment proposal") + ":<br><table class='table'><tr><td>" + "</td></tr><tr><td>".join(document_errors) + "</td></tr></table>" );
         return
         
     def on_submit(self):

@@ -13,6 +13,8 @@ function prepare_payment_proposal() {
                 "doctype": "ERPNextSwiss Settings",
                 "name": "ERPNextSwiss Settings"
         },
+        "freeze": true,
+        "freeze_message": __("Preparing Payment Proposal..."),
         "callback": function(response) {
             try {
                 var d = new Date();

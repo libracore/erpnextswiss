@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="ybInvoice_V3.0.1.xsd">
+    <Header>
+        <Version>3.0</Version>
+        <SoftwareName>libracore business software</SoftwareName>
+        <SoftwareVersion>v2025</SoftwareVersion>
+    </Header>
+    <Body>
+        <Interchange>
+            <SenderID>{{ yellow_bill.sender_id }}</SenderID>
+            <RecipientID>{{ yellow_bill.recipient_id }}</RecipientID>
+            <TransactionID>{{ doc.name }}</TransactionID>
+        </Interchange>
+        <Invoice>
+            <Header>
+                <DocumentType>BILL</DocumentType>
+                <DocumentID>{{ doc.name }}</DocumentID>
+                <DocumentDate>{{ doc.posting_date }}</DocumentDate>
+                <BillingPeriod>
+                    <StartDate>{{ doc.posting_date }}</StartDate>
+                    <EndDate>{{ doc.posting_date }}</EndDate>
+                </BillingPeriod>
+                <SenderParty>
+                    <Name1>{{ company.company_name }}</Name1>
+                    <StreetName>{{ company.street }}</StreetName>
+                    <BuildingNumber>{{ company.building }}</BuildingNumber>
+                    <ZIP>{{ company.pincode }}</ZIP>
+                    <City>{{ company.city }}</City>
+                    <Country>{{ company.country }}</Country>
+                    <TaxID>{{ company.tax_id or "n/a" }}</TaxID>
+                </SenderParty>
+                <RecipientParty>
+                    <Name1>{{ doc.customer_name }}</Name1>
+                    <StreetName>{{ customer.street }}</StreetName>
+                    <BuildingNumber>{{ customer.building }}</BuildingNumber>
+                    <ZIP>{{ customer.pincode }}</ZIP>
+                    <City>{{ customer.city }}</City>
+                    <Country>{{ customer.country }}</Country>
+                    <TaxID>{{ doc.tax_id or "n/a" }}</TaxID>
+                </RecipientParty>
+                <Currency>{{ doc.currency }}</Currency>
+                <Language>{{ doc.lanugage }}</Language>
+                <PaymentTerms>
+                    <SinglePayment>{% debit_to = frappe.get_value("Account", "debit_to") %}
+                        <CreditorAccount>{{ debit_to.get('iban') }}</CreditorAccount>
+                        <CreditorReference>{{ doc.esr_reference or doc.name }}</CreditorReference>
+                        <AccountHolder>
+                            <AccountHolderName>{{ company.company_name }}</AccountHolderName>
+                            <StreetName>{{ company.street }}</StreetName>
+                            <BuildingNumber>{{ company.building }}</BuildingNumber>
+                            <ZIP>{{ company.pincode }}</ZIP>
+                            <City>{{ company.city }}</City>
+                            <Country>{{ company.country }}</Country>
+                        </AccountHolder>
+                        <BankName>{{ debit_to.get('bank_name') or debit_to.get('bic') }}</BankName>
+                        <Amount>{{ doc.rounded_total or doc.grand_total }}</Amount> <!--Minimum amount for invoices is CHF 5 -->
+                        <DueDate>{{ doc.due_date }}</DueDate>
+                        <PayableAmountCanBeModified>false</PayableAmountCanBeModified> <!-- set true if the amount should be changeable by the recipient, otherwise false -->
+                    </SinglePayment>
+                </PaymentTerms>
+                <FreeText>a</FreeText>
+            </Header>
+            <Summary>
+                {%- if doc.taxes %}{%- for t in doc.taxes %}{% if t.rate %}
+                <Tax>
+                    <Rate>{{ t.rate }}</Rate>
+                    <Amount>{{ t.tax_amount }}</Amount>
+                    <BaseAmount>{{ t.total - t.tax_amount }}</BaseAmount>
+                </Tax>
+                {%- endif %}{% endfor %}{%- endif %}
+                <TotalTaxAmout>{{ (doc.rounded_total or doc.grand_total) - doc.net_total }}</TotalTaxAmout>
+                <TotalAmountExclusiveTax>{{ doc.net_total }}</TotalAmountExclusiveTax>
+                <TotalAmountInclusiveTax>{{ doc.rounded_total or doc.grand_total }}</TotalAmountInclusiveTax> 
+                <TotalAmountPaid>0</TotalAmountPaid>
+            </Summary>
+        </Invoice>
+    </Body>
+</Envelope>

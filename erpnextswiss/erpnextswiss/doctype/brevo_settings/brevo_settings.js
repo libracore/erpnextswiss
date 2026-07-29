@@ -7,6 +7,9 @@ frappe.ui.form.on('Brevo Settings', {
             frm.add_custom_button(__("Fetch contacts"), function() {
                 fetch_contacts(frm);
             });
+            frm.add_custom_button(__("Tag contacts"), function() {
+                tag_contacts(frm);
+            });
             frm.add_custom_button(__("Fetch lists"), function() {
                 fetch_lists(frm);
             });
@@ -58,6 +61,17 @@ function fetch_campaigns(frm) {
         'method': 'erpnextswiss.erpnextswiss.doctype.brevo_settings.brevo_settings.fetch_campaigns',
         'freeze': true,
         'freeze_message': __("Retrieving contacts... please stay tuned..."),
+        'callback': function(response) {
+            frappe.msgprint(response.message);
+        }
+    });
+}
+
+function tag_contacts(frm) {
+    frappe.call({
+        'method': 'erpnextswiss.erpnextswiss.doctype.brevo_settings.brevo_settings.get_list_to_tags',
+        'freeze': true,
+        'freeze_message': __("Retrieving lists and using them to tag contacts... hold tight..."),
         'callback': function(response) {
             frappe.msgprint(response.message);
         }

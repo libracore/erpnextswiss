@@ -8,7 +8,7 @@ from frappe.utils.password import get_decrypted_password
 import requests
 import json
 from frappe.utils.background_jobs import enqueue
-from frappe.utils import cint
+from frappe.utils import cint, flt
 from datetime import datetime
 from frappe.desk.doctype.tag.tag import add_tag
 
@@ -72,24 +72,34 @@ class BrevoSettings(Document):
         # map fields
         for m in settings.mappings:
             if m.dt == "Contact":
-                contact.update({m.fieldname: attributes.get(m.attribute)})
+                if m.formater and m.formater == "String":
+                    value = f"{attributes.get(m.attribute)}"
+                elif m.formater and m.formater == "Int":
+                    value = cint(attributes.get(m.attribute))
+                elif m.formater and m.formater == "Float":
+                    value = flt(attributes.get(m.attribute))
+                else:
+                    value = attributes.get(m.attribute)
+                contact.update({m.fieldname: value})
                 
-                if m.fieldname in ["phone", "mobile_no"] and attributes.get(m.attribute):
-                    if "@" in attributes.get(m.attribute):
+                if m.fieldname in ["phone", "mobile_no"] and value:
+                    if "@" in value:
                         continue                        # skip, if email is entered in phone field (prevent crash)
                     has_phone_already = False
                     for c in (contact.phone_nos or []):
-                        if c.phone == attributes.get(m.attribute):
+                        if c.phone == value:
                             has_phone_already = True
                             break
                     if not has_phone_already:
                         contact.append('phone_nos', {
-                            'phone': brevo_contact.get("email"),
+                            'phone': value,
                             'is_primary_phone': 1 if m.fieldname == "phone" else 0,
                             'is_primary_mobile_no': 1 if m.fieldname == "mobile_no" else 0
                         })
         contact.flags.ignore_mandatory = True
         contact.flags.ignore_validate = True
+        # assert email_id (even tough this is set, the framework seems to kill this on initial kinsert)
+        contact.email_id = brevo_contact.get("email")
         try:
             contact.save()
         except Exception as err:

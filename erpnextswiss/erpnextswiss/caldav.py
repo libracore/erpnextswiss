@@ -6,22 +6,36 @@
 #   /api/method/erpnextswiss.erpnextswiss.caldav.crm_feed?secret=[secret]
 #   /api/method/erpnextswiss.erpnextswiss.caldav.todo_feed?secret=[secret]&user=[user]
 
-from icalendar import Calendar, Event, Todo
-from datetime import datetime
+import hmac
+
 import frappe
-from frappe.utils import cint
-from datetime import datetime
+from icalendar import Calendar, Event, Todo
+from frappe.utils import cint, today
+
+
+def _secret_matches(provided, expected):
+    return bool(expected) and hmac.compare_digest(
+        str(provided or "").encode("utf-8"),
+        str(expected).encode("utf-8"),
+    )
+
 
 def get_crm_feed_content(secret):
     settings = frappe.get_doc("CalDav Feed", "CalDav Feed")
     caldav_secret = settings.get("crm_secret")
-    if not caldav_secret:
-        return
-    if secret != caldav_secret:
+    if not _secret_matches(secret, caldav_secret):
         return
     if cint(settings.crm_feed_enabled) == 0:
         return
-        
+
+    source = settings.crm_source
+    source_field = settings.crm_source_field
+    if source not in {"Lead", "Customer"}:
+        return
+    source_meta = frappe.get_meta(source)
+    if not source_field or not source_meta.has_field(source_field):
+        return
+
     # initialise calendar
     cal = Calendar()
 
@@ -29,32 +43,29 @@ def get_crm_feed_content(secret):
     cal.add('prodid', '-//libracore business software//libracore//')
     cal.add('version', '2.0')
 
-    # get records
-    events = frappe.db.sql("""
-        SELECT * 
-        FROM `tab{dt}` 
-        WHERE 
-            `{field}` >= CURDATE()
-        ;
-    """.format(dt=settings.crm_source, field=settings.crm_source_field), as_dict=True)
-    
+    events = frappe.get_all(
+        source,
+        filters=[[source_field, ">=", today()]],
+        fields=["*"],
+    )
+
     # add events
     for erp_event in events:
         event = Event()
         event.add('summary', erp_event.get('name'))
-        #start = datetime.strptime(erp_event.get(settings.crm_source_field), "%Y-%m-%d %H:%M:%S")
-        event.add('dtstart', erp_event.get(settings.crm_source_field))
+        event.add('dtstart', erp_event.get(source_field))
         #if erp_event['ends_on']:
         #    event.add('dtend', erp_event['ends_on'])
         event.add('dtstamp', erp_event.get('modified'))
         event.add('description', "{0}\n\r{1}\n\r{2}".format(
-            erp_event.get('lead_name') or erp_event.get('customer_name'), 
-            erp_event.get('lead_owner') or erp_event.get('account_manager') or erp_event.get('owner'), 
-            erp_event['email_id'] or ""))
+            erp_event.get('lead_name') or erp_event.get('customer_name') or "",
+            erp_event.get('lead_owner') or erp_event.get('account_manager') or erp_event.get('owner') or "",
+            erp_event.get('email_id') or ""))
         # add to calendar
         cal.add_component(event)
-        
+
     return cal
+
 
 @frappe.whitelist(allow_guest=True)
 def crm_feed(secret):
@@ -67,29 +78,29 @@ def crm_feed(secret):
     frappe.local.response.type = "download"
     return
 
+
 @frappe.whitelist(allow_guest=True)
 def todo_feed(secret, user):
     frappe.local.response.filename = "todo_caldav.ics"
-    calendar = get_crm_feed_content(secret)
+    calendar = get_todo_feed_content(secret, user)
     if calendar:
         frappe.local.response.filecontent = calendar.to_ical()
     else:
         frappe.local.response.filecontent = "No access"
     frappe.local.response.type = "download"
     return
-    
+
+
 def get_todo_feed_content(secret, user):
     settings = frappe.get_doc("CalDav Feed", "CalDav Feed")
     caldav_secret = settings.get("todo_secret")
-    if not caldav_secret:
-        return
-    if secret != caldav_secret:
+    if not _secret_matches(secret, caldav_secret):
         return
     if not frappe.db.exists("User", user):
         return
     if cint(settings.todo_feed_enabled) == 0:
         return
-        
+
     # initialise calendar
     cal = Calendar()
 
@@ -97,15 +108,15 @@ def get_todo_feed_content(secret, user):
     cal.add('prodid', '-//libracore business software//libracore//')
     cal.add('version', '2.0')
     
-    # get todos
-    todos = frappe.db.sql("""
-        SELECT * 
-        FROM `tabToDo` 
-        WHERE 
-            `date` >= CURDATE()
-            AND `owner` = "{user}"
-            AND `status` = "Open";
-    """.format(user=user), as_dict=True)
+    todos = frappe.get_all(
+        "ToDo",
+        filters={
+            "date": [">=", today()],
+            "owner": user,
+            "status": "Open",
+        },
+        fields=["name", "description", "creation", "modified"],
+    )
     # add todos
     for erp_todo in todos:
         todo = Todo()
@@ -116,5 +127,5 @@ def get_todo_feed_content(secret, user):
         todo.add('last-modified', erp_todo['modified'])
         # add to calendar
         cal.add_component(todo)
-        
+
     return cal

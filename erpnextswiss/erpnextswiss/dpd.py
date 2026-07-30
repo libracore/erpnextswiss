@@ -189,8 +189,9 @@ class DPD_API:
 
         return parcel_id
         
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def transmit_to_dpd(shipment):
+    frappe.get_doc("Shipment", shipment).check_permission("write")
     dpd = DPD_API()
     parcel_id = dpd.store_order(shipment)
     return parcel_id

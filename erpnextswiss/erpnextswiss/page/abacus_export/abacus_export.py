@@ -12,11 +12,12 @@ from frappe import throw, _
 import hashlib
 import six
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def generate_transfer_file(start_date, end_date, limit=10000, aggregated=0):
     # creates a transfer file for abacus
 
     #try:
+        frappe.only_for(("Accounts User", "Accounts Manager", "System Manager"))
         # normalise parameters
         aggregated = int(aggregated)
         limit = int(limit)
@@ -441,8 +442,9 @@ def get_sales_taxes(sales_invoice):
         return None
 
 # this will reset the export flags
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def reset_export_flags():
+    frappe.only_for(("Accounts Manager", "System Manager"))
     sql_query = """UPDATE `tabGL Entry` SET `exported_to_abacus` = 0;"""
     frappe.db.sql(sql_query, as_dict=True)
     sql_query = """UPDATE `tabSales Invoice` SET `exported_to_abacus` = 0;"""

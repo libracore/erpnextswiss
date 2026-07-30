@@ -9,10 +9,11 @@ import frappe
 from frappe import _
 
 # this function will create the pretax deduction journal entry
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def expense_pretax(expense_claim, pretax_account):
     # get expense claim
     exp = frappe.get_doc("Expense Claim", expense_claim)
+    exp.check_permission("write")
     accounts = []
     total_pretax = 0.0
     # collect expense deductions from pretax
@@ -47,10 +48,11 @@ def expense_pretax(expense_claim, pretax_account):
     frappe.db.commit()
     return new_jv
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def expense_pretax_various(expense_claim):
     # get expense claim
     exp = frappe.get_doc("Expense Claim", expense_claim)
+    exp.check_permission("write")
     accounts = []
     # collect expense deductions from pretax
     for expense in exp.expenses:
@@ -88,10 +90,11 @@ def expense_pretax_various(expense_claim):
     return new_jv
     
 # use this to revert a journal entry in case of cancellation of the expense claim
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def cancel_pretax(expense_claim):
     # get expense claim
     exp = frappe.get_doc("Expense Claim", expense_claim)
+    exp.check_permission("write")
     # get journal entry
     jv = frappe.get_doc("Journal Entry", exp.pretax_record)
     # unlink

@@ -82,8 +82,9 @@ def get_account_sheets(fiscal_year, company=None):
     return account_data
 
 # background job to create long pdf for fiscal year
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def enqueue_build_long_fiscal_year_print(fiscal_year):
+    frappe.only_for(("Accounts User", "Accounts Manager", "System Manager"))
     kwargs={
         'fiscal_year': fiscal_year
     }
@@ -238,7 +239,7 @@ def get_booking_pairs(voucher_type, voucher_no):
     return booking_pairs
     
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def save_submit_close_payment_entry(doc):
     """
     This function allows to hook a button that will in one step save/submit and close a payment entry tab.
@@ -251,6 +252,7 @@ def save_submit_close_payment_entry(doc):
         frappe.throw( _("Invalid document reference"), _("Auto submit") )
         
     db_doc = frappe.get_doc("Payment Entry", doc.get('name'))
+    db_doc.check_permission("write")
     # child tables: make sure to skip temporary names
     for d in doc['deductions']:
         if " " in d['name']:
@@ -289,12 +291,13 @@ def find_party_from_iban(iban):
         return None
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def deduct_and_close(payment_entry, account, cost_center):
     """
     This function will deduct the unallocated amount to the provided account and submit the payment entry
     """
     doc = frappe.get_doc("Payment Entry", payment_entry)
+    doc.check_permission("write")
     if doc.payment_type == "Pay":
         if doc.source_exchange_rate != 1 and (not doc.references or len(doc.references) == 0):
             amount = doc.base_paid_amount;   # use full paid amount, with valuation

@@ -9,10 +9,11 @@ import hashlib
 import time
 from frappe.utils import cint
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def attach_pdf(doctype, docname, event=None, print_format=None, hashname=None, is_private=1, background=1):
     fallback_language = frappe.db.get_single_value("System Settings", "language") or "en"
     doc = frappe.get_doc(doctype, docname)
+    doc.check_permission("write")
     args = {
         "doctype": doctype,
         "name": docname,

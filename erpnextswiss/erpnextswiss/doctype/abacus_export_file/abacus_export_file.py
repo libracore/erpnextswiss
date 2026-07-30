@@ -167,8 +167,10 @@ class AbacusExportFile(Document):
             return '""'
     
     # reset export flags
-    @frappe.whitelist()
+    @frappe.whitelist(methods=["POST"])
     def reset_export_flags(self):
+        frappe.only_for(("Accounts Manager", "System Manager"))
+        self.check_permission("write")
         sql_query = """UPDATE `tabGL Entry` SET `exported_to_abacus` = 0;"""
         frappe.db.sql(sql_query, as_dict=True)
         sql_query = """UPDATE `tabSales Invoice` SET `exported_to_abacus` = 0;"""

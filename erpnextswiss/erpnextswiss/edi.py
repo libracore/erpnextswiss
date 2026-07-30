@@ -190,10 +190,11 @@ def get_uom_code(uom):
 """
 Endpoint to hook delivery notes to DESADV
 """
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def check_create_desadv(delivery_note):
     # fetch delivery note
     dn = frappe.get_doc("Delivery Note", delivery_note)
+    dn.check_permission("write")
     # check if there is a EDI connection for this customer
     desadv_connections = frappe.get_all("EDI Connection", 
         filters={'edi_type': 'DESADV', 'customer': dn.customer, 'disabled': 0}, 

@@ -39,8 +39,14 @@ class PaymentReminder(Document):
         self.update_reminder_levels()
     pass
 
-@frappe.whitelist()
+
+def _require_payment_reminder_access():
+    frappe.only_for(("Accounts User", "Accounts Manager", "System Manager"))
+
+
+@frappe.whitelist(methods=["POST"])
 def enqueue_create_payment_reminders(company):
+    _require_payment_reminder_access()
     kwargs={
       'company': company
     }
@@ -52,8 +58,9 @@ def enqueue_create_payment_reminders(company):
     return {'result': _('Started...')}
     
 # this function will create new payment reminders
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def create_payment_reminders(company):
+    _require_payment_reminder_access()
     # check auto submit
     auto_submit = frappe.get_value("ERPNextSwiss Settings", "ERPNextSwiss Settings", "payment_reminder_auto_submit")
     # get all customers with open sales invoices
@@ -64,9 +71,9 @@ def create_payment_reminders(company):
               AND (`due_date` < CURDATE())
               AND `enable_lsv` = 0
               AND ((`exclude_from_payment_reminder_until` IS NULL) OR (`exclude_from_payment_reminder_until` < CURDATE()))
-              AND `company` = "{company}"
-            GROUP BY `customer`;""".format(company=company))
-    customers = frappe.db.sql(sql_query, as_dict=True)
+              AND `company` = %(company)s
+            GROUP BY `customer`;""")
+    customers = frappe.db.sql(sql_query, {"company": company}, as_dict=True)
     # get all sales invoices that are overdue
     if customers:
         # find maximum reminder level
@@ -81,8 +88,9 @@ def create_payment_reminders(company):
             create_reminder_for_customer(customer.customer, company, auto_submit, max_level)
     return
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def create_reminder_for_customer(customer, company, auto_submit=False, max_level=3):
+    _require_payment_reminder_access()
     max_level = cint(max_level)
     payment_reminder_name = None
     sql_query = ("""
@@ -97,14 +105,18 @@ def create_reminder_for_customer(customer, company, auto_submit=False, max_level
             `contact_email`,
             `debit_to`
         FROM `tabSales Invoice` 
-        WHERE `outstanding_amount` > 0 AND `customer` = "{customer}"
+        WHERE `outstanding_amount` > 0 AND `customer` = %(customer)s
             AND `docstatus` = 1
             AND `enable_lsv` = 0
             AND (`due_date` < CURDATE())
-            AND `company` = "{company}"
+            AND `company` = %(company)s
             AND ((`exclude_from_payment_reminder_until` IS NULL) OR (`exclude_from_payment_reminder_until` < CURDATE()));
-        """.format(customer=customer, company=company))
-    open_invoices = frappe.db.sql(sql_query, as_dict=True)
+        """)
+    open_invoices = frappe.db.sql(
+        sql_query,
+        {"customer": customer, "company": company},
+        as_dict=True,
+    )
     email = None
     if open_invoices:
         # check if this customer has an overall credit balance
@@ -171,7 +183,10 @@ def create_reminder_for_customer(customer, company, auto_submit=False, max_level
             # in case the customer is disabled: briefly enable to allow document creation
             if cint(frappe.get_value("Customer", customer, "disabled")):
                 # note: we directly access the DB, because set_value with update_modified=False will still create 2 unwanted timeline entries
-                frappe.db.sql("""UPDATE `tabCustomer` SET `disabled` = 0 WHERE `name` = "{customer}";""".format(customer=customer))
+                frappe.db.sql(
+                    """UPDATE `tabCustomer` SET `disabled` = 0 WHERE `name` = %(customer)s""",
+                    {"customer": customer},
+                )
                 flag_enabled_customer = True
             reminder_record = new_reminder.insert(ignore_permissions=True)
             payment_reminder_name = reminder_record.name
@@ -181,13 +196,17 @@ def create_reminder_for_customer(customer, company, auto_submit=False, max_level
             reminder_record.update_reminder_levels()
             reminder_record.submit()
         if flag_enabled_customer:
-            frappe.db.sql("""UPDATE `tabCustomer` SET `disabled` = 1 WHERE `name` = "{customer}";""".format(customer=customer))
+            frappe.db.sql(
+                """UPDATE `tabCustomer` SET `disabled` = 1 WHERE `name` = %(customer)s""",
+                {"customer": customer},
+            )
         frappe.db.commit()
     return payment_reminder_name
 
 # this allows to submit multiple payment reminders at once
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def bulk_submit(names):
+    _require_payment_reminder_access()
     docnames = json.loads(names)
     for name in docnames:
         payment_reminder = frappe.get_doc("Payment Reminder", name)

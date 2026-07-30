@@ -11,17 +11,18 @@ from datetime import datetime, timedelta
 
 import paramiko
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def create_shipment(shipment_name, debug=False):
     if not frappe.db.exists("Shipment", shipment_name):
         frappe.throw( _("Shipment {0} not found.").format(shipment_name) )
+    shipment = frappe.get_doc("Shipment", shipment_name)
+    shipment.check_permission("write")
         
     # prepare data structure
     settings = frappe.get_doc("Planzer Settings", "Planzer Settings")
     if not cint(settings.enabled):
         return
         
-    shipment = frappe.get_doc("Shipment", shipment_name)
     sender_address = frappe.get_doc("Address", shipment.pickup_address_name)
     receiver_address = frappe.get_doc("Address", shipment.delivery_address_name)
     delivery_note = frappe.get_doc("Delivery Note", shipment.shipment_delivery_note[0].delivery_note)

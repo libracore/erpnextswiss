@@ -16,19 +16,50 @@ from frappe.utils import get_site_name
 import zipfile
 from frappe.utils.background_jobs import enqueue, get_jobs
 import os
+from pathlib import Path
 
-@frappe.whitelist()
+
+def _check_item_import_permission():
+    if not (
+        frappe.has_permission("Item", ptype="create")
+        and frappe.has_permission("Item", ptype="write")
+    ):
+        frappe.throw(_("Not permitted to import or update items."), frappe.PermissionError)
+
+
+def _uploaded_file_path(file_path):
+    allowed_roots = (
+        Path(frappe.get_site_path("private", "files")).resolve(),
+        Path(frappe.get_site_path("public", "files")).resolve(),
+    )
+    relative_path = str(file_path or "").replace("\\", "/")
+    if relative_path.startswith("/private/files/"):
+        root = allowed_roots[0]
+        relative_path = relative_path.removeprefix("/private/files/")
+    elif relative_path.startswith("/files/"):
+        root = allowed_roots[1]
+        relative_path = relative_path.removeprefix("/files/")
+    else:
+        frappe.throw(_("Only uploaded BKP files can be read."))
+
+    candidate = (root / relative_path).resolve()
+    if root not in candidate.parents:
+        frappe.throw(_("Invalid BKP file path."))
+    return candidate
+
+
+@frappe.whitelist(methods=["POST"])
 def read_xml(file_path, name):
-    site_name = get_site_name(frappe.local.request.host)
-    if site_name == 'localhost':
-        site_name = 'site1.local'
-    path_to_site_folder = '/home/frappe/frappe-bench/sites/' + site_name
-    file = path_to_site_folder + file_path
-    if ".zip" in file_path:
-        path_to_file_folder = file.replace(file.split("/")[len(file.split("/")) - 1], "")
-        name = unzip_file(path_to_file_folder, file)
-        file = path_to_file_folder + name
-    with open(file, "r") as f:
+    _check_item_import_permission()
+    file = _uploaded_file_path(file_path)
+    if file.suffix.lower() == ".zip":
+        name = unzip_file(file.parent, file)
+        file = (file.parent / name).resolve()
+        if file.parent != _uploaded_file_path(file_path).parent:
+            frappe.throw(_("Invalid file in BKP archive."))
+    if file.suffix.lower() != ".xml":
+        frappe.throw(_("Only BKP XML files are supported."))
+    with file.open("r", encoding="utf-8", errors="replace") as f:
         contents = f.read()
         soup = BeautifulSoup(six.text_type(contents), 'xml')
         try:
@@ -49,8 +80,9 @@ def read_xml(file_path, name):
             return 'Error'
         return file
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def import_update_items(xml_files):
+    _check_item_import_permission()
     try:
         site_name = get_site_name(frappe.local.request.host)
         if site_name == 'localhost':
@@ -240,7 +272,18 @@ def update_item_price(item, price):
 
 def unzip_file(path_to_file_folder, file):
     with zipfile.ZipFile(file,"r") as zip_ref:
-        zip_ref.extractall(path_to_file_folder)
-        name_to_return = zip_ref.namelist()[0]
+        members = [member for member in zip_ref.infolist() if not member.is_dir()]
+        if len(members) != 1:
+            frappe.throw(_("The BKP archive must contain exactly one XML file."))
+        member = members[0]
+        member_name = Path(member.filename)
+        if member_name.name != member.filename or member_name.suffix.lower() != ".xml":
+            frappe.throw(_("The BKP archive contains an invalid file path or file type."))
+        target = (Path(path_to_file_folder).resolve() / member_name.name).resolve()
+        if target.parent != Path(path_to_file_folder).resolve():
+            frappe.throw(_("The BKP archive contains an invalid file path."))
+        with zip_ref.open(member) as source, target.open("wb") as destination:
+            destination.write(source.read())
+        name_to_return = member_name.name
     os.remove(file)
     return name_to_return

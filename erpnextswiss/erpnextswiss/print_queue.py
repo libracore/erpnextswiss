@@ -9,11 +9,13 @@ from frappe.utils.file_manager import save_file, get_file, remove_file_by_url
 from PyPDF2 import PdfFileReader
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def print_doc_as_label(doctype, docname, label_printer, print_format=None):
     """
     Convert a document to a PDF and create a label printer job from it
     """
+    frappe.get_doc(doctype, docname).check_permission("read")
+    frappe.get_doc("Label Printer", label_printer).check_permission("read")
     pdf_bytes = frappe.get_print(doctype, docname, print_format, as_pdf=True)
     return pdf_to_print_job(pdf_bytes, label_printer)
 
@@ -126,10 +128,11 @@ def exec_direct_print_job(print_job):
 LONG_POLL_SECONDS = 60
 POLL_INTERVAL = 0.5
 
-@frappe.whitelist(allow_guest=False)
+@frappe.whitelist(allow_guest=False, methods=["POST"])
 def set_job_status(job_name, status, message=''):
     try:
         job_doc = frappe.get_doc("Label Printer Job", job_name)
+        job_doc.check_permission("write")
     except frappe.DoesNotExistError:
         return
     if job_doc:

@@ -172,8 +172,9 @@ def get_file_list():
     msg = _("The following invoices were found in Nextcloud.<br>Click on them to process them.<br><br>")
     return f"""{msg}<ul style="list-style: none;padding-left: 0;">{''.join(pdf_list)}</ul>"""
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def fetch_invoice(invoice):
+    frappe.only_for(("Accounts User", "Accounts Manager", "System Manager"))
     global ncs
     ncs = NCSettings()
 

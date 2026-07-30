@@ -174,8 +174,10 @@ class ebicsConnection(Document):
             frappe.throw( "{0}".format(err), _("Error") )
         return
 
-    @frappe.whitelist()
+    @frappe.whitelist(methods=["POST"])
     def execute_payment(self, payment_proposal):
+        self.check_permission("write")
+        frappe.get_doc("Payment Proposal", payment_proposal).check_permission("write")
         payment = frappe.get_doc("Payment Proposal", payment_proposal)
         
         # ebics v3.0 BTU/BTD

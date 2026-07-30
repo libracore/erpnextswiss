@@ -203,8 +203,10 @@ def get_invoiceable_entries(from_date=None, to_date=None, customer=None, company
     entries = frappe.db.sql(sql_query, as_dict=True)
     return entries
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def create_invoice(from_date, to_date, customer, company=None, project=None):
+    if not frappe.has_permission("Sales Invoice", ptype="create"):
+        frappe.throw(_("Not permitted to create Sales Invoice."), frappe.PermissionError)
     # fetch entries
     entries = get_invoiceable_entries(from_date=from_date, to_date=to_date, customer=customer, company=company)
     

@@ -384,8 +384,9 @@ class PaymentProposal(Document):
         frappe.db.commit()
         return inserted_payment_entry
         
-    @frappe.whitelist()
+    @frappe.whitelist(methods=["POST"])
     def create_bank_file(self):
+        self.check_permission("write")
         data = {}
         settings = frappe.get_doc("ERPNextSwiss Settings", "ERPNextSwiss Settings")
         data['xml_version'] = settings.get("xml_version")
@@ -588,8 +589,9 @@ class PaymentProposal(Document):
         return 0
         
 # this function will create a new payment proposal
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def create_payment_proposal(date=None, company=None, currency=None):
+    frappe.only_for(("Accounts User", "Accounts Manager", "System Manager"))
     if not date:
         # get planning days
         planning_days = int(frappe.get_value("ERPNextSwiss Settings", "ERPNextSwiss Settings", 'planning_days'))
@@ -737,16 +739,19 @@ def make_line(line):
 """
 Allow to release purchase invoices (switch to next revision, before that exists, so it can be cancelled)
 """
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def release_from_payment_proposal(purchase_invoice):
     pinv = frappe.get_doc("Purchase Invoice", purchase_invoice)
+    pinv.check_permission("write")
     if pinv.amended_from:
         parts = pinv.name.split("-")
         new_name = "{0}-{1}".format("-".join(parts[:-1]), (cint(parts[-1]) + 1))
     else:
         new_name = "{0}-1".format(pinv.name)
-    frappe.db.sql("""UPDATE `tabPayment Proposal Purchase Invoice` 
-        SET `purchase_invoice` = "{new_name}" 
-        WHERE `purchase_invoice` = "{old_name}";""".format(new_name=new_name, old_name=pinv.name))
-    frappe.db.commit()
+    frappe.db.sql(
+        """UPDATE `tabPayment Proposal Purchase Invoice`
+        SET `purchase_invoice` = %(new_name)s
+        WHERE `purchase_invoice` = %(old_name)s""",
+        {"new_name": new_name, "old_name": pinv.name},
+    )
     return

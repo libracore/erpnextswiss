@@ -19,8 +19,9 @@ def get_payments():
     
     return { 'payments': payments }
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def generate_payment_file(payments):
+    frappe.only_for(("Accounts User", "Accounts Manager", "System Manager"))
     # creates a pain.001 payment file from the selected payments
 
     try:
@@ -378,9 +379,11 @@ def get_billing_address(supplier_name, supplier_type="Supplier"):
         # no address found
         return None
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def generate_payment_file_from_payroll(payroll_entry):
+    frappe.only_for(("Accounts User", "Accounts Manager", "HR Manager", "System Manager"))
     payroll_record = frappe.get_doc("Payroll Entry", payroll_entry)
+    payroll_record.check_permission("read")
     payments = []
     # note: find by matching time range as there is a known issue that the link does not work (v10)
     salary_slips = frappe.get_all("Salary Slip",

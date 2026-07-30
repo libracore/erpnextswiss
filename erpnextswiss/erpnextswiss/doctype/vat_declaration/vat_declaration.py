@@ -9,8 +9,9 @@ from frappe import _
 from datetime import datetime
 
 class VATDeclaration(Document):
-    @frappe.whitelist()
+    @frappe.whitelist(methods=["POST"])
     def create_transfer_file(self):
+        self.check_permission("write")
         tax_id = frappe.get_value("Company", self.company, "tax_id")
         if not tax_id or len(tax_id) < 12:
             frappe.throw( _("Tax ID/UID missing or invalid. Please configure for company {0}.").format(self.company) )

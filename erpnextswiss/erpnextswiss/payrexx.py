@@ -15,9 +15,16 @@ from datetime import date, timedelta
 
 API_BASE = "https://api.payrexx.com/v1.0/"
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def create_payment(title, description, reference, purpose, amount, 
     vat_rate, sku, currency, success_url, expiry_date=None):
+    frappe.only_for((
+        "Accounts User",
+        "Accounts Manager",
+        "Sales User",
+        "Sales Manager",
+        "System Manager",
+    ))
     post_data = {
         "title": title,
         "description": description,

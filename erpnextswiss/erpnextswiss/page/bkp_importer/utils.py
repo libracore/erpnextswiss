@@ -12,8 +12,20 @@ from erpnext.stock.doctype.item.item import get_item_defaults
 from erpnext.setup.doctype.item_group.item_group import get_item_group_defaults
 from frappe.utils.background_jobs import enqueue
 
-@frappe.whitelist()
+HLK_TRANSACTION_DOCTYPES = ("Quotation", "Sales Order", "Sales Invoice")
+
+
+def _get_hlk_document_for_write(doctype, name):
+    if doctype not in HLK_TRANSACTION_DOCTYPES:
+        frappe.throw("Unsupported HLK transaction type.", frappe.ValidationError)
+    document = frappe.get_doc(doctype, name)
+    document.check_permission("write")
+    return document
+
+
+@frappe.whitelist(methods=["POST"])
 def calc_structur_organisation_totals(dt, dn):
+    _get_hlk_document_for_write(dt, dn)
     args = {
         'dt': dt,
         'dn': dn
@@ -89,8 +101,9 @@ def calc_and_create_new_parent_list(parent_list, dt, dn):
         document.save()
     return parent_list
     
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def transfer_structur_organisation_discounts(dt, dn):
+    _get_hlk_document_for_write(dt, dn)
     args = {
         'dt': dt,
         'dn': dn
@@ -98,9 +111,9 @@ def transfer_structur_organisation_discounts(dt, dn):
     enqueue("erpnextswiss.erpnextswiss.page.bkp_importer.utils._transfer_structur_organisation_discounts", queue='long', job_name='transfer_structur_organisation_discounts {0}'.format(dn), timeout=1500, **args)
     return 'transfer_structur_organisation_discounts {0}'.format(dn)
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def _transfer_structur_organisation_discounts(dt, dn):
-    document = frappe.get_doc(dt, dn)
+    document = _get_hlk_document_for_write(dt, dn)
     parent_elements = []
     sub_parent_elements = []
     
@@ -178,8 +191,11 @@ def validate_hlk_element_allocation():
     else:
         return 'validate'
         
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def make_sales_invoice(source_name, target_doc=None, ignore_permissions=False):
+    frappe.get_doc("Sales Order", source_name).check_permission("read")
+    if not frappe.has_permission("Sales Invoice", ptype="create"):
+        frappe.throw("Not permitted to create Sales Invoice.", frappe.PermissionError)
     def postprocess(source, target):
         set_missing_values(source, target)
         #Get the advance paid Journal Entries in Sales Invoice Advance
@@ -251,14 +267,24 @@ def make_sales_invoice(source_name, target_doc=None, ignore_permissions=False):
 
     return doclist
     
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def check_for_changed_line_items(record):
+    document = frappe.get_doc("Sales Order", record)
+    document.check_permission("write")
     try:
-        last_item_change = frappe.db.sql("""SELECT DISTINCT `modified` FROM `tabSales Order Item` WHERE `parent` = '{record}' LIMIT 1""".format(record=record), as_list=True)[0][0]
-        last_record_change = frappe.db.sql("""SELECT `modified` FROM `tabSales Order` WHERE `name` = '{record}'""".format(record=record), as_list=True)[0][0]
-        
+        last_item_change = frappe.db.sql(
+            """SELECT DISTINCT `modified` FROM `tabSales Order Item`
+            WHERE `parent` = %(record)s LIMIT 1""",
+            {"record": record},
+            as_list=True,
+        )[0][0]
+        last_record_change = frappe.db.sql(
+            """SELECT `modified` FROM `tabSales Order` WHERE `name` = %(record)s""",
+            {"record": record},
+            as_list=True,
+        )[0][0]
+
         if last_item_change != last_record_change:
-            document = frappe.get_doc('Sales Order', record)
             parent_elements = []
             sub_parent_elements = []
             
@@ -274,8 +300,26 @@ def check_for_changed_line_items(record):
                 if not structur_element.parent_element in parent_elements:
                     if not structur_element.main_element in sub_parent_elements:
                         # without items with 'variable_price'
-                        total_amount = flt(frappe.db.sql("""SELECT SUM(`amount`) FROM `tabSales Order Item` WHERE `hlk_element` = '{hlk_element}' AND `parent` = '{record}' AND `variable_price` = 0""".format(hlk_element=structur_element.main_element, record=record), as_list=True)[0][0])
-                        total_charged = flt(frappe.db.sql("""SELECT SUM(`billed_amt`) FROM `tabSales Order Item` WHERE `hlk_element` = '{hlk_element}' AND `parent` = '{record}' AND `variable_price` = 0""".format(hlk_element=structur_element.main_element, record=record), as_list=True)[0][0])
+                        query_args = {
+                            "hlk_element": structur_element.main_element,
+                            "record": record,
+                        }
+                        total_amount = flt(frappe.db.sql(
+                            """SELECT SUM(`amount`) FROM `tabSales Order Item`
+                            WHERE `hlk_element` = %(hlk_element)s
+                              AND `parent` = %(record)s
+                              AND `variable_price` = 0""",
+                            query_args,
+                            as_list=True,
+                        )[0][0])
+                        total_charged = flt(frappe.db.sql(
+                            """SELECT SUM(`billed_amt`) FROM `tabSales Order Item`
+                            WHERE `hlk_element` = %(hlk_element)s
+                              AND `parent` = %(record)s
+                              AND `variable_price` = 0""",
+                            query_args,
+                            as_list=True,
+                        )[0][0])
                         if total_amount > 0:
                             charged_in_percent = (flt(100) / total_amount) * total_charged
                         else:
@@ -309,9 +353,10 @@ def check_for_changed_line_items(record):
     except:
         return 'unchanged'
         
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def set_amount_to_bill(record, element, value):
     document = frappe.get_doc("Sales Order", record)
+    document.check_permission("write")
     for item in document.items:
         if item.hlk_element == element:
             already_billed = item.billed_amt

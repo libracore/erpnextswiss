@@ -7,6 +7,7 @@
 #
 
 import frappe
+from frappe import _
 
 # fetch the first available address from a customer
 @frappe.whitelist()
@@ -143,24 +144,40 @@ def get_primary_company_address(company):
     else:
         return None
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def update_contact_first_and_last_name(contact, firstname, lastname):
     contact = frappe.get_doc("Contact", contact)
+    contact.check_permission("write")
     contact.first_name = firstname
     contact.last_name = lastname
     contact.save()
 	
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def change_customer_without_impact_on_price(dt, record, customer, address=None, contact=None):
-    additional_updates = ''
-    if address:
-        additional_updates += ", `customer_address` = '{address}'".format(address=address)
-    if contact:
-        additional_updates += ", `contact_person` = '{contact}'".format(contact=contact)
-    if dt == 'Quotation':
-        update_query = """UPDATE `tab{dt}` SET `party_name` = '{customer}', `customer_name` = '{customer_name}'{additional_updates} WHERE `name` = '{record}'""".format(dt=dt, customer=customer, customer_name=frappe.get_doc("Customer", customer).customer_name, additional_updates=additional_updates, record=record)
-    else:
-        update_query = """UPDATE `tab{dt}` SET `customer` = '{customer}', `customer_name` = '{customer_name}'{additional_updates} WHERE `name` = '{record}'""".format(dt=dt, customer=customer, customer_name=frappe.get_doc("Customer", customer).customer_name, additional_updates=additional_updates, record=record)
+    if dt not in ("Quotation", "Sales Order"):
+        frappe.throw(_("Customer changes are only supported for quotations and sales orders."))
 
-    frappe.db.sql(update_query, as_list=True)
-    return
+    transaction = frappe.get_doc(dt, record)
+    transaction.check_permission("write")
+    customer_doc = frappe.get_doc("Customer", customer)
+    customer_doc.check_permission("read")
+
+    updates = {
+        "customer_name": customer_doc.customer_name,
+    }
+    if dt == "Quotation":
+        updates["party_name"] = customer_doc.name
+    else:
+        updates["customer"] = customer_doc.name
+
+    if address:
+        address_doc = frappe.get_doc("Address", address)
+        address_doc.check_permission("read")
+        updates["customer_address"] = address_doc.name
+    if contact:
+        contact_doc = frappe.get_doc("Contact", contact)
+        contact_doc.check_permission("read")
+        updates["contact_person"] = contact_doc.name
+
+    transaction.db_set(updates)
+    return transaction.name

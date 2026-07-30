@@ -641,8 +641,9 @@ def get_bank_settings():
             )
     return { "banks": selectable_banks}
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def parse_file(content, bank, account, auto_submit=False, debug=False):
+    frappe.only_for(("Accounts User", "Accounts Manager", "System Manager"))
     debug = assert_bool(debug)
     # content is the plain text content, parse
     auto_submit = assert_bool(auto_submit);
@@ -690,8 +691,9 @@ def parse_file(content, bank, account, auto_submit=False, debug=False):
 # this function tries to process the content by csv template information
 # 
 # returns the payment entries as list or None
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def parse_by_template(content, bank, account, auto_submit=False, debug=False):
+    frappe.only_for(("Accounts User", "Accounts Manager", "System Manager"))
     # load csv template information
     template = frappe.get_doc("BankImport Template",bank)
     
@@ -974,8 +976,9 @@ def get_bank_accounts():
     # frappe.throw(selectable_accounts)
     return {'accounts': selectable_accounts }
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def read_camt053(content, bank, account, auto_submit=False):
+    frappe.only_for(("Accounts User", "Accounts Manager", "System Manager"))
     #read_camt_transactions_re(content)
     #doc = xmltodict.parse(content)
     soup = BeautifulSoup(content, 'lxml')
@@ -997,8 +1000,9 @@ def read_camt053(content, bank, account, auto_submit=False):
     
     return { "message": message, "records": new_payment_entries } 
     
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def read_camt054(content, bank, account, auto_submit=False):
+    frappe.only_for(("Accounts User", "Accounts Manager", "System Manager"))
     soup = BeautifulSoup(content, 'lxml')
     
     # general information

@@ -12,8 +12,9 @@ from frappe.utils.background_jobs import enqueue
 class Municipality(Document):
     pass
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def enqueue_import_municipality(content):
+    frappe.only_for("System Manager")
     kwargs={
           'content': content
         }

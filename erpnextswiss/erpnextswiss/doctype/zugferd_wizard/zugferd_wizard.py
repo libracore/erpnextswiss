@@ -45,8 +45,11 @@ class ZUGFeRDWizard(Document):
     def get_default_item(self):
         return frappe.get_cached_value("ERPNextSwiss Settings", "ERPNextSwiss Settings", "scanning_default_item")
     
-    @frappe.whitelist()
+    @frappe.whitelist(methods=["POST"])
     def create_invoice(self):
+        self.check_permission("write")
+        if not frappe.has_permission("Purchase Invoice", ptype="create"):
+            frappe.throw(_("Not permitted to create Purchase Invoice."), frappe.PermissionError)
         if not self.content_dict:
             frappe.throw( _("Please start by loading a document."), _("Notification") )
         
@@ -205,9 +208,12 @@ class ZUGFeRDWizard(Document):
             'link': get_link_to_form("Purchase Invoice", pinv_doc.name)
         }
 
-    @frappe.whitelist()
+    @frappe.whitelist(methods=["POST"])
     def manual_purchase_invoice(self, company, supplier, date, bill_no, item, 
         amount, cost_center, taxes_and_charges, project=None, remarks=None, esr_code=None, payment_method=None):
+        self.check_permission("write")
+        if not frappe.has_permission("Purchase Invoice", ptype="create"):
+            frappe.throw(_("Not permitted to create Purchase Invoice."), frappe.PermissionError)
         
         pinv = frappe.get_doc({
             'doctype': 'Purchase Invoice',
@@ -279,7 +285,8 @@ class ZUGFeRDWizard(Document):
         from erpnextswiss.erpnextswiss.doctype.zugferd_wizard.nextcloud_integration import get_file_list
         return get_file_list()
 
-    @frappe.whitelist()
+    @frappe.whitelist(methods=["POST"])
     def fetch_invoice_from_nextcloud(self, invoice):
+        self.check_permission("write")
         from erpnextswiss.erpnextswiss.doctype.zugferd_wizard.nextcloud_integration import fetch_invoice
         fetch_invoice(invoice)

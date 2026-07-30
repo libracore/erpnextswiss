@@ -27,8 +27,9 @@ def get_unallocated_payment_entries():
     unallocated_payment_entries = frappe.db.sql(sql_query, as_dict=True)
     return {'unallocated_payment_entries': unallocated_payment_entries }
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def match(sales_invoice, payment_entry):
+    frappe.only_for(("Accounts User", "Accounts Manager", "System Manager"))
     # get the customer
     customer = frappe.get_value("Sales Invoice", sales_invoice, "customer")
     if customer:
@@ -50,13 +51,14 @@ def match(sales_invoice, payment_entry):
     else:
         return { 'error': "Customer not found" }
  
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def submit(payment_entry):
+    frappe.only_for(("Accounts User", "Accounts Manager", "System Manager"))
     payment_entry_record = frappe.get_doc("Payment Entry", payment_entry)
     payment_entry_record.submit()
     return { 'message': "Done" }
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def submit_all(payment_entries):
     # get the array from the string parameter
     payments = frappe.parse_json(payment_entries) if isinstance(payment_entries, str) else payment_entries
@@ -65,8 +67,9 @@ def submit_all(payment_entries):
         submit(payment_entry)
     return { 'message': "Done" }
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def auto_match(method="docid"):
+    frappe.only_for(("Accounts User", "Accounts Manager", "System Manager"))
     # make method lower case
     method = method.lower()
     # prepare array of matched payments

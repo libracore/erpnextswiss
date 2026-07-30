@@ -40,6 +40,9 @@ jobs:
       - name: Compile Python files
         run: python -m compileall erpnextswiss
 
+      - name: Verify mutation endpoint security
+        run: python scripts/verify_mutation_endpoint_security.py
+
   static-assets:
     name: JSON and JavaScript syntax
     runs-on: ubuntu-latest

@@ -17,8 +17,9 @@ def import_pincodes_from_file(filename):
     f = open(filename, "r")
     import_pincodes(f.read())
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def enqueue_import_pincodes(content):
+    frappe.only_for("System Manager")
     kwargs={
           'content': content
         }

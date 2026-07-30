@@ -13,13 +13,13 @@ This function will allow to unlink an asset from PREC and PINV, because otherwis
 
 Run from console using unlink_asset();
 """
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def unlink_asset(asset_name):
     if frappe.db.exists("Asset", asset_name):
-        frappe.db.sql("""
-            UPDATE `tabAsset`
-            SET `purchase_invoice` = NULL, `purchase_receipt` = NULL
-            WHERE `name` = "{asset_name}";
-        """.format(asset_name=asset_name))
-        frappe.db.commit()
+        asset = frappe.get_doc("Asset", asset_name)
+        asset.check_permission("write")
+        asset.db_set({
+            "purchase_invoice": None,
+            "purchase_receipt": None,
+        })
     return

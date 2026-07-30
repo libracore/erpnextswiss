@@ -12,8 +12,9 @@ from erpnextswiss.erpnextswiss.doctype.zugferd_wizard.zugferd_wizard import get_
 
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def create_supplier():
+    frappe.only_for("System Manager")
     frappe.msgprint("Hallo")
     
     invoice = get_inv()

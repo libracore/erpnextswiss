@@ -8,8 +8,9 @@ from frappe.utils.background_jobs import enqueue
 from frappe import _
 
 # send newsletter with dynamic content
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def enqueue_send_dynamic_newsletter(newsletter):
+    frappe.get_doc("Newsletter", newsletter).check_permission("write")
     # enqueue sending newsletter (potential long worker)
     kwargs={
         'newsletter': newsletter

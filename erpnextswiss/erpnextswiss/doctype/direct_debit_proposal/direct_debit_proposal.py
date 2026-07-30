@@ -149,8 +149,9 @@ class DirectDebitProposal(Document):
         frappe.db.commit()
         return inserted_payment_entry
     
-    @frappe.whitelist()                 # note: v15 requires whitelist also on class functions
+    @frappe.whitelist(methods=["POST"])  # note: v15 requires whitelist also on class functions
     def create_bank_file(self):
+        self.check_permission("write")
         # create xml header
         content = make_line("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
         # define xml template reference
@@ -300,8 +301,9 @@ def get_company_name(sales_invoice):
     return frappe.get_value('Sales Invoice', sales_invoice, 'company')
     
 # this function will create a new direct debit proposal
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def create_direct_debit_proposal(company=None):
+    frappe.only_for(("Accounts User", "Accounts Manager", "System Manager"))
     # check companies
     if company == None:
         # use global default if not specified

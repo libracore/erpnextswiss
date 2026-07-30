@@ -6,7 +6,7 @@ import math
 from bs4 import BeautifulSoup
 from frappe.utils.data import getdate
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def deactiviate_pricing_rule(sinv, short=0, long=0):
     # MMD-Funktion F-1
     sinv = frappe.get_doc("Sales Invoice", sinv)
@@ -19,7 +19,7 @@ def deactiviate_pricing_rule(sinv, short=0, long=0):
     else:
         return
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def clear_free_pos(sinv, short=0, long=0):
     # MMD-Funktion F-5
     sinv = frappe.get_doc("Sales Invoice", sinv)
@@ -40,7 +40,7 @@ def clear_free_pos(sinv, short=0, long=0):
     frappe.db.commit()
     return
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def round_qty_to_quarter(sinv, short=0, long=0):
     # MMD-Funktion F-2
     sinv = frappe.get_doc("Sales Invoice", sinv)
@@ -58,7 +58,7 @@ def round_qty_to_quarter(sinv, short=0, long=0):
     else:
         return
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def set_customer_price_list(sinv):
     # MMD-Funktion F-4
     sinv = frappe.get_doc("Sales Invoice", sinv)
@@ -85,7 +85,7 @@ def set_customer_price_list(sinv):
     else:
         return
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def contract_items_based_on_date(sinv, long=0):
     # MMD-Funktion F-3
     sinv = frappe.get_doc("Sales Invoice", sinv)

@@ -226,8 +226,9 @@ def read_camt053_meta(content):
             
     return meta
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def read_camt053(content, account):
+    frappe.only_for(("Accounts User", "Accounts Manager", "System Manager"))
     settings = frappe.get_doc("ERPNextSwiss Settings", "ERPNextSwiss Settings")
 
     #read_camt_transactions_re(content)
@@ -817,10 +818,11 @@ def read_camt_transactions(transaction_entries, account, settings, debug=False, 
                 
     return txns
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def make_payment_entry(amount, date, reference_no, paid_from=None, paid_to=None, type="Receive",
     party=None, party_type=None, references=None, remarks=None, auto_submit=False, exchange_rate=1,
     party_iban=None, company=None, pattern=None):
+    frappe.only_for(("Accounts User", "Accounts Manager", "System Manager"))
     # assert list
     if references:
         references = ast.literal_eval(references)

@@ -123,7 +123,7 @@ def ObjectToJSON(object):
 def ObjectToURL(object):
     return urllib.parse.urlencode(object.__dict__)
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def create_new_issue(**kwargs):
     gitlab_settings = frappe.get_doc("GitLab Settings", "GitLab Settings")
     
@@ -144,8 +144,9 @@ def create_new_issue(**kwargs):
     
     return gitlab_settings.post_new_issue(issue_object)
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def edit_issue(**kwargs):
+    frappe.only_for("System Manager")
     gitlab_settings = frappe.get_doc("GitLab Settings", "GitLab Settings")
     issue_object = edit_issue_object()
     issue_object.id = cint(gitlab_settings.project_id)

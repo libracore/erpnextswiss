@@ -6,9 +6,12 @@ import frappe
 """
 This function allows to scrap an asset CH/AT-style, dated with yearly accumulated reconiliation
 """
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def smart_scrap(asset, date):
-    frappe.db.sql("""UPDATE `tabAsset`
-                        SET `disposal_date` = "{date}", `status` = "Scrapped"
-                        WHERE `name` = "{asset}";""".format(asset=asset, date=date))
+    asset_doc = frappe.get_doc("Asset", asset)
+    asset_doc.check_permission("write")
+    asset_doc.db_set({
+        "disposal_date": date,
+        "status": "Scrapped",
+    })
     return

@@ -358,19 +358,22 @@ def test_mautic_connection():
     return {"success": success, "message": message}
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def manual_sync_customer(customer_name):
+    frappe.get_doc("Customer", customer_name).check_permission("write")
     """API Endpunkt für manuelle Kundensynchronisation"""
     return sync_customer_to_mautic(customer_name)
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def manual_sync_contact(contact_name):
+    frappe.get_doc("Contact", contact_name).check_permission("write")
     """API Endpunkt für manuelle Kontaktsynchronisation"""
     return sync_contact_to_mautic(contact_name)
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def manual_sync_customer_with_contacts(customer_name):
+    frappe.get_doc("Customer", customer_name).check_permission("write")
     """API Endpunkt für Synchronisation eines Kunden mit allen Kontakten"""
     return sync_customer_with_contacts(customer_name)

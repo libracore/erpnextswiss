@@ -43,10 +43,23 @@ def get_crm_feed_content(secret):
     cal.add('prodid', '-//libracore business software//libracore//')
     cal.add('version', '2.0')
 
+    event_fields = [
+        "name",
+        source_field,
+        "modified",
+        "owner",
+        "email_id",
+    ]
+    if source == "Lead":
+        event_fields.extend(["lead_name", "lead_owner"])
+    else:
+        event_fields.extend(["customer_name", "account_manager"])
+    event_fields = list(dict.fromkeys(event_fields))
+
     events = frappe.get_all(
         source,
         filters=[[source_field, ">=", today()]],
-        fields=["*"],
+        fields=event_fields,
     )
 
     # add events
@@ -67,7 +80,7 @@ def get_crm_feed_content(secret):
     return cal
 
 
-@frappe.whitelist(allow_guest=True)
+@frappe.whitelist(allow_guest=True, methods=["GET"])
 def crm_feed(secret):
     frappe.local.response.filename = "crm_caldav.ics"
     calendar = get_crm_feed_content(secret)
@@ -79,7 +92,7 @@ def crm_feed(secret):
     return
 
 
-@frappe.whitelist(allow_guest=True)
+@frappe.whitelist(allow_guest=True, methods=["GET"])
 def todo_feed(secret, user):
     frappe.local.response.filename = "todo_caldav.ics"
     calendar = get_todo_feed_content(secret, user)

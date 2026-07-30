@@ -26,6 +26,7 @@ class GuestPrintSecurityTests(unittest.TestCase):
                 "Sales Invoice",
                 "SINV-0001",
                 format="Standard",
+                doc='{"name":"SINV-0001","grand_total":0}',
                 key="random-share-key",
             )
 

@@ -5,7 +5,7 @@
 import frappe
 from frappe.www.printview import validate_key
 
-@frappe.whitelist(allow_guest=True)
+@frappe.whitelist(allow_guest=True, methods=["GET"])
 def get_pdf_as_guest(doctype, name, format=None, doc=None, no_letterhead=0, key=False):
     """Download a PDF using Frappe's random, optionally expiring share key."""
     document = frappe.get_doc(doctype, name)
@@ -16,7 +16,8 @@ def get_pdf_as_guest(doctype, name, format=None, doc=None, no_letterhead=0, key=
         doctype,
         name,
         format,
-        doc=doc,
+        # Never render caller-supplied document JSON for a public share link.
+        doc=None,
         as_pdf=True,
         no_letterhead=no_letterhead,
     )

@@ -3,13 +3,27 @@
 # See license.txt
 from __future__ import unicode_literals
 
+import json
 import unittest
+from pathlib import Path
 from unittest.mock import Mock, patch
 
 from erpnextswiss.erpnextswiss import caldav
 
 
 class TestCalDavFeed(unittest.TestCase):
+    def test_only_system_manager_can_read_feed_configuration(self):
+        doctype_path = Path(__file__).with_name("caldav_feed.json")
+        permissions = json.loads(doctype_path.read_text(encoding="utf-8"))["permissions"]
+
+        roles_with_read_access = {
+            permission["role"]
+            for permission in permissions
+            if permission.get("read")
+        }
+
+        self.assertEqual(roles_with_read_access, {"System Manager"})
+
     def test_secret_comparison_is_exact(self):
         self.assertTrue(caldav._secret_matches("correct", "correct"))
         self.assertFalse(caldav._secret_matches("wrong", "correct"))

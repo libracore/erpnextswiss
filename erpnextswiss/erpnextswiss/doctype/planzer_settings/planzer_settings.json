@@ -9,8 +9,10 @@
   "department_no",
   "col_main",
   "host",
+  "port",
   "username",
   "password",
+  "ssh_host_key",
   "enabled"
  ],
  "fields": [
@@ -41,6 +43,12 @@
    "label": "Host"
   },
   {
+   "default": "22",
+   "fieldname": "port",
+   "fieldtype": "Int",
+   "label": "Port"
+  },
+  {
    "fieldname": "username",
    "fieldtype": "Data",
    "label": "Benutzer"
@@ -49,6 +57,13 @@
    "fieldname": "password",
    "fieldtype": "Password",
    "label": "Passwort"
+  },
+  {
+   "description": "Vom Anbieter bestätigte öffentliche SSH-Host-Key-Zeile im OpenSSH-known_hosts-Format. Beispiel: host ssh-ed25519 AAAA...",
+   "fieldname": "ssh_host_key",
+   "fieldtype": "Small Text",
+   "label": "SSH Host Key",
+   "mandatory_depends_on": "eval:doc.enabled"
   },
   {
    "default": "0",

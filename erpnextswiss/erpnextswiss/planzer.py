@@ -8,7 +8,8 @@ from frappe.utils.password import get_decrypted_password
 import os
 import codecs
 from datetime import datetime, timedelta
-import pysftp
+
+import paramiko
 
 @frappe.whitelist()
 def create_shipment(shipment_name, debug=False):
@@ -193,28 +194,74 @@ def upload_shipment_file(file_name, target_path):
         frappe.throw( _("Planzer Settings are missing connection details (host, username, password)") )
 
     try:
-        with connect_sftp(settings) as sftp:
-            with sftp.cd(target_path):          # e.g. "Eingang"
-                sftp.put(file_name)            # upload file
-                
-    except Exception as err:
-        frappe.log_error( err, "Planzer Upload Shipment File Failed")
-        
-    return
+        with connect_sftp(settings) as client:
+            with client.open_sftp() as sftp:
+                sftp.chdir(target_path)         # e.g. "Eingang"
+                sftp.put(file_name)             # upload file
+    except Exception:
+        frappe.log_error(frappe.get_traceback(), "Planzer Upload Shipment File Failed")
+        frappe.throw(_("Planzer shipment could not be transmitted. Check the SFTP connection and host key."))
+
+
+def _known_hosts_line(host, port, key_material):
+    lines = [
+        line.strip()
+        for line in str(key_material or "").splitlines()
+        if line.strip() and not line.lstrip().startswith("#")
+    ]
+    if len(lines) != 1:
+        frappe.throw(_("Planzer SSH host key must contain exactly one OpenSSH known_hosts entry."))
+
+    line = lines[0]
+    parts = line.split()
+    if len(parts) == 2 and (
+        parts[0].startswith("ssh-")
+        or parts[0].startswith("ecdsa-")
+        or parts[0].startswith("sk-")
+    ):
+        host_token = host if int(port) == 22 else f"[{host}]:{port}"
+        line = f"{host_token} {line}"
+    return line
 
 def connect_sftp(settings):
-    cnopts = pysftp.CnOpts()
-    cnopts.hostkeys = settings.get('host_keys') or None        # keep or None to push None instead of ""  
-    
-    connection = pysftp.Connection(
-            settings.get('host'), 
-            port=settings.get('port') or 22,
-            username=settings.get('username'), 
-            password=get_decrypted_password(settings.get('doctype'), settings.get('name'), 'password', False),
-            cnopts=cnopts
+    host = str(settings.get("host") or "").strip()
+    port = cint(settings.get("port")) or 22
+    key_material = str(settings.get("ssh_host_key") or "").strip()
+    if not key_material:
+        frappe.throw(_("Planzer SSH host key is required before SFTP can be enabled."))
+
+    entry = paramiko.hostkeys.HostKeyEntry.from_line(
+        _known_hosts_line(host, port, key_material)
+    )
+    if not entry or not entry.key or not entry.hostnames:
+        frappe.throw(_("Planzer SSH host key is not a valid OpenSSH known_hosts entry."))
+
+    client = paramiko.SSHClient()
+    client.set_missing_host_key_policy(paramiko.RejectPolicy())
+    for hostname in entry.hostnames:
+        client.get_host_keys().add(hostname, entry.key.get_name(), entry.key)
+
+    try:
+        client.connect(
+            hostname=host,
+            port=port,
+            username=settings.get("username"),
+            password=get_decrypted_password(
+                settings.get("doctype"),
+                settings.get("name"),
+                "password",
+                False,
+            ),
+            allow_agent=False,
+            look_for_keys=False,
+            timeout=20,
+            banner_timeout=20,
+            auth_timeout=20,
         )
-    
-    return connection
+    except Exception:
+        client.close()
+        raise
+    return client
 
 """
 Extract the numeric part of the shipment

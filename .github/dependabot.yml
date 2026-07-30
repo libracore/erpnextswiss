@@ -1,0 +1,33 @@
+version: 2
+
+updates:
+  - package-ecosystem: pip
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "05:15"
+      timezone: "Europe/Zurich"
+    open-pull-requests-limit: 5
+    target-branch: v16
+    groups:
+      python-dependencies:
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "05:30"
+      timezone: "Europe/Zurich"
+    open-pull-requests-limit: 5
+    target-branch: v16
+    groups:
+      github-actions:
+        patterns:
+          - "*"

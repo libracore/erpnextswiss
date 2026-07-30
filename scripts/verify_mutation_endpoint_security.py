@@ -224,9 +224,39 @@ def main() -> None:
     )
     assert 'check_permission("write")' in planzer
 
+    public_endpoint_limits = {
+        PACKAGE_ROOT / "erpnextswiss" / "guest_print.py": {
+            "get_pdf_as_guest": "limit=120",
+        },
+        PACKAGE_ROOT / "erpnextswiss" / "caldav.py": {
+            "crm_feed": "limit=240",
+            "todo_feed": "limit=240",
+        },
+    }
+    for path, functions in public_endpoint_limits.items():
+        source = path.read_text(encoding="utf-8-sig")
+        tree = ast.parse(source)
+        for function_name, expected_limit in functions.items():
+            node = next(
+                node
+                for node in ast.walk(tree)
+                if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+                and node.name == function_name
+            )
+            decorators = "\n".join(
+                ast.get_source_segment(source, decorator) or ""
+                for decorator in node.decorator_list
+            )
+            assert 'allow_guest=True, methods=["GET"]' in decorators
+            assert "rate_limit(" in decorators
+            assert expected_limit in decorators
+            assert 'methods="GET"' in decorators
+            assert "ip_based=True" in decorators
+
     print(
         f"OK: {len(REQUIRED_POST)} mutation endpoints are POST-only; "
-        "critical CRM writes are permission checked and SQL-safe."
+        "critical CRM writes are permission checked and SQL-safe; "
+        "public PDF and CalDAV endpoints are rate limited."
     )
 
 

@@ -9,8 +9,9 @@
 import hmac
 
 import frappe
-from icalendar import Calendar, Event, Todo
+from frappe.rate_limiter import rate_limit
 from frappe.utils import cint, today
+from icalendar import Calendar, Event, Todo
 
 
 def _secret_matches(provided, expected):
@@ -81,6 +82,7 @@ def get_crm_feed_content(secret):
 
 
 @frappe.whitelist(allow_guest=True, methods=["GET"])
+@rate_limit(limit=240, seconds=60 * 60, methods="GET", ip_based=True)
 def crm_feed(secret):
     frappe.local.response.filename = "crm_caldav.ics"
     calendar = get_crm_feed_content(secret)
@@ -93,6 +95,7 @@ def crm_feed(secret):
 
 
 @frappe.whitelist(allow_guest=True, methods=["GET"])
+@rate_limit(limit=240, seconds=60 * 60, methods="GET", ip_based=True)
 def todo_feed(secret, user):
     frappe.local.response.filename = "todo_caldav.ics"
     calendar = get_todo_feed_content(secret, user)

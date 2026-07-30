@@ -3,9 +3,12 @@
 # For license information, please see license.txt
 
 import frappe
+from frappe.rate_limiter import rate_limit
 from frappe.www.printview import validate_key
 
+
 @frappe.whitelist(allow_guest=True, methods=["GET"])
+@rate_limit(limit=120, seconds=60 * 60, methods="GET", ip_based=True)
 def get_pdf_as_guest(doctype, name, format=None, doc=None, no_letterhead=0, key=False):
     """Download a PDF using Frappe's random, optionally expiring share key."""
     document = frappe.get_doc(doctype, name)

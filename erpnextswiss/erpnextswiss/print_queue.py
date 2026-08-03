@@ -5,7 +5,7 @@ import frappe
 import traceback
 from frappe import _
 from frappe.utils import today, add_days
-from frappe.utils.file_manager import save_file, get_file, remove_file_by_url
+from frappe.utils.file_manager import save_file, get_file
 from PyPDF2 import PdfFileReader
 
 

@@ -20,6 +20,7 @@ class EDIFile(Document):
 
         return
 
+    @frappe.whitelist()
     def download_file(self):
         content = None
         if self.edi_type == "PRICAT":
@@ -28,6 +29,7 @@ class EDIFile(Document):
             content = download_desadv(self.name)
         return { 'content': content }
 
+    @frappe.whitelist()
     def get_item_details(self, item_code):
         item = frappe.get_doc("Item", item_code)
         price_list = frappe.get_value("EDI Connection", self.edi_connection, "price_list")

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2022, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2022-2026, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
 
 from __future__ import unicode_literals
@@ -120,7 +120,7 @@ class EDIFile(Document):
                     is_private=True
                 )
                 # send mail
-                send(
+                frappe.sendmail(
                     recipients=frappe.get_value("EDI Connection", self.edi_connection, "email_recipient"),
                     subject=self.name,
                     message=self.name,

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2022-2025, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2022-2026, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
 
 from __future__ import unicode_literals
@@ -14,6 +14,7 @@ class EDIConnection(Document):
             frappe.throw( _("Please define a target email address for transmission mode Email"), _("Validation") )
         return
     
+    @frappe.whitelist()
     def create_file(self):
         if self.edi_type == "PRICAT":
             create_pricat(self.name)

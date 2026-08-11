@@ -5,6 +5,7 @@ unidecode
 opencv-python
 pymupdf
 fintech
+paramiko==3.5.1
 pysftp
 icalendar
 unidecode

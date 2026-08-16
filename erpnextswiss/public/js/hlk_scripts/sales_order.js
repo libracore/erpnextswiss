@@ -120,22 +120,23 @@ function transfer_special_discounts(frm) {
     if (cur_frm.doc.special_discounts) {
         var discounts = cur_frm.doc.special_discounts;
         var total_discounts = 0;
+        var discount_base = flt(cur_frm.doc.net_total || cur_frm.doc.total || 0);
         discounts.forEach(function(entry) {
             if (entry.discount_type == 'Percentage') {
                 var percentage_amount = 0;
                 if (entry.is_cumulative) {
-                    percentage_amount = (((cur_frm.doc.total - total_discounts) / 100) * entry.percentage);
+                    percentage_amount = (((discount_base - total_discounts) / 100) * flt(entry.percentage));
                 } else {
-                    percentage_amount = ((cur_frm.doc.total / 100) * entry.percentage);
+                    percentage_amount = (discount_base / 100) * flt(entry.percentage);
                 }
-                total_discounts += percentage_amount;
-                entry.discount = percentage_amount;
+                total_discounts += flt(percentage_amount);
+                entry.discount = flt(percentage_amount);
             } else {
-                total_discounts += entry.discount;
+                total_discounts += flt(entry.discount);
             }
         });
         cur_frm.set_value('apply_discount_on', 'Net Total');
-        cur_frm.set_value('discount_amount', total_discounts);
+        cur_frm.set_value('discount_amount', flt(total_discounts));
     }
 }
 

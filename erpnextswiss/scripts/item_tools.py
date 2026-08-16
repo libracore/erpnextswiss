@@ -128,10 +128,8 @@ def purge_supplier_hints_from_item_descriptions(apply=0, item_codes=None, limit=
             preview.append({"item": item.get("name"), "changes": changes})
 
         if apply:
-            doc = frappe.get_doc("Item", item.get("name"))
             if "description" in changes:
-                doc.description = new_description
-            doc.save(ignore_permissions=True)
+                frappe.db.set_value("Item", item.get("name"), "description", new_description)
             frappe.db.commit()
 
     return {

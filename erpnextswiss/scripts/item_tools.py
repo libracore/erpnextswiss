@@ -103,7 +103,11 @@ def purge_supplier_hints_from_item_descriptions(apply=0, item_codes=None, limit=
         if item_codes:
             filters["name"] = ["in", item_codes]
 
-    fields = ["name", "description", "web_long_description"]
+    fields = ["name", "description"]
+    item_meta = frappe.get_meta("Item")
+    has_web_long_description = item_meta.has_field("web_long_description")
+    if has_web_long_description:
+        fields.append("web_long_description")
     items = frappe.get_all("Item", filters=filters, fields=fields, limit=limit)
 
     preview = []
@@ -115,15 +119,17 @@ def purge_supplier_hints_from_item_descriptions(apply=0, item_codes=None, limit=
         changes = {}
 
         old_description = item.get("description")
-        old_web_description = item.get("web_long_description")
+        old_web_description = None
+        if has_web_long_description:
+            old_web_description = item.get("web_long_description")
 
         new_description = _clean_item_description(old_description)
-        new_web_description = _clean_item_description(old_web_description)
+        new_web_description = _clean_item_description(old_web_description) if has_web_long_description else None
 
         if _normalize_for_compare(old_description) != _normalize_for_compare(new_description):
             changes["description"] = {"before": old_description, "after": new_description}
 
-        if _normalize_for_compare(old_web_description) != _normalize_for_compare(new_web_description):
+        if has_web_long_description and _normalize_for_compare(old_web_description) != _normalize_for_compare(new_web_description):
             changes["web_long_description"] = {"before": old_web_description, "after": new_web_description}
 
         if not changes:

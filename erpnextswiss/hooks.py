@@ -191,6 +191,9 @@ scheduler_events = {
 # override_whitelisted_methods = {
 #     "frappe.desk.doctype.event.event.get_events": "erpnextswiss.event.get_events"
 # }
+override_whitelisted_methods = {
+    "frappe.utils.print_format.download_pdf": "erpnextswiss.erpnextswiss.print_format_safety.download_pdf",
+}
 
 # Fixtures (to import DocType customisations)
 # --------

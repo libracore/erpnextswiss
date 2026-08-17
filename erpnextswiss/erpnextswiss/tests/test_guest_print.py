@@ -1,3 +1,4 @@
+import contextlib
 from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
@@ -5,6 +6,7 @@ from unittest.mock import patch
 from frappe.exceptions import PermissionError
 
 from erpnextswiss.erpnextswiss import guest_print
+from erpnextswiss.erpnextswiss import print_format_safety
 
 
 class GuestPrintSecurityTests(unittest.TestCase):
@@ -68,3 +70,52 @@ class GuestPrintSecurityTests(unittest.TestCase):
 
         validate.assert_called_once_with("predictable-document-hash", document)
         get_print.assert_not_called()
+
+
+class PrintFormatSafetyTests(unittest.TestCase):
+    def test_download_pdf_normalizes_none_like_letterhead_fields(self):
+        document = SimpleNamespace(doctype="Quotation", name="SAL-QTN-2026-00015")
+        response = SimpleNamespace()
+
+        with (
+            patch.object(print_format_safety.frappe, "get_doc", return_value=document),
+            patch.object(
+                print_format_safety,
+                "validate_print_permission",
+            ) as validate_print_permission,
+            patch.object(print_format_safety.frappe, "get_print") as get_print,
+            patch.object(
+                print_format_safety,
+                "print_language",
+                return_value=contextlib.nullcontext(),
+            ) as print_language,
+            patch.object(
+                print_format_safety.frappe,
+                "local",
+                SimpleNamespace(response=response),
+            ),
+        ):
+            get_print.return_value = b"pdf"
+
+            print_format_safety.download_pdf(
+                "Quotation",
+                "SAL-QTN-2026-00015",
+                format="Offerte DE Brutto",
+                doc=None,
+                no_letterhead="None",
+                _lang="de",
+                letterhead="None",
+                pdf_generator="None",
+            )
+
+        validate_print_permission.assert_called_once_with(document)
+        get_print.assert_called_once()
+        called_kwargs = get_print.call_args.kwargs
+        self.assertEqual(called_kwargs["doc"], document)
+        self.assertEqual(called_kwargs["no_letterhead"], 0)
+        self.assertIsNone(called_kwargs["letterhead"])
+        self.assertNotIn("pdf_generator", called_kwargs)
+        self.assertEqual(response.filename, "SAL-QTN-2026-00015.pdf")
+        self.assertEqual(response.filecontent, b"pdf")
+        self.assertEqual(response.type, "pdf")
+        print_language.assert_called_once()

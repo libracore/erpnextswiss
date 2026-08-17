@@ -71,6 +71,46 @@ class GuestPrintSecurityTests(unittest.TestCase):
         validate.assert_called_once_with("predictable-document-hash", document)
         get_print.assert_not_called()
 
+    def test_get_pdf_as_guest_normalizes_none_like_no_letterhead(self):
+        document = SimpleNamespace(doctype="Quotation", name="SAL-QTN-2026-00015")
+        response = SimpleNamespace()
+
+        with (
+            patch.object(guest_print.frappe, "get_doc", return_value=document),
+            patch.object(
+                guest_print,
+                "validate_key",
+            ) as validate_key,
+            patch.object(guest_print.frappe, "get_print") as get_print,
+            patch.object(
+                guest_print.frappe,
+                "local",
+                SimpleNamespace(response=response),
+            ),
+        ):
+            get_print.return_value = b"pdf"
+
+            guest_print.get_pdf_as_guest(
+                "Quotation",
+                "SAL-QTN-2026-00015",
+                format="Offerte DE Brutto",
+                no_letterhead="None",
+                key="random-share-key",
+            )
+
+        validate_key.assert_called_once_with("random-share-key", document)
+        get_print.assert_called_once_with(
+            "Quotation",
+            "SAL-QTN-2026-00015",
+            "Offerte DE Brutto",
+            doc=None,
+            as_pdf=True,
+            no_letterhead=0,
+        )
+        self.assertEqual(response.filename, "SAL-QTN-2026-00015.pdf")
+        self.assertEqual(response.filecontent, b"pdf")
+        self.assertEqual(response.type, "pdf")
+
 
 class PrintFormatSafetyTests(unittest.TestCase):
     def test_download_pdf_normalizes_none_like_letterhead_fields(self):

@@ -1,4 +1,4 @@
-// Copyright (c) 2018, libracore (https://www.libracore.com) and contributors
+// Copyright (c) 2018-2026, libracore (https://www.libracore.com) and contributors
 // For license information, please see license.txt
 
 frappe.ui.form.on('Contract', {
@@ -17,5 +17,29 @@ frappe.ui.form.on('Contract', {
                 filters: { 'docstatus': 1 }
             }
         }
-	}
+	},
+    before_save: function(frm) {
+        if (frm.doc.__islocal) {
+            set_next_date(frm);
+        }
+    },
+    frequency: function(frm) {
+        set_next_date(frm);
+    }
+
 });
+
+function set_next_date(frm) {
+    frappe.call({
+        'method': 'erpnextswiss.erpnextswiss.doctype.contract.contract.get_next_date',
+        'args': {
+            'doc': frm.doc
+        },
+        'callback': function(response) {
+            if (response.message) {
+                cur_frm.set_value('next_invoice_date', response.message);
+                cur_frm.set_value('set_invoice_date_manually', 0);
+            }
+        }
+    });
+}

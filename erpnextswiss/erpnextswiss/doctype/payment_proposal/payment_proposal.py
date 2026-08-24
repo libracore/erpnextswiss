@@ -492,6 +492,7 @@ class PaymentProposal(Document):
         
         return { 'content': content }
     
+    @frappe.whitelist()
     def create_wise_file(self):
         data = {
             'payments': []

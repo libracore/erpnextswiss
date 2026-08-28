@@ -59,6 +59,7 @@ def process_auto_contract_invoices():
 		"Contract",
         filters={
 			"next_invoice_date": ["<=", today()],
+			"end_date": [">=", today()],
         	"status": "Active",
         	"enable_auto_invoicing": 1
         },
@@ -120,7 +121,8 @@ def create_contract_invoice(contract_name):
 		'start_date': contract_doc.last_execution_date or contract_doc.start_date,
 		'end_date': contract_doc.next_invoice_date,
 		'invoice': sinv.name,
-		'invoice_date': sinv.posting_date
+		'invoice_date': sinv.posting_date,
+		"invoice_status": sinv.status
 	})
 
 	# update contract
@@ -145,6 +147,7 @@ def set_contracts_inactive():
 
 	for contract in contracts_to_close:
 		try:
+			flag_remaining_unbilled_period(contract)
 			contract_doc = frappe.get_doc("Contract", contract.get)
 			contract_doc.status = "Inactive"
 
@@ -156,4 +159,19 @@ def set_contracts_inactive():
 				message=frappe.get_traceback()
 			)
 	return
+
+# if a contract has TODO
+def flag_remaining_unbilled_period(contract):
+	if doc.
+	return
+
+def sync_contract_status(doc, method):
+	rows = frappe.get_all("Contract Period", filters={"invoice": doc.name}, fields=["parent", "name"])
+
+	for row in rows:
+		contract = frappe.get_doc("Contract", row.parent)
+		for child in contract.billed_periods:
+			if child.name == row.name:
+				child.invoice_status = doc.status
+		contract.save(ignore_permissions=True)
 

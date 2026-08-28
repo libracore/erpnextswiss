@@ -26,6 +26,8 @@
   "last_execution_date",
   "next_invoice_date",
   "set_invoice_date_manually",
+  "unbilled_days_remaining",
+  "has_pending_final_period",
   "section_services",
   "services",
   "section_periods",
@@ -162,7 +164,7 @@
    "depends_on": "eval:doc.enable_auto_invoicing == 1",
    "fieldname": "set_invoice_date_manually",
    "fieldtype": "Check",
-   "label": "Set invoice date manually"
+   "label": "Set Invoice Date Manually"
   },
   {
    "depends_on": "eval:doc.enable_auto_invoicing == 1",
@@ -179,10 +181,24 @@
    "label": "Payment Terms Template",
    "mandatory_depends_on": "eval:doc.enable_auto_invoicing == 1",
    "options": "Payment Terms Template"
+  },
+  {
+   "depends_on": "eval:doc.enable_auto_invoicing == 1",
+   "fieldname": "unbilled_days_remaining",
+   "fieldtype": "Int",
+   "label": "Unbilled Days Remaining",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "has_pending_final_period",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "Has Pending Final Period"
   }
  ],
  "links": [],
- "modified": "2026-08-19 15:47:24.192823",
+ "modified": "2026-08-24 16:06:41.329249",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "Contract",

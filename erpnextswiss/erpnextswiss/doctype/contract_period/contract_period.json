@@ -8,7 +8,8 @@
   "start_date",
   "end_date",
   "invoice",
-  "invoice_date"
+  "invoice_date",
+  "invoice_status"
  ],
  "fields": [
   {
@@ -37,11 +38,19 @@
    "fieldtype": "Date",
    "in_list_view": 1,
    "label": "Invoice Date"
+  },
+  {
+   "fieldname": "invoice_status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Invoice Status",
+   "options": "\nDraft\nReturn\nCredit Note Issued\nSubmitted\nPaid\nPartly Paid\nUnpaid\nUnpaid and Discounted\nPartly Paid and Discounted\nOverdue and Discounted\nOverdue\nCancelled\nInternal Transfer",
+   "read_only": 1
   }
  ],
  "istable": 1,
  "links": [],
- "modified": "2026-08-19 13:28:41.089350",
+ "modified": "2026-08-24 15:25:49.814252",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "Contract Period",

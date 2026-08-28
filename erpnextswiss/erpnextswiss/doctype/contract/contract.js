@@ -17,6 +17,12 @@ frappe.ui.form.on('Contract', {
                 filters: { 'docstatus': 1 }
             }
         }
+        if (frm.doc.enabled && frm.doc.has_pending_final_period) {
+            frm.dashboard.add_indicator(
+                __('Pending Final Invoice: {0} Days Remaining', [frm.doc.unbilled_days_remaining]),
+                'orange'
+            );
+        }
 	},
     before_save: function(frm) {
         if (frm.doc.__islocal) {

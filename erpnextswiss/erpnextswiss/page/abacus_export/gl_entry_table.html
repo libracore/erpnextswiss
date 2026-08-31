@@ -10,7 +10,7 @@
     {% for m in message %}
     <tr>
         <td>{{ m.date }}</td>
-        <td><a href="/desk#Form/{{ m.type }}/{{ m.name }}">{{ m.name }}</a></td>
+        <td><a href="/app/{{ frappe.router.slug(m.type) }}/{{ m.name }}">{{ m.name }}</a></td>
         <td>{{ m.account }}</td>
         <td>{{ m.amount }}</td>
     </tr>

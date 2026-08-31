@@ -46,7 +46,7 @@ frappe.payment_export = {
                             if (r.message.skipped.length > 0) {
                                 $('<p>' + __("Some payments were skipped due to errors (check the payment file for details): ") + '</p>').appendTo(parent);
                                 for (var i = 0; i < r.message.skipped.length; i++) {
-									$('<p><a href="/desk#Form/Payment Entry/'
+									$('<p><a href="/app/payment-entry/'
 									  + r.message.skipped[i] + '">' 
 									  + r.message.skipped[i] + '</a></p>').appendTo(parent);
 								}

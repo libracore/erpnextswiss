@@ -24,7 +24,7 @@ frappe.bankimport = {
 		// add menu button
 		this.page.add_menu_item(__("Match payments"), function() {
 			// navigate to bank import tool
-			window.location.href="/desk#match_payments";
+			window.location.href="/app/match_payments";
 		});
 		this.page.add_menu_item(__("Debug Template"), function() {
 			// navigate to bank import tool
@@ -198,7 +198,7 @@ frappe.bankimport = {
 		frappe.msgprint(__(message.message));
 		if (message.records) {
 			for (var i = 0; i < message.records.length; i++) {
-				$('<p><a href="/desk#Form/Payment Entry/'
+				$('<p><a href="/app/payment-entry/'
 				  + message.records[i] + '">' 
 				  + message.records[i] + '</a></p>').appendTo(parent);
 			}

@@ -8,6 +8,7 @@
 
 import frappe
 from frappe import _
+from frappe.utils import get_link_to_form
 import re
 
 # fetch supplier based on participant number
@@ -73,7 +74,7 @@ def check_defaults():
         missing_values.append(_("Default Tax Rate"))
         
     if len(missing_values) > 0:
-        return {'error': _("""{missing_values} not found. Please configure this in the <a href='/desk#Form/ERPNextSwiss Settings'>ERPNextSwiss settings</a>.""").format(missing_values=', '.join(missing_values))}
+        return {'error': _("{missing_values} not found. Please configure this in {link}.").format(missing_values=', '.join(missing_values), link=get_link_to_form("ERPNextSwiss Settings", "ERPNextSwiss Settings", _("ERPNextSwiss Settings")))}
     else:
         return defaults
 

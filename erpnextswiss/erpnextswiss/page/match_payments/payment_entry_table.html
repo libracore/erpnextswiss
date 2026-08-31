@@ -10,7 +10,7 @@
     {% for payment_entry in unallocated_payment_entries %}
     <tr>
         <td><input type="radio" id="rad{{ payment_entry.name }}" name="payment" value="{{ payment_entry.name }}"></td>
-        <td><a href="/desk#Form/Payment Entry/{{ payment_entry.name }}">{{ payment_entry.name }}</a></td>
+        <td><a href="/app/payment-entry/{{ payment_entry.name }}">{{ payment_entry.name }}</a></td>
         <td>{{ payment_entry.party }}</td>
         <td>{{ payment_entry.posting_date }}</td>
         <td>{{ payment_entry.paid_amount }}</td>

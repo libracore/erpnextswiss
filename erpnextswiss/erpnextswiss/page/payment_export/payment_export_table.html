@@ -10,7 +10,7 @@
     {% for payment in payments %}
     <tr>
         <td><input type="checkbox" id="chk{{ payment.name }}" name="{{ payment.name }}"></td>
-        <td><a href="/desk#Form/Payment Entry/{{ payment.name }}">{{ payment.name }}</a></td>
+        <td><a href="/app/payment-entry/{{ payment.name }}">{{ payment.name }}</a></td>
         <td>{{ payment.posting_date }}</td>
         <td>{{ payment.paid_to_account_currency }}&nbsp;{{ payment.paid_amount }}</td>
         <td>{{ payment.party }}</td>

@@ -24,7 +24,7 @@ frappe.match_payments = {
         // add menu button
         this.page.add_menu_item(__("Open bank import"), function() {
             // navigate to bank import tool
-            window.location.href="/desk#bankimport";
+            window.location.href="/app/bankimport";
 		});
         
 		// attach button handlers

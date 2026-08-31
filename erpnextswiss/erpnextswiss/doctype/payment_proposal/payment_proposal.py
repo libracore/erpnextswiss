@@ -11,7 +11,7 @@ import time
 from erpnextswiss.erpnextswiss.common_functions import get_building_number, get_street_name, get_pincode, get_city, get_primary_address, split_address_to_street_and_building
 from erpnextswiss.erpnextswiss.xml import validate_xml_against_xsd
 import html          # used to escape xml content
-from frappe.utils import cint, get_url_to_form, rounded
+from frappe.utils import cint, get_link_to_form, get_url_to_form, rounded
 from unidecode import unidecode     # used to remove German/French-type special characters from bank identifieres
 import os
 
@@ -53,20 +53,20 @@ class PaymentProposal(Document):
             pinv = frappe.get_doc("Purchase Invoice", purchase_invoice.purchase_invoice)
             # check addresses (mandatory in ISO 20022
             if not pinv.supplier_address:
-                document_errors.append( _("Address missing for purchase invoice <a href=\"/desk#Form/Purchase Invoice/{0}\">{0}</a>").format(pinv.name) )
+                document_errors.append( _("Address missing for purchase invoice {0}").format(get_link_to_form("Purchase Invoice", pinv.name)) )
             # check target account info
             if purchase_invoice.payment_type == "ESR":
                 if not purchase_invoice.esr_reference or not purchase_invoice.esr_participation_number:
-                    document_errors.append( _("ESR: missing transaction information (participant number or reference) in <a href=\"/desk#Form/Purchase Invoice/{0}\">{0}</a>").format(pinv.name) )
+                    document_errors.append( _("ESR: missing transaction information (participant number or reference) in {0}").format(get_link_to_form("Purchase Invoice", pinv.name)) )
             else:
                 supl = frappe.get_doc("Supplier", pinv.supplier)
                 if not supl.iban:
-                    document_errors.append( _("Missing IBAN for purchase invoice <a href=\"/desk#Form/Purchase Invoice/{0}\">{0}</a>").format(pinv.name) )
+                    document_errors.append( _("Missing IBAN for purchase invoice {0}").format(get_link_to_form("Purchase Invoice", pinv.name)) )
         # check expense records
         for expense_claim in self.expenses:
             emp = frappe.get_doc("Employee", expense_claim.employee)
             if not emp.bank_ac_no:
-                document_errors.append( _("Employee <a href=\"/desk#Form/Employee/{0}\">{0}</a> has no bank account number.").format(emp.name) )
+                document_errors.append( _("Employee {0} has no bank account number.").format(get_link_to_form("Employee", emp.name)) )
         if document_errors:
             frappe.throw( _("The following data issues prevent the creation of a valid payment proposal") + ":<br><table class='table'><tr><td>" + "</td></tr><tr><td>".join(document_errors) + "</td></tr></table>" );
         return
@@ -200,7 +200,7 @@ class PaymentProposal(Document):
             # add new payment record
             emp = frappe.get_doc("Employee", employee)
             if not emp.permanent_address:
-                frappe.throw( _("Employee <a href=\"/desk#Form/Employee/{0}\">{0}</a> has no address.").format(emp.name) )
+                frappe.throw( _("Employee {0} has no address.").format(get_link_to_form("Employee", emp.name)) )
             address_lines = (emp.permanent_address or "").split("\n")
             plz_city = address_lines[1].split(" ")
             cntry = frappe.get_value("Company", emp.company, "country")
@@ -234,7 +234,7 @@ class PaymentProposal(Document):
             # add new payment record
             emp = frappe.get_doc("Employee", salary.employee)
             if not emp.permanent_address:
-                frappe.throw( _("Employee <a href=\"/desk#Form/Employee/{0}\">{0}</a> has no address.").format(emp.name) )
+                frappe.throw( _("Employee {0} has no address.").format(get_link_to_form("Employee", emp.name)) )
             address_lines = emp.permanent_address.split("\n")
             plz_city = address_lines[1].split(" ")
             cntry = frappe.get_value("Company", emp.company, "country")

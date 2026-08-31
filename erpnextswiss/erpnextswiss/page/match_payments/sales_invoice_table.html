@@ -9,7 +9,7 @@
     {% for sales_invoice in unpaid_sales_invoices %}
     <tr>
         <td><input type="radio" id="rad{{ sales_invoice.name }}" name="invoice" value="{{ sales_invoice.name }}"></td>
-        <td><a href="/desk#Form/Sales Invoice/{{ sales_invoice.name }}">{{ sales_invoice.name }}</a></td>
+        <td><a href="/app/sales-invoice/{{ sales_invoice.name }}">{{ sales_invoice.name }}</a></td>
         <td>{{ sales_invoice.customer }}</td>
         <td>{{ sales_invoice.due_date }}</td>
         <td>{{ sales_invoice.outstanding_amount }}</td>

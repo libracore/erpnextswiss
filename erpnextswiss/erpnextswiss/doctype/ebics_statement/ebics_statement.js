@@ -34,7 +34,7 @@ function prepare_defaults(frm) {
                 locals.bank_wizard.receivable_account = r.message.receivable_account;
                 locals.bank_wizard.expense_payable_account = r.message.expense_payable_account;
             } else {
-                frappe.msgprint( __("Please set the <b>default accounts</b> in <a href=\"/desk#Form/Company/{0}\">{0}</a>.").replace("{0}", r.message.company) );
+                frappe.msgprint( __("Please set the default accounts in {0}.", [`<a href="/app/company/${r.message.company}">${r.message.company}</a>`]) );
             }
         }
     });
@@ -44,7 +44,7 @@ function prepare_defaults(frm) {
             if ((r.message) && (r.message.customer != "")) {
                 locals.bank_wizard.default_customer = r.message.customer;
             } else {
-                frappe.msgprint( __("Please set the <b>default customer</b> in <a href=\"/desk#Form/ERPNextSwiss Settings\">ERPNextSwiss Settings</a>.") );
+                frappe.msgprint( __("Please set the default customer in {0}.", [`<a href="/app/erpnextswiss-settings">${__("ERPNextSwiss Settings")}</a>`]) );
             }
         }
     }); 
@@ -54,7 +54,7 @@ function prepare_defaults(frm) {
             if ((r.message) && (r.message.supplier != "")) {
                 locals.bank_wizard.default_supplier = r.message.supplier;
             } else {
-                frappe.msgprint( __("Please set the <b>default supplier</b> in <a href=\"/desk#Form/ERPNextSwiss Settings\">ERPNextSwiss Settings</a>.") );
+                frappe.msgprint( __("Please set the default supplier in {0}.", [`<a href="/app/erpnextswiss-settings">${__("ERPNextSwiss Settings")}</a>`]) );
             }
         }
     });
@@ -64,7 +64,7 @@ function prepare_defaults(frm) {
             if ((r.message) && (r.message.account != "")) {
                locals.bank_wizard.intermediate_account = r.message.account;
             } else {
-                frappe.msgprint( __("Please set the <b>intermediate bank account</b> in <a href=\"/desk#Form/ERPNextSwiss Settings\">ERPNextSwiss Settings</a>.") );
+                frappe.msgprint( __("Please set the intermediate bank account in {0}.", [`<a href="/app/erpnextswiss-settings">${__("ERPNextSwiss Settings")}</a>`]) );
             }
         }
     }); 

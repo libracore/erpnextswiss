@@ -150,7 +150,7 @@ frappe.bank_wizard = {
                 if ((r.message) && (r.message.account != "")) {
                     document.getElementById("intermediate_account").value = r.message.account;
                 } else {
-                    frappe.msgprint( __("Please set the <b>intermediate bank account</b> in <a href=\"/desk#Form/ERPNextSwiss Settings\">ERPNextSwiss Settings</a>.") );
+                    frappe.msgprint( __("Please set the intermediate bank account in {0}.", [`<a href="/app/erpnextswiss-settings">${__("ERPNextSwiss Settings")}</a>`]) );
                 }
             }
         }); 
@@ -160,7 +160,7 @@ frappe.bank_wizard = {
                 if ((r.message) && (r.message.customer != "")) {
                     document.getElementById("default_customer").value = r.message.customer;
                 } else {
-                    frappe.msgprint( __("Please set the <b>default customer</b> in <a href=\"/desk#Form/ERPNextSwiss Settings\">ERPNextSwiss Settings</a>.") );
+                    frappe.msgprint( __("Please set the default customer in {0}.", [`<a href="/app/erpnextswiss-settings">${__("ERPNextSwiss Settings")}</a>`]) );
                 }
             }
         }); 
@@ -170,7 +170,7 @@ frappe.bank_wizard = {
                 if ((r.message) && (r.message.supplier != "")) {
                     document.getElementById("default_supplier").value = r.message.supplier;
                 } else {
-                    frappe.msgprint( __("Please set the <b>default supplier</b> in <a href=\"/desk#Form/ERPNextSwiss Settings\">ERPNextSwiss Settings</a>.") );
+                    frappe.msgprint( __("Please set the default supplier in {0}.", [`<a href="/app/erpnextswiss-settings">${__("ERPNextSwiss Settings")}</a>`]) );
                 }
             }
         }); 
@@ -190,7 +190,7 @@ frappe.bank_wizard = {
                     document.getElementById("expense_payable_account").value = r.message.expense_payable_account;
                     document.getElementById("auto_process_matches").value = r.message.auto_process_matches;
                 } else {
-                    frappe.msgprint( __("Please set the <b>default accounts</b> in <a href=\"/desk#Form/Company/{0}\">{0}</a>.").replace("{0}", r.message.company) );
+                    frappe.msgprint( __("Please set the default accounts in {0}.", [`<a href="/app/company/${r.message.company}">${r.message.company}</a>`]) );
                 }
             }
         }); 

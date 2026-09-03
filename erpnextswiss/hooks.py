@@ -135,6 +135,11 @@ doc_events = {
     "Contact": {
         "on_update": "erpnextswiss.erpnextswiss.nextcloud.contacts.send_contact_to_nextcloud",
         "on_trash": "erpnextswiss.erpnextswiss.nextcloud.contacts.delete_contact_from_nextcloud"
+    },
+    "Sales Invoice": {
+        "on_submit": "erpnextswiss.erpnextswiss.doctype.contract.contract.sync_contract_status",
+        "on_cancel": "erpnextswiss.erpnextswiss.doctype.contract.contract.sync_contract_status",
+        "on_update": "erpnextswiss.erpnextswiss.doctype.contract.contract.sync_contract_status"
     }
 }
 
@@ -161,7 +166,8 @@ doc_events = {
 scheduler_events = {
     "daily": [
         "erpnextswiss.erpnextswiss.doctype.inspection_equipment.inspection_equipment.check_calibration_status",
-        "erpnextswiss.erpnextswiss.ebics.background_sync"
+        "erpnextswiss.erpnextswiss.ebics.background_sync",
+        "erpnextswiss.erpnextswiss.doctype.contract.contract.process_auto_contract_invoices"
     ],
     "hourly": [
         "erpnextswiss.erpnextswiss.edi.process_incoming"

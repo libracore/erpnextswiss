@@ -22,7 +22,7 @@ The software comes as-is without any warranty.
 Requires an ERPNext server instance (refer to [https://github.com/frappe/erpnext](https://github.com/frappe/erpnext))
 
 ## Compatibility
-ERPNextSwiss is tested against libracore and ERPNext v15. There are compatibility branches for v11/v12/v13/v14/v15.
+ERPNextSwiss is tested against libracore and ERPNext v15. There are compatibility branches for v11/v12/v13/v14/v15/v16.
 
 ERPNextSwiss is also compatible with Dokos ([https://dokos.io](https://dokos.io))
 

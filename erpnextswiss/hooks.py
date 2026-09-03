@@ -139,6 +139,7 @@ doc_events = {
     "Sales Invoice": {
         "on_submit": "erpnextswiss.erpnextswiss.doctype.contract.contract.sync_contract_status",
         "on_cancel": "erpnextswiss.erpnextswiss.doctype.contract.contract.sync_contract_status",
+        "on_update": "erpnextswiss.erpnextswiss.doctype.contract.contract.sync_contract_status"
     }
 }
 

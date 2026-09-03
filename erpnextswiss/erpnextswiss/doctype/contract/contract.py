@@ -6,7 +6,7 @@ from __future__ import unicode_literals
 import frappe
 import json
 from frappe.model.document import Document
-from frappe.utils import add_days, add_months, getdate, today
+from frappe.utils import add_days, add_months, getdate, today, date_diff
 
 class Contract(Document):
 	pass
@@ -59,10 +59,13 @@ def process_auto_contract_invoices():
 		"Contract",
         filters={
 			"next_invoice_date": ["<=", today()],
-			"end_date": [">=", today()],
         	"status": "Active",
         	"enable_auto_invoicing": 1
         },
+		or_filters=[
+            ["end_date", ">=", today()],
+            ["end_date", "is", "not set"]
+        ],
         pluck="name"
     )
 	
@@ -76,7 +79,8 @@ def process_auto_contract_invoices():
 				title=f"Auto-Invoicing Failed for {contract_name}",
 				message=frappe.get_traceback()
 			)
-		
+	
+	# deactivate expired contracts
 	try:
 		set_contracts_inactive()
 		frappe.db.commit()
@@ -142,15 +146,18 @@ def set_contracts_inactive():
 			"status": "Active",
 			"enable_auto_invoicing": 1
 		},
-		fields=['name']
+		pluck="name"
 	)
 
-	for contract in contracts_to_close:
+	for contract_name in contracts_to_close:
 		try:
-			flag_remaining_unbilled_period(contract)
-			contract_doc = frappe.get_doc("Contract", contract.get)
-			contract_doc.status = "Inactive"
+			contract_doc = frappe.get_doc("Contract", contract_name)
+			if not contract_doc.end_date:
+				return
 
+			flag_remaining_unbilled_period(contract_doc)
+
+			contract_doc.status = "Inactive"
 			contract_doc.flags.ignore_permission = True
 			contract_doc.save()
 		except Exception:
@@ -160,16 +167,33 @@ def set_contracts_inactive():
 			)
 	return
 
-# if a contract has TODO
 def flag_remaining_unbilled_period(contract):
-	return
+	last_billed = contract.last_execution_date or contract.start_date
+
+	if not last_billed:
+		return
+		
+	unbilled_days = date_diff(contract.end_date, last_billed)
+	
+	if unbilled_days > 0:
+		contract.unbilled_days_remaining = unbilled_days
+		contract.has_pending_final_period = 1
 
 def sync_contract_status(doc, method):
-	rows = frappe.get_all("Contract Period", filters={"invoice": doc.name}, fields=["parent", "name"])
+	if not doc.name:
+		return
 
-	for row in rows:
+	if doc.amended_from:
+		relink_amended_invoice(doc)
+
+	period_rows = frappe.get_all("Contract Period", filters={"invoice": doc.name}, fields=["parent", "name"])
+
+	if not period_rows:
+		return
+
+	for row in period_rows:
 		contract = frappe.get_doc("Contract", row.parent)
-		for child in contract.billed_periods:
+		for child in contract.periods:
 			if child.name == row.name:
 				child.invoice_status = doc.status
 		contract.save(ignore_permissions=True)

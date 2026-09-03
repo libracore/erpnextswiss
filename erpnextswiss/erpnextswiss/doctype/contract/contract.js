@@ -17,11 +17,18 @@ frappe.ui.form.on('Contract', {
                 filters: { 'docstatus': 1 }
             }
         }
-        if (frm.doc.enabled && frm.doc.has_pending_final_period) {
+
+        if (frm.doc.has_pending_final_period) {
             frm.dashboard.add_indicator(
                 __('Pending Final Invoice: {0} Days Remaining', [frm.doc.unbilled_days_remaining]),
                 'orange'
             );
+
+            frm.add_custom_button(__("Mark as billed"), function() {
+                frm.set_value('has_pending_final_period', 0);
+                frm.set_value('unbilled_days_remaining', 0);
+                frm.save();
+            })
         }
 	},
     before_save: function(frm) {

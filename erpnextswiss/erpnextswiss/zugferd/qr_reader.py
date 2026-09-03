@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018-2024, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2018-2026, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
 #
 #
 
-import fitz             # part of pymupdf (note: for Py3.5, use pymupdf==1.16.18)
+import pymupdf             # (note: for Py3.5, use pymupdf==1.16.18)
 import os
 from PIL import Image
 import cv2              # part of opencv-python
@@ -22,7 +22,7 @@ def find_qr_content_from_pdf(filename):
     codes = []
     
     # open PDF file
-    pdf_file = fitz.open(filename)
+    pdf_file = pymupdf.open(filename)
 
     # try to load zxing-cpp for improved reading performance
     has_zxingcpp = False
@@ -38,7 +38,7 @@ def find_qr_content_from_pdf(filename):
         try:
             pix = page.get_pixmap(dpi=settings['dpi'])
         except:
-            pix = page.getPixmap(matrix=fitz.Matrix(2, 2))                  # fall back to v1.16.18
+            pix = page.getPixmap(matrix=pymupdf.Matrix(2, 2))                  # fall back to v1.16.18
         # cv2 reader
         qcd = cv2.QRCodeDetector()
         # get bytes array of image

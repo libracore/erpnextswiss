@@ -162,7 +162,6 @@ def set_contracts_inactive():
 
 # if a contract has TODO
 def flag_remaining_unbilled_period(contract):
-	if doc.
 	return
 
 def sync_contract_status(doc, method):

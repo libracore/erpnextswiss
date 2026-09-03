@@ -342,3 +342,12 @@ Default Tax Rate,Taux de taxe par défaut,
 Final reminder,Dernier rappel,
 First reminder,Premier rappel,
 Second reminder,Deuxième rappel,
+Mark as billed,Marquer comme facturé
+Auto Submit Invoices,Soumettre automatiquement les factures
+Last Execution Date,Dernière date d'exécution
+Next Invoice Date,Prochaine date de facturation
+Set Invoice Date Manually,Définir manuellement la date de facturation
+Unbilled Days Remaining,Jours non facturés restants
+Periods,Périodes
+"Pending Final Invoice ({0} Days)","Facture finale en attente ({0} jours)"
+"Pending Final Invoice: {0} Days Remaining","Facture finale en attente : {0} jours restants"

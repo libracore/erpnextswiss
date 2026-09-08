@@ -59,14 +59,10 @@ def create_folder(folder, parent):
 
 
 def get_pdf_data(doctype, name, print_format=None):
-    """Document -> HTML -> PDF."""
-    html = frappe.get_print(doctype, name, print_format)
-    try:
-        pdf = frappe.utils.pdf.get_pdf(html, print_format=print_format)
-    except:
-        # frappe-versions of the framework do not support the print_format specifier
-        pdf = frappe.utils.pdf.get_pdf(html)
-    return pdf
+    """Document -> PDF."""
+    # This direct approach ensures that Sales Invoices get their ZUGFeRD data attached,
+    # which is not the case if we generate HTML code and then convert it to PDF
+    return frappe.get_print(doctype, name, print_format, as_pdf=True)
 
 
 def save_and_attach(content, to_doctype, to_name, folder, hashname=None, is_private=1, file_name=None):

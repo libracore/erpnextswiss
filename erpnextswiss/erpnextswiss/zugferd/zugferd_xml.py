@@ -14,7 +14,7 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 try:            # factur-x v3.0 onwards
     from facturx import xml_check_xsd
-except:         # factur-x before v3.0 
+except:         # factur-x before v3.0
     from facturx import check_facturx_xsd as xml_check_xsd
 from erpnextswiss.erpnextswiss.zugferd.codelist import get_unit_code
 import html          # used to escape xml content
@@ -29,7 +29,7 @@ def create_zugferd_xml(sales_invoice, verify=True):
         data = prepare_data(sales_invoice)
 
         xml = frappe.render_template('erpnextswiss/erpnextswiss/zugferd/en16931.html', data)
-        
+
         # verify the generated xml
         if verify:
             try:
@@ -139,7 +139,7 @@ def prepare_data(sales_invoice):
                 data['taxes'].append(tax_data)
         else:
             data['overall_tax_rate_percent'] = 0
-        
+
         company_address = get_primary_address(target_name=sinv.company, target_type="Company")
         if company_address:
             data['company_address'] = {
@@ -156,10 +156,11 @@ def prepare_data(sales_invoice):
                 'pincode': "",
                 'city': "",
                 'country_code': "CH"
-            }            
-        customer_address = frappe.get_doc("Address", sinv.customer_address)
+            }
+        # get_doc raises on an empty link, so ensure customer_address is set
+        customer_address = frappe.get_doc("Address", sinv.customer_address) if sinv.customer_address else None
         if customer_address:
-            customer_country_code = frappe.get_value("Country", customer_address.country, "code").upper()
+            customer_country_code = (frappe.get_value("Country", customer_address.country, "code") or "").upper()
             data['customer_address'] = {
                 'address_line1': html.escape(customer_address.address_line1 or ""),
                 'address_line2': html.escape(customer_address.address_line2 or ""),
@@ -175,9 +176,11 @@ def prepare_data(sales_invoice):
                 'city': "",
                 'country_code': "CH"
             }
-        shipping_address = frappe.get_doc("Address", sinv.shipping_address_name)
+        # No separate shipping address means delivery to the billing address. Emitting an empty
+        # ShipToTradeParty instead would state a delivery country the invoice never had.
+        shipping_address = frappe.get_doc("Address", sinv.shipping_address_name) if sinv.shipping_address_name else customer_address
         if shipping_address:
-            shipping_country_code = frappe.get_value("Country", shipping_address.country, "code").upper()
+            shipping_country_code = (frappe.get_value("Country", shipping_address.country, "code") or "").upper()
             data['shipping_address'] = {
                 'address_line1': html.escape(shipping_address.address_line1 or ""),
                 'address_line2': html.escape(shipping_address.address_line2 or ""),
@@ -192,7 +195,7 @@ def prepare_data(sales_invoice):
                 'pincode': "",
                 'city': "",
                 'country_code': "CH"
-            }         
+            }
 
         return data
     except Exception as err:

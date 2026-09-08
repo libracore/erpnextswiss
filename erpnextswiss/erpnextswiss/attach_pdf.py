@@ -60,6 +60,11 @@ def create_folder(folder, parent):
 
 def get_pdf_data(doctype, name, print_format=None):
     """Document -> PDF."""
+    # Always pass a print format, even if the default one:
+    # This is needed for get_pdf() to read the disable_smart_shrinking setting
+    # (without this setting, content gets scaled down excessively by wkhtmltopdf)
+    print_format = print_format or frappe.get_meta(doctype).default_print_format
+
     # This direct approach ensures that Sales Invoices get their ZUGFeRD data attached,
     # which is not the case if we generate HTML code and then convert it to PDF
     return frappe.get_print(doctype, name, print_format, as_pdf=True)

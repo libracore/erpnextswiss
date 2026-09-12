@@ -1,9 +1,10 @@
 # KT Banking: verbindliche Erweiterung des Plattformziels
 
-Stand: 12.09.2026. Auftrag: Bankanbindung anhand des Banking-Briefings verbessern,
+Stand: 13.09.2026. Auftrag: Bankanbindung anhand des Banking-Briefings verbessern,
 updatefest innerhalb der vorhandenen Swiss-App. Bestehenden Zahlungsabgleich und
 bestehende Zahlungsvorschlaege integrieren, nicht neu entwickeln.
-**Status: Spezifikation und erstes Codeinventar, keine aktivierte Bankanbindung.**
+**Status: Spezifikation, lesendes Laufzeitinventar und offline getesteter
+Empfangskern; keine aktivierte Bankanbindung.**
 
 ## Quelle und Vorrang
 
@@ -100,7 +101,8 @@ Composer-Lock und Storage-Callback-Changelog. Keine Premium-Produktabhaengigkeit
 
 Gepruefter unveraenderter Basiscommit: `e102c3279394aaf5e54bad8a29700f4bf8940f2d`.
 Die fremden/uncommitted Aenderungen im Hauptcheckout werden weder uebernommen
-noch verworfen. Noch kein Live-Hook-/Server-Script-/Kontorechteaudit in BK-01.
+noch verworfen. Das nachfolgende Laufzeitinventar ergaenzt diese Quellpruefung;
+ein vollstaendiger personenbezogener Kontorechte-/Seiteneffekttest bleibt offen.
 
 | Befund im vorhandenen Code | Konsequenz fuer die Integration |
 |---|---|
@@ -295,11 +297,47 @@ Offene Abgleichfaelle sind ein regulaerer Zustand. Keine Behauptung eines
 
 ## Stand Dieses Inkrements
 
-Nur diese Ziele/Abnahmen und das erste lesende Codeinventar sind hinzugefuegt.
-Die nachtraegliche Umfangskorrektur ist eingearbeitet: Zahlungsabgleich und
-Zahlungsvorschlaege gelten als bestehend, neu zu liefern ist deren Bankanbindung.
-Kein Produktionskonto gelesen, keine Finanzdaten geschrieben, kein Gateway oder
-Banking-Modul implementiert, kein Bankkontakt oder Deploy. BK-01 bleibt teilweise
-offen; die weiteren Anbindungsnachweise stehen aus. BK-15/16 setzen eine separate
-Freigabe voraus und sind keine stillschweigende Voraussetzung fuer den ersten
-Leseanschluss. Die vollstaendige Plattform- und Bankanbindungs-Abnahme fehlt.
+Die Umfangskorrektur bleibt verbindlich: Zahlungsabgleich und Zahlungsvorschlaege
+sind vorhanden; neu zu liefern ist deren Bankanbindung, nicht deren Neuerstellung.
+
+- BK-01: `scripts/banking_readiness_inventory.py` wurde in einer explizit
+  READ-ONLY-Datenbanktransaktion im laufenden Frappe-Container ausgefuehrt, danach
+  Rollback/Verbindungsabbau. Bericht enthaelt App-Versionen, Quellhashes,
+  DocType-/Rechtemetadaten, relevante Hooks/Scheduler und aggregierte Kontopruefung.
+  Keine Zugangsdaten, IBANs, Einzelbetraege oder Bank-/Parteibezeichnungen werden
+  ausgegeben. Es erfolgt kein EBICS-Clientimport oder Bankkontakt.
+- Laufzeitbestand bestaetigt Payment Proposals und Payment Entries sowie gueltig
+  zugeordnete CHF-/EUR-Firmenbankkonten. Keine EBICS-Verbindung ist angelegt oder
+  aktiviert. Native Bank Transaction Rules haben einen bestehenden Scheduler;
+  Payment Entry ist durch HRMS ueberschrieben und durch Projekt-/Spesenhooks
+  ergaenzt. Damit bleiben echte integrationsweite Seiteneffekttests erforderlich.
+  Git-Commits sind im Produktionsimage nicht vorhanden; Versionen/Quellhashes
+  werden nicht als gleichwertiger Release-Commitnachweis ausgegeben.
+- BK-03/05 teilweise: `gateway/ebics` enthaelt einen inaktiven Bibliothekskern mit
+  festem BTD-Leseprofil, verschluesseltem transaktionalem Originaljournal,
+  Teilnehmer-Prozesssperre und Wiederanlauf ohne automatischen Wiederabruf.
+  Speicherung samt unabhaengiger Ruecklesepruefung erfolgt vor positiver Quittung.
+- Offline bestanden: 133 PHP-Pruefungen mit echter gepinnter EBICS-Bibliothek,
+  signierter simulierter Bank, unabhaengigen Prozessen und SIGKILL; zusaetzlich
+  echter SQLITE_FULL-Test in einem isolierten 1-MiB-tmpfs mit erfolgreicher
+  Wiederaufnahme. Vier Python-Tests pruefen das lesende Inventar. Eine eigene
+  GitHub-CI prueft diese Grenzen ohne Bankzugang; ihr Laufstatus ist separat vom
+  lokal/isoliert erbrachten Testnachweis zu fuehren.
+- Gesamtsyntaxpruefung bestanden. Der unveraenderte allgemeine Mutation-Guard
+  meldet `scripts/item_tools.py:purge_supplier_hints_from_item_descriptions`.
+  Derselbe Fehler wurde im separat exportierten Ausgangscommit `fc44290`
+  reproduziert; keine neue Regression des Empfangskerns und kein pauschal
+  gruener Gesamtstatus. Die vorhandenen/fremden Reparaturen werden nicht vermischt.
+- SDK 3.2.1 und Git-Commit wurden tatsaechlich geprueft und gepinnt. Abweichende
+  Packagist-/Git-Referenzen wurden erkannt; Lockfile und Referenztest verhindern
+  eine unbemerkte Abweichung. MIT-Lizenz und benoetigte PHP-Erweiterungen geprueft;
+  kein kostenpflichtiger Gateway-Service oder zusaetzlicher PDF-Generator noetig.
+
+Details, Quellen, Testbefehle und Grenzen: [Empfangskern](../gateway/ebics/README.md).
+Der lokale Laufzeitbericht bleibt ausserhalb des oeffentlichen Repositories.
+Keine Finanzdaten geschrieben, kein Produktionslayout/-ablauf geaendert, kein
+Bankkontakt und kein Deploy. Es gibt noch keinen nutzbaren HTTP-Gateway oder
+ERP-Importadapter. BK-01, sichere Konfiguration/Schluessel, mTLS, Transportlimits,
+ZIP/XML/Importuebergabe, Rechte, Restore und Bankpilot bleiben offen. BK-15/16
+setzen eine separate Freigabe voraus. Die vollstaendige Plattform- und
+Bankanbindungs-Abnahme fehlt; dieser Teilnachweis ersetzt sie nicht.

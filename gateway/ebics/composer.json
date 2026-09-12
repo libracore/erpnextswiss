@@ -1,0 +1,16 @@
+{
+  "name": "ktwaerme/swiss-ebics-gateway",
+  "description": "Internal read-only EBICS transport foundation for ERPNextSwiss",
+  "type": "project",
+  "license": "AGPL-3.0-or-later",
+  "repositories": [{"type": "git", "url": "https://github.com/ebics-api/ebics-client-php.git"}],
+  "require": {
+    "php": "~8.5.0",
+    "ext-pdo_sqlite": "*",
+    "ext-posix": "*",
+    "ext-sodium": "*",
+    "ebics-api/ebics-client-php": "3.2.1"
+  },
+  "autoload": {"psr-4": {"KT\\Banking\\": "src/"}},
+  "config": {"allow-plugins": {}, "sort-packages": true}
+}

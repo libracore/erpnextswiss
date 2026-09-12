@@ -1,0 +1,49 @@
+name: Bank gateway offline contracts
+
+on:
+  pull_request:
+    paths:
+      - "gateway/ebics/**"
+      - "scripts/banking_readiness_inventory.py"
+      - "tests/test_banking_readiness_inventory.py"
+      - ".github/workflows/bank-gateway-ci.yml"
+  push:
+    branches: [v16, main]
+    paths:
+      - "gateway/ebics/**"
+      - "scripts/banking_readiness_inventory.py"
+      - "tests/test_banking_readiness_inventory.py"
+      - ".github/workflows/bank-gateway-ci.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bank-gateway-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  offline-receipt-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Read-only inventory tests
+        run: python3 -m unittest discover -s tests -v
+      - name: Build pinned offline test image
+        run: docker build --target test -t kt-bank-gateway-test gateway/ebics
+      - name: Receipt, cryptography, restart and concurrency contracts
+        run: >-
+          docker run --rm --network none --cap-drop ALL --security-opt no-new-privileges
+          --read-only --tmpfs /tmp:rw,noexec,nosuid,size=64m --memory 256m --cpus 1.5
+          kt-bank-gateway-test
+      - name: Real full-disk failure without bank acknowledgement
+        run: >-
+          docker run --rm --network none --cap-drop ALL --security-opt no-new-privileges
+          --read-only --tmpfs /tmp:rw,noexec,nosuid,size=32m
+          --tmpfs /kt-disk-full:rw,noexec,nosuid,uid=10001,gid=10001,mode=0700,size=1m
+          --memory 256m --cpus 1.5 -e KT_GATEWAY_DISK_FULL_TEST=1
+          kt-bank-gateway-test php tests/full_disk.php

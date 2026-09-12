@@ -217,3 +217,30 @@ jobs:
       - name: Run ERPNextSwiss tests
         working-directory: frappe-bench
         run: bench --site "$TEST_SITE" run-tests --app erpnextswiss
+
+      - name: Compare native Workspace rendering through old and direct URLs
+        working-directory: frappe-bench
+        run: |
+          bench build --app erpnextswiss
+          npm ci --ignore-scripts --prefix apps/erpnextswiss/tests/browser
+          apps/erpnextswiss/tests/browser/node_modules/.bin/playwright install --with-deps chromium
+          bench --site "$TEST_SITE" execute erpnextswiss.erpnextswiss.tests.test_workspace_routes_native.prepare_browser_site
+          bench use "$TEST_SITE"
+          bench serve --port 8000 > workspace-browser-server.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 60); do
+            if curl --silent --fail http://127.0.0.1:8000/login >/dev/null; then break; fi
+            sleep 1
+          done
+          node apps/erpnextswiss/tests/browser/workspace_routes.cjs
+
+      - name: Preserve Workspace browser evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: workspace-browser-evidence
+          path: |
+            frappe-bench/apps/erpnextswiss/tests/browser/artifacts/
+            frappe-bench/workspace-browser-server.log
+          if-no-files-found: ignore

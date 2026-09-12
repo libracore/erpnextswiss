@@ -16,6 +16,8 @@ LEGACY_PAGE_ROLES = {"System Manager", "Accounts Manager", "Accounts User"}
 
 def retire_workspace_route_pages():
     """Use native rename so roles, versions, attachments and links survive upgrades."""
+    from frappe.model.rename_doc import rename_doc
+
     frappe.only_for("System Manager")
     candidates = []
     for name, title in WORKSPACE_ROUTE_PAGES.items():
@@ -32,8 +34,8 @@ def retire_workspace_route_pages():
     # Never merge, delete, recreate or bypass rename validation. Source files for
     # the technical Page names keep previously linked Page references functional.
     for name in candidates:
-        frappe.rename_doc("Page", name, retired_route_page_name(name), force=True,
-                          ignore_permissions=True, show_alert=False, rebuild_search=False)
+        rename_doc("Page", name, retired_route_page_name(name), force=True,
+                   ignore_permissions=True, show_alert=False, rebuild_search=False)
     return candidates
 
 

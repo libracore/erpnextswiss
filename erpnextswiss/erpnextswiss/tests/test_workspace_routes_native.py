@@ -1,4 +1,5 @@
 import json
+import os
 import unittest
 from uuid import uuid4
 
@@ -92,3 +93,23 @@ class TestWorkspaceRoutesNative(unittest.TestCase):
         frappe.set_user("Guest")
         with self.assertRaises(frappe.PermissionError):
             retire_workspace_route_pages()
+
+
+def prepare_browser_site():
+    """Prepare only the disposable GitHub CI site, never an installed customer site."""
+    if (frappe.local.site != "test_site" or not frappe.conf.allow_tests
+            or os.environ.get("GITHUB_ACTIONS") != "true"):
+        raise RuntimeError("Browser fixtures are restricted to the disposable GitHub test_site")
+    frappe.set_user("Administrator")
+    for app in ("frappe", "erpnext"):
+        frappe.db.set_value("Installed Application", {"app_name": app}, "is_setup_complete", 1)
+    frappe.db.set_single_value("System Settings", "setup_complete", 1)
+    frappe.db.set_single_value("System Settings", "enable_onboarding", 0)
+    fixture = TestWorkspaceRoutesNative()
+    for name in WORKSPACE_ROUTE_PAGES:
+        if not frappe.db.exists("Page", retired_route_page_name(name)):
+            fixture.create_legacy_proxy(name)
+    retire_workspace_route_pages()
+    frappe.db.commit()
+    frappe.clear_cache()
+    return {"site": "test_site", "retained_pages": len(WORKSPACE_ROUTE_PAGES)}

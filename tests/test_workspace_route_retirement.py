@@ -37,6 +37,7 @@ class WorkspaceRouteRetirementTests(unittest.TestCase):
         )
         patcher = patch.dict(sys.modules, {
             "frappe": fake,
+            "frappe.model.rename_doc": SimpleNamespace(rename_doc=fake.rename_doc),
         })
         patcher.start()
         self.addCleanup(patcher.stop)

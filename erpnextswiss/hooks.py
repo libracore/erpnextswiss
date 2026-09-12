@@ -31,6 +31,7 @@ app_include_js = [
     "/assets/erpnextswiss/js/swiss_common.js",
     "/assets/erpnextswiss/js/iban.js",
     "/assets/erpnextswiss/js/email.js",
+    "/assets/erpnextswiss/js/desk_workspace_routes.js",
     "/assets/erpnextswiss/js/desk_sidebar_safety.js"
 ]
 

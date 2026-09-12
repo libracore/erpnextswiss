@@ -117,6 +117,49 @@ noch verworfen. Noch kein Live-Hook-/Server-Script-/Kontorechteaudit in BK-01.
 Diese Befunde sind Quellcodebeobachtungen, kein Nachweis aktiver Bankverbindungen,
 erfolgter Fehlbuchungen oder aktueller Produktiv-Hooks. Kein Bankabruf wurde gestartet.
 
+### Vorhandene Uebergabepunkte: keine Neuentwicklung
+
+Weiteres lesendes Inventar am selben Basiscommit; keine Ausfuehrung einer der
+nachfolgenden Finanz- oder Bankmethoden. Pfade sind relativ zum Repository.
+
+| Bestand | Konkreter Einstieg | Bedeutung fuer den Bankanschluss |
+|---|---|---|
+| Bank-Wizard samt Vorschau | `erpnextswiss/erpnextswiss/page/bank_wizard/bank_wizard.py`: `read_camt053_meta`, `read_camt053`, `read_camt_transactions`, `render_transactions` | Bereits vorhandene Auszugs-/Vorschlagsaufbereitung und Oberflaeche pruefen und anbinden; keine zweite Abgleichseite |
+| Manueller Bankimport, Vorlagen und camt.053/054 | `erpnextswiss/erpnextswiss/page/bankimport/bankimport.py`: `parse_file`, `parse_by_template`, `read_camt053`, `read_camt054` | Rueckfallweg erhalten; vor Wiederverwendung Parser und buchende Seiteneffekte trennen, `auto_submit=False` allein ist kein Nachweis eines schreibfreien Parsers |
+| Zahlungsabgleich | `erpnextswiss/erpnextswiss/page/match_payments/match_payments.py`: `match`, `auto_match`, `submit`, `submit_all` | Bestehende Zuordnungs-/Freigabeschritte erhalten; neue Bankdaten daran beziehungsweise an den eingesetzten nativen Abgleich uebergeben, nicht erneut implementieren |
+| Zahlungsvorschlaege | `erpnextswiss/erpnextswiss/doctype/payment_proposal/payment_proposal.py`: `create_payment_proposal`, `PaymentProposal.create_bank_file` | Vorhandene Vorschlaege und Export bleiben fuehrend. Der Export liefert bereits `content`, `file_name`, `message_id` |
+| pain.001.001.09-Export | `PaymentProposal.create_bank_file`, `pain-001-001-09.html`, `pain-001-001-09_single_payment.html` im selben DocType-Verzeichnis | Version 09 und Einzel-/Sammelmodus sind bereits vorhanden; Bankkompatibilitaet und unveraenderte Wiederholung pruefen, keinen zweiten Exporter schreiben |
+| Export bestehender Zahlungsbelege | `erpnextswiss/erpnextswiss/page/payment_export/payment_export.py`: `generate_payment_file`, `generate_pain001` | Ebenfalls Bestand; keine neue Belegerzeugung nur fuer den Banktransport |
+| EBICS-Verbindung und Tagesjob | `erpnextswiss/erpnextswiss/doctype/ebics_connection/ebics_connection.py`: `get_client`, `get_transactions`, `execute_payment`; `erpnextswiss/erpnextswiss/ebics.py` | Den vorhandenen Anschluss ersetzen/haerten, pro Konto keinen zweiten gleichzeitigen Transport aktivieren |
+| Nachrichtenschemas | `erpnextswiss/public/xsd/`: unter anderem `camt.053.001.08.xsd`, `camt.054.001.08.xsd`, `camt.054.001.08.ch.02.xsd` | Version-08-Schemadateien sind bereits enthalten; Vorhandensein beweist noch keine aktuelle Verwendung oder bestandene Bankabnahme |
+
+Weitere konkret beobachtete Anschlussrisiken, **noch nicht repariert oder live
+nachgewiesen**:
+
+1. `payment_proposal.js:154` ruft in `transmit_ebics` den Pfad mit dem Tippfehler
+   `ebics_conncetion` auf. Der vorhandene Server-Einstieg `execute_payment` ist zudem
+   eine DocType-Instanzmethode, keine gleichnamige Modulfunktion. Vor Anbindung den
+   tatsaechlichen berechtigten Dokumentmethoden-Aufruf testen; nicht nur den Tippfehler
+   ersetzen und dadurch ungeprueften Zahlungsversand aktivieren.
+2. `ebics_connection.py:178` bezeichnet den Vorgang als Upload, ruft aber
+   `client.BTD(CCT, xml_transaction)` auf. Die konkrete Sendemethode und ihre
+   Bestaetigungs-/Fehlervertraege am gewaehlten Client und Bankprofil verifizieren.
+   Dieser Befund beruht auf Code, nicht auf einem ausgefuehrten Bankversuch.
+3. `PaymentProposal.create_bank_file` erzeugt bei jedem Aufruf `create_message_id()`.
+   Der spaetere Versandadapter muss exakt die geprueften Exportbytes und diese ID
+   speichern. Bei unklarem Upload nicht durch erneuten Export neue Identitaeten
+   erzeugen. Die bestehende Exportfunktion wird dafuer nicht verdoppelt.
+4. `bank_wizard.read_camt053_meta` liest Salden als `float`; `read_camt053` ersetzt
+   die Kontowahl durch den ersten IBAN-Treffer und faellt ohne Treffer auf `n/a`
+   mit `skip_company_filter=True` zurueck. Vor automatischer Bankuebergabe braucht
+   dieser Pfad explizites berechtigtes Konto-/Waehrungsmapping und exakte Betraege.
+5. Bestehende Lese-/Match-Endpunkte und aktive Hooks muessen auf der Gesamtinstallation
+   mit Kontorechten geprueft werden. Eine neue sichere Gateway-Verbindung allein
+   beweist keine sichere Weitergabe ueber bereits vorhandene Reports oder APIs.
+
+BK-01 bleibt offen fuer das Live-Inventar, tatsaechliche Benutzer-/Kontorechte und
+die Auswahl des eingesetzten Abgleichwegs. Diese Liste ersetzt keinen Banktest.
+
 ## Arbeitspakete und Nachweise
 
 Die Integrationsnachweise starten als **offen**, BK-01 ist durch das obige Inventar

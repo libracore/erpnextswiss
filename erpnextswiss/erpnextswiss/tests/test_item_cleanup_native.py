@@ -16,21 +16,29 @@ class TestItemCleanupNative(unittest.TestCase):
         frappe.set_user("Administrator")
         self.savepoint = "cleanup_" + uuid4().hex
         frappe.db.savepoint(self.savepoint)
+        self.addCleanup(self.rollback_test)
         self.item_code = "KT-CLEANUP-TEST-" + uuid4().hex
         if not frappe.db.exists("UOM", "Nos"):
             frappe.get_doc({"doctype": "UOM", "uom_name": "Nos"}).insert()
+        root = frappe.db.get_value("Item Group", {"is_group": 1, "lft": 1}, "name")
+        if not root:
+            root = frappe.get_doc({"doctype": "Item Group",
+                                   "item_group_name": "KT-CLEANUP-ROOT-" + uuid4().hex,
+                                   "is_group": 1}).insert().name
         group_name = "KT-CLEANUP-GROUP-" + uuid4().hex
         group = frappe.get_doc({"doctype": "Item Group", "item_group_name": group_name,
-                               "parent_item_group": "All Item Groups", "is_group": 0}).insert()
+                               "parent_item_group": root, "is_group": 0}).insert()
         self.before = "Technical title<br>Supplier: Synthetic supplier<br>Technical detail"
         frappe.get_doc({"doctype": "Item", "item_code": self.item_code, "item_name": self.item_code,
                         "item_group": group.name, "stock_uom": "Nos", "is_stock_item": 0,
                         "description": self.before}).insert()
 
-    def tearDown(self):
+    def rollback_test(self):
         frappe.set_user("Administrator")
-        frappe.db.rollback(save_point=self.savepoint)
-        frappe.set_user(self.user)
+        try:
+            frappe.db.rollback(save_point=self.savepoint)
+        finally:
+            frappe.set_user(self.user)
 
     def test_real_http_method_registry_denies_get_and_accepts_post(self):
         for method in ("GET", "POST"):

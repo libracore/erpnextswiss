@@ -100,6 +100,8 @@ def download_pdf(
 
     permission_source = doc if hasattr(doc, "doctype") else frappe.get_doc(doctype, name)
     validate_print_permission(permission_source)
+    if doc is None:
+        doc = permission_source
 
     print_kwargs = {
         "doc": doc,

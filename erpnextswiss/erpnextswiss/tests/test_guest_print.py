@@ -1,4 +1,5 @@
 import contextlib
+import json
 from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
@@ -159,3 +160,63 @@ class PrintFormatSafetyTests(unittest.TestCase):
         self.assertEqual(response.filecontent, b"pdf")
         self.assertEqual(response.type, "pdf")
         print_language.assert_called_once()
+
+    def test_missing_document_variants_render_the_permission_checked_document(self):
+        document = SimpleNamespace(doctype="Quotation", name="QTN-1")
+        for value in (None, "", "None", "null", "undefined", "  NONE  "):
+            with (
+                self.subTest(doc=value),
+                patch.object(print_format_safety.frappe, "get_doc", return_value=document) as get_doc,
+                patch.object(print_format_safety, "validate_print_permission") as validate,
+                patch.object(print_format_safety.frappe, "get_print", return_value=b"pdf") as render,
+                patch.object(print_format_safety, "print_language", return_value=contextlib.nullcontext()),
+                patch.object(print_format_safety.frappe, "local", SimpleNamespace(response=SimpleNamespace())),
+            ):
+                print_format_safety.download_pdf("Quotation", "QTN-1", doc=value)
+                get_doc.assert_called_once_with("Quotation", "QTN-1")
+                validate.assert_called_once_with(document)
+                self.assertIs(render.call_args.kwargs["doc"], document)
+
+    def test_supplied_preview_is_not_replaced_by_the_persisted_document(self):
+        document = SimpleNamespace(doctype="Quotation", name="QTN-1")
+        preview = {"doctype": "Quotation", "name": "QTN-1", "remarks": "Unsaved preview"}
+        for value in (preview, json.dumps(preview)):
+            with (
+                self.subTest(doc_type=type(value).__name__),
+                patch.object(print_format_safety.frappe, "get_doc", return_value=document),
+                patch.object(print_format_safety, "validate_print_permission") as validate,
+                patch.object(print_format_safety.frappe, "get_print", return_value=b"pdf") as render,
+                patch.object(print_format_safety, "print_language", return_value=contextlib.nullcontext()),
+                patch.object(print_format_safety.frappe, "local", SimpleNamespace(response=SimpleNamespace())),
+            ):
+                print_format_safety.download_pdf("Quotation", "QTN-1", doc=value)
+                validate.assert_called_once_with(document)
+                self.assertEqual(render.call_args.kwargs["doc"], preview)
+
+    def test_document_object_is_permission_checked_and_forwarded(self):
+        document = SimpleNamespace(doctype="Quotation", name="QTN-1")
+        with (
+            patch.object(print_format_safety.frappe, "get_doc") as get_doc,
+            patch.object(print_format_safety, "validate_print_permission") as validate,
+            patch.object(print_format_safety.frappe, "get_print", return_value=b"pdf") as render,
+            patch.object(print_format_safety, "print_language", return_value=contextlib.nullcontext()),
+            patch.object(print_format_safety.frappe, "local", SimpleNamespace(response=SimpleNamespace())),
+        ):
+            print_format_safety.download_pdf("Quotation", "QTN-1", doc=document)
+        get_doc.assert_not_called()
+        validate.assert_called_once_with(document)
+        self.assertIs(render.call_args.kwargs["doc"], document)
+
+    def test_denied_print_permission_never_reaches_renderer(self):
+        document = SimpleNamespace(doctype="Quotation", name="QTN-1")
+        response = SimpleNamespace()
+        with (
+            patch.object(print_format_safety.frappe, "get_doc", return_value=document),
+            patch.object(print_format_safety, "validate_print_permission", side_effect=PermissionError),
+            patch.object(print_format_safety.frappe, "get_print") as render,
+            patch.object(print_format_safety.frappe, "local", SimpleNamespace(response=response)),
+            self.assertRaises(PermissionError),
+        ):
+            print_format_safety.download_pdf("Quotation", "QTN-1")
+        render.assert_not_called()
+        self.assertEqual(vars(response), {})

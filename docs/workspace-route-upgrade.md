@@ -17,7 +17,9 @@ broken, so it is not used.
   boot workspaces. No permission or workspace entry is invented or overwritten.
 - The obsolete Page JSONs are removed from sync. Fresh installs do not create
   duplicate proxies. Existing app-owned proxies are renamed by native Frappe
-  into `kt-swiss-route-<old-name>` before Workspace records are updated.
+  into `kt-swiss-route-<old-name>` in `before_migrate`, before Frappe's orphan
+  entity cleanup. The retained records become `standard = No`, so that subsequent
+  orphan cleanup does not delete site-specific history whose old JSON was retired.
 - Native rename retains roles, child records, Custom Role links, attachments,
   comments and Version history. No merge, delete or history purge is performed.
   The old proxy `page_name` and title remain intact. Technical Page assets remain
@@ -34,9 +36,9 @@ No production rename or migration has been performed as part of this inspection.
 
 ## Verification and remaining gate
 
-- Six isolated migration-contract tests and three Node route-registration tests
+- Seven isolated migration-contract tests and three Node route-registration tests
   pass locally. Existing inventory, artifact and Item maintenance tests remain
-  part of the same run (20 isolated Python tests in total).
+  part of the same run (21 isolated Python tests in total).
 - Native Frappe tests cover fresh-install Workspace saves with route validation,
   a legacy upgrade with retained Version/comment/Custom Role/File/role records,
   technical Page assets, repeated upgrade calls and modified-proxy rejection.

@@ -16,9 +16,14 @@ LEGACY_PAGE_ROLES = {"System Manager", "Accounts Manager", "Accounts User"}
 
 def retire_workspace_route_pages():
     """Use native rename so roles, versions, attachments and links survive upgrades."""
+    from frappe.desk.utils import slug
     from frappe.model.rename_doc import rename_doc
 
     frappe.only_for("System Manager")
+    # Match Frappe's route namespace even during migration, when the normal
+    # document validator deliberately skips this check.
+    routes = {slug(name) for doctype in ("Page", "Workspace", "DocType")
+              for name in frappe.get_all(doctype, pluck="name")}
     candidates = []
     for name, title in WORKSPACE_ROUTE_PAGES.items():
         if not frappe.db.exists("Page", name):
@@ -26,7 +31,7 @@ def retire_workspace_route_pages():
         frappe.db.get_value("Page", name, for_update=True)
         page = frappe.get_doc("Page", name)
         _validate_owned_proxy(page, title)
-        if frappe.db.exists("Page", retired_route_page_name(name)):
+        if slug(retired_route_page_name(name)) in routes:
             frappe.throw(frappe._("Legacy workspace Page target already exists: {0}").format(
                 retired_route_page_name(name)), frappe.ValidationError)
         candidates.append(name)
@@ -36,6 +41,10 @@ def retire_workspace_route_pages():
     for name in candidates:
         rename_doc("Page", name, retired_route_page_name(name), force=True,
                    ignore_permissions=True, show_alert=False, rebuild_search=False)
+        retained = frappe.get_doc("Page", retired_route_page_name(name))
+        retained.standard = "No"
+        retained.flags.do_not_update_json = True
+        retained.save(ignore_permissions=True)
     return candidates
 
 

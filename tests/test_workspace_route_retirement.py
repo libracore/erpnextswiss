@@ -10,12 +10,17 @@ class Proxy(dict):
     def __getattr__(self, key):
         return self[key]
 
+    def __setattr__(self, key, value):
+        self[key] = value
+
 
 class WorkspaceRouteRetirementTests(unittest.TestCase):
     def setUp(self):
         self.events = []
         self.pages = {}
+        self.extra_routes = {}
         self.role = "System Manager"
+        self.retained = {}
 
         def exists(doctype, name):
             if doctype == "Page":
@@ -29,14 +34,24 @@ class WorkspaceRouteRetirementTests(unittest.TestCase):
         def fail(message, error):
             raise error(message)
 
+        def rename(dt, name, target, **kwargs):
+            self.events.append(("rename", name, target, kwargs))
+            self.retained[target] = Proxy(name=target, standard="Yes", flags=SimpleNamespace(),
+                save=lambda **opts: self.events.append(("retain", target, opts)))
+
+        def get_doc(dt, name):
+            return self.retained[name] if name in self.retained else self.pages[name]
+
         fake = SimpleNamespace(
             db=SimpleNamespace(exists=exists, get_value=lambda *a, **k: self.events.append(("lock", a, k))),
-            get_doc=lambda dt, name: self.pages[name], only_for=only_for, _=lambda value: value,
+            get_doc=get_doc, only_for=only_for, _=lambda value: value,
+            get_all=lambda dt, **kwargs: list(self.pages) if dt == "Page" else self.extra_routes.get(dt, []),
             throw=fail, ValidationError=ValueError,
-            rename_doc=lambda dt, name, target, **kwargs: self.events.append(("rename", name, target, kwargs)),
+            rename_doc=rename,
         )
         patcher = patch.dict(sys.modules, {
             "frappe": fake,
+            "frappe.desk.utils": SimpleNamespace(slug=lambda value: value.lower().replace(" ", "-")),
             "frappe.model.rename_doc": SimpleNamespace(rename_doc=fake.rename_doc),
         })
         patcher.start()
@@ -52,11 +67,14 @@ class WorkspaceRouteRetirementTests(unittest.TestCase):
 
     def test_rename_only_after_all_preflights_and_without_merge_or_commit(self):
         self.assertEqual(self.module.retire_workspace_route_pages(), list(self.pages))
-        self.assertEqual(self.events[-6:], [
+        self.assertEqual([event for event in self.events if event[0] == "rename"], [
             ("rename", name, "kt-swiss-route-" + name, {"force": True, "ignore_permissions": True,
              "show_alert": False, "rebuild_search": False}) for name in self.pages
         ])
         self.assertEqual(len([event for event in self.events if event[0] == "lock"]), 6)
+        for doc in self.retained.values():
+            self.assertEqual(doc.standard, "No")
+            self.assertTrue(doc.flags.do_not_update_json)
 
     def test_customized_late_page_prevents_entire_batch(self):
         for field, value in (("module", "Another App"), ("standard", "No"), ("title", "Custom title"),
@@ -78,6 +96,13 @@ class WorkspaceRouteRetirementTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.module.retire_workspace_route_pages()
         self.assertFalse(any(event[0] == "rename" for event in self.events))
+
+    def test_target_workspace_or_doctype_collision_prevents_entire_batch(self):
+        for doctype in ("Workspace", "DocType"):
+            self.extra_routes = {doctype: ["KT Swiss Route Schweiz Einstellungen"]}
+            with self.subTest(doctype=doctype), self.assertRaises(ValueError):
+                self.module.retire_workspace_route_pages()
+            self.assertFalse(any(event[0] == "rename" for event in self.events))
 
     def test_empty_install_is_noop_and_other_users_are_denied(self):
         self.pages.clear()

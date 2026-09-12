@@ -225,6 +225,10 @@ jobs:
           npm ci --ignore-scripts --prefix apps/erpnextswiss/tests/browser
           apps/erpnextswiss/tests/browser/node_modules/.bin/playwright install --with-deps chromium
           bench --site "$TEST_SITE" execute erpnextswiss.erpnextswiss.tests.test_workspace_routes_native.prepare_browser_site
+          bench --site "$TEST_SITE" migrate
+          bench --site "$TEST_SITE" execute erpnextswiss.erpnextswiss.tests.test_workspace_routes_native.verify_browser_site
+          bench --site "$TEST_SITE" migrate
+          bench --site "$TEST_SITE" execute erpnextswiss.erpnextswiss.tests.test_workspace_routes_native.verify_browser_site
           bench use "$TEST_SITE"
           bench serve --port 8000 > workspace-browser-server.log 2>&1 &
           server_pid=$!

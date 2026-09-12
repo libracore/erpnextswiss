@@ -70,6 +70,7 @@ class TestWorkspaceRoutesNative(unittest.TestCase):
             self.assertFalse(frappe.db.exists("Page", name))
             archived = frappe.get_doc("Page", retired_route_page_name(name))
             self.assertEqual(archived.title, WORKSPACE_ROUTE_PAGES[name])
+            self.assertEqual(archived.standard, "No")
             archived.load_assets()
             self.assertIn(retired_route_page_name(name), archived.script)
         self.assertEqual(frappe.db.get_value("Version", version.name, "docname"), retired_route_page_name(legacy))
@@ -94,6 +95,16 @@ class TestWorkspaceRoutesNative(unittest.TestCase):
         with self.assertRaises(frappe.PermissionError):
             retire_workspace_route_pages()
 
+    def test_target_workspace_collision_stops_before_any_rename(self):
+        target = retired_route_page_name("schweiz-einstellungen")
+        frappe.get_doc(doctype="Workspace", name=target, title=target, label=target,
+            public=1, content="[]", module="ERPNextSwiss").insert()
+        for name in WORKSPACE_ROUTE_PAGES:
+            self.create_legacy_proxy(name)
+        with self.assertRaises(frappe.ValidationError):
+            retire_workspace_route_pages()
+        self.assertTrue(all(frappe.db.exists("Page", name) for name in WORKSPACE_ROUTE_PAGES))
+
 
 def prepare_browser_site():
     """Prepare only the disposable GitHub CI site, never an installed customer site."""
@@ -109,7 +120,27 @@ def prepare_browser_site():
     for name in WORKSPACE_ROUTE_PAGES:
         if not frappe.db.exists("Page", retired_route_page_name(name)):
             fixture.create_legacy_proxy(name)
-    retire_workspace_route_pages()
+            frappe.get_doc(doctype="Version", name="kt-route-check-" + name,
+                ref_doctype="Page", docname=name,
+                data=json.dumps({"changed": [["title", "Legacy sentinel", WORKSPACE_ROUTE_PAGES[name]]]})).db_insert()
+            frappe.get_doc("Page", name).add_comment("Comment", "KT route migration sentinel")
     frappe.db.commit()
     frappe.clear_cache()
-    return {"site": "test_site", "retained_pages": len(WORKSPACE_ROUTE_PAGES)}
+    return {"site": "test_site", "legacy_pages": len(WORKSPACE_ROUTE_PAGES)}
+
+
+def verify_browser_site():
+    if (frappe.local.site != "test_site" or not frappe.conf.allow_tests
+            or os.environ.get("GITHUB_ACTIONS") != "true"):
+        raise RuntimeError("Browser verification is restricted to the disposable GitHub test_site")
+    for name, title in WORKSPACE_ROUTE_PAGES.items():
+        target = retired_route_page_name(name)
+        assert not frappe.db.exists("Page", name), name
+        page = frappe.get_doc("Page", target)
+        assert page.standard == "No" and page.title == title, target
+        version = frappe.get_doc("Version", "kt-route-check-" + name)
+        assert version.docname == target, name
+        assert json.loads(version.data) == {"changed": [["title", "Legacy sentinel", title]]}, name
+        assert frappe.db.exists("Comment", {"reference_doctype": "Page", "reference_name": target,
+                                            "content": "KT route migration sentinel"}), name
+    return {"site": "test_site", "histories_preserved": len(WORKSPACE_ROUTE_PAGES)}

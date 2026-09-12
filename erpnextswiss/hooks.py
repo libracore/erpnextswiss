@@ -113,6 +113,7 @@ email_append_to = ["EDI File"]
 
 # before_install = "erpnextswiss.install.before_install"
 after_install = "erpnextswiss.setup.install.after_install"
+before_migrate = "erpnextswiss.setup.workspace_routes.retire_workspace_route_pages"
 after_migrate = "erpnextswiss.setup.install.after_migrate"
 
 # Desk Notifications

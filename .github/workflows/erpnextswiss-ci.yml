@@ -195,8 +195,17 @@ jobs:
             --db-port 3306 \
             --no-mariadb-socket
           bench --site "$TEST_SITE" install-app erpnext
-          bench --site "$TEST_SITE" install-app erpnextswiss
           bench --site "$TEST_SITE" set-config allow_tests true
+
+      - name: Verify Item maintenance against native ERPNext permissions
+        working-directory: frappe-bench
+        run: |
+          bench --site "$TEST_SITE" run-tests --module erpnextswiss.erpnextswiss.tests.test_item_cleanup_native
+
+      - name: Install ERPNextSwiss without HRMS
+        working-directory: frappe-bench
+        run: |
+          bench --site "$TEST_SITE" install-app erpnextswiss
 
       - name: Run ERPNextSwiss tests
         working-directory: frappe-bench

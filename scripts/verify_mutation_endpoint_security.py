@@ -37,6 +37,7 @@ REQUIRED_POST = {
     "scripts/asset_tools.py:unlink_asset",
     "scripts/crm_tools.py:update_contact_first_and_last_name",
     "scripts/crm_tools.py:change_customer_without_impact_on_price",
+    "scripts/item_tools.py:purge_supplier_hints_from_item_descriptions",
     "page/abacus_export/abacus_export.py:generate_transfer_file",
     "page/abacus_export/abacus_export.py:reset_export_flags",
     "page/bankimport/bankimport.py:parse_file",

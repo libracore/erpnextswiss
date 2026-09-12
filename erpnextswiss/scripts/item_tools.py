@@ -82,7 +82,7 @@ def get_next_item_code():
         return 1
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def purge_supplier_hints_from_item_descriptions(apply=0, item_codes=None, limit=None):
     """
     Remove supplier hint lines from Item description fields.
@@ -92,7 +92,10 @@ def purge_supplier_hints_from_item_descriptions(apply=0, item_codes=None, limit=
       item_codes (str/list): optional item code filter (comma-separated string or list)
       limit (int): optional maximum number of items to process
     """
+    frappe.only_for("System Manager")
     apply = int(apply)
+    if apply not in (0, 1):
+        frappe.throw("apply must be 0 (preview) or 1 (apply)", frappe.ValidationError)
 
     filters = {"disabled": 0}
     if item_codes:
@@ -104,11 +107,12 @@ def purge_supplier_hints_from_item_descriptions(apply=0, item_codes=None, limit=
             filters["name"] = ["in", item_codes]
 
     fields = ["name", "description"]
-    items = frappe.get_all("Item", filters=filters, fields=fields, limit=limit)
+    items = frappe.get_list("Item", filters=filters, fields=fields, limit_page_length=limit or 0)
 
     preview = []
     changed = 0
     checked = 0
+    updates = []
 
     for item in items:
         checked += 1
@@ -128,9 +132,13 @@ def purge_supplier_hints_from_item_descriptions(apply=0, item_codes=None, limit=
             preview.append({"item": item.get("name"), "changes": changes})
 
         if apply:
-            if "description" in changes:
-                frappe.db.set_value("Item", item.get("name"), "description", new_description)
-            frappe.db.commit()
+            updates.append((item.get("name"), new_description))
+
+    # Check the entire batch before any write; the calling Frappe transaction owns commit/rollback.
+    for item_code, _description in updates:
+        frappe.get_doc("Item", item_code).check_permission("write")
+    for item_code, description in updates:
+        frappe.db.set_value("Item", item_code, "description", description)
 
     return {
         "applied": bool(apply),

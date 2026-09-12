@@ -323,11 +323,16 @@ sind vorhanden; neu zu liefern ist deren Bankanbindung, nicht deren Neuerstellun
   Wiederaufnahme. Vier Python-Tests pruefen das lesende Inventar. Eine eigene
   GitHub-CI prueft diese Grenzen ohne Bankzugang; ihr Laufstatus ist separat vom
   lokal/isoliert erbrachten Testnachweis zu fuehren.
-- Gesamtsyntaxpruefung bestanden. Der unveraenderte allgemeine Mutation-Guard
-  meldet `scripts/item_tools.py:purge_supplier_hints_from_item_descriptions`.
-  Derselbe Fehler wurde im separat exportierten Ausgangscommit `fc44290`
-  reproduziert; keine neue Regression des Empfangskerns und kein pauschal
-  gruener Gesamtstatus. Die vorhandenen/fremden Reparaturen werden nicht vermischt.
+- Der allgemeine Mutation-Guard meldete im Empfangskern-Commit und im separat
+  exportierten Ausgangscommit `fc44290` den alten Wartungsendpunkt
+  `scripts/item_tools.py:purge_supplier_hints_from_item_descriptions`.
+  Eine getrennte Reparatur beschraenkt ihn auf POST und System Manager,
+  beruecksichtigt die Leserechte und prueft alle Schreibrechte vor dem ersten
+  Schreibzugriff. Interne Teil-Commits entfallen; die aufrufende Frappe-Transaktion
+  bleibt verantwortlich. Fuenf isolierte Tests bestehen; native Frappe-Tests fuer
+  HTTP-Methoden, Gastverweigerung und Rollback sind als eigener CI-Schritt ergaenzt.
+  Ihre Ausfuehrung ist separat nachzuweisen. Fremde Zahlungs-/MCP-Aenderungen im
+  Hauptcheckout werden nicht uebernommen. Kein Zahlungsworkflow wird neu gebaut.
 - Die spaeter abgeschlossene Gesamt-CI von `7940eca` hat eine neue
   Paketierungsregression aufgedeckt: Setuptools hielt `gateway` fuer ein zweites
   Python-Paket und brach die editable Installation ab. Die explizite
@@ -341,6 +346,12 @@ sind vorhanden; neu zu liefern ist deren Bankanbindung, nicht deren Neuerstellun
   bytegleicher Erhalt aller App-Dateien aus dem Ausgangswheel sowie erfolgreiche
   editable Installation mit Import aus dem neuen Checkout. Die neue CI-Stufe
   prueft diese Paketgrenze bei jedem PR; ihre Ausfuehrung ist separat nachzuweisen.
+- GitHub-Nachweis fuer `d3f0864`: Banking-CI `34723810494` und Python-Paketierung
+  in der allgemeinen CI `34723810516` sind erfolgreich. Die Gesamtinstallation
+  erreicht jetzt den Swiss-Installationshook, scheitert dort aber an einer
+  Workspace-/Page-Routenkollision. Das ist ein eigener offener Update-/Installations-
+  befund, kein gruener Gesamtstatus und keine Berechtigung, den Installationscheck
+  zu ueberspringen. Bankkontakt, Produktivmigration und Deploy bleiben aus.
 - SDK 3.2.1 und Git-Commit wurden tatsaechlich geprueft und gepinnt. Abweichende
   Packagist-/Git-Referenzen wurden erkannt; Lockfile und Referenztest verhindern
   eine unbemerkte Abweichung. MIT-Lizenz und benoetigte PHP-Erweiterungen geprueft;

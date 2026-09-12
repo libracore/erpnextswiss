@@ -27,6 +27,9 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools.dynamic]
 version = { attr = "erpnextswiss.__version__" }
 
+[tool.setuptools.packages.find]
+include = ["erpnextswiss", "erpnextswiss.*"]
+
 [tool.bench.frappe-dependencies]
 frappe = ">=16.0.0,<17.0.0"
 erpnext = ">=16.0.0,<17.0.0"

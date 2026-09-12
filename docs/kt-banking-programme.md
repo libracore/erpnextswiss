@@ -328,6 +328,19 @@ sind vorhanden; neu zu liefern ist deren Bankanbindung, nicht deren Neuerstellun
   Derselbe Fehler wurde im separat exportierten Ausgangscommit `fc44290`
   reproduziert; keine neue Regression des Empfangskerns und kein pauschal
   gruener Gesamtstatus. Die vorhandenen/fremden Reparaturen werden nicht vermischt.
+- Die spaeter abgeschlossene Gesamt-CI von `7940eca` hat eine neue
+  Paketierungsregression aufgedeckt: Setuptools hielt `gateway` fuer ein zweites
+  Python-Paket und brach die editable Installation ab. Die explizite
+  Paketzuordnung umfasst jetzt nur `erpnextswiss` samt Unterpaketen. Der PHP-Dienst
+  wird weiterhin separat gebaut, nicht aus dem Python-Paket importiert.
+  Der neue Artefaktpruefer prueft Wheel und Quellarchiv auf bytegleiche,
+  vollstaendige App-Ressourcen und verbietet den Gateway im Python-Paket.
+  Er deckte zusaetzlich bisher fehlende XSD-, Schrift-, WASM-, SQL- und
+  Vorlagendateien in Wheels auf; die vorhandenen Dateien werden jetzt mitgeliefert.
+  Isoliert auf Python 3.14 bestanden: 774 Ressourcen in beiden Artefakten,
+  bytegleicher Erhalt aller App-Dateien aus dem Ausgangswheel sowie erfolgreiche
+  editable Installation mit Import aus dem neuen Checkout. Die neue CI-Stufe
+  prueft diese Paketgrenze bei jedem PR; ihre Ausfuehrung ist separat nachzuweisen.
 - SDK 3.2.1 und Git-Commit wurden tatsaechlich geprueft und gepinnt. Abweichende
   Packagist-/Git-Referenzen wurden erkannt; Lockfile und Referenztest verhindern
   eine unbemerkte Abweichung. MIT-Lizenz und benoetigte PHP-Erweiterungen geprueft;

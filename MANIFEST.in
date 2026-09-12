@@ -15,4 +15,10 @@ recursive-include erpnextswiss *.png
 recursive-include erpnextswiss *.py
 recursive-include erpnextswiss *.svg
 recursive-include erpnextswiss *.txt
+recursive-include erpnextswiss *.xsd
+recursive-include erpnextswiss *.woff
+recursive-include erpnextswiss *.wasm
+recursive-include erpnextswiss *.sql
+recursive-include erpnextswiss *.xlsx
+recursive-include erpnextswiss *.sh
 recursive-exclude erpnextswiss *.pyc

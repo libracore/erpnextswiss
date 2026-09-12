@@ -1,7 +1,8 @@
 # KT Banking: verbindliche Erweiterung des Plattformziels
 
-Stand: 12.09.2026. Auftrag: Banking-Briefing vollstaendig in das aktive
-Plattformziel integrieren, updatefest innerhalb der vorhandenen Swiss-App.
+Stand: 12.09.2026. Auftrag: Bankanbindung anhand des Banking-Briefings verbessern,
+updatefest innerhalb der vorhandenen Swiss-App. Bestehenden Zahlungsabgleich und
+bestehende Zahlungsvorschlaege integrieren, nicht neu entwickeln.
 **Status: Spezifikation und erstes Codeinventar, keine aktivierte Bankanbindung.**
 
 ## Quelle und Vorrang
@@ -11,8 +12,10 @@ Verbindliche fachliche Quelle ist das vom Auftraggeber bereitgestellte
 Original-SHA-256:
 `6a2c05a18ccfc91be43f2487bcc6a32a5963cd222aefde6e7aafc509d45caebb`.
 Die interne Originaldatei wird nicht in dieses oeffentliche Repository kopiert.
-Die folgende Zuordnung dokumentiert den vollstaendigen Entwicklungsumfang ohne
-interne Kontoidentitaeten, Bankzugangsdaten oder Geheimnisse zu publizieren.
+Die folgende Zuordnung dokumentiert den durch die nachstehenden Nutzeranweisungen
+eingegrenzten Entwicklungsumfang, ohne interne Kontoidentitaeten, Bankzugangsdaten
+oder Geheimnisse zu publizieren. Neuere Nutzeranweisungen haben Vorrang vor dem
+urspruenglichen Briefing und frueheren Planformulierungen.
 
 Die anschliessende Nutzeranweisung ersetzt den vorgeschlagenen neuen App-Namen:
 Integration in die vorhandene Swiss-App ist die Entwicklungsrichtung. Das lokale
@@ -22,8 +25,30 @@ oder paralleles Zahlungsprodukt anlegen. Neue Banking-Module innerhalb dieser
 App kapseln; den PHP-Gateway als separat baubaren internen Dienst betreiben.
 Neue API-Pfade werden im Schema-PR verbindlich festgelegt, nicht als bereits
 existierende `kt_banking.api.v1`-Endpunkte ausgegeben. Bestehende Pfade bleiben
-kompatibel. Die vorgeschlagenen Banking-DocTypes bleiben eigene Herkunfts- und
-Pruefnachweise neben den fuehrenden nativen ERPNext-Objekten.
+kompatibel. Zusaetzliche Banking-DocTypes nur fuer fehlende Herkunfts- und
+Pruefnachweise neben den fuehrenden nativen ERPNext-Objekten einfuehren.
+
+### Verbindliche Umfangskorrektur: Bestehendes anbinden
+
+Der Auftraggeber hat anschliessend ausdruecklich klargestellt: **Zahlungsabgleich
+und Zahlungsvorschlaege gibt es bereits. Nur die Bankanbindung perfektionieren.**
+Diese Funktionen sind Bestand, keine noch zu entwickelnden Banking-Funktionen.
+
+- Bestehende Abgleichverfahren, Payment Proposals, Zahlungs-/Exportlogik, Belege,
+  Freigaben, Rechte und Oberflaechen wiederverwenden und erhalten.
+- Umfang ist die zuverlaessige Bankverbindung: Einrichtung, Transport, sicherer
+  Dateiempfang, Formatkompatibilitaet, Importuebergabe, Dublettenschutz, Status,
+  Fehlerbehandlung, Wiederanlauf, Betrieb und nachgewiesene Integration.
+- Vor jedem Adapter zuerst bestehende Einstiegspunkte und Tests inventarisieren.
+  Nur eine belegte Luecke an der Bankanbindung rechtfertigt eine enge Erweiterung;
+  kein paralleler Parser, Abgleichmotor, Zahlungsvorschlagsprozess oder Desk.
+- BK-09/10/11/15 sind Integrations- und Regressionspruefungen vorhandener Funktionen,
+  keine Neuentwicklungsauftraege. Neue APIs, DocTypes oder Anzeigen nur bei einer
+  nachgewiesenen Integrationsluecke; ein eigener FAC-/KI-Ausbau ist kein Muss.
+- Spaeterer bankseitiger Zahlungsversand bleibt ein separat freizugebender Adapter
+  fuer die vorhandenen Zahlungsvorschlaege. Keine neue Zahlungsverwaltung und
+  keine Bankaktion allein durch diesen Plan. Der erste Leseanschluss wird nicht
+  durch fehlende Freigabe dieser optionalen Versandstufe als unfertig behandelt.
 
 Die bisherigen **14 Plattformpakete bleiben vollstaendig offen beziehungsweise
 mit ihren belegten Teilstaenden erhalten**. Banking ersetzt keines dieser Pakete.
@@ -34,15 +59,16 @@ Neue Bankkommunikation ist durch die Planaufnahme nicht freigegeben.
 ## Releasegrenzen
 
 - **1.0:** bestaetigtes AKB-H005-Profil, Einrichtung, camt.053.001.08 und
-  camt.054.001.08, Originalarchiv, CHF/EUR, Salden, sichere Imports und nativer
-  Bankabgleich. Derselbe Parser fuer manuelle Dateien und Gateway-Dateien.
+  camt.054.001.08, Originalarchiv, CHF/EUR, Salden, sichere Imports mit
+  Uebergabe an den vorhandenen Bankabgleich. Bestehenden geeigneten Parser fuer
+  manuelle Dateien und Gateway-Dateien wiederverwenden und gezielt ergaenzen.
   Gegenueber der Bank nur lesend; kontrollierte ERP-Importdatensaetze und Bank
   Transactions sind erlaubt. Keine autonome Hauptbuchbuchung, eingereichte
   Payment Entry oder Zahlungsuebermittlung. Bestehende Zahlungsbelege zuerst
   abgleichen; fehlende Zahlungen hoechstens in explizit freigegebenen Entwuerfen.
 - **1.1:** camt.052.001.08 separat pruefen. Zunaechst Anzeige/Anreicherung;
   vorgemerkt und gebucht trennen, keine zweite Bank-Transaction-Erfassung.
-- **2.0:** erst eigene Freigabe; bestehendes Payment Proposal, validierte
+- **2.0 (separat freizugebende Anschlussstufe):** vorhandenes Payment Proposal, validierte
   pain.001.001.09, BTU mit bestaetigtem T-Recht, pain.002.001.10, getrennte
   menschliche Bank-/VEU-Freigabe. Keine KI-Zahlung, kein eigener Signaturersatz,
   kein automatisch aktivierter Lohnversand. Transport, Verarbeitung, Bankfreigabe,
@@ -85,7 +111,7 @@ noch verworfen. Noch kein Live-Hook-/Server-Script-/Kontorechteaudit in BK-01.
 | Derselbe Pfad ruft `stmt.process_transactions()` auf | Kein Aufruf aus dem neuen Release-1-Import |
 | `ebicsStatement.process_transactions`: `auto_submit: 1` fuer Zahlungsbelege | Realer Nebenwirkungstest auf Gesamtinstallation, nicht nur auf neuem Parser |
 | `ebicsStatement.parse_content`: erster passender Account, interpolierter SQL-Ausdruck und eigene Dublettenabfrage | Explizites kontorechtegebundenes Mapping, strukturierte Abfragen und neuer Dublettenvertrag erforderlich |
-| Vorhandene native Zahlungs-/Importfunktionen | Nicht entfernen; Ausweichweg, Stichtag und Konflikterkennung dokumentieren |
+| Vorhandener Zahlungsabgleich und vorhandene Payment Proposals samt Zahlungs-/Importfunktionen | Bestand, nicht neu entwickeln; Bankadapter daran anbinden, Ausweichweg, Stichtag und Konflikterkennung dokumentieren |
 | Vorhandene App-Lizenz AGPL | Lizenzhinweise beibehalten; MIT-Bibliothek macht die Gesamt-App nicht automatisch MIT |
 
 Diese Befunde sind Quellcodebeobachtungen, kein Nachweis aktiver Bankverbindungen,
@@ -93,7 +119,8 @@ erfolgter Fehlbuchungen oder aktueller Produktiv-Hooks. Kein Bankabruf wurde ges
 
 ## Arbeitspakete und Nachweise
 
-Alle Pakete starten als **offen**, BK-01 ist durch das obige Inventar begonnen.
+Die Integrationsnachweise starten als **offen**, BK-01 ist durch das obige Inventar
+begonnen. Dies bedeutet nicht, dass Zahlungsabgleich oder Zahlungsvorschlaege fehlen.
 Ein Dokument oder gruener Unit-Test ersetzt keinen Bank-, Rollen- oder Restoretest.
 
 | ID | Umfang und pruefbares Ende | Abhaengigkeit |
@@ -103,22 +130,24 @@ Ein Dokument oder gruener Unit-Test ersetzt keinen Bank-, Rollen- oder Restorete
 | BK-03 | Gekapseltes Modul in Swiss-App, additive Migration, eigener reproduzierbarer Gateway-Build mit Lockfiles; Installation ohne Bankaktion | BK-01 |
 | BK-04 | mTLS-Identitaet/Sitebindung, Schluesselspeicher, explizites INI/HIA/HPB, Initialisierungsbrief, Fingerprintpruefung, Rotation und Sperren getestet | BK-03 |
 | BK-05 | BTD 053/054, dauerhafter verschluesselter Dateieingang und Operationsjournal, Persistenz-vor-Quittung einschliesslich Abbruchtests | BK-02/04 fuer Banktest |
-| BK-06 | Schema und Parser fuer Version-08-Nachrichten, manueller Import, XML-/ZIP-Grenzen, Quarantaene und Quellenbeziehungen | BK-03 |
+| BK-06 | Bestehenden Parser/manuellen Import auf Version-08-Nachrichten pruefen; nur fehlende Formatunterstuetzung, XML-/ZIP-Grenzen, Quarantaene und Quellenbeziehungen ergaenzen | BK-01/03 |
 | BK-07 | Datei-/Entry-Identitaet, Ueberlappungen, Sammelbuchungen, Reihenfolge, Widersprueche, Salden und Parallelitaet geprueft | BK-05/06 |
 | BK-08 | Genau eine native Bank Transaction je gebuchter 053-Ntry, 054/TxDtls nur Anreicherung; keine neuen GL-/eingereichten Zahlungsbelege durch Import | BK-01/07 |
-| BK-09 | Erklaerbare Vorschlaege mit bestehenden Belegen zuerst; Zustand/Rechte/Betragsreste unter Konkurrenz erneut pruefen; menschliche Anwendung nativer Methoden | BK-08 |
-| BK-10 | Uebersicht, Kontobewegungen, Abgleich, Verbindungen, Protokolle, Sidebar, Rollen/Reports im bestehenden Desk; Light/Dark und schmale/breite Ansichten | BK-03/08 |
-| BK-11 | Versionierte Konto-/Saldo-/Transaktions-/Sync-/Vorschau-API; FAC-Lesetools; gleiche Kontorechte auch ueber CRUD, Reports, Suche, Dateien und Exporte | BK-10 |
+| BK-09 | Vorhandenen Zahlungsabgleich mit Bankimport testen: bestehende Belege zuerst, aktuelle Rechte/Betragsreste, Konkurrenz und menschliche Anwendung; nur nachgewiesene Anbindungsluecken beheben | BK-08 |
+| BK-10 | Bankverbindung und notwendige Status-/Fehleranzeigen in bestehendem Desk integrieren; Zahlungsabgleich, Zahlungsvorschlaege, Sidebar, Rollen und Layout unveraendert erhalten | BK-03/08 |
+| BK-11 | Bestehende API-/Rechtevertraege fuer angebundene Bankdaten pruefen; nur notwendige Adapter ergaenzen, gleiche Grenzen bei CRUD, Reports, Suche, Dateien und Exporten; kein eigener FAC-Neubau als Pflicht | BK-10 |
 | BK-12 | Queue, Monitoring, Retry/Unterbrechung, verschluesselte Backups, isolierter Restore ohne Bank-Egress, Rollback/Deaktivierung, Securitytests | BK-04 bis 11 |
 | BK-13 | Begrenzter freigegebener AKB-Lesetest und fachlicher Pilot fuer beide Waehrungen; G0-G3 bestanden, kontrollierter Release 1.0 | BK-02/12 |
 | BK-14 | 052-Anreicherung, getrennte Vormerkungen und eindeutiger Uebergang zur Buchung ohne doppelte Wirkung | BK-13 |
-| BK-15 | Payment-Proposal-Export, Schema-/Geschaeftsregeln, strukturierte Adressen, unveraenderlicher Freigabesnapshot und Doppelzahlungsschutz | separate Release-2-Freigabe |
-| BK-16 | BTU, Statuskorrelation, T-/VEU-Pilot, Teilablehnung, verspaetete Meldungen und unklarer Upload ohne blinden Retry | BK-15 und Bankrechte |
+| BK-15 | Vorhandenen Payment-Proposal-Export bankseitig validieren; nur noetige Kompatibilitaets-/Uebergabepruefungen samt Freigabebindung und Doppelversandschutz ergaenzen, keine neue Vorschlags- oder Zahlungslogik | separate Release-2-Freigabe |
+| BK-16 | Separat freigegebener BTU-/Statusadapter fuer bestehende Zahlungsvorschlaege, T-/VEU-Pilot, Teilablehnung, verspaetete Meldungen und unklarer Upload ohne blinden Retry | BK-15 und Bankrechte |
 
 ## Verbindliche Fach- und Sicherheitsvertraege
 
-1. Vorgeschlagene Settings, Connection/Account-Zuordnung, File, Statement, Entry,
-   Sync Run, Audit Event und spaetere Submission als getrennte Verantwortlichkeiten.
+1. Settings, Connection/Account-Zuordnung, File, Statement, Entry, Sync Run,
+   Audit Event und spaetere Submission zuerst auf vorhandene Objekte abbilden;
+   neue DocTypes nur fuer nachgewiesene Luecken der Bankanbindung. Verantwortlichkeiten
+   getrennt halten, keine bereits vorhandene Zahlungsverwaltung duplizieren.
    Originalquellen append-only zuordnen; vorhandene Custom Fields nicht ueberschreiben.
 2. Bankreferenzen sind keine selbst erfundenen Hashes. Hash fuer identische Dateien;
    belastbare Bank-ID nur im Konto-/Company-/Site-Kontext. Ohne sichere ID nur
@@ -144,14 +173,16 @@ Ein Dokument oder gruener Unit-Test ersetzt keinen Bank-, Rollen- oder Restorete
 8. Kontorechte fuer Viewer/Operator/Admin, spaeter Payment Preparer, kein pauschales
    Rollenupgrade. Auch Child-Daten, Suchtreffer, Exporte, generische APIs und Jobs
    unterliegen Company-/Kontorechten und aktuellen Berechtigungen.
-9. Banktexte sind Daten, keine Anweisungen. Geplante Lesetools:
+9. Banktexte sind Daten, keine Anweisungen. Optionale, nicht abnahmeverpflichtende
+   Lesetool-Kandidaten aus dem Briefing; vorhandene Schnittstellen zuerst pruefen:
    `kt_bank_accounts`, `kt_bank_balances`, `kt_bank_transactions`,
    `kt_bank_sync_status`, `kt_bank_reconciliation_preview`.
    Keine KI-Werkzeuge fuer Sync-Initialisierung, Schluessel, Versand, Bankfreigabe
    oder endgueltigen Abgleich. Externe KI-Datenverarbeitung braucht Freigaberichtlinie.
 10. API liest vorbereitete Daten mit Quelle/Datenstand; maximal 200 Transaktionen
     pro Seite. `request_sync` asynchron als berechtigter menschlicher POST;
-    `apply_reconciliation` menschlicher POST mit erneuter Pruefung. Kein Bankabruf
+    eine vorhandene Abgleichaktion bleibt menschlich mit erneuter Pruefung; kein
+    zweiter `apply_reconciliation`-Endpunkt als Pflicht. Kein Bankabruf
     durch Seitenaufruf, keine beliebigen URLs/Ordercodes/XML/Shellpfade aus Requests.
 11. Gateway intern, mTLS mit gebundener Identitaet, bestaetigte Egressziele/TLS,
     non-root, beschraenkte Capabilities, read-only Root und Ressourcenlimits.
@@ -160,8 +191,9 @@ Ein Dokument oder gruener Unit-Test ersetzt keinen Bank-, Rollen- oder Restorete
 12. Kostenfreier PHP-Client als Kandidat, keine Premium-REST-/SaaS-Abhaengigkeit,
     keine eigene Kryptografie. Release/Commit, PHP-Anforderung, Storage-Callback,
     FPDF, transitive Lizenzen und Images tatsaechlich pruefen/pinnen; SBOM fuehren.
-13. Alle neuen Sicherheitsflags initial aus: Gateway, Sync, Import, Abgleich,
-    Payment Upload und Assistant Read. Migration/Neustart erzeugt keine Keys und
+13. Nur neue Anbindungsflags initial aus: Gateway, Sync, Import und gegebenenfalls
+    Payment Upload/Assistant Read. Bestehenden Zahlungsabgleich, Zahlungsvorschlaege
+    und deren Freigaben dadurch nicht abschalten. Migration/Neustart erzeugt keine Keys und
     fuehrt keine Bankaktion aus. Alten Kontotransport nicht parallel aktivieren.
 14. Monitoring trennt Bankkontakt, bereitgestellte Daten und Importabschluss.
     Retry begrenzt mit Backoff/Jitter; keine Endlosschleife. Alarmierung ohne sensible
@@ -183,6 +215,7 @@ Ein Dokument oder gruener Unit-Test ersetzt keinen Bank-, Rollen- oder Restorete
 | Gruppe | Zu belegende Faelle |
 |---|---|
 | Installation/Upgrade | Frische Installation ohne Bank-/Hintergrundaktion; bestehende Site ohne Layout-/Funktionsverlust migrierbar |
+| Bestandsintegration | Vorhandener Zahlungsabgleich und vorhandene Zahlungsvorschlaege samt Export, Rechten und Freigaben funktionieren vor/nach Anschluss unveraendert; keine parallelen Prozesse oder Oberflaechen |
 | Schluessel | Identischer Keyring nach Neustart; falscher Bankfingerprint blockiert |
 | Dauerhaftigkeit | Disk voll vor Bankquittung; ERP-Ausfall nach Gateway-Empfang; spaetere Wiederverarbeitung ohne Datenverlust |
 | Dubletten | Identische Datei zehnmal; anders verpackte XML; gleich hohe echte Zahlungen; 053/054-Ueberlappung; jede Eingangsreihenfolge; Bank-ID mit geaendertem Betrag |
@@ -206,9 +239,9 @@ Offene Abgleichfaelle sind ein regulaerer Zustand. Keine Behauptung eines
   G3: Rechte/API/Dateien, Betrieb/Restore, fachliche CHF/EUR-Abnahme.
   G4: separate Zahlungsfreigabe, T/VEU, Export, Timeout-/Doppelzahlungsschutz und
   ueberwachte Testzahlung. Nutzerauftrag ersetzt keine Bankzeichnungsrechte.
-- Lieferumfang: installierbares Swiss-App-Modul, interner Gateway, Images/Lockfiles,
-  Lizenzhinweise/SBOM, additive Migration, Desk/Sidebar, Rechte, REST-/Gateway-Vertrag,
-  FAC-Adapter, geheimnisfreie Fixtures, Testnachweise, AKB-Einrichtungs-, Benutzer-,
+- Lieferumfang: Bankadapter innerhalb der Swiss-App, interner Gateway, Images/Lockfiles,
+  Lizenzhinweise/SBOM, erforderliche additive Migration, bestehende Desk-/API-Anbindung,
+  Rechte, Gateway-Vertrag, geheimnisfreie Fixtures, Testnachweise, AKB-Einrichtungs-, Benutzer-,
   Betriebs- und Wiederherstellungsanleitung.
 - BK-01 abschliessen; parallel BK-03 und offline BK-06/07. Bankfreigaben BK-02
   extern abhaengig, kein Grund fuer Stillstand der offline moeglichen Arbeit.
@@ -220,6 +253,10 @@ Offene Abgleichfaelle sind ein regulaerer Zustand. Keine Behauptung eines
 ## Stand Dieses Inkrements
 
 Nur diese Ziele/Abnahmen und das erste lesende Codeinventar sind hinzugefuegt.
+Die nachtraegliche Umfangskorrektur ist eingearbeitet: Zahlungsabgleich und
+Zahlungsvorschlaege gelten als bestehend, neu zu liefern ist deren Bankanbindung.
 Kein Produktionskonto gelesen, keine Finanzdaten geschrieben, kein Gateway oder
 Banking-Modul implementiert, kein Bankkontakt oder Deploy. BK-01 bleibt teilweise
-offen, BK-02 bis BK-16 offen. Die vollstaendige Plattform- und Banking-Abnahme fehlt.
+offen; die weiteren Anbindungsnachweise stehen aus. BK-15/16 setzen eine separate
+Freigabe voraus und sind keine stillschweigende Voraussetzung fuer den ersten
+Leseanschluss. Die vollstaendige Plattform- und Bankanbindungs-Abnahme fehlt.

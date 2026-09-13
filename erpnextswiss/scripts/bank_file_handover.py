@@ -10,6 +10,7 @@ from hashlib import sha256
 import json
 from pathlib import Path
 import re
+import time
 from uuid import uuid4
 
 import frappe
@@ -23,6 +24,7 @@ DOCTYPE = 'Bank File Handover'
 _controlled_write = ContextVar('bank_file_handover_write', default=False)
 _SOURCE = re.compile(r'[A-Za-z0-9][A-Za-z0-9._:-]{0,127}\Z')
 MAX_RECEIPTS = 1024
+MAX_RECEIVE_ATTEMPTS = 10
 
 
 class BankOriginalFileMixin:
@@ -317,3 +319,43 @@ def stage_bank_archive(payload, profile, *, connection, accounts, source_referen
         return {'name': document.name, 'archive_sha256': document.archive_sha256,
                 'status': 'Staged', 'receipt_count': len(document.receipts),
                 'replayed': bool(previous), 'commit_required': True, 'import_approved': False}
+
+
+def receive_bank_archive(payload, profile, *, connection, accounts, source_reference):
+    """Dedicated receiver transaction; no implicit commit of another caller's work.
+
+    This is still internal, not a bank acknowledgement or financial import. A
+    caller composing other ERP writes must use stage_bank_archive instead and
+    retry its entire transaction itself when MariaDB rejects a stale snapshot.
+    """
+    frappe.only_for(('Accounts Manager', 'System Manager'))
+    callbacks = ('before_commit', 'after_commit', 'before_rollback', 'after_rollback')
+    if (frappe.db.transaction_writes or frappe.db._disable_transaction_control
+            or any(getattr(frappe.db, name)._functions for name in callbacks)):
+        raise BankFileError('Dedicated bank reception requires no pending writes or transaction callbacks')
+    frappe.db.rollback()
+    for attempt in range(MAX_RECEIVE_ATTEMPTS):
+        try:
+            result = stage_bank_archive(payload, profile, connection=connection, accounts=accounts,
+                                         source_reference=source_reference)
+        except frappe.QueryDeadlockError:
+            frappe.db.rollback()
+            if attempt + 1 == MAX_RECEIVE_ATTEMPTS:
+                raise
+            time.sleep(min(0.05 * 2 ** attempt, 0.5))
+            continue
+        # A failed/uncertain commit is not automatically repeated. The transport
+        # must retain the same source reference and may retry through this entry.
+        frappe.db.commit()
+        try:
+            document = frappe.get_doc(DOCTYPE, result['name'])
+            document.check_permission('read')
+            _check_connection(document)
+            _accounts(document)
+            receipt_key = _digest([connection, source_reference])
+            if (_original(document) != payload or document.archive_sha256 != result['archive_sha256']
+                    or not any(row.receipt_key == receipt_key for row in document.receipts)):
+                raise BankFileError('Committed bank handover could not be verified')
+            return {**result, 'commit_required': False, 'committed': True, 'attempts': attempt + 1}
+        finally:
+            frappe.db.rollback()

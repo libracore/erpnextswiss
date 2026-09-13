@@ -64,12 +64,48 @@ def prepare():
 
 def commit_original(source_reference='initial', hold_lock=False):
     _guard()
-    result = _stage(source_reference)
-    if hold_lock:
-        time.sleep(2)
+    stage = handover.stage_bank_archive
+    def slow_stage(*args, **kwargs):
+        result = stage(*args, **kwargs)
+        if hold_lock:
+            time.sleep(2)
+        return result
+    with patch.object(handover, 'stage_bank_archive', side_effect=slow_stage):
+        result = handover.receive_bank_archive(_payload(), PROFILE, connection=CONNECTION,
+                                               accounts=[ACCOUNT], source_reference=source_reference)
+    assert result['committed'] and not result['commit_required'] and not result['import_approved']
     connection_id = frappe.db.sql('SELECT CONNECTION_ID()')[0][0]
-    frappe.db.commit()
-    return {'name': result['name'], 'connection_id': connection_id, 'replayed': result['replayed']}
+    frappe.db.rollback()
+    return {'name': result['name'], 'connection_id': connection_id, 'replayed': result['replayed'],
+            'attempts': result['attempts']}
+
+
+def reject_pending_work():
+    _guard()
+    original_title = frappe.db.get_value('ebics Connection', CONNECTION, 'title')
+    frappe.db.set_value('ebics Connection', CONNECTION, 'title', 'Caller-owned pending write')
+    try:
+        handover.receive_bank_archive(_payload(), PROFILE, connection=CONNECTION,
+                                       accounts=[ACCOUNT], source_reference='must-not-commit')
+    except handover.BankFileError:
+        pass
+    else:
+        raise AssertionError('Receiver must refuse caller-owned writes')
+    assert frappe.db.get_value('ebics Connection', CONNECTION, 'title') == 'Caller-owned pending write'
+    frappe.db.rollback()
+    assert frappe.db.get_value('ebics Connection', CONNECTION, 'title') == original_title
+    called = []
+    frappe.db.after_commit.add(lambda: called.append(True))
+    try:
+        handover.receive_bank_archive(_payload(), PROFILE, connection=CONNECTION,
+                                       accounts=[ACCOUNT], source_reference='must-not-run-callback')
+    except handover.BankFileError:
+        pass
+    else:
+        raise AssertionError('Receiver must refuse caller-owned callbacks')
+    assert not called
+    frappe.db.rollback()
+    return {'pending_writes_and_callbacks_preserved': True}
 
 
 def rollback_original():
@@ -131,6 +167,7 @@ def run_process_acceptance():
         return json.loads(process.stdout.strip().splitlines()[-1])
 
     counts = execute('prepare')
+    execute('reject_pending_work')
     barrier = Barrier(8)
 
     def receive(index):
@@ -156,6 +193,7 @@ def run_process_acceptance():
     result = execute('verify', expected_receipts=receipts, financial_counts=counts)
     assert result['connection_title'] == 'Outer write survived'
     print('PASS independent-process commit/readback, replay, outer rollback, caught failure and 8 receivers')
+    print('Receiver attempts: ' + json.dumps([row['attempts'] for row in received]))
     print(json.dumps(result, sort_keys=True))
 
 

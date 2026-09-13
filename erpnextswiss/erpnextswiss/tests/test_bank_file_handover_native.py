@@ -330,7 +330,16 @@ class TestBankFileHandoverNative(unittest.TestCase):
 
     def test_new_permission_hooks_do_not_whitelist_handover_or_payment_methods(self):
         self.assertNotIn(handover.stage_bank_archive, frappe.whitelisted)
+        self.assertNotIn(handover.receive_bank_archive, frappe.whitelisted)
         self.assertNotIn(handover.get_handover_preview, frappe.whitelisted)
         for value in ('', 'https://example.invalid/', 'line\nbreak', 'x' * 129):
             with self.assertRaises(BankFileError):
                 self.stage(source_reference=value)
+
+    def test_dedicated_receiver_rejects_pending_caller_writes_without_committing_or_rolling_back(self):
+        with patch.object(frappe.db, 'commit', side_effect=AssertionError('No outer commit')), \
+                patch.object(frappe.db, 'rollback', side_effect=AssertionError('No outer rollback')):
+            with self.assertRaises(BankFileError):
+                handover.receive_bank_archive(self.payload, PROFILE, connection=self.connection,
+                                               accounts=[self.account_a], source_reference='pending-caller')
+        self.assertTrue(frappe.db.exists('ebics Connection', self.connection))

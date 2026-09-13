@@ -230,6 +230,7 @@ jobs:
           bench --site "$TEST_SITE" execute erpnextswiss.erpnextswiss.tests.test_workspace_routes_native.verify_browser_site
           bench --site "$TEST_SITE" migrate
           bench --site "$TEST_SITE" execute erpnextswiss.erpnextswiss.tests.test_workspace_routes_native.verify_browser_site
+          bench --site "$TEST_SITE" run-tests --module erpnextswiss.erpnextswiss.tests.test_fixtures_native
           bench use "$TEST_SITE"
           bench serve --port 8000 > workspace-browser-server.log 2>&1 &
           server_pid=$!
@@ -239,6 +240,16 @@ jobs:
             sleep 1
           done
           node apps/erpnextswiss/tests/browser/workspace_routes.cjs
+
+      - name: Verify optional HR fixtures after HRMS is added
+        working-directory: frappe-bench
+        run: |
+          bench get-app --branch version-16 hrms https://github.com/frappe/hrms
+          bench --site "$TEST_SITE" install-app hrms
+          bench --site "$TEST_SITE" migrate
+          bench --site "$TEST_SITE" run-tests --module erpnextswiss.erpnextswiss.tests.test_fixtures_native
+          bench --site "$TEST_SITE" migrate
+          bench --site "$TEST_SITE" run-tests --module erpnextswiss.erpnextswiss.tests.test_fixtures_native
 
       - name: Preserve Workspace browser evidence
         if: always()

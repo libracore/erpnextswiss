@@ -199,7 +199,62 @@ override_whitelisted_methods = {
 
 # Fixtures (to import DocType customisations)
 # --------
-fixtures = ["Custom Field"]
+# Keep optional HR targets in their own import file: a missing DocType stops
+# native Frappe's import of that entire file. Export only versioned Swiss fields.
+fixtures = [
+    {
+        "dt": "Custom Field",
+        "filters": [["name", "in", [
+            "Payment Entry-section_payment_details",
+            "Payment Entry-transaction_type",
+            "Payment Entry-iban",
+            "Payment Entry-bic",
+            "Payment Entry-esr_participant_number",
+            "Payment Entry-esr_reference",
+            "Payment Entry-column_break_payment_details_esr",
+            "Account-section_payment_files",
+            "Account-iban",
+            "Account-column_break_payment_files",
+            "Account-bic",
+            "Employee-social_security_number",
+            "Employee-old_social_security_number",
+            "Purchase Invoice-section_payment",
+            "Purchase Invoice-payment_type",
+            "Purchase Invoice-column_payment",
+            "Purchase Invoice-esr_reference_number",
+            "GL Entry-exported_to_abacus",
+            "Sales Invoice-payment_reminder_level",
+            "Sales Invoice-exclude_from_payment_reminder_until",
+            "Customer-enable_lsv",
+            "Sales Invoice-is_proposed",
+            "Sales Invoice-enable_lsv",
+            "Payment Terms Template-section_skonto",
+            "Payment Terms Template-skonto_days",
+            "Payment Terms Template-column_skonto",
+            "Payment Terms Template-skonto_percent",
+            "Purchase Invoice-is_proposed",
+            "Customer-section_banking",
+            "Customer-lsv_code",
+            "Customer-lsv_date",
+            "Customer-column_banking",
+            "Customer-iban",
+            "Customer-bic",
+            "Payment Entry-camt_amount",
+            "Sales Invoice-exported_to_abacus",
+            "Purchase Invoice-exported_to_abacus",
+            "Payment Entry-exported_to_abacus",
+            "Purchase Taxes and Charges Template-tax_code",
+        ]]],
+    },
+    {
+        "dt": "Custom Field",
+        "prefix": "hr",
+        "filters": [["name", "in", [
+            "Expense Claim-taxes_and_charges",
+            "Expense Claim-is_proposed",
+        ]]],
+    },
+]
 
 domains = {
     'HLK': 'erpnextswiss.domains.hlk'

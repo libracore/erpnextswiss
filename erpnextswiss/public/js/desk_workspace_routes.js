@@ -9,7 +9,7 @@
     const allowed = new Set((frappe.boot.workspaces?.pages || []).map(page => page.name));
     for (const [alias, workspace] of Object.entries(aliases)) {
         if (allowed.has(workspace) && !Object.hasOwn(frappe.re_route, alias)) {
-            frappe.re_route[alias] = "Workspaces/" + encodeURIComponent(workspace);
+            frappe.re_route[alias] = frappe.router.slug(workspace);
         }
     }
 })();

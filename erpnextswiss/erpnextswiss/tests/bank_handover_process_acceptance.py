@@ -125,7 +125,7 @@ def run_process_acceptance():
 
     def execute(method, **kwargs):
         process = subprocess.run(['bench', '--site', 'test_site', 'execute', module + method,
-                                  '--kwargs', json.dumps(kwargs)], capture_output=True, text=True, timeout=120)
+                                  '--kwargs', repr(kwargs)], capture_output=True, text=True, timeout=120)
         if process.returncode:
             raise RuntimeError(process.stdout + process.stderr)
         return json.loads(process.stdout.strip().splitlines()[-1])

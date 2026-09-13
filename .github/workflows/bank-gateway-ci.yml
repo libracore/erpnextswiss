@@ -8,6 +8,8 @@ on:
       - "tests/test_banking_readiness_inventory.py"
       - "erpnextswiss/scripts/bank_file_admission.py"
       - "erpnextswiss/scripts/bank_matching_scope.py"
+      - "erpnextswiss/scripts/bank_camt_preview.py"
+      - "erpnextswiss/erpnextswiss/tests/test_bank_camt_preview.py"
       - "tests/test_bank_matching_scope.py"
       - "erpnextswiss/erpnextswiss/tests/test_bank_file_admission.py"
       - "erpnextswiss/public/xsd/camt.05*.001.08.xsd"
@@ -20,6 +22,8 @@ on:
       - "tests/test_banking_readiness_inventory.py"
       - "erpnextswiss/scripts/bank_file_admission.py"
       - "erpnextswiss/scripts/bank_matching_scope.py"
+      - "erpnextswiss/scripts/bank_camt_preview.py"
+      - "erpnextswiss/erpnextswiss/tests/test_bank_camt_preview.py"
       - "tests/test_bank_matching_scope.py"
       - "erpnextswiss/erpnextswiss/tests/test_bank_file_admission.py"
       - "erpnextswiss/public/xsd/camt.05*.001.08.xsd"
@@ -53,7 +57,10 @@ jobs:
           import resource
           import unittest
           resource.setrlimit(resource.RLIMIT_AS, (256 * 1024 ** 2, 256 * 1024 ** 2))
-          suite = unittest.defaultTestLoader.loadTestsFromName('erpnextswiss.erpnextswiss.tests.test_bank_file_admission')
+          suite = unittest.defaultTestLoader.loadTestsFromNames([
+              'erpnextswiss.erpnextswiss.tests.test_bank_file_admission',
+              'erpnextswiss.erpnextswiss.tests.test_bank_camt_preview',
+          ])
           result = unittest.TextTestRunner(verbosity=2).run(suite)
           print('Bank archive peak RSS KiB:', resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
           raise SystemExit(not result.wasSuccessful())

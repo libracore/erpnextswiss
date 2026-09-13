@@ -22,6 +22,7 @@ class BankMatchingScope:
         self.account = document.name
         self.company = document.company
         self.iban = "".join((document.get("iban") or "").split()).upper()
+        self.currency = document.get("account_currency")
 
     def check_iban(self, iban):
         if not self.iban or "".join(iban.split()).upper() != self.iban:

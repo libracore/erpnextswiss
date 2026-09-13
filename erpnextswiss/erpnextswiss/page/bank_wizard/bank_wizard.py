@@ -270,7 +270,7 @@ def render_transactions(transactions):
     html = frappe.render_template('erpnextswiss/erpnextswiss/page/bank_wizard/transaction_table.html', { 'transactions': transactions }  )
     return html
 
-def read_camt_transactions(transaction_entries, account, settings, debug=False, skip_company_filter=False, *, read_only=False):
+def read_camt_transactions(transaction_entries, account, settings, debug=False, skip_company_filter=False, *, read_only=False, xml_entries=False):
     # Keep the legacy argument for callers, but it can no longer disable tenant
     # isolation. The transport preview uses read_only to suppress database logs.
     scope = BankMatchingScope(account)
@@ -280,8 +280,10 @@ def read_camt_transactions(transaction_entries, account, settings, debug=False, 
         if not read_only:
             frappe.log_error(*args, **kwargs)
     txns = []
-    for entry in transaction_entries:
-        entry_soup = BeautifulSoup(str(entry), 'lxml')
+    parser = 'xml' if xml_entries else 'lxml'
+    for entry_index, entry in enumerate(transaction_entries):
+        first_transaction = len(txns)
+        entry_soup = BeautifulSoup(str(entry), parser)
         if entry_soup.bookgdt.dt:
             date = entry_soup.bookgdt.dt.get_text()[:10]
         elif entry_soup.bookgdt.dttm:
@@ -301,7 +303,7 @@ def read_camt_transactions(transaction_entries, account, settings, debug=False, 
         if transactions and len(transactions) > 0:
             for transaction in transactions:
                 transaction_count += 1
-                transaction_soup = BeautifulSoup(str(transaction), 'lxml')
+                transaction_soup = BeautifulSoup(str(transaction), parser)
                 # --- find transaction type: paid or received: (DBIT: paid, CRDT: received)
                 if settings.always_use_entry_transaction_type:
                     credit_debit = entry_soup.cdtdbtind.get_text()
@@ -361,7 +363,17 @@ def read_camt_transactions(transaction_entries, account, settings, debug=False, 
                                         report("Code: {0}".format(code))
                                     unique_reference = hashlib.md5(code.encode("utf-8")).hexdigest()
                 # --- find amount and currency
-                if cint(settings.always_use_entry_amount):
+                if xml_entries and not cint(settings.always_use_entry_amount):
+                    # Prefer explicit D-level Amt over the optional original
+                    # TxAmt. The adapter checks booking currency and detail sums.
+                    booked_amount = transaction_soup.txdtls.find('amt', recursive=False)
+                    if booked_amount is None:
+                        amount_details = transaction_soup.txdtls.find('amtdtls', recursive=False)
+                        transaction_amount = amount_details.find('txamt', recursive=False) if amount_details is not None else None
+                        booked_amount = transaction_amount.find('amt', recursive=False) if transaction_amount is not None else None
+                    amount = float(booked_amount.get_text()) if booked_amount is not None else entry_amount
+                    currency = booked_amount['ccy'] if booked_amount is not None else entry_currency
+                elif cint(settings.always_use_entry_amount):
                     # in this case, we ignore collective transaction parts and book on the entry amount in account currency
                     amount = entry_amount
                     currency = entry_currency
@@ -383,14 +395,14 @@ def read_camt_transactions(transaction_entries, account, settings, debug=False, 
                     # --- find party IBAN
                     if credit_debit == "DBIT":
                         # use RltdPties:Cdtr
-                        party_soup = BeautifulSoup(str(transaction_soup.txdtls.rltdpties.cdtr), 'lxml')
+                        party_soup = BeautifulSoup(str(transaction_soup.txdtls.rltdpties.cdtr), parser)
                         try:
                             party_iban = transaction_soup.cdtracct.id.iban.get_text()
                         except:
                             party_iban = ""
                     else:
                         # CRDT: use RltdPties:Dbtr
-                        party_soup = BeautifulSoup(str(transaction_soup.txdtls.rltdpties.dbtr), 'lxml')
+                        party_soup = BeautifulSoup(str(transaction_soup.txdtls.rltdpties.dbtr), parser)
                         try:
                             party_iban = transaction_soup.dbtracct.id.iban.get_text()
                         except:
@@ -779,6 +791,10 @@ def read_camt_transactions(transaction_entries, account, settings, debug=False, 
                         'matched_amount': None
                     }
                     txns.append(new_txn)
+
+        if xml_entries:
+            for txn in txns[first_transaction:]:
+                txn['_camt_entry_index'] = entry_index
 
     # check against bank wizard patterns
     patterns = records("Bank Wizard Pattern", filters={'disabled': 0}, fields=['name', 'target_field', 'operator', 'value'])

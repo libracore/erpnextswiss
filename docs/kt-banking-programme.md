@@ -466,3 +466,22 @@ Zahlungsbuchung aus dem alten EBICS-Prozess zu uebernehmen. Kontobindung, Rechte
 fachliche Dubletten/053-054-Ueberlappung, Restore, Pilot und Deploy bleiben offen;
 ebenso die urspruenglichen Plattformpakete. Umfang und Details:
 [Datei-/Integrationsvertrag](bank-file-admission.md).
+
+## Weiterer Teilstand: Gepruefte Konto- und camt-Uebergabe
+
+Commit `72fe36e9ce700f8ba195bed4750ffc85843e3ba6` ist durch Swiss-CI
+`34732027666` und Bank-CI `34732027667` erfolgreich geprueft: 69 native App-Tests,
+die sieben neuen Konto-/Firmenrechte-Tests nochmals nach HRMS-Installation,
+35 isolierte Hilfstests, 28 Dateitests und 12 Desktop-/Mobil-Workspace-Vergleiche.
+Keine produktive Umstellung. Details: [bestehender Kontobereich](bank-matching-scope.md).
+
+Darauf baut eine interne lesende Archivvorschau auf. Sie bindet jeden Auszug/jede
+Benachrichtigung an konfigurierte Konten und ruft den vorhandenen Bank-Wizard auf.
+Originale, Salden, Nullbuchungs-Auszug und nicht automatisch zuordenbare Zeilen
+bleiben erhalten. Keine neue Abgleich-/Vorschlags-/Zahlungsverwaltung und keine
+Oberflaeche. Die erweiterten nativen Tests sind am konkreten neuen Commit zu
+pruefen. Vollstaendige Bank-/ERP-Importpersistenz, Dubletten/053-054-Ueberlappung,
+Paging, Konfiguration, Restore, Pilot und Deploy bleiben offen. Dieser Teilstand
+ersetzt keine der urspruenglichen 14 Abnahmen.
+
+[Uebergabevertrag und Regressionen](bank-camt-preview.md).

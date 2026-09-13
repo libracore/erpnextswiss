@@ -11,6 +11,7 @@ import ast
 from frappe.utils import cint, flt
 from frappe.utils.data import get_url_to_form
 from erpnext.setup.utils import get_exchange_rate
+from erpnextswiss.scripts.bank_matching_scope import BankMatchingScope
 import datetime
 
 # this function tries to match the amount to an open sales invoice
@@ -229,6 +230,7 @@ def read_camt053_meta(content):
 @frappe.whitelist(methods=["POST"])
 def read_camt053(content, account):
     frappe.only_for(("Accounts User", "Accounts Manager", "System Manager"))
+    scope = BankMatchingScope(account)
     settings = frappe.get_doc("ERPNextSwiss Settings", "ERPNextSwiss Settings")
 
     #read_camt_transactions_re(content)
@@ -248,32 +250,17 @@ def read_camt053(content, account):
             iban = "n/a"
             frappe.log_error("Unable to read structure. Please make sure that you have selected the correct format.", "BankWizard read_camt053")
             
-    # find account by iban
-    accounts = frappe.db.sql("""
-            SELECT `name`
-            FROM `tabAccount`
-            WHERE `account_type` = 'Bank'
-              AND `disabled` = 0
-              AND REPLACE(`iban`, ' ', '') = %(iban)s
-        """,
-        {'iban': iban.replace(" ", "")},
-        as_dict=True
-    )
-
-    skip_company_filter = False
-    if len(accounts) == 0:
-        frappe.msgprint( _("No account found for IBAN {0}. Make sure there is an account in the chart of accounts with this IBAN, account type Bank and not disabled.").format(iban), _("Bank Import IBAN validation"))
-        accounts = [{'name': 'n/a'}]
-        skip_company_filter = True
-    else:
-        account = accounts[0]['name']
+    # Keep the user's authorized account, including when another company uses
+    # the same IBAN. Legacy files with only a bank account number remain manual.
+    if iban != "n/a":
+        scope.check_iban(iban)
     
     # transactions
     entries = soup.find_all('ntry')
-    transactions = read_camt_transactions(entries, account, settings, skip_company_filter=skip_company_filter)
+    transactions = read_camt_transactions(entries, account, settings)
     html = render_transactions(transactions)
     
-    return { 'transactions': transactions, 'html': html, 'bank': accounts[0]['name'] } 
+    return { 'transactions': transactions, 'html': html, 'bank': scope.account }
 
 @frappe.whitelist()
 def render_transactions(transactions):
@@ -283,8 +270,15 @@ def render_transactions(transactions):
     html = frappe.render_template('erpnextswiss/erpnextswiss/page/bank_wizard/transaction_table.html', { 'transactions': transactions }  )
     return html
 
-def read_camt_transactions(transaction_entries, account, settings, debug=False, skip_company_filter=False):
-    company = frappe.get_value("Account", account, "company")
+def read_camt_transactions(transaction_entries, account, settings, debug=False, skip_company_filter=False, *, read_only=False):
+    # Keep the legacy argument for callers, but it can no longer disable tenant
+    # isolation. The transport preview uses read_only to suppress database logs.
+    scope = BankMatchingScope(account)
+    company = scope.company
+    records = scope.records
+    def report(*args, **kwargs):
+        if not read_only:
+            frappe.log_error(*args, **kwargs)
     txns = []
     for entry in transaction_entries:
         entry_soup = BeautifulSoup(str(entry), 'lxml')
@@ -364,7 +358,7 @@ def read_camt_transactions(transaction_entries, account, settings, debug=False, 
                                         party = "Bank internal"
                                     code = "{0}:{1}:{2}".format(date, amount, party)
                                     if settings.debug_mode:
-                                        frappe.log_error("Code: {0}".format(code))
+                                        report("Code: {0}".format(code))
                                     unique_reference = hashlib.md5(code.encode("utf-8")).hexdigest()
                 # --- find amount and currency
                 if cint(settings.always_use_entry_amount):
@@ -490,7 +484,7 @@ def read_camt_transactions(transaction_entries, account, settings, debug=False, 
                                     transaction_reference = unique_reference
                 # debug: show collected record in error log
                 if settings.debug_mode:
-                    frappe.log_error("""type:{type}\ndate:{date}\namount:{currency} {amount}\nunique ref:{unique}
+                    report("""type:{type}\ndate:{date}\namount:{currency} {amount}\nunique ref:{unique}
                         party:{party}\nparty address:{address}\nparty iban:{iban}\nremarks:{remarks}
                         payment_instruction_id:{payment_instruction_id}""".format(
                         type=credit_debit, date=date, currency=currency, amount=amount, unique=unique_reference,
@@ -499,14 +493,12 @@ def read_camt_transactions(transaction_entries, account, settings, debug=False, 
 
                 # check if this transaction is already recorded
                 _filters = {'reference_no': unique_reference, 'company': company}
-                if skip_company_filter:                 # in case the account was not clear, do not filter for company (in multi-company case)
-                    _filters.pop('company', None)
-                match_payment_entry = frappe.get_all('Payment Entry', 
+                match_payment_entry = records('Payment Entry',
                     filters=_filters, 
                     fields=['name'])
                 if match_payment_entry:
                     if debug or settings.debug_mode:
-                        frappe.log_error("Transaction {0} is already imported in {1}.".format(unique_reference, match_payment_entry[0]['name']))
+                        report("Transaction {0} is already imported in {1}.".format(unique_reference, match_payment_entry[0]['name']))
                 else:
                     # try to find matching parties & invoices
                     party_match = None
@@ -534,7 +526,7 @@ def read_camt_transactions(transaction_entries, account, settings, debug=False, 
                                 else:
                                     payment_proposal_id = None
                                 # find original instruction record
-                                payment_proposal_payments = frappe.get_all("Payment Proposal Payment",
+                                payment_proposal_payments = records("Payment Proposal Payment",
                                     filters={'parent': payment_proposal_id, 'idx': payment_instruction_row},
                                     fields=['receiver', 'receiver_address_line1', 'receiver_address_line2', 'iban', 'reference', 'receiver_id', 'esr_reference'])
                                 # supplier
@@ -543,14 +535,14 @@ def read_camt_transactions(transaction_entries, account, settings, debug=False, 
                                         party_match = payment_proposal_payments[0]['receiver_id']
                                     else:
                                         # fallback to supplier name
-                                        match_suppliers = frappe.get_all("Supplier", filters={'supplier_name': payment_proposal_payments[0]['receiver']},
+                                        match_suppliers = records("Supplier", filters={'supplier_name': payment_proposal_payments[0]['receiver']},
                                             fields=['name'])
                                         if match_suppliers and len(match_suppliers) > 0:
                                             party_match = match_suppliers[0]['name']
                                     # purchase invoice reference match (take each part separately)
                                     if payment_proposal_payments[0]['esr_reference']:
                                         # match by esr reference number
-                                        possible_pinvs = frappe.get_all("Purchase Invoice",
+                                        possible_pinvs = records("Purchase Invoice",
                                             filters=[['docstatus', '=', 1],
                                                 ['outstanding_amount', '>', 0],
                                                 ['esr_reference_number', '=', payment_proposal_payments[0]['esr_reference']]
@@ -558,33 +550,35 @@ def read_camt_transactions(transaction_entries, account, settings, debug=False, 
                                             fields=['name', 'supplier', 'outstanding_amount', 'bill_no', 'esr_reference_number'])
                                     else:
                                         # check each individual reference (combined pinvs)
-                                        possible_pinvs = frappe.get_all("Purchase Invoice",
+                                        possible_pinvs = records("Purchase Invoice",
                                                 filters=[['docstatus', '=', 1],
                                                     ['outstanding_amount', '>', 0],
                                                     ['bill_no', 'IN', payment_proposal_payments[0]['reference']]
                                                 ],
                                                 fields=['name', 'supplier', 'outstanding_amount', 'bill_no', 'esr_reference_number'])
+                            except frappe.PermissionError:
+                                raise
                             except Exception as err:
                                 # this can be the case for malformed instruction ids
-                                frappe.log_error(err, "Match payment instruction error")
+                                report(err, "Match payment instruction error")
                         # suppliers
                         if not possible_pinvs:
                             # no payment proposal, try to estimate from other data
                             if not party_match:
                                 # find suplier from name
-                                match_suppliers = frappe.get_all("Supplier",
+                                match_suppliers = records("Supplier",
                                     filters={'supplier_name': party_name, 'disabled': 0},
                                     fields=['name'])
                                 if match_suppliers:
                                     party_match = match_suppliers[0]['name']
                             if party_match:
                                 # restrict pinvs to supplier
-                                possible_pinvs = frappe.get_all("Purchase Invoice",
+                                possible_pinvs = records("Purchase Invoice",
                                     filters=[['docstatus', '=', 1], ['outstanding_amount', '>', 0], ['supplier', '=', party_match]],
                                     fields=['name', 'supplier', 'outstanding_amount', 'bill_no', 'esr_reference_number'])
                             else:
                                 # purchase invoices
-                                possible_pinvs = frappe.get_all("Purchase Invoice",
+                                possible_pinvs = records("Purchase Invoice",
                                     filters=[['docstatus', '=', 1], ['outstanding_amount', '>', 0]],
                                     fields=['name', 'supplier', 'outstanding_amount', 'bill_no', 'esr_reference_number'])
                         if possible_pinvs:
@@ -599,13 +593,13 @@ def read_camt_transactions(transaction_entries, account, settings, debug=False, 
                                     # add total matched amount
                                     matched_amount += float(pinv['outstanding_amount'])
                         # employees
-                        match_employees = frappe.get_all("Employee",
+                        match_employees = records("Employee",
                             filters={'employee_name': party_name, 'status': 'active'},
                             fields=['name'])
                         if match_employees:
                             employee_match = match_employees[0]['name']
                         # expense claims
-                        possible_expenses = frappe.get_all("Expense Claim",
+                        possible_expenses = records("Expense Claim",
                             filters=[['docstatus', '=', 1], ['status', '=', 'Unpaid']],
                             fields=['name', 'employee', 'total_claimed_amount'])
                         if possible_expenses:
@@ -619,11 +613,11 @@ def read_camt_transactions(transaction_entries, account, settings, debug=False, 
                                     matched_amount += float(exp['total_claimed_amount'])
                     else:
                         # customers & sales invoices
-                        match_customers = frappe.get_all("Customer", filters={'customer_name': party_name, 'disabled': 0}, fields=['name'])
+                        match_customers = records("Customer", filters={'customer_name': party_name, 'disabled': 0}, fields=['name'])
                         if match_customers:
                             party_match = match_customers[0]['name']
                         # sales invoices
-                        possible_sinvs = frappe.get_all("Sales Invoice",
+                        possible_sinvs = records("Sales Invoice",
                             filters=[['outstanding_amount', '>', 0], ['docstatus', '=', 1]],
                             fields=['name', 'customer', 'customer_name', 'outstanding_amount', 'esr_reference', 'esr_reference', 'reference_number_full'])
                         if possible_sinvs:
@@ -694,10 +688,10 @@ def read_camt_transactions(transaction_entries, account, settings, debug=False, 
                         code = "{0}:{1}:{2}".format(date, entry_currency, entry_amount)
                         unique_reference = hashlib.md5(code.encode("utf-8")).hexdigest()
             # check if this transaction is already recorded
-            match_payment_entry = frappe.get_all('Payment Entry', filters={'reference_no': unique_reference}, fields=['name'])
+            match_payment_entry = records('Payment Entry', filters={'reference_no': unique_reference}, fields=['name'])
             if match_payment_entry:
                 if debug or settings.debug_mode:
-                    frappe.log_error("Transaction {0} is already imported in {1}.".format(unique_reference, match_payment_entry[0]['name']))
+                    report("Transaction {0} is already imported in {1}.".format(unique_reference, match_payment_entry[0]['name']))
             else:
                 # --- find transaction type: paid or received: (DBIT: paid, CRDT: received)
                 credit_debit = entry_soup.cdtdbtind.get_text()
@@ -708,13 +702,13 @@ def read_camt_transactions(transaction_entries, account, settings, debug=False, 
                     payment_instruction_row = int(payment_instruction_fields[-1]) + 1
                     payment_proposal_id = payment_instruction_fields[1]
                     # find original instruction record
-                    payment_proposal_payments = frappe.get_all("Payment Proposal Payment",
+                    payment_proposal_payments = records("Payment Proposal Payment",
                         filters={'parent': payment_proposal_id, 'idx': payment_instruction_row},
                         fields=['receiver', 'receiver_address_line1', 'receiver_address_line2', 'iban', 'reference'])
                     # suppliers
                     party_match = None
                     if payment_proposal_payments:
-                        match_suppliers = frappe.get_all("Supplier", filters={'supplier_name': payment_proposal_payments[0]['receiver']},
+                        match_suppliers = records("Supplier", filters={'supplier_name': payment_proposal_payments[0]['receiver']},
                             fields=['name'])
                         if match_suppliers:
                             party_match = match_suppliers[0]['name']
@@ -722,7 +716,7 @@ def read_camt_transactions(transaction_entries, account, settings, debug=False, 
                     invoice_match = None
                     matched_amount = 0
                     if payment_proposal_payments:
-                        match_invoices = frappe.get_all("Purchase Invoice",
+                        match_invoices = records("Purchase Invoice",
                             filters=[['name', '=', payment_proposal_payments[0]['reference']], ['outstanding_amount', '>', 0]],
                             fields=['name', 'grand_total'])
                         if match_invoices:
@@ -765,6 +759,8 @@ def read_camt_transactions(transaction_entries, account, settings, debug=False, 
                             'matched_amount': None
                         }
                         txns.append(new_txn)
+                except frappe.PermissionError:
+                    raise
                 except Exception as err:
                     # no payment instruction
                     new_txn = {
@@ -785,7 +781,7 @@ def read_camt_transactions(transaction_entries, account, settings, debug=False, 
                     txns.append(new_txn)
 
     # check against bank wizard patterns
-    patterns = frappe.get_all("Bank Wizard Pattern", filters={'disabled': 0}, fields=['name', 'target_field', 'operator', 'value'])
+    patterns = records("Bank Wizard Pattern", filters={'disabled': 0}, fields=['name', 'target_field', 'operator', 'value'])
     if len(patterns) > 0:
         FIELD_MAP = {
             "Transaction Reference": "transaction_reference",
@@ -798,7 +794,7 @@ def read_camt_transactions(transaction_entries, account, settings, debug=False, 
             txn['unallocated_amount'] = flt(txn['amount']) - flt(txn['matched_amount'])
             txn['amount'] = flt(txn['amount'])
             for p in patterns:
-                frappe.log_error("{0}: {1}".format(p['value'], type(p['value'])))
+                report("{0}: {1}".format(p['value'], type(p['value'])))
                 try:
                     if p['operator'] == "=":
                         if (type(txn[FIELD_MAP[p['target_field']]]) == float and txn[FIELD_MAP[p['target_field']]] == flt(p['value'])) \
@@ -813,7 +809,7 @@ def read_camt_transactions(transaction_entries, account, settings, debug=False, 
                         txn['pattern'] = p['name']
                         break
                 except Exception as err:
-                    frappe.log_error( err , "Bank Wizard: Pattern Error")
+                    report( err , "Bank Wizard: Pattern Error")
                 
                 
     return txns

@@ -218,6 +218,10 @@ jobs:
         working-directory: frappe-bench
         run: bench --site "$TEST_SITE" run-tests --app erpnextswiss
 
+      - name: Verify bank handover across commits and independent receivers
+        working-directory: frappe-bench
+        run: ./env/bin/python -m erpnextswiss.erpnextswiss.tests.bank_handover_process_acceptance
+
       - name: Compare native Workspace rendering through old and direct URLs
         working-directory: frappe-bench
         run: |

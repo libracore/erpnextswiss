@@ -7,6 +7,7 @@ from unittest.mock import patch
 import frappe
 from frappe.model.document import Document
 from frappe.core.doctype.file.utils import find_file_by_url
+from frappe.core.doctype.file.file import File
 from frappe.utils import CallbackManager
 from frappe.utils.file_manager import save_file
 
@@ -221,8 +222,28 @@ class TestBankFileHandoverNative(unittest.TestCase):
     def test_unrelated_file_permissions_are_not_changed_by_the_banking_guard(self):
         source = save_file('unrelated-' + self.key + '.txt', b'Unrelated synthetic public file', None, None,
                            is_private=0)
+        source.file_name = 'Still an ordinary attachment.txt'
+        source.save()
+        get_hooks = frappe.get_hooks
+        def baseline_hooks(hook=None, *args, **kwargs):
+            result = get_hooks(hook, *args, **kwargs)
+            if hook == 'has_permission':
+                result = dict(result)
+                result['File'] = [entry for entry in result.get('File', [])
+                                  if entry != 'erpnextswiss.scripts.bank_file_handover.file_has_permission']
+            return result
+        manager = self.manager()
+        for user in ('Guest', manager, 'Administrator'):
+            frappe.set_user(user)
+            with patch.object(frappe, 'get_hooks', side_effect=baseline_hooks):
+                before = {action: frappe.has_permission('File', action, doc=source)
+                          for action in ('read', 'write', 'delete', 'share')}
+            after = {action: frappe.has_permission('File', action, doc=source)
+                     for action in ('read', 'write', 'delete', 'share')}
+            self.assertEqual(after, before, user)
+            self.assertEqual(source.is_downloadable(), File.is_downloadable(source), user)
         frappe.set_user('Guest')
-        self.assertTrue(frappe.has_permission('File', 'read', doc=source))
+        # Public bytes can be downloaded without granting Guest ERP File access.
         self.assertTrue(source.is_downloadable())
         with self.assertRaises(frappe.PermissionError):
             self.stage()

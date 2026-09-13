@@ -73,6 +73,13 @@ uses native slug URLs and adds complete screenshot equality and two warm Page
 revisits to every comparison. Its actual execution must be verified separately;
 the earlier green run does not prove these stronger assertions.
 
+The stronger checks subsequently passed at source `00d6106` in run `34727410928`
+and again at `cda0226` in run `34728128243`: 12 route/viewport comparisons,
+60 retained screenshots, two warm revisits per route, cold views byte-identical,
+and at most 36 warm pixels differing by one channel level. No layout region was
+masked. The later run also verifies optional fixture installation with and without
+HRMS; see [fixture upgrade evidence](fixture-upgrade-contract.md).
+
 Run `34727001914` then passed native tests, both migrations and the first cold
 full-viewport comparisons. Its first warm revisit differed at just 36 rounded-edge
 pixels, each by one grayscale level (maximum channel delta 1/255); text and block

@@ -54,7 +54,12 @@ class TestBankFileHandoverNative(unittest.TestCase):
                         'roles': [{'role': 'Accounts Manager'}]}).insert()
         return user
 
+    def disk_files(self):
+        root = Path(frappe.get_site_path('private', 'files'))
+        return {path.resolve() for path in root.iterdir() if path.is_file()} if root.exists() else set()
+
     def test_stages_original_without_legacy_payment_or_bank_side_effects(self):
+        before = self.disk_files()
         insert = Document.insert
         def controlled_insert(document, *args, **kwargs):
             self.assertIn(document.doctype, ('Bank File Handover', 'File', 'Version', 'Comment'))
@@ -73,6 +78,7 @@ class TestBankFileHandoverNative(unittest.TestCase):
         source = frappe.get_doc('File', document.original_file)
         self.assertEqual(source.is_private, 1)
         self.assertEqual(source.attached_to_name, document.name)
+        self.assertEqual(self.disk_files() - before, {Path(source.get_full_path()).resolve()})
         self.assertEqual(handover.get_handover_preview(document.name)['archive'].files[0].content,
                          xml(entries=True))
 
@@ -128,18 +134,22 @@ class TestBankFileHandoverNative(unittest.TestCase):
 
     def test_failure_after_file_write_rolls_back_only_local_rows_and_callbacks(self):
         paths, callbacks = [], []
+        before = self.disk_files()
         frappe.db.after_commit.add(lambda: callbacks.append('outer'))
-        def observed_save(*args, **kwargs):
-            source = save_file(*args, **kwargs)
-            paths.append(Path(source.get_full_path()))
-            frappe.db.after_commit.add(lambda: callbacks.append('failed-inner'))
+        insert = Document.insert
+        def observed_insert(document, *args, **kwargs):
+            source = insert(document, *args, **kwargs)
+            if document.doctype == 'File':
+                paths.append(Path(source.get_full_path()))
+                frappe.db.after_commit.add(lambda: callbacks.append('failed-inner'))
             return source
-        with patch('frappe.utils.file_manager.save_file', side_effect=observed_save), \
+        with patch.object(Document, 'insert', observed_insert), \
                 patch.object(handover, '_original', side_effect=BankFileError('Injected readback failure')):
             with self.assertRaises(BankFileError):
                 self.stage()
         self.assertEqual(len(paths), 1)
         self.assertFalse(paths[0].exists())
+        self.assertEqual(self.disk_files(), before)
         self.assertEqual(frappe.db.count(handover.DOCTYPE, {'connection': self.connection}), 0)
         self.assertTrue(frappe.db.exists('ebics Connection', self.connection))
         frappe.db.after_commit.run()

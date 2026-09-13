@@ -125,7 +125,7 @@ def _accounts(document):
 
 
 def _check_connection(document):
-    connection = frappe.get_doc('ebics Connection', document.connection)
+    connection = frappe.get_doc('ebics Connection', document.connection, for_update=_controlled_write.get())
     connection.check_permission('read')
     if connection.company != document.company or connection.enable_sync:
         raise BankFileError('Bank handover connection changed or legacy synchronization is enabled')
@@ -152,7 +152,7 @@ def file_has_permission(doc, ptype='read', user=None):
     if ptype not in ('read', 'select') or not doc.is_private:
         return False
     try:
-        parent = frappe.get_doc(DOCTYPE, doc.attached_to_name)
+        parent = frappe.get_doc(DOCTYPE, doc.attached_to_name, for_update=_controlled_write.get())
     except frappe.DoesNotExistError:
         return False
     return has_permission(parent, ptype, user)
@@ -212,10 +212,21 @@ def guard_file_mutation(doc, method=None):
                  frappe.PermissionError)
 
 
+def _current_link(doctype, name):
+    # Refresh native Link validation's exact cache key from a locking read. A
+    # pre-existing REPEATABLE READ snapshot may predate the previous receiver's
+    # commit even after our connection lock has been acquired.
+    frappe.db.value_cache[doctype].pop(name, None)
+    return frappe.db.get_value(doctype, name, ('name',), as_dict=True, cache=True,
+                               for_update=True, order_by=None)
+
+
 def _original(document):
     if not isinstance(document.byte_count, int) or not 0 < document.byte_count <= MAX_ARCHIVE_BYTES:
         raise BankFileError('Bank handover original size is invalid')
-    source = frappe.get_doc('File', document.original_file)
+    if _controlled_write.get():
+        _current_link('File', document.original_file)
+    source = frappe.get_doc('File', document.original_file, for_update=_controlled_write.get())
     source.check_permission('read')
     if (not source.is_private or source.attached_to_doctype != DOCTYPE
             or source.attached_to_name != document.name
@@ -270,10 +281,11 @@ def stage_bank_archive(payload, profile, *, connection, accounts, source_referen
         content_key = _digest([connection_doc.name, company, accounts, profile, archive.sha256])
         receipt_key = _digest([connection_doc.name, source_reference])
         name = 'BFH-' + content_key
-        previous = frappe.db.get_value('Bank Handover Receipt', {'receipt_key': receipt_key}, 'parent')
+        previous = frappe.db.get_value('Bank Handover Receipt', {'receipt_key': receipt_key}, 'parent',
+                                        for_update=True)
         if previous and previous != name:
             raise BankFileError('The source reference is already bound to different bank data')
-        if frappe.db.exists(DOCTYPE, name):
+        if _current_link(DOCTYPE, name):
             document = frappe.get_doc(DOCTYPE, name, for_update=True)
             document.check_permission('read')
             if _original(document) != payload:
@@ -287,8 +299,11 @@ def stage_bank_archive(payload, profile, *, connection, accounts, source_referen
                 'entry_count': sum(len(s['entries']) for s in preview['statements']),
             })
             document.insert(ignore_permissions=True)
-            from frappe.utils.file_manager import save_file
-            original = save_file(name + '.zip', payload, DOCTYPE, name, is_private=1)
+            # Supply bytes to native File directly. The legacy save_file helper
+            # writes a blob first, then File inserts it through a second write.
+            original = frappe.get_doc({'doctype': 'File', 'file_name': name + '.zip', 'content': payload,
+                                       'attached_to_doctype': DOCTYPE, 'attached_to_name': name,
+                                       'is_private': 1}).insert(ignore_permissions=True)
             document.original_file = original.name
             # Verify the actual stored binary object, not just File metadata.
             if _original(document) != payload:

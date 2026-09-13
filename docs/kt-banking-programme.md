@@ -485,3 +485,22 @@ Paging, Konfiguration, Restore, Pilot und Deploy bleiben offen. Dieser Teilstand
 ersetzt keine der urspruenglichen 14 Abnahmen.
 
 [Uebergabevertrag und Regressionen](bank-camt-preview.md).
+
+## Weiterer Teilstand: Servergebundene Gateway-Uebergabe
+
+Die Originaldatei-Uebergabe wurde auf `c2b8fc9751284036e0a6f142bfeb588f710f17e9`
+durch Swiss-CI `34739063129` und Bank-CI `34739063140` vollstaendig geprueft:
+105 native Tests, 19 Uebergabetests erneut nach HRMS, acht parallele Empfaenger,
+echter After-Commit-Fehler mit Prozess-Replay und zwoelf Workspace-Vergleiche.
+Keine produktive Umstellung oder Bankaktion.
+
+Darauf aufbauend verbindet ein interner Adapter das authentifizierte Original im
+PHP-Journal mit der vorhandenen ERP-Uebergabe. Site, Teilnehmer, Verbindung,
+Firma, Konten, IBAN/Waehrung und Empfangsbenutzer werden serverseitig zugeordnet,
+nicht aus eingehenden Metadaten uebernommen. Der neue Integrationsnachweis muss
+am aktuellen Commit separat bestaetigt werden. mTLS/Netztransport, Betriebs-
+konfiguration, finale Importintegration, Dubletten, Restore und Pilot bleiben offen.
+Zahlungsabgleich und Zahlungsvorschlaege bleiben vorhandener Bestand; keine
+Parallelentwicklung und keine Aenderung der urspruenglichen 14 Plattformpakete.
+
+[Serverzuordnung, Sicherheitsgrenzen und Abnahme](bank-gateway-binding.md).

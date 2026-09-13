@@ -218,6 +218,9 @@ jobs:
         working-directory: frappe-bench
         run: bench --site "$TEST_SITE" run-tests --app erpnextswiss
 
+      - name: Build offline gateway for native ERP handover acceptance
+        run: docker build --target test -t kt-bank-gateway-test gateway/ebics
+
       - name: Verify bank handover across commits and independent receivers
         working-directory: frappe-bench
         run: ./env/bin/python -m erpnextswiss.erpnextswiss.tests.bank_handover_process_acceptance
@@ -255,6 +258,7 @@ jobs:
           bench --site "$TEST_SITE" run-tests --module erpnextswiss.erpnextswiss.tests.test_fixtures_native
           bench --site "$TEST_SITE" run-tests --module erpnextswiss.erpnextswiss.tests.test_bank_matching_native
           bench --site "$TEST_SITE" run-tests --module erpnextswiss.erpnextswiss.tests.test_bank_file_handover_native
+          bench --site "$TEST_SITE" run-tests --module erpnextswiss.erpnextswiss.tests.test_bank_gateway_binding_native
           bench --site "$TEST_SITE" migrate
           bench --site "$TEST_SITE" run-tests --module erpnextswiss.erpnextswiss.tests.test_fixtures_native
 

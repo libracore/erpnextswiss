@@ -25,7 +25,8 @@ reliable bank transport for their later, separately tested integration.
   format/checksum; no compression algorithm or bank-file parser is reimplemented.
   Invalid, truncated, checksum-damaged or oversized data fails closed. Inner ZIP
   and XML admission is now a separately tested read-only Swiss-app helper, not
-  yet connected to this gateway or a financial import. See
+  connected to the local journal through an internal server-bound handover, but
+  not deployed gateway transport or a financial import. See
   [file admission and existing-import boundaries](../../docs/bank-file-admission.md).
 - `ReadClient::https()` selects `HttpsTransport` for a trusted configured endpoint.
   Native cURL performs HTTPS POST with certificate/hostname verification, TLS 1.2
@@ -49,6 +50,12 @@ reliable bank transport for their later, separately tested integration.
   metadata to SQLite, then opens an independent connection and authenticates the
   stored bytes. Only successful persistence returns `true` to the SDK receipt
   phase. SDK response signatures are not bypassed.
+- `TransferJournal::handover` exports a stored authenticated original and immutable
+  source envelope without another bank call or receipt change. The Swiss-app
+  receiver derives accounts/company from reviewed site configuration and verifies
+  current mappings inside its transaction and after commit. This is an internal
+  data-flow connection, not sender authentication or an operational service. See
+  [server-owned handover binding](../../docs/bank-gateway-binding.md).
 - XChaCha20-Poly1305 through libsodium protects original/receipt BLOBs and binds
   site, connection, participant, request, profile, dates, bank transaction ID,
   segment count, original hash, size and reception timestamp as authenticated data.

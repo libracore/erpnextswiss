@@ -4,12 +4,13 @@
  "module": "ERPNextSwiss",
  "istable": 1,
  "engine": "InnoDB",
- "field_order": ["receipt_key", "source_reference", "received_by", "received_at"],
+ "field_order": ["receipt_key", "source_reference", "received_by", "received_at", "source_metadata"],
  "fields": [
   {"fieldname": "receipt_key", "fieldtype": "Data", "label": "Receipt identity", "read_only": 1, "reqd": 1, "unique": 1},
   {"fieldname": "source_reference", "fieldtype": "Data", "label": "Source reference", "read_only": 1, "reqd": 1, "in_list_view": 1},
   {"fieldname": "received_by", "fieldtype": "Link", "label": "Received by", "options": "User", "read_only": 1},
-  {"fieldname": "received_at", "fieldtype": "Datetime", "label": "Received at", "read_only": 1, "reqd": 1, "in_list_view": 1}
+  {"fieldname": "received_at", "fieldtype": "Datetime", "label": "Received at", "read_only": 1, "reqd": 1, "in_list_view": 1},
+  {"fieldname": "source_metadata", "fieldtype": "Small Text", "label": "Immutable source metadata", "read_only": 1}
  ],
  "permissions": []
 }

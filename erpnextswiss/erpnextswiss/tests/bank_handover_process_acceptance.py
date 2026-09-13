@@ -1,6 +1,7 @@
 """Independent-process acceptance, restricted to the disposable CI test site."""
 
 from io import BytesIO
+import base64
 import json
 import os
 from pathlib import Path
@@ -129,6 +130,37 @@ def uncertain_commit():
     return {'acknowledged': False}
 
 
+def commit_gateway_original(metadata, payload_base64, revoke_after_commit=False):
+    _guard()
+    from erpnextswiss.scripts import bank_gateway_binding as gateway
+    from erpnextswiss.erpnextswiss.tests.test_bank_gateway_binding_native import configuration
+
+    config = configuration(CONNECTION, COMPANY, ACCOUNT, 'Administrator')
+    payload = base64.b64decode(payload_base64, validate=True)
+    assert payload == _payload()
+    stage = handover.stage_bank_archive
+    def stage_with_revocation(*args, **kwargs):
+        result = stage(*args, **kwargs)
+        if revoke_after_commit:
+            frappe.db.after_commit.add(lambda: config['bindings']['ci'].update(users=[]))
+        return result
+    with patch.dict(frappe.conf, bank_gateway_receive=config), \
+            patch.object(handover, 'stage_bank_archive', side_effect=stage_with_revocation):
+        try:
+            result = gateway.receive_gateway_archive(payload, metadata, binding='ci')
+        except handover.BankFileError:
+            if not revoke_after_commit:
+                raise
+            return {'acknowledged': False}
+    assert not revoke_after_commit, 'Revoked mapping must not be acknowledged after commit'
+    assert result['committed'] and not result['import_approved']
+    document = frappe.get_doc(handover.DOCTYPE, result['name'])
+    receipt = next(row for row in document.receipts if row.source_reference == 'gateway:' + metadata['request_key'])
+    stored = json.loads(receipt.source_metadata)
+    assert stored['bank_id'] == metadata['bank_id'] and stored['request'] == metadata['request']
+    return {'committed': True, 'replayed': result['replayed'], 'source_reference': receipt.source_reference}
+
+
 def rollback_original():
     _guard()
     result = _stage('rolled-back', 'rolled-back')
@@ -215,10 +247,22 @@ def run_process_acceptance():
     uncertain_replay = execute('commit_original', source_reference='uncertain-reply')
     assert uncertain_replay['replayed'] and uncertain_replay['name'] == first['name']
     receipts.append('uncertain-reply')
+    process = subprocess.run(['docker', 'run', '--rm', '-i', '--network', 'none', '--read-only',
+                              '--cap-drop', 'ALL', '--security-opt', 'no-new-privileges',
+                              '--tmpfs', '/tmp:rw,noexec,nosuid,size=64m', '--memory', '256m', '--cpus', '1.5',
+                              '-e', 'KT_GATEWAY_EXPORT_TEST=1', 'kt-bank-gateway-test',
+                              'php', 'tests/handover.php'], input=_payload(), capture_output=True, timeout=120)
+    assert process.returncode == 0, process.stderr.decode()
+    export = json.loads(process.stdout)
+    assert execute('commit_gateway_original', **export, revoke_after_commit=True) == {'acknowledged': False}
+    gateway_replay = execute('commit_gateway_original', **export)
+    assert gateway_replay['committed'] and gateway_replay['replayed']
+    receipts.append(gateway_replay['source_reference'])
     result = execute('verify', expected_receipts=receipts, financial_counts=counts)
     assert result['connection_title'] == 'Outer write survived'
     print('PASS independent-process commit/readback, replay, outer rollback, caught failure, uncertain commit and 8 receivers')
     print('Receiver attempts: ' + json.dumps([row['attempts'] for row in received]))
+    print('PASS signed offline PHP SDK -> encrypted journal -> server-bound native ERP commit -> revoked-ack refusal -> replay')
     print(json.dumps(result, sort_keys=True))
 
 

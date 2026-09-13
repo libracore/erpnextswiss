@@ -311,6 +311,23 @@ test('native SQLite restart and cross-process participant exclusion', function (
     check(worker('lock', $path) === [0, 'acquired'], 'Lock released after interrupted operation');
 });
 
+test('handover envelope exports authenticated original without changing receipt state', function (): void {
+    [$path, $journal] = journal();
+    rejects(fn() => $journal->handover(request()), 'Cannot export missing original');
+    $bytes = "PK\x03\x04\x00\xff" . random_bytes(256);
+    $before = $journal->persist(request(), 'BANK01', 2, $bytes);
+    $export = $journal->handover(request());
+    check($export['payload'] === $bytes, 'Export retains binary bytes');
+    check($export['metadata']['request'] === get_object_vars(request()), 'Complete immutable request scope');
+    check($export['metadata']['request_key'] === request()->key(), 'Same cross-language request identity');
+    check($export['metadata']['archive_sha256'] === hash('sha256', $bytes), 'Original hash bound');
+    check($journal->find(request()) === $before, 'No invented ERP or bank acknowledgement');
+    rejects(fn() => $journal->handover(request(['participant' => 'other'])), 'Cannot export another participant');
+    $db = new PDO('sqlite:' . $path . '/transfers.sqlite');
+    $db->exec("UPDATE transfers SET payload_hash='tampered'");
+    rejects(fn() => $journal->handover(request()), 'Cannot export altered authenticated metadata');
+});
+
 test('real EBICS SDK persists before signed positive receipt and does not resend', function (): void {
     foreach (['camt.053.001.08' => 'EOP', 'camt.054.001.08' => 'REP'] as $profile => $service) {
         [$path, $journal] = journal();

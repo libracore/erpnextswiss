@@ -181,6 +181,21 @@ final class TransferJournal
         return $this->decrypt($statement->fetchColumn(), $this->aad($row, 'payload'));
     }
 
+    public function handover(ReadRequest $request): array
+    {
+        // Export only an authenticated local original. No bank request, receipt
+        // change or ERP success state is implied by preparing this envelope.
+        $row = $this->find($request) ?? throw new RuntimeException('Transfer not found');
+        $payload = $this->payload($request);
+        if (strlen($payload) !== $row['payload_bytes'] || !hash_equals($row['payload_hash'], hash('sha256', $payload))) {
+            throw new RuntimeException('Exported original integrity failed');
+        }
+        return ['metadata' => ['version' => 1, 'request' => get_object_vars($request), 'request_key' => $request->key(),
+            'bank_id' => $row['bank_id'], 'segments' => $row['segments'], 'archive_sha256' => $row['payload_hash'],
+            'archive_bytes' => $row['payload_bytes'], 'received_at' => $row['received_at'], 'receipt_state' => $row['receipt_state']],
+            'payload' => $payload];
+    }
+
     public function confirm(ReadRequest $request, string $bankId, string $verifiedReceipt): array
     {
         if ($verifiedReceipt === '' || strlen($verifiedReceipt) > 2097152) throw new RuntimeException('Verified receipt required');

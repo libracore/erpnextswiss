@@ -255,7 +255,8 @@ def get_handover_preview(name):
                                 company=document.company, accounts=accounts)
 
 
-def stage_bank_archive(payload, profile, *, connection, accounts, source_reference):
+def stage_bank_archive(payload, profile, *, connection, accounts, source_reference,
+                       _validate_source=None, _source_metadata=None):
     """Stage atomically; the caller must commit before acknowledging ERP durability.
 
     Explicit account lists are an internal adapter input, not proof of a bank
@@ -265,6 +266,8 @@ def stage_bank_archive(payload, profile, *, connection, accounts, source_referen
     frappe.only_for(('Accounts Manager', 'System Manager'))
     if not isinstance(source_reference, str) or not _SOURCE.fullmatch(source_reference):
         raise BankFileError('An opaque source reference is required')
+    if _source_metadata is not None and (not isinstance(_source_metadata, str) or not 0 < len(_source_metadata) <= 4096):
+        raise BankFileError('Bounded source metadata is required')
     if (not isinstance(accounts, (list, tuple)) or not 0 < len(accounts) <= 64
             or any(not isinstance(account, str) or not account.strip() for account in accounts)
             or len(set(accounts)) != len(accounts)):
@@ -277,15 +280,17 @@ def stage_bank_archive(payload, profile, *, connection, accounts, source_referen
         connection_doc.check_permission('write')
         if connection_doc.enable_sync:
             raise BankFileError('Legacy synchronization must be disabled for this handover')
+        if _validate_source is not None:
+            _validate_source(connection_doc, for_update=True)
         company = connection_doc.company
         preview = preview_camt_archive(payload, profile, company=company, accounts=accounts)
         archive = preview['archive']
         content_key = _digest([connection_doc.name, company, accounts, profile, archive.sha256])
         receipt_key = _digest([connection_doc.name, source_reference])
         name = 'BFH-' + content_key
-        previous = frappe.db.get_value('Bank Handover Receipt', {'receipt_key': receipt_key}, 'parent',
-                                        for_update=True)
-        if previous and previous != name:
+        previous = frappe.db.get_value('Bank Handover Receipt', {'receipt_key': receipt_key},
+                                        ['parent', 'source_metadata'], as_dict=True, for_update=True)
+        if previous and (previous.parent != name or (previous.source_metadata or None) != _source_metadata):
             raise BankFileError('The source reference is already bound to different bank data')
         if _current_link(DOCTYPE, name):
             document = frappe.get_doc(DOCTYPE, name, for_update=True)
@@ -314,6 +319,7 @@ def stage_bank_archive(payload, profile, *, connection, accounts, source_referen
             if len(document.receipts) >= MAX_RECEIPTS:
                 raise BankFileError('Bank handover receipt limit reached')
             document.append('receipts', {'receipt_key': receipt_key, 'source_reference': source_reference,
+                                          'source_metadata': _source_metadata,
                                           'received_by': frappe.session.user, 'received_at': frappe.utils.now_datetime()})
             document.save(ignore_permissions=True)
         return {'name': document.name, 'archive_sha256': document.archive_sha256,
@@ -321,7 +327,8 @@ def stage_bank_archive(payload, profile, *, connection, accounts, source_referen
                 'replayed': bool(previous), 'commit_required': True, 'import_approved': False}
 
 
-def receive_bank_archive(payload, profile, *, connection, accounts, source_reference):
+def receive_bank_archive(payload, profile, *, connection, accounts, source_reference,
+                         _validate_source=None, _source_metadata=None):
     """Dedicated receiver transaction; no implicit commit of another caller's work.
 
     This is still internal, not a bank acknowledgement or financial import. A
@@ -337,7 +344,8 @@ def receive_bank_archive(payload, profile, *, connection, accounts, source_refer
     for attempt in range(MAX_RECEIVE_ATTEMPTS):
         try:
             result = stage_bank_archive(payload, profile, connection=connection, accounts=accounts,
-                                         source_reference=source_reference)
+                                         source_reference=source_reference, _validate_source=_validate_source,
+                                         _source_metadata=_source_metadata)
         except frappe.QueryDeadlockError:
             frappe.db.rollback()
             if attempt + 1 == MAX_RECEIVE_ATTEMPTS:
@@ -357,11 +365,14 @@ def receive_bank_archive(payload, profile, *, connection, accounts, source_refer
         try:
             document = frappe.get_doc(DOCTYPE, result['name'])
             document.check_permission('read')
-            _check_connection(document)
+            connection_doc = _check_connection(document)
             _accounts(document)
+            if _validate_source is not None:
+                _validate_source(connection_doc, for_update=False)
             receipt_key = _digest([connection, source_reference])
             if (_original(document) != payload or document.archive_sha256 != result['archive_sha256']
-                    or not any(row.receipt_key == receipt_key for row in document.receipts)):
+                    or not any(row.receipt_key == receipt_key and (row.source_metadata or None) == _source_metadata
+                               for row in document.receipts)):
                 raise BankFileError('Committed bank handover could not be verified')
             return {**result, 'commit_required': False, 'committed': True, 'attempts': attempt + 1}
         finally:

@@ -42,11 +42,17 @@ absent. Its exact shape is:
 - `accounts`: 1-64 objects containing only `account`, canonical uppercase `iban`
   without spaces, and `currency` (`CHF` or `EUR`). Account and IBAN must be unique.
 
+Aliases must not claim the same ERP connection/account or the same gateway source
+identity. Ambiguous ownership fails closed even when the selected alias alone
+would be valid. This supplements, not replaces, disabling the legacy sync path.
+
 No account values, API tokens or bank credentials are placed in repository examples.
 The mapping is not editable through a newly exposed DocType, portal or payload.
 Current company, IBAN, currency, enabled bank-account state, H005/CH connection
 profile and disabled legacy sync are checked inside the locked staging transaction.
-Mapping and rights are checked again after commit. Revocation then suppresses a
+Mapping and rights are checked again after commit. The native configuration loader
+is called with `cached=False`; request-local `frappe.conf` is not authoritative for
+this check. Revocation then suppresses a
 success acknowledgement without pretending that committed data was rolled back.
 Recovery keeps the same source reference after the configuration is reviewed.
 
@@ -71,7 +77,8 @@ test container. Synthetic test fixtures are the only source of identities/keys.
 Native tests exercise configured user/site boundaries, payload identity injection,
 current account/connection drift, both profiles/currencies, configuration changes
 between preparation and staging, immutable provenance and unchanged originals.
-The process test revokes the mapping after an actual commit, requires no success
+The process test revokes the real test-site mapping from another process after an
+actual commit while the receiver still has a stale local configuration, requires no success
 acknowledgement, then replays in another process with one original and one receipt.
 The standard app suite, post-HRMS checks and existing workspace comparisons remain
 enabled. Actual run results must be recorded against the tested revision.

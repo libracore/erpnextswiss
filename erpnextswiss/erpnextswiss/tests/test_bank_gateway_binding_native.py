@@ -43,7 +43,7 @@ class TestBankGatewayBindingNative(unittest.TestCase):
         frappe.set_user(self.user)
         self.config = configuration(self.connection, self.company_a, self.account_a, self.user)
         self.metadata = envelope(self.payload)
-        self.scope = patch.dict(frappe.conf, bank_gateway_receive=self.config)
+        self.scope = patch.object(gateway, 'get_site_config', side_effect=lambda **kwargs: {'bank_gateway_receive': self.config})
         self.scope.start()
         self.addCleanup(self.scope.stop)
 
@@ -90,7 +90,7 @@ class TestBankGatewayBindingNative(unittest.TestCase):
         alternatives.append(altered)
         with patch.object(gateway, 'stage_bank_archive', side_effect=AssertionError('No storage')):
             for value in alternatives:
-                with patch.dict(frappe.conf, bank_gateway_receive=value), self.assertRaises(BankFileError):
+                with patch.object(gateway, 'get_site_config', return_value={'bank_gateway_receive': value}), self.assertRaises(BankFileError):
                     self.stage()
             with self.assertRaises(BankFileError):
                 gateway.stage_gateway_archive(self.payload, self.metadata, binding='unknown')
@@ -168,4 +168,20 @@ class TestBankGatewayBindingNative(unittest.TestCase):
         self.config['bindings']['ci']['users'] = []
         with self.assertRaises(BankFileError):
             handover.stage_bank_archive(self.payload, **prepared)
+        self.assertEqual(frappe.db.count(handover.DOCTYPE, {'connection': self.connection}), 0)
+
+    def test_duplicate_gateway_or_erp_transport_ownership_is_rejected(self):
+        for collision in ('connection', 'account', 'gateway'):
+            other = deepcopy(self.config['bindings']['ci'])
+            other.update(connection='other-connection', gateway_connection='other-gateway')
+            other['accounts'][0]['account'] = self.account_other
+            if collision == 'connection':
+                other['connection'] = self.connection
+            elif collision == 'account':
+                other['accounts'][0]['account'] = self.account_a
+            else:
+                other['gateway_connection'] = 'ci-connection'
+            self.config['bindings']['other'] = other
+            with self.assertRaises(BankFileError):
+                self.stage()
         self.assertEqual(frappe.db.count(handover.DOCTYPE, {'connection': self.connection}), 0)

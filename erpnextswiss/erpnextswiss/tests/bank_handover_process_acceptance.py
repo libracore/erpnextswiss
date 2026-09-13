@@ -130,28 +130,51 @@ def uncertain_commit():
     return {'acknowledged': False}
 
 
+def revoke_gateway_binding():
+    _guard()
+    from frappe.config import get_site_config
+    from frappe.installer import update_site_config
+
+    config = get_site_config(cached=False)['bank_gateway_receive']
+    config['bindings']['ci']['users'] = []
+    update_site_config('bank_gateway_receive', config)
+    return {'revoked': True}
+
+
 def commit_gateway_original(metadata, payload_base64, revoke_after_commit=False):
     _guard()
     from erpnextswiss.scripts import bank_gateway_binding as gateway
     from erpnextswiss.erpnextswiss.tests.test_bank_gateway_binding_native import configuration
+    from frappe.config import get_site_config
+    from frappe.installer import update_site_config
+    import subprocess
 
+    assert get_site_config(cached=False).get('bank_gateway_receive') is None, 'Disposable mapping must not preexist'
     config = configuration(CONNECTION, COMPANY, ACCOUNT, 'Administrator')
     payload = base64.b64decode(payload_base64, validate=True)
     assert payload == _payload()
     stage = handover.stage_bank_archive
+    def external_revocation():
+        process = subprocess.run(['bench', '--site', 'test_site', 'execute',
+                                  __name__ + '.revoke_gateway_binding'], capture_output=True, text=True, timeout=60)
+        assert process.returncode == 0, process.stderr
+        assert frappe.conf.bank_gateway_receive['bindings']['ci']['users'] == ['Administrator'], 'Parent still has stale config'
     def stage_with_revocation(*args, **kwargs):
         result = stage(*args, **kwargs)
         if revoke_after_commit:
-            frappe.db.after_commit.add(lambda: config['bindings']['ci'].update(users=[]))
+            frappe.db.after_commit.add(external_revocation)
         return result
-    with patch.dict(frappe.conf, bank_gateway_receive=config), \
-            patch.object(handover, 'stage_bank_archive', side_effect=stage_with_revocation):
-        try:
-            result = gateway.receive_gateway_archive(payload, metadata, binding='ci')
-        except handover.BankFileError:
-            if not revoke_after_commit:
-                raise
-            return {'acknowledged': False}
+    update_site_config('bank_gateway_receive', config)
+    try:
+        with patch.object(handover, 'stage_bank_archive', side_effect=stage_with_revocation):
+            try:
+                result = gateway.receive_gateway_archive(payload, metadata, binding='ci')
+            except handover.BankFileError:
+                if not revoke_after_commit:
+                    raise
+                return {'acknowledged': False}
+    finally:
+        update_site_config('bank_gateway_receive', 'None')
     assert not revoke_after_commit, 'Revoked mapping must not be acknowledged after commit'
     assert result['committed'] and not result['import_approved']
     document = frappe.get_doc(handover.DOCTYPE, result['name'])

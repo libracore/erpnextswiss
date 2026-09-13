@@ -11,6 +11,7 @@ import json
 import re
 
 import frappe
+from frappe.config import get_site_config
 
 from erpnextswiss.scripts.bank_file_admission import BankFileError, MAX_ARCHIVE_BYTES
 from erpnextswiss.scripts.bank_file_handover import receive_bank_archive, stage_bank_archive
@@ -90,7 +91,7 @@ def _binding(alias):
     frappe.only_for(('Accounts Manager', 'System Manager'))
     if not _opaque(alias):
         _fail()
-    config = frappe.conf.get('bank_gateway_receive')
+    config = get_site_config(cached=False).get('bank_gateway_receive')
     if (not isinstance(config, dict) or set(config) != {'version', 'enabled', 'site', 'bindings'}
             or type(config['version']) is not int or config['version'] != 1
             or config['enabled'] is not True or config['site'] != frappe.local.site
@@ -121,6 +122,19 @@ def _binding(alias):
             _fail()
     if len({row['account'] for row in accounts}) != len(accounts) or len({row['iban'] for row in accounts}) != len(accounts):
         _fail()
+    owned_accounts = {row['account'] for row in accounts}
+    identity = tuple(binding[key] for key in ('gateway_site', 'gateway_connection', 'participant'))
+    for other_alias, other in config['bindings'].items():
+        if other_alias == alias:
+            continue
+        if (not _opaque(other_alias) or not isinstance(other, dict)
+                or not isinstance(other.get('accounts'), list)
+                or any(not isinstance(row, dict) or not isinstance(row.get('account'), str) for row in other['accounts'])):
+            _fail()
+        if (other.get('connection') == binding['connection']
+                or owned_accounts.intersection(row['account'] for row in other['accounts'])
+                or tuple(other.get(key) for key in ('gateway_site', 'gateway_connection', 'participant')) == identity):
+            _fail()
     return binding
 
 

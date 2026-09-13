@@ -438,3 +438,31 @@ Kontobindung/Schluessel, DNS/Egress und internes mTLS, kombinierte Worst-Case-
 Kapazitaet, Betriebsstatus/Restore, Kontorechte, Bankpilot und kontrollierter Deploy.
 Die Original-Plattformpakete bleiben unveraendert im Ziel. Details und Befehle:
 [Transport-Nachweise](../gateway/ebics/README.md).
+
+## Weiterer Nachweis: Lesende ZIP-/camt-Eingangspruefung
+
+Fuer `c8e1287b63ddc4c9a3c1e2c0298f62a3ed090f37` sind Bank-CI `34730489602`
+und vollstaendige Swiss-CI `34730489595` erfolgreich. Darauf aufbauend wurde
+eine rein lesende Dateipruefung in der vorhandenen Swiss-App ergaenzt: native
+ZIP-/zlib- und XML-Bibliotheken, unveraenderte vorhandene camt-XSDs, keine neue
+Matching-, Vorschlags- oder Buchungslogik. Das ganze Archiv muss gueltig sein,
+bevor bytegleiche Dateien mit Pruefsummen zurueckgegeben werden.
+
+Ein echter Regressionstest reproduziert das Abschneiden von ZIP-Mitgliedern auf
+eine manipulierte Laengenangabe trotz passender Praefix-Pruefsumme. Die zusaetzliche
+begrenzte native Datenstrompruefung verlangt nun EOF, tatsaechliche Laenge und CRC.
+Auch DTDs/XXE, Verzeichnis- und Expansionsbudgets, ungueltige Profile, CHF/EUR,
+UTF-16, mehrere Auszuege und reine Saldenauszuege sind abgedeckt.
+
+28 Pruefungen lokal und in einem isolierten Container auf Basis des aktuellen
+Produktivimages bestanden. Kein Netzwerk, keine Site-/Datenvolumes, kein Frappe-
+Import, keine Datenbank. 256 MiB Container-/Prozessbudget, Spitzen-RSS 114064 KiB.
+Kein Deploy oder produktiver Quell-/Datenbankeingriff. Der neue CI-Lauf ist
+commitbezogen separat zu pruefen.
+
+Der Helfer ist noch nicht an die Gateway-/ERP-Uebergabe angeschlossen. Diese muss
+die vorhandene Kontozuordnung und Importpfade absichern, ohne automatische
+Zahlungsbuchung aus dem alten EBICS-Prozess zu uebernehmen. Kontobindung, Rechte,
+fachliche Dubletten/053-054-Ueberlappung, Restore, Pilot und Deploy bleiben offen;
+ebenso die urspruenglichen Plattformpakete. Umfang und Details:
+[Datei-/Integrationsvertrag](bank-file-admission.md).

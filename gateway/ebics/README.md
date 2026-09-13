@@ -24,7 +24,9 @@ reliable bank transport for their later, separately tested integration.
   32 MiB original limit before persistence and acknowledgement. Native zlib checks
   format/checksum; no compression algorithm or bank-file parser is reimplemented.
   Invalid, truncated, checksum-damaged or oversized data fails closed. Inner ZIP
-  extraction/XML validation remains a separate, unimplemented boundary.
+  and XML admission is now a separately tested read-only Swiss-app helper, not
+  yet connected to this gateway or a financial import. See
+  [file admission and existing-import boundaries](../../docs/bank-file-admission.md).
 - `ReadClient::https()` selects `HttpsTransport` for a trusted configured endpoint.
   Native cURL performs HTTPS POST with certificate/hostname verification, TLS 1.2
   or newer, no redirects, environment proxies, HTTP decompression or automatic
@@ -182,9 +184,10 @@ bank-approved limits remain release gates; no live bank configuration is supplie
 
 1. Trusted site/connection/participant binding, bank-approved configuration,
    mTLS, allowlisted egress, certificate/fingerprint and keyring lifecycle.
-2. Safe inner ZIP/XML validation and full worker capacity/concurrency tests with
+2. Connect the tested inner ZIP/XML admission and prove full worker capacity/concurrency with
    real transport at worst-case sizes. HTTPS envelopes, aggregate segments and
-   outer zlib are bounded, but that does not validate inner ZIP entries or prove
+   outer zlib are bounded; the separate ERP admission must still be invoked, and
+   its isolated test does not prove
    every combined HTTP/DOM/base64/AES/journal memory peak. Confirm these limits
    against the approved bank profile before any pilot.
 3. Operation admission/status, no-data/error journaling, pending receipt handling,

@@ -28,6 +28,7 @@ final class ScriptedBank implements HttpClientInterface
     public ReadClient $client;
     public array $phases = [];
     public array $requests = [];
+    public array $responses = [];
     public int $receipts = 0;
     public string $mode = 'normal';
     public ?Closure $onReceipt = null;
@@ -101,6 +102,16 @@ final class ScriptedBank implements HttpClientInterface
         throw new RuntimeException('Unexpected EBICS phase; initialization/upload must not occur');
     }
 
+    public function httpsClient(string $url, string $caBundle): ReadClient
+    {
+        return ReadClient::https(new Bank('TESTBANK', $url), new User('TEST', 'TEST'), self::$keys, $caBundle);
+    }
+
+    public function clientWithTransport(HttpClientInterface $http): ReadClient
+    {
+        return new ReadClient(new Bank('TESTBANK', 'https://bank.invalid/ebics'), new User('TEST', 'TEST'), self::$keys, $http);
+    }
+
     private function response(string $phase, int $number, string $data, string $key, string $code = '000000'): Response
     {
         $response = new Response();
@@ -114,6 +125,7 @@ final class ScriptedBank implements HttpClientInterface
         if ($this->mode === 'invalid_signature') {
             $response->getElementsByTagName('TransactionID')->item(0)->nodeValue = 'TAMPERED';
         }
+        $this->responses[] = $response->getContent();
         return $response;
     }
 }

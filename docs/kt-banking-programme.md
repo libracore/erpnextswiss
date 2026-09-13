@@ -402,3 +402,39 @@ Weiter offen sind insbesondere HTTP-/Segmentgrenzen, innere ZIP-/XML-Pruefung,
 vertrauenswuerdige Konfiguration/Keys/mTLS, vorhandene ERP-Importuebergabe,
 Konto-/Rechtenachweise, Restore, Bankpilot und kontrollierter Deploy. Die
 urspruenglichen 14 Plattformpakete bleiben unveraendert Bestandteil des Ziels.
+
+## Weiterer Nachweis: HTTPS und aeussere Antwortpruefung
+
+Fuer `b2e27fc0e7cb4d0ea1bc65901b7bf4107b29fa44` sind anschliessend sowohl
+Swiss-CI `34729190953` als auch Bank-CI `34729190868` erfolgreich abgeschlossen.
+Der nachfolgende HTTPS-Schritt wurde isoliert gegen einen echten TLS-Testserver
+auf Loopback, bei abgeschaltetem externem Container-Netzwerk, umgesetzt und geprueft.
+
+- `ReadClient::https()` verwendet verifiziertes HTTPS mit festem Server-Endpunkt,
+  ohne Weiterleitung, Umgebungsproxy, HTTP-Entpackung oder automatische Wiederholung.
+  1 MiB Request, 64 KiB Header, 8 MiB Body; der Body wird im cURL-Callback vor
+  DOM-Aufbau begrenzt. Ungueltige Zertifikate/Hostnamen und Chunked-Uebergroessen
+  sind getestete Fehlerfaelle. Konfiguration und Berechtigung bleiben getrennt.
+- Die native SDK-Entity-Ersetzung wurde mit einer rein synthetischen lokalen Datei
+  reproduziert. Die neue Antwortpruefung nutzt native XMLReader-/DOM-APIs mit
+  NO_XXE/NONET, verbietet DTDs und begrenzt Tiefe, Knoten und Attribute. Bei den
+  Angriffstests inklusive UTF-16 gab es keinen Aufruf des instrumentierten
+  externen Entity-Loaders. Keine XML-/Serverinhalte in Fehlermeldungen.
+- Eine verpflichtende Download-Huelle begrenzt alle SDK-Austausche auf 64 Segmente,
+  65 Requests und 20 MiB serialisierte Antworten pro Vorgang. Ein monotones
+  120-Sekunden-Budget wird an HTTP-Grenzen geprueft; einzelne HTTPS-Aufrufe dauern
+  hoechstens 30 Sekunden. Kein harter Prozess-Timeout fuer lokale Kryptografie
+  oder Dateisysteme behauptet. Bei spaeter Quittungsantwort bleibt das Original
+  vorhanden, der Status unbestaetigt und die Wiederholung lokal.
+- Isoliert bestanden: 193 Empfangspruefungen, 87 TLS-/XML-Pruefungen, wirklicher
+  SQLITE_FULL-Wiederanlauf und kompletter 32-MiB-Pfad. Zusaetzlich 27 lokale
+  Python-Tests. Ein voll signierter SDK-Download lief durch echtes cURL/TLS,
+  inklusive Quittung und bytegleichem Original. Das ist keine Bankabnahme.
+
+Der Code aendert weder Zahlungsabgleich noch Zahlungsvorschlaege, Exporte, ERP-Daten
+oder Layouts. Keine Bankverbindung wurde konfiguriert oder aktiviert. Weiter offen:
+innere ZIP-/camt-Pruefung und vorhandene Importuebergabe, vertrauenswuerdige
+Kontobindung/Schluessel, DNS/Egress und internes mTLS, kombinierte Worst-Case-
+Kapazitaet, Betriebsstatus/Restore, Kontorechte, Bankpilot und kontrollierter Deploy.
+Die Original-Plattformpakete bleiben unveraendert im Ziel. Details und Befehle:
+[Transport-Nachweise](../gateway/ebics/README.md).

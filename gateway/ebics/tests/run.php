@@ -9,6 +9,7 @@ use KT\Banking\ReadRequest;
 use KT\Banking\TransferJournal;
 use KT\Banking\BoundedZlib;
 use KT\Banking\ReadClient;
+use KT\Banking\DownloadBudget;
 
 error_reporting(E_ALL);
 set_error_handler(static function (int $severity, string $message, string $file, int $line): bool {
@@ -122,6 +123,96 @@ test('receiver requires the constrained SDK composition', function (): void {
     foreach (['executeUploadOrder', 'executeInitializationOrder', 'createUserSignatures'] as $method) {
         check(!method_exists(ReadClient::class, $method), 'Read client does not expose ' . $method);
     }
+});
+
+test('download-wide request, byte, endpoint and elapsed-time budgets', function (): void {
+    $inner = new class implements EbicsApi\Ebics\Contracts\HttpClientInterface {
+        public int $calls = 0;
+        public string $xml = '<r/>';
+        public ?Closure $onPost = null;
+        public function post(string $url, EbicsApi\Ebics\Models\Http\Request $request): EbicsApi\Ebics\Models\Http\Response {
+            $this->calls++;
+            if ($this->onPost) ($this->onPost)();
+            $response = new EbicsApi\Ebics\Models\Http\Response();
+            $response->loadXML($this->xml);
+            return $response;
+        }
+    };
+    $now = 0.0;
+    $budget = new DownloadBudget($inner, 'https://bank.invalid/ebics', static function () use (&$now): float { return $now; });
+    $req = new EbicsApi\Ebics\Models\Http\Request();
+    $post = fn() => $budget->post('https://bank.invalid/ebics', $req);
+    rejects($post, 'Inactive transport cannot request', 'scope is inactive');
+    $budget->begin();
+    rejects(fn() => $budget->begin(), 'No overlapping use', 'already active');
+    rejects(fn() => $budget->post('https://other.invalid/ebics', $req), 'No changed endpoint', 'scope is inactive');
+    check($inner->calls === 0, 'Invalid scope rejected before delegate');
+    for ($i = 0; $i < DownloadBudget::MAX_SEGMENTS + 1; $i++) $post();
+    rejects($post, 'Bound actual exchanges', 'request or time budget');
+    check($inner->calls === DownloadBudget::MAX_SEGMENTS + 1, 'No excess delegate call');
+    $budget->end();
+    $budget->begin();
+    $now = DownloadBudget::MAX_SECONDS;
+    $before = $inner->calls;
+    rejects($post, 'Deadline enforced before delegate', 'request or time budget');
+    check($inner->calls === $before, 'Expired deadline has no network side effect');
+    $budget->end();
+    $budget->begin();
+    $inner->onPost = static function () use (&$now): void { $now += DownloadBudget::MAX_SECONDS; };
+    rejects($post, 'Late response rejected', 'response or time budget');
+    $inner->onPost = null;
+    $budget->end();
+    $budget->begin();
+    $inner->xml = '<r>' . str_repeat('X', 1048576) . '</r>';
+    for ($i = 0; $i < 19; $i++) $post();
+    rejects($post, 'Small responses cannot bypass total bytes', 'response or time budget');
+    $budget->end();
+    foreach (['65', '10000', '-1', 'n/a'] as $count) {
+        $budget->begin();
+        $inner->xml = '<r><NumSegments>' . $count . '</NumSegments></r>';
+        rejects($post, 'Invalid declared segment count', 'segment count exceeds');
+        $budget->end();
+    }
+    $budget->begin();
+    $inner->xml = '<r xmlns:h="urn:org:ebics:H005"><h:NumSegments> 00064 </h:NumSegments></r>';
+    check(trim($post()->documentElement->textContent) === '00064', 'Exact segment limit with XML integer whitespace/prefix accepted');
+    $budget->end();
+    $budget->begin();
+    $inner->xml = '<r xmlns:h="urn:org:ebics:H005"><h:NumSegments>65</h:NumSegments></r>';
+    rejects($post, 'Namespace prefix cannot bypass segment limit', 'segment count exceeds');
+    $budget->end();
+});
+
+test('real SDK refuses excessive segment advertisement before another bank request', function (): void {
+    [$path, $journal] = journal();
+    $bank = new ScriptedBank(random_bytes(4096));
+    $bank->segments = 1000;
+    $receiver = new DownloadReceiver($journal);
+    rejects(fn() => $receiver->receive($bank->client, request()), 'Segment admission', 'segment count exceeds');
+    check(count($bank->phases) === 1 && $bank->receipts === 0, 'Initial response alone stops oversized segment set');
+    check($journal->find(request()) === null, 'No original persisted from refused segment set');
+    $bank->segments = 2;
+    check($receiver->receive($bank->client, request())['receipt_state'] === 'confirmed', 'Transport budget resets after failed order');
+});
+
+test('expired receipt budget retains the committed original and prevents repeat transfer', function (): void {
+    [$path, $journal] = journal();
+    $bank = new ScriptedBank('committed before deadline');
+    $now = 0.0;
+    $budget = new DownloadBudget($bank, 'https://bank.invalid/ebics', static function () use (&$now): float { return $now; });
+    $bank->onReceipt = static function () use (&$now): void { $now = DownloadBudget::MAX_SECONDS; };
+    $client = $bank->clientWithTransport($budget);
+    $receiver = new DownloadReceiver($journal);
+    $budget->begin();
+    try {
+        rejects(fn() => $receiver->receive($client, request()), 'Receipt response exceeds deadline', 'response or time budget');
+    } finally { $budget->end(); }
+    check($bank->receipts === 1, 'Only durable original was acknowledged before late response');
+    check($journal->payload(request()) === 'committed before deadline', 'Original survives late receipt response');
+    check($journal->find(request())['receipt_state'] === 'unconfirmed', 'Late response does not invent a confirmed receipt');
+    $before = count($bank->phases);
+    check($receiver->receive($client, request())['replayed'], 'Stored request does not need active network budget');
+    check(count($bank->phases) === $before, 'Uncertain receipt does not trigger repeat transfer');
 });
 
 test('real SDK rejects oversized or malformed zlib before original persistence and receipt', function (): void {

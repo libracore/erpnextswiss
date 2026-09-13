@@ -35,6 +35,11 @@ jobs:
         run: python3 -m unittest discover -s tests -v
       - name: Build pinned offline test image
         run: docker build --target test -t kt-bank-gateway-test gateway/ebics
+      - name: Validate all gateway PHP syntax
+        run: >-
+          docker run --rm --network none --read-only --cap-drop ALL
+          --security-opt no-new-privileges --memory 128m --cpus 1
+          kt-bank-gateway-test sh -c 'find src tests -name "*.php" -print0 | xargs -0 -n 1 php -l'
       - name: Receipt, cryptography, restart and concurrency contracts
         run: >-
           docker run --rm --network none --cap-drop ALL --security-opt no-new-privileges
@@ -53,3 +58,9 @@ jobs:
           --read-only --tmpfs /tmp:rw,noexec,nosuid,size=128m --memory 512m --cpus 1.5
           -e KT_GATEWAY_SIZE_TEST=1 kt-bank-gateway-test
           php -d memory_limit=256M tests/full_size.php
+      - name: Bounded HTTPS and safe XML with verified loopback TLS
+        run: >-
+          docker run --rm --network none --cap-drop ALL --security-opt no-new-privileges
+          --read-only --tmpfs /tmp:rw,noexec,nosuid,size=64m --memory 256m --cpus 1.5
+          -e KT_GATEWAY_HTTPS_TEST=1 kt-bank-gateway-test
+          php -d memory_limit=128M tests/https_transport.php

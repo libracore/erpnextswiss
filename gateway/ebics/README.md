@@ -25,6 +25,24 @@ reliable bank transport for their later, separately tested integration.
   format/checksum; no compression algorithm or bank-file parser is reimplemented.
   Invalid, truncated, checksum-damaged or oversized data fails closed. Inner ZIP
   extraction/XML validation remains a separate, unimplemented boundary.
+- `ReadClient::https()` selects `HttpsTransport` for a trusted configured endpoint.
+  Native cURL performs HTTPS POST with certificate/hostname verification, TLS 1.2
+  or newer, no redirects, environment proxies, HTTP decompression or automatic
+  retries. Requests are capped at 1 MiB, headers at 64 KiB and response bodies at
+  8 MiB through callbacks before XML DOM construction, including chunked bodies.
+  A request timeout is at most 30 seconds; connection timeout at most five seconds.
+- Response XML uses native XMLReader and the SDK Response DOM with `LIBXML_NO_XXE`
+  and `LIBXML_NONET`, without entity substitution or DTD loading. DTDs, excessive
+  depth (>64), node events (>4096) and attributes per element (>128) are rejected
+  before constructing the DOM. No huge-parser mode or external fetch is enabled.
+  Error messages do not include server bodies, XML error details or full URLs.
+- A mandatory per-order `DownloadBudget` bounds all injected transports to at most
+  64 declared segments, 65 HTTP exchanges (including receipt), and 20 MiB of
+  serialized response XML in total. A monotonic 120-second deadline is checked
+  before and after each HTTP exchange. It does not preempt local crypto/storage;
+  an in-flight HTTPS exchange remains bounded by its own 30-second timeout.
+  Limits reset only for a new order. Late receipt responses leave a stored original
+  unconfirmed and local replay never blindly repeats its bank transfer.
 - The SDK acknowledgement closure first commits the encrypted original and
   metadata to SQLite, then opens an independent connection and authenticates the
   stored bytes. Only successful persistence returns `true` to the SDK receipt
@@ -96,6 +114,10 @@ docker run --rm --network none --cap-drop ALL --security-opt no-new-privileges \
   --read-only --tmpfs /tmp:rw,noexec,nosuid,size=128m --memory 512m --cpus 1.5 \
   -e KT_GATEWAY_SIZE_TEST=1 kt-bank-gateway-test \
   php -d memory_limit=256M tests/full_size.php
+docker run --rm --network none --cap-drop ALL --security-opt no-new-privileges \
+  --read-only --tmpfs /tmp:rw,noexec,nosuid,size=64m --memory 256m --cpus 1.5 \
+  -e KT_GATEWAY_HTTPS_TEST=1 kt-bank-gateway-test \
+  php -d memory_limit=128M tests/https_transport.php
 ```
 
 The SDK is real; the HTTP bank is scripted and has no network fallback. Synthetic
@@ -131,14 +153,40 @@ also consume memory. An initial measured PHP peak was 171,986,944 bytes; do not
 deploy a future worker with the small-test 128 MiB PHP limit or count tmpfs as free
 container memory. Real HTTP buffers/concurrency require their own capacity test.
 
+The HTTPS tests use real cURL and a loopback-only TLS server inside a container
+with external networking disabled. Synthetic TLS and EBICS keys exist only in its
+temporary test directory/memory. Tests reject an untrusted certificate, wrong
+hostname, altered endpoint, environment proxy routing, oversized/chunked body,
+oversized headers, redirect, HTTP encoding, malformed XML and timeout. The exact
+8 MiB body boundary remains accepted. Request logs prove no automatic retry or
+redirect follow. A full signed SDK download and receipt traverses this actual
+HTTPS transport and preserves its binary original; local replay produces no HTTP.
+
+The pinned SDK's default HTTP XML loader was experimentally shown to expand a
+synthetic local-file entity (`LIBXML_NOENT` is set there). The new loader rejects
+DTD inputs, including UTF-16, and an instrumented external-entity loader receives
+zero calls. Normal built-in XML escapes and signed bank responses still work.
+The SDK is not patched; the hardened class implements its HTTP extension contract.
+Sources: [cURL body callback](https://curl.se/libcurl/c/CURLOPT_WRITEFUNCTION.html),
+[libxml security flags](https://www.php.net/manual/en/libxml.constants.php).
+
+`ReadClient` still permits deliberate programmatic transport injection for testing
+and future approved adapters. Its aggregate budget cannot retroactively protect a
+custom transport that has already parsed or fetched unsafe data: real networking
+must use `ReadClient::https()`/`HttpsTransport` or an equivalently reviewed adapter.
+Endpoint/CA values are not permission checks. No user-facing route accepts URLs
+or curl options. Trusted connection storage, DNS/egress binding, internal mTLS and
+bank-approved limits remain release gates; no live bank configuration is supplied.
+
 ## Still required before any activation
 
 1. Trusted site/connection/participant binding, bank-approved configuration,
    mTLS, allowlisted egress, certificate/fingerprint and keyring lifecycle.
-2. Bounded transport/segment sizes and timeouts, safe inner ZIP/XML validation and
-   full worker capacity/concurrency tests. Outer zlib is now bounded, but the
-   assembled HTTP/segment/base64/AES data still reaches it only after transfer;
-   this change does not claim to bound earlier network buffers or ZIP expansion.
+2. Safe inner ZIP/XML validation and full worker capacity/concurrency tests with
+   real transport at worst-case sizes. HTTPS envelopes, aggregate segments and
+   outer zlib are bounded, but that does not validate inner ZIP entries or prove
+   every combined HTTP/DOM/base64/AES/journal memory peak. Confirm these limits
+   against the approved bank profile before any pilot.
 3. Operation admission/status, no-data/error journaling, pending receipt handling,
    retention, key rotation, encryption-aware backup and isolated restore proof.
 4. Account/currency mapping and controlled handover to existing ERP import and

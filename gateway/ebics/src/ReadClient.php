@@ -16,15 +16,27 @@ use EbicsApi\Ebics\Orders\BTD;
 final readonly class ReadClient
 {
     private EbicsClient $client;
+    private DownloadBudget $transport;
+
+    public static function https(Bank $bank, User $user, Keyring $keyring, ?string $caBundle = null): self
+    {
+        return new self($bank, $user, $keyring, new HttpsTransport($bank->getUrl(), $caBundle));
+    }
 
     public function __construct(Bank $bank, User $user, Keyring $keyring, HttpClientInterface $http)
     {
-        $options = (new EbicsClientOptions())->setHttpClient($http)->setZipCompressor(new BoundedZlib());
+        $this->transport = new DownloadBudget($http, $bank->getUrl());
+        $options = (new EbicsClientOptions())->setHttpClient($this->transport)->setZipCompressor(new BoundedZlib());
         $this->client = new EbicsClient($bank, $user, $keyring, $options);
     }
 
     public function executeDownloadOrder(BTD $order): DownloadOrderResult
     {
-        return $this->client->executeDownloadOrder($order);
+        $this->transport->begin();
+        try {
+            return $this->client->executeDownloadOrder($order);
+        } finally {
+            $this->transport->end();
+        }
     }
 }

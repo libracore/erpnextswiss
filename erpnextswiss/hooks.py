@@ -134,6 +134,18 @@ after_migrate = "erpnextswiss.setup.install.after_migrate"
 #     "Event": "frappe.desk.doctype.event.event.has_permission",
 # }
 
+permission_query_conditions = {
+    "Bank File Handover": "erpnextswiss.scripts.bank_file_handover.permission_query_conditions",
+    "File": "erpnextswiss.scripts.bank_file_handover.file_permission_query_conditions",
+}
+has_permission = {
+    "Bank File Handover": "erpnextswiss.scripts.bank_file_handover.has_permission",
+    "File": "erpnextswiss.scripts.bank_file_handover.file_has_permission",
+}
+extend_doctype_class = {
+    "File": ["erpnextswiss.scripts.bank_file_handover.BankOriginalFileMixin"],
+}
+
 # Document Events
 # ---------------
 # Hook on document methods and events

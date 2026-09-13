@@ -250,6 +250,7 @@ jobs:
           bench --site "$TEST_SITE" migrate
           bench --site "$TEST_SITE" run-tests --module erpnextswiss.erpnextswiss.tests.test_fixtures_native
           bench --site "$TEST_SITE" run-tests --module erpnextswiss.erpnextswiss.tests.test_bank_matching_native
+          bench --site "$TEST_SITE" run-tests --module erpnextswiss.erpnextswiss.tests.test_bank_file_handover_native
           bench --site "$TEST_SITE" migrate
           bench --site "$TEST_SITE" run-tests --module erpnextswiss.erpnextswiss.tests.test_fixtures_native
 

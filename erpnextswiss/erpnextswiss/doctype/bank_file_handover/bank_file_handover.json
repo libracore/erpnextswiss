@@ -1,0 +1,31 @@
+{
+ "doctype": "DocType",
+ "name": "Bank File Handover",
+ "module": "ERPNextSwiss",
+ "autoname": "field:handover_key",
+ "engine": "InnoDB",
+ "track_changes": 1,
+ "index_web_pages_for_search": 0,
+ "field_order": ["handover_key", "company", "connection", "profile", "status", "archive_sha256", "byte_count", "original_file", "statement_count", "entry_count", "accounts", "receipts"],
+ "fields": [
+  {"fieldname": "handover_key", "fieldtype": "Data", "label": "Handover identity", "read_only": 1, "reqd": 1, "unique": 1},
+  {"fieldname": "company", "fieldtype": "Link", "label": "Company", "options": "Company", "read_only": 1, "reqd": 1, "in_list_view": 1},
+  {"fieldname": "connection", "fieldtype": "Link", "label": "Connection", "options": "ebics Connection", "read_only": 1, "reqd": 1, "in_list_view": 1},
+  {"fieldname": "profile", "fieldtype": "Select", "label": "Profile", "options": "camt.053.001.08\ncamt.054.001.08", "read_only": 1, "reqd": 1},
+  {"fieldname": "status", "fieldtype": "Select", "label": "Status", "options": "Staged", "read_only": 1, "reqd": 1, "in_list_view": 1},
+  {"fieldname": "archive_sha256", "fieldtype": "Data", "label": "Original SHA-256", "read_only": 1, "reqd": 1},
+  {"fieldname": "byte_count", "fieldtype": "Int", "label": "Original bytes", "read_only": 1, "reqd": 1},
+  {"fieldname": "original_file", "fieldtype": "Link", "label": "Private original", "options": "File", "read_only": 1},
+  {"fieldname": "statement_count", "fieldtype": "Int", "label": "Statements / notifications", "read_only": 1},
+  {"fieldname": "entry_count", "fieldtype": "Int", "label": "Source entries", "read_only": 1},
+  {"fieldname": "accounts", "fieldtype": "Table", "label": "Authorized accounts", "options": "Bank Handover Account", "read_only": 1},
+  {"fieldname": "receipts", "fieldtype": "Table", "label": "Source receipts", "options": "Bank Handover Receipt", "read_only": 1}
+ ],
+ "permissions": [
+  {"role": "Accounts User", "read": 1, "report": 1},
+  {"role": "Accounts Manager", "read": 1, "report": 1},
+  {"role": "System Manager", "read": 1, "report": 1}
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC"
+}

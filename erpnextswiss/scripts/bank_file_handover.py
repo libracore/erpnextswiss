@@ -33,6 +33,15 @@ class BankOriginalFileMixin:
         # this method, whose base implementation alone admits a revoked owner.
         return file_has_permission(self) and super().is_downloadable()
 
+    def get_content(self, encodings=None):
+        if self.attached_to_doctype == DOCTYPE:
+            if not file_has_permission(self):
+                frappe.throw('Bank original is outside the current account scope', frappe.PermissionError)
+            # Some valid ZIP bytes also decode as UTF-16. Native File then writes
+            # that text as UTF-8 during insertion, corrupting the bank original.
+            return super().get_content(encodings=[])
+        return super().get_content(encodings=encodings)
+
     def before_insert(self):
         guard_file_mutation(self)
         return super().before_insert()

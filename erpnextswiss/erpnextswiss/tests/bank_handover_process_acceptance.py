@@ -131,15 +131,6 @@ def run_process_acceptance():
         return json.loads(process.stdout.strip().splitlines()[-1])
 
     counts = execute('prepare')
-    first = execute('commit_original')
-    execute('verify', expected_receipts=['initial'], financial_counts=counts)
-    repeated = execute('commit_original')
-    assert first['name'] == repeated['name'] and repeated['replayed']
-    assert first['connection_id'] != repeated['connection_id']
-    execute('rollback_original')
-    execute('commit_after_caught_failure')
-    result = execute('verify', expected_receipts=['initial'], financial_counts=counts)
-    assert result['connection_title'] == 'Outer write survived'
     barrier = Barrier(8)
 
     def receive(index):
@@ -150,10 +141,20 @@ def run_process_acceptance():
     with ThreadPoolExecutor(max_workers=8) as pool:
         received = list(pool.map(receive, range(8)))
     assert len({row['connection_id'] for row in received}) == 8
-    assert {row['name'] for row in received} == {first['name']}
+    assert len({row['name'] for row in received}) == 1
     assert sum(row['replayed'] for row in received) == 3
-    result = execute('verify', expected_receipts=['initial', 'shared', 'worker-4', 'worker-5', 'worker-6', 'worker-7'],
-                     financial_counts=counts)
+    receipts = ['shared', 'worker-4', 'worker-5', 'worker-6', 'worker-7']
+    execute('verify', expected_receipts=receipts, financial_counts=counts)
+    first = execute('commit_original')
+    receipts.append('initial')
+    execute('verify', expected_receipts=receipts, financial_counts=counts)
+    repeated = execute('commit_original')
+    assert first['name'] == repeated['name'] and repeated['replayed']
+    assert first['connection_id'] != repeated['connection_id']
+    execute('rollback_original')
+    execute('commit_after_caught_failure')
+    result = execute('verify', expected_receipts=receipts, financial_counts=counts)
+    assert result['connection_title'] == 'Outer write survived'
     print('PASS independent-process commit/readback, replay, outer rollback, caught failure and 8 receivers')
     print(json.dumps(result, sort_keys=True))
 

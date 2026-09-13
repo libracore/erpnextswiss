@@ -112,6 +112,20 @@ class TestBankFileHandoverNative(unittest.TestCase):
             self.assertEqual(len(preview['statements']), 2)
             self.assertEqual(frappe.db.get_value(handover.DOCTYPE, result['name'], 'entry_count'), 0)
 
+    def test_zip_that_native_file_decodes_as_text_stays_byte_identical(self):
+        from erpnextswiss.erpnextswiss.tests.bank_handover_process_acceptance import _payload
+
+        payload = _payload()
+        result = self.stage(payload)
+        document = frappe.get_doc(handover.DOCTYPE, result['name'])
+        source = frappe.get_doc('File', document.original_file)
+        native = File.get_content(source)
+        self.assertIsInstance(native, str, 'Fixture must reproduce native binary-to-text decoding')
+        self.assertNotEqual(native.encode(), payload)
+        self.assertEqual(source.get_content(), payload)
+        self.assertEqual(handover._original(document), payload)
+        self.assertTrue(self.stage(payload)['replayed'])
+
     def test_failure_after_file_write_rolls_back_only_local_rows_and_callbacks(self):
         paths, callbacks = [], []
         frappe.db.after_commit.add(lambda: callbacks.append('outer'))
@@ -201,6 +215,8 @@ class TestBankFileHandoverNative(unittest.TestCase):
         self.assertFalse(source.is_downloadable())
         self.assertIsNone(find_file_by_url(source.file_url, name=source.name))
         self.assertIsNone(find_file_by_url(source.file_url))
+        with self.assertRaises(frappe.PermissionError):
+            source.get_content()
         self.assertFalse(frappe.has_permission(handover.DOCTYPE, 'read', doc=document))
         self.assertEqual(frappe.get_list(handover.DOCTYPE, filters={'name': document.name}, pluck='name'), [])
         self.assertEqual(frappe.get_list('File', filters={'name': source.name}, pluck='name'), [])

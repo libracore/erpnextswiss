@@ -108,6 +108,27 @@ def reject_pending_work():
     return {'pending_writes_and_callbacks_preserved': True}
 
 
+def uncertain_commit():
+    _guard()
+    stage = handover.stage_bank_archive
+    def fail_callback():
+        raise RuntimeError('Synthetic error after the real SQL commit')
+    def stage_with_failing_callback(*args, **kwargs):
+        result = stage(*args, **kwargs)
+        frappe.db.after_commit.add(fail_callback)
+        return result
+    with patch.object(handover, 'stage_bank_archive', side_effect=stage_with_failing_callback):
+        try:
+            handover.receive_bank_archive(_payload(), PROFILE, connection=CONNECTION,
+                                           accounts=[ACCOUNT], source_reference='uncertain-reply')
+        except RuntimeError as exc:
+            assert str(exc) == 'Synthetic error after the real SQL commit'
+        else:
+            raise AssertionError('Uncertain commit must not be acknowledged as success')
+    assert not frappe.db.transaction_writes
+    return {'acknowledged': False}
+
+
 def rollback_original():
     _guard()
     result = _stage('rolled-back', 'rolled-back')
@@ -190,9 +211,13 @@ def run_process_acceptance():
     assert first['connection_id'] != repeated['connection_id']
     execute('rollback_original')
     execute('commit_after_caught_failure')
+    execute('uncertain_commit')
+    uncertain_replay = execute('commit_original', source_reference='uncertain-reply')
+    assert uncertain_replay['replayed'] and uncertain_replay['name'] == first['name']
+    receipts.append('uncertain-reply')
     result = execute('verify', expected_receipts=receipts, financial_counts=counts)
     assert result['connection_title'] == 'Outer write survived'
-    print('PASS independent-process commit/readback, replay, outer rollback, caught failure and 8 receivers')
+    print('PASS independent-process commit/readback, replay, outer rollback, caught failure, uncertain commit and 8 receivers')
     print('Receiver attempts: ' + json.dumps([row['attempts'] for row in received]))
     print(json.dumps(result, sort_keys=True))
 

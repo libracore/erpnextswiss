@@ -344,9 +344,16 @@ def receive_bank_archive(payload, profile, *, connection, accounts, source_refer
                 raise
             time.sleep(min(0.05 * 2 ** attempt, 0.5))
             continue
+        except Exception:
+            frappe.db.rollback()
+            raise
         # A failed/uncertain commit is not automatically repeated. The transport
         # must retain the same source reference and may retry through this entry.
-        frappe.db.commit()
+        try:
+            frappe.db.commit()
+        except Exception:
+            frappe.db.rollback()
+            raise
         try:
             document = frappe.get_doc(DOCTYPE, result['name'])
             document.check_permission('read')

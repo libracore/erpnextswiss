@@ -365,3 +365,40 @@ ERP-Importadapter. BK-01, sichere Konfiguration/Schluessel, mTLS, Transportlimit
 ZIP/XML/Importuebergabe, Rechte, Restore und Bankpilot bleiben offen. BK-15/16
 setzen eine separate Freigabe voraus. Die vollstaendige Plattform- und
 Bankanbindungs-Abnahme fehlt; dieser Teilnachweis ersetzt sie nicht.
+
+## Weiterer Nachweis: Update-Vertrag und begrenzter Empfang
+
+Am 13.09.2026 ist die allgemeine Swiss-CI fuer `3eb0cfc12c7be89d3c65ad6e074e52706ac504c3`
+in Lauf `34728622121` vollstaendig erfolgreich abgeschlossen; die getrennte
+Offline-Bank-CI `34728622125` ebenfalls. Die vorher dokumentierten
+Installations-/Workspace-/Fixture-Fehler sind damit korrigiert und in nativen
+Neuinstallations-, Migrations-, HRMS- und Browserpruefungen abgesichert.
+[Feld-/Update-Nachweise](fixture-upgrade-contract.md) und
+[Workspace-Nachweise](workspace-route-upgrade.md) grenzen den Testumfang ab.
+Die lesende Produktivpruefung bestaetigt 41 vollstaendige, unveraenderte
+Quell-Felddefinitionen; das ersetzt keine Produktivmigration oder Vollabnahme.
+
+Der folgende isoliert getestete Empfangsschritt schliesst die zuvor offene
+aeussere zlib-Grenze: Der erforderliche `ReadClient` bindet einen begrenzten
+Decoder ueber die native SDK-Erweiterung ein. Maximal 10 MiB komprimierte Daten
+und exakt 32 MiB Ergebnis, keine Quittung bei ungueltigen/zu grossen Daten.
+Ein echter 96-MiB-PHP-Unterprozess reproduziert den Speicherabbruch des alten
+SDK-Decoders bei synthetischer 256-MiB-Expansion; die Begrenzung weist dieselben
+Daten kontrolliert ab und behaelt gueltige Daten an der oberen Grenze vollstaendig.
+Auch die beobachtete PHP-Puffertoleranz oberhalb von `max_length` wird durch eine
+zusaetzliche exakte Laengenpruefung und Regressionstests abgefangen.
+
+Isoliert bestanden: 167 PHP-Pruefungen, echter SQLITE_FULL-Wiederanlauf und
+vollstaendiger 32-MiB-Empfang mit Verschluesselung, unabhaengiger Ruecklesepruefung,
+Quittierung und lokalem Replay. Fuer den kompletten grossen Transfer gemessener
+PHP-Spitzenbedarf: 171.986.944 Bytes; hierfuer getestet mit 256 MiB PHP,
+512 MiB Container und 128 MiB tmpfs. Das kleine 128-MiB-Testprofil ist kein
+geeignetes Worker-Profil fuer diese Maximaldatei. Neue CI-Ausfuehrung dieses
+Empfangsschritts separat nachweisen; ein hinzugefuegter Test ist kein CI-Erfolg.
+
+Zahlungsabgleich, Zahlungsvorschlaege, Exporte und Oberflaechen bleiben Bestand.
+Keine Produktivquelle oder Finanzdaten geaendert und keine Bankaktion ausgefuehrt.
+Weiter offen sind insbesondere HTTP-/Segmentgrenzen, innere ZIP-/XML-Pruefung,
+vertrauenswuerdige Konfiguration/Keys/mTLS, vorhandene ERP-Importuebergabe,
+Konto-/Rechtenachweise, Restore, Bankpilot und kontrollierter Deploy. Die
+urspruenglichen 14 Plattformpakete bleiben unveraendert Bestandteil des Ziels.

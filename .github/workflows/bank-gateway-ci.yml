@@ -47,3 +47,9 @@ jobs:
           --tmpfs /kt-disk-full:rw,noexec,nosuid,uid=10001,gid=10001,mode=0700,size=1m
           --memory 256m --cpus 1.5 -e KT_GATEWAY_DISK_FULL_TEST=1
           kt-bank-gateway-test php tests/full_disk.php
+      - name: Maximum original survives the complete receipt and replay path
+        run: >-
+          docker run --rm --network none --cap-drop ALL --security-opt no-new-privileges
+          --read-only --tmpfs /tmp:rw,noexec,nosuid,size=128m --memory 512m --cpus 1.5
+          -e KT_GATEWAY_SIZE_TEST=1 kt-bank-gateway-test
+          php -d memory_limit=256M tests/full_size.php

@@ -28,7 +28,7 @@ final readonly class DownloadReceiver
         return new BTD($profile, ReadRequest::date($request->from), ReadRequest::date($request->until), $context);
     }
 
-    public function receive(EbicsClientInterface $client, ReadRequest $request): array
+    public function receive(ReadClient $client, ReadRequest $request): array
     {
         return $this->journal->exclusive($request, function () use ($client, $request): array {
             $existing = $this->journal->find($request);

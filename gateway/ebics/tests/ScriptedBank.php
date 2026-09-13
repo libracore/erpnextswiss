@@ -18,19 +18,21 @@ use EbicsApi\Ebics\Services\Processor\AESEncryptor;
 use EbicsApi\Ebics\Services\Processor\Base64Encoder;
 use EbicsApi\Ebics\Services\RandomService;
 use EbicsApi\Ebics\Services\TransactionKeyResolver;
+use KT\Banking\ReadClient;
 
 // Test-only HTTP replacement. Real SDK signing, encryption, segment handling and receipt flow;
 // synthetic keys exist only in memory. There is no HTTP/network fallback.
 final class ScriptedBank implements HttpClientInterface
 {
     private static ?Keyring $keys = null;
-    public EbicsClient $client;
+    public ReadClient $client;
     public array $phases = [];
     public array $requests = [];
     public int $receipts = 0;
     public string $mode = 'normal';
     public ?Closure $onReceipt = null;
     public int $segments = 2;
+    public ?string $compressedPayload = null;
     private array $parts = [];
     private string $encryptedKey;
     private AuthSignatureHandlerV30 $signer;
@@ -41,14 +43,16 @@ final class ScriptedBank implements HttpClientInterface
         $keys = self::$keys ?? new Keyring(Keyring::VERSION_30);
         $keys->setPassword('ephemeral-offline-test-password');
         $options = (new EbicsClientOptions())->setHttpClient($this);
-        $this->client = new EbicsClient(new Bank('TESTBANK', 'https://bank.invalid/ebics'), new User('TEST', 'TEST'), $keys, $options);
+        $bank = new Bank('TESTBANK', 'https://bank.invalid/ebics');
+        $user = new User('TEST', 'TEST');
+        $sdk = new EbicsClient($bank, $user, $keys, $options);
         $this->aes = new AESEncryptor(new TransactionKeyResolver());
         $rsa = new RSAFactory($this->aes);
         if (self::$keys === null) {
             $generator = new BankX509Generator();
-            $generator->setCertificateOptionsByBank($this->client->getBank());
+            $generator->setCertificateOptionsByBank($bank);
             $keys->setCertificateGenerator($generator);
-            $this->client->createUserSignatures();
+            $sdk->createUserSignatures();
             $factory = new SignatureFactory($rsa);
             $keys->setBankSignatureX($factory->createSignatureX($keys->getUserSignatureX()->getPublicKey()));
             $keys->setBankSignatureE($factory->createSignatureE($keys->getUserSignatureE()->getPublicKey()));
@@ -58,6 +62,7 @@ final class ScriptedBank implements HttpClientInterface
         }
         $encoder = new Base64Encoder();
         $this->signer = new AuthSignatureHandlerV30($encoder, $keys, new CryptService($rsa, $this->aes, new RandomService(), $encoder));
+        $this->client = new ReadClient($bank, $user, $keys, $this);
     }
 
     public function post(string $url, Request $request): Response
@@ -84,7 +89,7 @@ final class ScriptedBank implements HttpClientInterface
                 throw new RuntimeException('Cannot encrypt synthetic transaction key');
             }
             $this->encryptedKey = base64_encode($encryptedKey);
-            $encoded = base64_encode($this->aes->encrypt(gzcompress($this->payload), ['transactionKey' => $key]));
+            $encoded = base64_encode($this->aes->encrypt($this->compressedPayload ?? gzcompress($this->payload), ['transactionKey' => $key]));
             $this->parts = str_split($encoded, (int)ceil(strlen($encoded) / $this->segments));
             return $this->response('Initialisation', 1, $this->parts[0], $this->encryptedKey);
         }

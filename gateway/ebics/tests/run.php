@@ -2,10 +2,13 @@
 declare(strict_types=1);
 require __DIR__ . '/../vendor/autoload.php';
 require __DIR__ . '/ScriptedBank.php';
+require __DIR__ . '/compressed_payload.php';
 
 use KT\Banking\DownloadReceiver;
 use KT\Banking\ReadRequest;
 use KT\Banking\TransferJournal;
+use KT\Banking\BoundedZlib;
+use KT\Banking\ReadClient;
 
 error_reporting(E_ALL);
 set_error_handler(static function (int $severity, string $message, string $file, int $line): bool {
@@ -66,6 +69,74 @@ function test(string $name, callable $work): void
 
 test('reviewed dependency reference', function (): void {
     check(Composer\InstalledVersions::getReference('ebics-api/ebics-client-php') === 'c0cd3d448fa01ea0442e72b2720be0d371070c12', 'Reviewed SDK commit, not mutable version label');
+});
+
+test('bounded native zlib validates input and preserves binary output', function (): void {
+    $pipe = new BoundedZlib();
+    $bytes = "PK\x03\x04\x00\xff" . random_bytes(2048);
+    check($pipe->uncompress(gzcompress($bytes)) === $bytes, 'Binary inner container preserved');
+    check(gzuncompress($pipe->compress($bytes)) === $bytes, 'SDK compression contract preserved');
+    check($pipe->uncompress(gzcompress('')) === '', 'Valid empty stream decoded; journal still rejects empty originals');
+    foreach (['', 'x', str_repeat('x', BoundedZlib::MAX_COMPRESSED_BYTES + 1)] as $invalid) {
+        rejects(fn() => $pipe->uncompress($invalid), 'Input byte boundary', 'Invalid compressed payload size');
+    }
+    $damaged = gzcompress($bytes);
+    $damaged[-1] = chr(ord($damaged[-1]) ^ 1);
+    foreach (['not a stream', gzencode($bytes), gzdeflate($bytes), substr(gzcompress($bytes), 0, -1),
+        $damaged, str_repeat('x', BoundedZlib::MAX_COMPRESSED_BYTES)] as $invalid) {
+        rejects(fn() => $pipe->uncompress($invalid), 'Malformed zlib fails closed', 'Invalid or oversized zlib payload');
+    }
+    foreach ([TransferJournal::MAX_BYTES + 1, TransferJournal::MAX_BYTES + 3 * 1048576] as $size) {
+        rejects(fn() => $pipe->uncompress(compressed_repeat($size)), 'Native growth buffer cannot bypass exact limit', 'Invalid or oversized zlib payload');
+    }
+    check($pipe->uncompress(gzcompress($bytes)) === $bytes, 'Decoder recovers after invalid inputs');
+});
+
+test('real memory limit distinguishes unbounded SDK from bounded exact-size decoding', function (): void {
+    foreach (['baseline', 'bounded'] as $mode) {
+        $process = proc_open([PHP_BINARY, '-d', 'memory_limit=96M', '-d', 'display_errors=stderr',
+            '-d', 'log_errors=0', __DIR__ . '/decompression_memory.php', $mode],
+            [0 => ['pipe', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes);
+        if (!is_resource($process)) throw new RuntimeException('Cannot start memory-limit worker');
+        fclose($pipes[0]);
+        $output = stream_get_contents($pipes[1]);
+        $errors = stream_get_contents($pipes[2]);
+        fclose($pipes[1]); fclose($pipes[2]);
+        $code = proc_close($process);
+        if ($mode === 'baseline') {
+            check($code !== 0 && $output === 'before-baseline-decode', 'Baseline failed during actual SDK decode');
+            check(str_contains($errors, 'Allowed memory size'), 'Baseline native memory exhaustion reproduced');
+        } else {
+            check($code === 0 && $errors === '', 'Bounded worker succeeds under same limit: ' . $errors);
+            $result = json_decode($output, true, flags: JSON_THROW_ON_ERROR);
+            check($result['bounded'] && $result['exact_limit'] === TransferJournal::MAX_BYTES, 'Oversized rejected and exact limit retained');
+            check($result['peak_bytes'] < 96 * 1048576, 'Actual peak stays within memory bound');
+            echo 'MEMORY ' . $output . "\n";
+        }
+    }
+});
+
+test('receiver requires the constrained SDK composition', function (): void {
+    $type = (new ReflectionMethod(DownloadReceiver::class, 'receive'))->getParameters()[0]->getType();
+    check($type->getName() === ReadClient::class, 'An arbitrary unbounded SDK cannot enter receive');
+    foreach (['executeUploadOrder', 'executeInitializationOrder', 'createUserSignatures'] as $method) {
+        check(!method_exists(ReadClient::class, $method), 'Read client does not expose ' . $method);
+    }
+});
+
+test('real SDK rejects oversized or malformed zlib before original persistence and receipt', function (): void {
+    foreach ([compressed_repeat(TransferJournal::MAX_BYTES + 1), 'malformed zlib'] as $compressed) {
+        [$path, $journal] = journal();
+        $bank = new ScriptedBank('valid recovery');
+        $bank->compressedPayload = $compressed;
+        $receiver = new DownloadReceiver($journal);
+        rejects(fn() => $receiver->receive($bank->client, request()), 'Bounded pipe rejects before journal', 'Invalid or oversized zlib payload');
+        check($bank->receipts === 0 && count($bank->phases) === 2, 'Signed segmented transfer stops before receipt');
+        check($journal->find(request()) === null, 'No partial original recorded');
+        $bank->compressedPayload = null;
+        check($receiver->receive($bank->client, request())['receipt_state'] === 'confirmed', 'Valid transfer recovers after bounded rejection');
+        check($journal->payload(request()) === 'valid recovery', 'Recovery bytes unchanged');
+    }
 });
 
 test('read-only admission', function (): void {

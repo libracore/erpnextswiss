@@ -16,6 +16,15 @@ reliable bank transport for their later, separately tested integration.
 - `DownloadReceiver` constructs BTD/EOP or BTD/REP, CH, ZIP, version 08. It uses
   the SDK's TEXT result mode to preserve the complete decrypted ZIP bytes rather
   than unpacking or importing them. No initialization or upload order is exposed.
+- `ReadClient` is the receiver's required SDK composition. It installs
+  `BoundedZlib` through native `EbicsClientOptions::setZipCompressor` and requires
+  an injected HTTP transport, with no implicit network fallback. It exposes only
+  BTD execution; it is not an authorization layer or a trusted connection binding.
+- Outer zlib input retains the SDK's 10 MiB cap; output is limited to the journal's
+  32 MiB original limit before persistence and acknowledgement. Native zlib checks
+  format/checksum; no compression algorithm or bank-file parser is reimplemented.
+  Invalid, truncated, checksum-damaged or oversized data fails closed. Inner ZIP
+  extraction/XML validation remains a separate, unimplemented boundary.
 - The SDK acknowledgement closure first commits the encrypted original and
   metadata to SQLite, then opens an independent connection and authenticates the
   stored bytes. Only successful persistence returns `true` to the SDK receipt
@@ -83,6 +92,10 @@ docker run --rm --network none --cap-drop ALL --security-opt no-new-privileges \
   --tmpfs /kt-disk-full:rw,noexec,nosuid,uid=10001,gid=10001,mode=0700,size=1m \
   --memory 256m --cpus 1.5 -e KT_GATEWAY_DISK_FULL_TEST=1 \
   kt-bank-gateway-test php tests/full_disk.php
+docker run --rm --network none --cap-drop ALL --security-opt no-new-privileges \
+  --read-only --tmpfs /tmp:rw,noexec,nosuid,size=128m --memory 512m --cpus 1.5 \
+  -e KT_GATEWAY_SIZE_TEST=1 kt-bank-gateway-test \
+  php -d memory_limit=256M tests/full_size.php
 ```
 
 The SDK is real; the HTTP bank is scripted and has no network fallback. Synthetic
@@ -94,13 +107,38 @@ storage and uncertain bank receipts. The isolated 1 MiB tmpfs test induces actua
 SQLITE_FULL and verifies no acknowledgement, no partial row and later recovery.
 It refuses to fill arbitrary directories or the host filesystem.
 
+The decompression regression generates a synthetic 256 MiB expansion using
+incremental native deflate without allocating the expanded input. In an isolated
+96 MiB PHP subprocess, the default SDK reaches an actual memory-limit failure;
+the constrained decoder rejects the same input and still decodes an exact
+32 MiB original. Its actual peak memory is reported. The SDK integration tests
+verify no persistence/receipt for invalid or over-limit data and successful
+recovery; existing signature, durability and replay tests use `ReadClient` too.
+
+PHP 8.5's `gzuncompress` allocation-growth loop can return more than its
+`max_length` argument when the stream ends within the final grown buffer. The
+native limit bounds allocation growth, and an additional exact length check
+enforces the admission limit. Tests exercise the limit plus one byte and a larger
+last-buffer overrun, not only a large compression bomb. Sources:
+[PHP API](https://www.php.net/manual/en/function.gzuncompress.php),
+[PHP implementation](https://github.com/php/php-src/blob/PHP-8.5/ext/zlib/zlib.c).
+
+Decompression-only success is not an end-to-end capacity proof. `full_size.php`
+also checks the complete 32 MiB signed synthetic transfer, encryption, durable
+independent readback, receipt and local replay. It uses a separate 256 MiB PHP /
+512 MiB container budget with 128 MiB tmpfs because journal/crypto/readback copies
+also consume memory. An initial measured PHP peak was 171,986,944 bytes; do not
+deploy a future worker with the small-test 128 MiB PHP limit or count tmpfs as free
+container memory. Real HTTP buffers/concurrency require their own capacity test.
+
 ## Still required before any activation
 
 1. Trusted site/connection/participant binding, bank-approved configuration,
    mTLS, allowlisted egress, certificate/fingerprint and keyring lifecycle.
-2. Bounded transport/segment sizes and timeouts, bounded outer decompression and
-   safe ZIP/XML validation. The SDK defaults are not sufficient evidence here;
-   the current 32 MiB journal limit runs after transport/decompression.
+2. Bounded transport/segment sizes and timeouts, safe inner ZIP/XML validation and
+   full worker capacity/concurrency tests. Outer zlib is now bounded, but the
+   assembled HTTP/segment/base64/AES data still reaches it only after transfer;
+   this change does not claim to bound earlier network buffers or ZIP expansion.
 3. Operation admission/status, no-data/error journaling, pending receipt handling,
    retention, key rotation, encryption-aware backup and isolated restore proof.
 4. Account/currency mapping and controlled handover to existing ERP import and

@@ -3,6 +3,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { chromium } = require("playwright");
 const { compareScreenshots } = require("./compare-screenshots.cjs");
+const { workspaceShortcutsReady } = require("./workspace-readiness.cjs");
 
 const base = "http://127.0.0.1:8000";
 const output = path.join(__dirname, "artifacts");
@@ -29,6 +30,7 @@ async function inspect(page, route, workspace, name, warm = false) {
     });
     const panel = page.locator("#page-Workspaces .layout-main-section");
     await panel.locator(".ce-block").first().waitFor();
+    await page.waitForFunction(workspaceShortcutsReady, workspace, { timeout: 45000 });
     await page.mouse.move(0, 0);
     const snapshot = await panel.evaluate(element => ({
         text: element.innerText,

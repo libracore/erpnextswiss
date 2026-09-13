@@ -97,3 +97,26 @@ checks were mocked by those unit tests. This is not a full PDF rendering proof.
 Still open: production-image/site upgrade and rollback acceptance, broader account
 and payment workflow regression, actual bank adapter delivery and approved bank
 pilot. No production migration, bank contact or deployment occurred in this increment.
+
+## Counter readiness regression, 13 September 2026
+
+Run `34733021639` at `5e8d023` passed 86 native app tests but failed a cold
+Workspace text comparison. Its canonical Zahlungsverkehr view contained all six
+DocType count pills; the retained Page view was captured while those counts were
+still arriving. The DOM snapshot and subsequent screenshot show different subsets
+of completed counts. This is not evidence of a changed banking layout.
+
+Frappe v16 `ShortcutWidget.set_actions()` starts `frappe.db.count(...).then(...)`
+without making it part of EditorJS `isReady`. The browser test now additionally
+waits for every rendered, configured DocType/List shortcut's nonempty count pill,
+including zero. Single DocTypes, New, Page and Report shortcuts require no count.
+Missing widgets or failed count requests still time out and fail the gate. Native
+permission-filtered shortcut data determines which blocks should render.
+
+Five Chromium regression tests cover delayed and absent/empty counts, zero,
+non-counted shortcut types, wrong workspace, missing blocks/metadata and native
+label matching. All five plus the existing 12 route/comparator tests pass locally.
+The CI workflow runs the same checks before the native screenshot comparison.
+Text, geometry, cold byte equality and the previous bounded warm rasterization
+tolerance are unchanged; no region or count is masked. This change affects tests
+only. The complete new CI run, including HRMS, remains required evidence.

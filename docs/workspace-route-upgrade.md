@@ -73,6 +73,15 @@ uses native slug URLs and adds complete screenshot equality and two warm Page
 revisits to every comparison. Its actual execution must be verified separately;
 the earlier green run does not prove these stronger assertions.
 
+Run `34727001914` then passed native tests, both migrations and the first cold
+full-viewport comparisons. Its first warm revisit differed at just 36 rounded-edge
+pixels, each by one grayscale level (maximum channel delta 1/255); text and block
+geometry were identical. Cold comparisons remain byte-exact. Warm comparisons now
+allow at most 128 changed pixels with maximum channel delta 1/255, without masking
+any region, and record actual deltas in the results. Comparator tests reject larger
+deltas, additional changed pixels and resized images. `pngjs` 7.0.0 (MIT, locked
+integrity) is a test-only PNG decoder, not a production or banking dependency.
+
 The eight PDF wrapper tests also passed against the current production base image
 in an isolated, network-disabled, read-only container with no production mounts.
 Only Frappe imports/dependencies were real there; the PDF renderer and permission

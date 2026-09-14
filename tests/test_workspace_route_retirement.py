@@ -39,10 +39,10 @@ class WorkspaceRouteRetirementTests(unittest.TestCase):
 
         def rename(dt, name, target, **kwargs):
             self.events.append(("rename", name, target, kwargs))
-            if kwargs.get("merge"):
-                self.pages.pop(name, None)
-                return target
-            self.retained[target] = Proxy(name=target, standard="Yes", flags=SimpleNamespace(),
+            source = self.pages.get(name, {})
+            self.retained[target] = Proxy(name=target, page_name=target,
+                title=source.get("title"), module=source.get("module"),
+                roles=list(source.get("roles") or []), standard="Yes", flags=SimpleNamespace(),
                 save=lambda **opts: self.events.append(("retain", target, opts)))
 
         def get_doc(dt, name):
@@ -103,7 +103,7 @@ class WorkspaceRouteRetirementTests(unittest.TestCase):
             self.module.retire_workspace_route_pages()
         self.assertFalse(any(event[0] == "rename" for event in self.events))
 
-    def test_reimported_standard_proxy_merges_into_existing_retired_page(self):
+    def test_reimported_standard_proxy_renames_into_secondary_retired_page(self):
         source = self.pages["erpnextswiss"]
         source.roles.append(SimpleNamespace(role="HR User"))
         target_name = "kt-swiss-route-erpnextswiss"
@@ -118,13 +118,13 @@ class WorkspaceRouteRetirementTests(unittest.TestCase):
         self.pages[target_name] = target
 
         self.assertEqual(self.module.retire_workspace_route_pages(), ["erpnextswiss"])
+        archive_name = "kt-swiss-reimported-erpnextswiss"
         self.assertEqual([event for event in self.events if event[0] == "rename"], [
-            ("rename", "erpnextswiss", target_name, {"force": True, "merge": True,
+            ("rename", "erpnextswiss", archive_name, {"force": True, "merge": False,
              "ignore_permissions": True, "show_alert": False, "rebuild_search": False})
         ])
-        self.assertNotIn("erpnextswiss", self.pages)
-        self.assertIn("HR User", {row.role for row in target.roles})
-        self.assertIn("Accounts Manager", {row.role for row in target.roles})
+        self.assertIn("HR User", {row.role for row in self.retained[archive_name].roles})
+        self.assertIn("Accounts Manager", {row.role for row in self.retained[archive_name].roles})
 
     def test_target_workspace_or_doctype_collision_prevents_entire_batch(self):
         for doctype in ("Workspace", "DocType"):

@@ -30,10 +30,11 @@ broken, so it is not used.
   their Workspace.
 - Repeated production updates can encounter the already-retired
   `kt-swiss-route-*` Page plus a freshly recreated app-owned legacy Page. In that
-  specific idempotency case the recreated standard proxy is merged by Frappe's
-  native rename API into the existing retired Page after both records are
-  validated as ERPNextSwiss-owned. Missing roles are copied first; dynamic links,
-  Versions, comments and attachments are then kept on the retired Page.
+  specific idempotency case the recreated standard proxy is moved by Frappe's
+  native rename API into a secondary `kt-swiss-reimported-*` archive route after
+  both records are validated as ERPNextSwiss-owned. Dynamic links, child roles,
+  Versions, comments and attachments are preserved without requiring Page
+  deletion or developer mode.
 - A foreign module, a nonstandard or repurposed Page, or an occupied target name
   stops the whole preflight before the first rename. No customer customization
   is overwritten to make CI pass. Migration owns the transaction; the helper

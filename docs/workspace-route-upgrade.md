@@ -24,9 +24,16 @@ broken, so it is not used.
   entity cleanup. The retained records become `standard = No`, so that subsequent
   orphan cleanup does not delete site-specific history whose old JSON was retired.
 - Native rename retains roles, child records, Custom Role links, attachments,
-  comments and Version history. No merge, delete or history purge is performed.
-  The old proxy `page_name` and title remain intact. Technical Page assets remain
-  available so Page references updated by Frappe still open their Workspace.
+  comments and Version history. First-time retirement uses a plain rename without
+  merge, delete or history purge. The old proxy title remains intact. Technical
+  Page assets remain available so Page references updated by Frappe still open
+  their Workspace.
+- Repeated production updates can encounter the already-retired
+  `kt-swiss-route-*` Page plus a freshly recreated app-owned legacy Page. In that
+  specific idempotency case the recreated standard proxy is merged by Frappe's
+  native rename API into the existing retired Page after both records are
+  validated as ERPNextSwiss-owned. Missing roles are copied first; dynamic links,
+  Versions, comments and attachments are then kept on the retired Page.
 - A foreign module, a nonstandard or repurposed Page, or an occupied target name
   stops the whole preflight before the first rename. No customer customization
   is overwritten to make CI pass. Migration owns the transaction; the helper

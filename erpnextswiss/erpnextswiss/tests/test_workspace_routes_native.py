@@ -83,6 +83,37 @@ class TestWorkspaceRoutesNative(unittest.TestCase):
         self.assertEqual(before, {name: frappe.get_doc("Workspace", name).content for name in before})
         self.assertEqual(retire_workspace_route_pages(), [])
 
+    def test_reimported_standard_proxy_merges_into_existing_retired_page(self):
+        legacy = "erpnextswiss"
+        self.create_legacy_proxy(legacy)
+        self.assertEqual(retire_workspace_route_pages(), [legacy])
+        target = retired_route_page_name(legacy)
+        self.create_legacy_proxy(legacy)
+        version = frappe.get_doc(doctype="Version", name=uuid4().hex, ref_doctype="Page",
+                                 docname=legacy, data=json.dumps({"changed": [["title", "Again", "New"]]}))
+        version.db_insert()
+        comment = frappe.get_doc("Page", legacy).add_comment("Comment", "Preserve repeated import")
+        custom_role = frappe.get_doc(doctype="Custom Role", page=legacy,
+                                     roles=[{"role": "HR User"}]).insert()
+        extra_role = frappe.get_doc(doctype="Has Role", name=uuid4().hex, parent=legacy,
+            parenttype="Page", parentfield="roles", role="HR Manager")
+        extra_role.db_insert()
+        file = frappe.get_doc(doctype="File", name=uuid4().hex, file_name="repeat.txt",
+            file_url="/private/files/synthetic-repeat.txt", is_private=1,
+            attached_to_doctype="Page", attached_to_name=legacy)
+        file.db_insert()
+
+        self.assertEqual(retire_workspace_route_pages(), [legacy])
+        self.assertFalse(frappe.db.exists("Page", legacy))
+        self.assertTrue(frappe.db.exists("Page", target))
+        self.assertEqual(frappe.db.get_value("Version", version.name, "docname"), target)
+        self.assertEqual(frappe.db.get_value("Comment", comment.name, "reference_name"), target)
+        self.assertEqual(frappe.db.get_value("Custom Role", custom_role.name, "page"), target)
+        self.assertEqual(frappe.db.get_value("File", file.name, "attached_to_name"), target)
+        self.assertIn("HR Manager", {
+            row.role for row in frappe.get_doc("Page", target).get("roles") or []
+        })
+
     def test_modified_last_proxy_blocks_the_entire_retirement(self):
         for name in WORKSPACE_ROUTE_PAGES:
             self.create_legacy_proxy(name, title="Custom page" if name == "schweiz-einstellungen" else WORKSPACE_ROUTE_PAGES[name])

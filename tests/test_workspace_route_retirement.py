@@ -13,6 +13,9 @@ class Proxy(dict):
     def __setattr__(self, key, value):
         self[key] = value
 
+    def append(self, fieldname, value):
+        self.setdefault(fieldname, []).append(SimpleNamespace(**value))
+
 
 class WorkspaceRouteRetirementTests(unittest.TestCase):
     def setUp(self):
@@ -36,6 +39,9 @@ class WorkspaceRouteRetirementTests(unittest.TestCase):
 
         def rename(dt, name, target, **kwargs):
             self.events.append(("rename", name, target, kwargs))
+            if kwargs.get("merge"):
+                self.pages.pop(name, None)
+                return target
             self.retained[target] = Proxy(name=target, standard="Yes", flags=SimpleNamespace(),
                 save=lambda **opts: self.events.append(("retain", target, opts)))
 
@@ -68,8 +74,8 @@ class WorkspaceRouteRetirementTests(unittest.TestCase):
     def test_rename_only_after_all_preflights_and_without_merge_or_commit(self):
         self.assertEqual(self.module.retire_workspace_route_pages(), list(self.pages))
         self.assertEqual([event for event in self.events if event[0] == "rename"], [
-            ("rename", name, "kt-swiss-route-" + name, {"force": True, "ignore_permissions": True,
-             "show_alert": False, "rebuild_search": False}) for name in self.pages
+            ("rename", name, "kt-swiss-route-" + name, {"force": True, "merge": False,
+             "ignore_permissions": True, "show_alert": False, "rebuild_search": False}) for name in self.pages
         ])
         self.assertEqual(len([event for event in self.events if event[0] == "lock"]), 6)
         for doc in self.retained.values():
@@ -91,11 +97,34 @@ class WorkspaceRouteRetirementTests(unittest.TestCase):
         self.module.retire_workspace_route_pages()
         self.assertIn("HR User", {row.role for row in page.roles})
 
-    def test_occupied_target_prevents_entire_batch_without_merge(self):
+    def test_foreign_occupied_target_prevents_entire_batch_without_merge(self):
         self.pages["kt-swiss-route-schweiz-einstellungen"] = Proxy(name="foreign")
         with self.assertRaises(ValueError):
             self.module.retire_workspace_route_pages()
         self.assertFalse(any(event[0] == "rename" for event in self.events))
+
+    def test_reimported_standard_proxy_merges_into_existing_retired_page(self):
+        source = self.pages["erpnextswiss"]
+        source.roles.append(SimpleNamespace(role="HR User"))
+        target_name = "kt-swiss-route-erpnextswiss"
+        target = Proxy(
+            name=target_name, page_name=target_name, title="Schweizer Buchhaltung",
+            module="ERPNextSwiss", standard="No", flags=SimpleNamespace(),
+            roles=[SimpleNamespace(role="System Manager")],
+            save=lambda **opts: self.events.append(("retain", target_name, opts)),
+        )
+        self.pages.clear()
+        self.pages["erpnextswiss"] = source
+        self.pages[target_name] = target
+
+        self.assertEqual(self.module.retire_workspace_route_pages(), ["erpnextswiss"])
+        self.assertEqual([event for event in self.events if event[0] == "rename"], [
+            ("rename", "erpnextswiss", target_name, {"force": True, "merge": True,
+             "ignore_permissions": True, "show_alert": False, "rebuild_search": False})
+        ])
+        self.assertNotIn("erpnextswiss", self.pages)
+        self.assertIn("HR User", {row.role for row in target.roles})
+        self.assertIn("Accounts Manager", {row.role for row in target.roles})
 
     def test_target_workspace_or_doctype_collision_prevents_entire_batch(self):
         for doctype in ("Workspace", "DocType"):

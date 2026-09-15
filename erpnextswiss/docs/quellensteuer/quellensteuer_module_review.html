@@ -265,7 +265,7 @@ tr.sum td { font-weight: 600; background: var(--ground); }
       <span class="chip">7 custom fields</span>
       <span class="chip">3 doc hooks</span>
       <span class="chip">1 report · 1 patch</span>
-      <span class="chip">17 unit tests</span>
+      <span class="chip">19 unit tests</span>
     </div>
   </header>
 
@@ -637,7 +637,7 @@ tr.sum td { font-weight: 600; background: var(--ground); }
           <table>
             <thead><tr><th>Rate-determining income</th><th>Monatsmodell</th><th>Jahresmodell</th><th>KS45</th></tr></thead>
             <tbody>
-              <tr><td class="k">Base</td><td>periodic of month</td><td>full year: past + current × remaining months · else Σ periodic × 360 ÷ Σ days</td><td>6.2 · 7.3.1</td></tr>
+              <tr><td class="k">Base</td><td>periodic of month</td><td>whole year in same canton: past + current × remaining months · else (entry, exit, move, mid-year start) Σ periodic × 360 ÷ Σ days</td><td>6.2 · 7.3.1</td></tr>
               <tr><td class="k">Entry / exit</td><td>periodic × 30 ÷ days (30-day method)</td><td>via 360-day basis</td><td>6.6 · 7.3.4</td></tr>
               <tr><td class="k">Hourly (<code>hourly_wage</code>)</td><td>periodic ÷ hours × 180</td><td>Σ periodic ÷ Σ hours × 2’160</td><td>6.5 · 7.3.3</td></tr>
               <tr><td class="k">Total degree</td><td colspan="2">(periodic + 13th) × total degree ÷ own degree (Employment Degrees, required)</td><td>6.4 · 7.3.2</td></tr>
@@ -818,12 +818,12 @@ tr.sum td { font-weight: 600; background: var(--ground); }
                 <dt>Decide</dt><dd>rounding per month (implemented) vs on the declaration total</dd>
               </dl></td></tr>
 
-              <tr class="item"><td><span class="pill p-limit">Limitation</span></td><td>canton change within year: annual income over same-canton months only · KS45 §8 not modelled</td><td class="where">payroll.calculate</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl7" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>
+              <tr class="item"><td><span class="pill p-limit">Limitation</span></td><td>canton change within year: each canton like entry/exit (KS45 §8) · moving back in the same year not covered</td><td class="where">payroll.calculate</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl7" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>
               <tr class="detail" id="cl7" hidden><td colspan="4"><dl class="explain">
-                <dt>What</dt><dd>each month uses the tariff and model of its own canton · annual income only from months in the same canton</dd>
-                <dt>Why</dt><dd>simple, consistent rule · KS45 §8 prescribes separate procedures per switch direction (monthly ↔ annual)</dd>
-                <dt>Effect</dt><dd>mid-year moves between monthly and annual cantons may differ from §8 (e.g. year-end correction of the annual-canton part) · report lists each month under its canton</dd>
-                <dt>Decide</dt><dd>implement §8 now, or document as a manual case</dd>
+                <dt>What</dt><dd>new canton from the month after the move (record valid from that 1st) · each month uses its canton’s tariff and model · annual income only from that canton’s months, converted to 360 days like an entry/exit · projection only if liable in the same canton all year</dd>
+                <dt>Why</dt><dd>KS45 §8.1–8.5: one-off payments and income changes in the other canton’s period don’t count · review found and fixed: move into an annual canton projected from the move month (e.g. GE from Sep: 20’000 instead of 60’000–65’000)</dd>
+                <dt>Effect</dt><dd>tests: §8.4 TI → GE (TI 95’000 incl. bonus, GE 65’000) · §8.3 BE → TI (BE monthly 35’000 in Feb, TI 65’000) · same fix covers payroll starting mid-year in an annual canton · report lists each month under its canton</dd>
+                <dt>Decide</dt><dd>moving back into an earlier canton within the same year: both stints counted together (not covered by KS45) · acceptable?</dd>
               </dl></td></tr>
 
               <tr class="item"><td><span class="pill p-limit">Limitation</span></td><td>later month submitted → corrections silently skipped</td><td class="where">payroll.salary_slip_validate</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl8" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>
@@ -883,7 +883,7 @@ tr.sum td { font-weight: 600; background: var(--ground); }
 
               <tr class="item"><td><span class="pill p-scope">Scope</span></td><td>tests run via bench console (site has <code>allow_tests</code> off)</td><td class="where">test_quellensteuer.py</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl15" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>
               <tr class="detail" id="cl15" hidden><td colspan="4"><dl class="explain">
-                <dt>What</dt><dd>17 unit tests (plain unittest, database and tariffs mocked), incl. slip validation blocking on a missing degree or earlier-month tariff · end-to-end checks were one-off scripts, not in the repo</dd>
+                <dt>What</dt><dd>19 unit tests (plain unittest, database and tariffs mocked), incl. slip validation blocking on a missing degree or earlier-month tariff and KS45 §8 canton changes · end-to-end checks were one-off scripts, not in the repo</dd>
                 <dt>Why</dt><dd><code>bench run-tests</code> is blocked while <code>allow_tests</code> is off</dd>
                 <dt>Effect</dt><dd>no automated tests for import and payroll against a database</dd>
                 <dt>Decide</dt><dd>enable tests on the dev site and add integration tests</dd>

@@ -6,7 +6,6 @@ from datetime import date
 
 FILE_PATTERN = re.compile(r"(?:^|/)tar(\d{2})([a-z]{2})\.txt$", re.IGNORECASE)
 DATA_RECORDS = ("06", "11", "12", "13")
-EXCLUDED_GROUPS = "RSTUV"
 
 
 class TariffFileError(Exception):
@@ -55,7 +54,7 @@ def parse(text):
             extra["commission"][code] = to_amount(line[54:59])
         elif record_type == "13":
             extra["median_value"] = to_amount(line[45:54])
-        elif code[:1] not in EXCLUDED_GROUPS or record_type == "11":
+        else:
             rows.append({
                 "record_type": record_type,
                 "code": code,

@@ -13,6 +13,7 @@
   "children",
   "church_tax",
   "tariff_code",
+  "cross_border_valid_until",
   "sec_income",
   "hourly_wage",
   "col_income",
@@ -58,11 +59,12 @@
    "fieldtype": "Column Break"
   },
   {
+   "description": "L–Q: cross-border Germany · R–V: cross-border Italy (TI, GR, VS) · SF: France special agreement",
    "fieldname": "tariff_group",
    "fieldtype": "Select",
    "label": "Tariff Group",
    "mandatory_depends_on": "eval:doc.liable",
-   "options": "\nA\nB\nC\nD\nE\nG\nH\nL\nM\nN\nP\nQ"
+   "options": "\nA\nB\nC\nD\nE\nG\nH\nL\nM\nN\nP\nQ\nR\nS\nT\nU\nV\nSF"
   },
   {
    "default": "0",
@@ -82,6 +84,13 @@
    "in_list_view": 1,
    "label": "Tariff Code",
    "read_only": 1
+  },
+  {
+   "depends_on": "eval:[\"L\",\"M\",\"N\",\"P\",\"Q\",\"R\",\"S\",\"T\",\"U\",\"V\",\"SF\"].includes(doc.tariff_group)",
+   "description": "Gre-1/Gre-2 (Germany), cantonal tariff confirmation (Italy) or form 2041-AS (France); without a certificate covering the month, the ordinary tariff is applied",
+   "fieldname": "cross_border_valid_until",
+   "fieldtype": "Date",
+   "label": "Cross-border Certificate Valid Until"
   },
   {
    "fieldname": "sec_income",
@@ -138,7 +147,7 @@
  ],
  "istable": 1,
  "links": [],
- "modified": "2026-09-15 12:00:00.000000",
+ "modified": "2026-09-16 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "QST Employee Record",

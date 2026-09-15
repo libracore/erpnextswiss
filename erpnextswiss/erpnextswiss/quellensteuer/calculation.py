@@ -30,9 +30,14 @@ def days_30(start, end, joining=None, relieving=None):
     return 0 if last < first else min(30, day_30(last) - day_30(first) + 1)
 
 
+CROSS_BORDER_GROUPS = {"L": "A", "M": "B", "N": "C", "P": "H", "Q": "G", "R": "A", "S": "B", "T": "C", "U": "H", "V": "G", "SF": "A"}
+
+
 def tariff_code(group, children=0, church_tax=False):
     """Build the ESTV tariff code, e.g. B2Y."""
-    if group in ("G", "Q"):
+    if group == "SF":
+        return "SFN"
+    if group in ("G", "Q", "V"):
         return f"{group}9N"
     return f"{group}{min(int(children or 0), 9)}{'Y' if church_tax else 'N'}"
 

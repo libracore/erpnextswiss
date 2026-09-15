@@ -5,7 +5,7 @@ from frappe import _
 from frappe.utils import cint, flt, fmt_money, getdate
 
 from erpnextswiss.erpnextswiss.quellensteuer.calculation import (
-    annual_rdi, days_30, month_end, monthly_rdi, tariff_code, tax_amount)
+    CROSS_BORDER_GROUPS, annual_rdi, days_30, month_end, monthly_rdi, tariff_code, tax_amount)
 from erpnextswiss.erpnextswiss.quellensteuer.tariff import cache, get_bracket, get_tariff
 
 TYPE_KEYS = {"Periodic": "periodic", "Aperiodic": "aperiodic", "13th Salary": "thirteenth"}
@@ -36,6 +36,9 @@ def salary_slip_validate(doc, method=None):
                 continue
         if month_period == period:
             current = delta
+            if result.get("fallback"):
+                frappe.msgprint(_("No cross-border certificate covering {0:%m.%Y} for tariff group {1}. The ordinary tariff {2} has been applied.").format(
+                    period, result["record"].tariff_group, result["code"]), title=_("Quellensteuer"), indicator="orange")
         elif (month_period in locked or abs(delta) < flt(settings.min_correction)
               or not correction_allowed(result, doc, employee, settings)):
             continue
@@ -125,6 +128,14 @@ def get_record(employee, period):
     return max(records, key=lambda r: getdate(r.valid_from)) if records else None
 
 
+def effective_group(record, period):
+    """Tariff group, replaced by the ordinary group without a cross-border certificate covering the month."""
+    ordinary = CROSS_BORDER_GROUPS.get(record.tariff_group)
+    if ordinary and not (record.get("cross_border_valid_until") and getdate(record.cross_border_valid_until) >= month_end(period)):
+        return ordinary
+    return record.tariff_group
+
+
 def same_canton_all_year(employee, year, canton):
     """True if the employee is liable in the same canton for the whole year (KS45 section 8)."""
     records = [get_record(employee, date(year, 1, 1))] + [
@@ -165,7 +176,8 @@ def calculate(employee, months, current_period, settings):
         if not result["record"]:
             continue
         taxable = month["periodic"] + month["aperiodic"] + month["thirteenth"]
-        result["code"] = tariff_code(record.tariff_group, record.children, record.church_tax)
+        group = effective_group(record, period)
+        result.update(code=tariff_code(group, record.children, record.church_tax), fallback=group != record.tariff_group)
         if record.other_employment == "Fixed Rate":
             result.update(rate=flt(record.fixed_rate), tax=tax_amount(taxable, flt(record.fixed_rate), 0, flt(settings.rounding)))
             continue
@@ -216,7 +228,8 @@ def detail_row(result, month, period, paid, delta, entry_type):
         "model": result["model"],
         "tariff_code": result["code"],
         "qst_tariff": result["tariff"].name if result["tariff"] else None,
-        "reason": (record.other_employment if record.other_employment != "None" else None) if record else _("Not liable"),
+        "reason": (_("No cross-border certificate") if result.get("fallback") else record.other_employment if record.other_employment != "None" else None)
+        if record else _("Not liable"),
         "periodic": month["periodic"],
         "aperiodic": month["aperiodic"],
         "thirteenth": month["thirteenth"],

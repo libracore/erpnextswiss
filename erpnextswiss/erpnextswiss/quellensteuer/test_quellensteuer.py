@@ -179,6 +179,32 @@ class TestPayroll(unittest.TestCase):
         self.assertIsNone(slip.flags.qst_error)
         self.assertEqual((deductions["QST"], deductions["QST Correction"]), (520, 0))
 
+    def calculate_move(self, records, models, current, settings, extra=None):
+        employee = self.employee(*records)
+        months = {date(2021, m, 1): month(date(2021, m, 1), 5000) for m in range(1, current.month + 1)}
+        for period, values in (extra or {}).items():
+            months[period].update(values)
+        tariffs = {canton: frappe._dict(name=f"QST-{canton}-2021-20201201", calculation_model=model) for canton, model in models.items()}
+        with patch.object(payroll, "get_tariff", side_effect=lambda canton, period: tariffs[canton]), \
+                patch.object(payroll, "get_bracket", return_value=frappe._dict(rate=10, min_tax=0)), \
+                patch.object(payroll, "receives_thirteenth", return_value=True):
+            return payroll.calculate(employee, months, current, settings)
+
+    def test_canton_change_annual_to_annual(self):
+        records = ({"valid_from": date(2021, 1, 1), "canton": "TI"}, {"valid_from": date(2021, 9, 1), "canton": "GE"})
+        extra = {date(2021, 2, 1): {"aperiodic": 30000}, date(2021, 12, 1): {"thirteenth": 5000}}
+        results = self.calculate_move(records, {"TI": "Annual", "GE": "Annual"}, date(2021, 12, 1), frappe._dict(self.settings, project_thirteenth=1), extra)
+        self.assertEqual([round(results[date(2021, m, 1)]["rdi"]) for m in (3, 9, 12)], [95000, 65000, 65000])
+        results = self.calculate_move(records, {"TI": "Annual", "GE": "Annual"}, date(2021, 9, 1), self.settings)
+        self.assertAlmostEqual(results[date(2021, 9, 1)]["rdi"], 60000)
+
+    def test_canton_change_monthly_to_annual(self):
+        records = ({"valid_from": date(2021, 1, 1), "canton": "BE"}, {"valid_from": date(2021, 9, 1), "canton": "TI"})
+        extra = {date(2021, 2, 1): {"aperiodic": 30000}}
+        results = self.calculate_move(records, {"BE": "Monthly", "TI": "Annual"}, date(2021, 9, 1), frappe._dict(self.settings, project_thirteenth=1), extra)
+        self.assertEqual([round(results[date(2021, m, 1)]["rdi"]) for m in (2, 9)], [35000, 65000])
+        self.assertEqual((results[date(2021, 2, 1)]["model"], results[date(2021, 9, 1)]["model"]), ("Monthly", "Annual"))
+
     def test_degree_required(self):
         rates = lambda code, income: frappe._dict(rate=10, min_tax=0)
         employee = self.employee({"valid_from": date(2021, 1, 1), "other_employment": "Extrapolate 100%"})

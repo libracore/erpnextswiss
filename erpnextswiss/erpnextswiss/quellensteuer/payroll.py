@@ -119,6 +119,13 @@ def get_record(employee, period):
     return max(records, key=lambda r: getdate(r.valid_from)) if records else None
 
 
+def same_canton_all_year(employee, year, canton):
+    """True if the employee is liable in the same canton for the whole year (KS45 section 8)."""
+    records = [get_record(employee, date(year, 1, 1))] + [
+        r for r in employee.get("qst_records") or [] if date(year, 1, 1) < getdate(r.valid_from) <= date(year, 12, 1)]
+    return all(r and r.liable and r.canton == canton for r in records)
+
+
 def own_degree(employee, period):
     degrees = [d for d in employee.get("employment_degrees") or [] if getdate(d.date) <= month_end(period)]
     return flt(max(degrees, key=lambda d: getdate(d.date)).degree) if degrees else None
@@ -171,7 +178,9 @@ def calculate(employee, months, current_period, settings):
             year_periods = [p for p in sorted(months) if p.year == period.year and p <= max(current_period, period)
                             and getattr(get_record(employee, p), "canton", None) == record.canton]
             last_record = get_record(employee, year_periods[-1])
-            full_year = month["joining"] <= date(period.year, 1, 1) and (not month["relieving"] or month["relieving"] >= date(period.year, 12, 31))
+            full_year = (year_periods[0].month == 1 and month["joining"] <= date(period.year, 1, 1)
+                         and (not month["relieving"] or month["relieving"] >= date(period.year, 12, 31))
+                         and same_canton_all_year(employee, period.year, record.canton))
             project = bool(settings.project_thirteenth) and receives_thirteenth(employee.name, year_periods[-1])
             result["rdi"] = annual_rdi([months[p] for p in year_periods], record_values(last_record, settings),
                                        own_degree(employee, year_periods[-1]) or 100, full_year, project)

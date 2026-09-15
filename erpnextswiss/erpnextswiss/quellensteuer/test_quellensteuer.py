@@ -272,6 +272,11 @@ class TestPayroll(unittest.TestCase):
         result = self.run_calculation(employee, [4500], "Monthly", rates)[date(2021, 1, 1)]
         self.assertEqual((result["error"], result["rdi"]), (None, 9000))
 
+    def test_median_value_required(self):
+        employee = self.employee({"valid_from": date(2021, 1, 1), "other_employment": "Median Value (No Degree)"})
+        result = self.run_calculation(employee, [500], "Monthly", lambda code, income: frappe._dict(rate=10, min_tax=0))[date(2021, 1, 1)]
+        self.assertIn("median value", result["error"])
+
     def test_annual_model_projects_thirteenth(self):
         employee = self.employee({"valid_from": date(2021, 1, 1)})
         rates = lambda code, income: frappe._dict(rate=10.4, min_tax=0)

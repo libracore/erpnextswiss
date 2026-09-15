@@ -266,7 +266,7 @@ tr.sum td { font-weight: 600; background: var(--ground); }
       <span class="chip">7 custom fields</span>
       <span class="chip">3 doc hooks</span>
       <span class="chip">1 report · 1 patch</span>
-      <span class="chip">61 tests · 12 integration</span>
+      <span class="chip">65 tests · 13 integration</span>
     </div>
   </header>
 
@@ -305,7 +305,7 @@ tr.sum td { font-weight: 600; background: var(--ground); }
               <tr><td class="k">Changes (marriage, new tariff)</td><td class="col-old">recalculate by hand · book “Quellensteuer + / −”</td><td class="col-new">automatic delta per past month on current slip</td></tr>
               <tr><td class="k">Entry/exit · 13th · hourly</td><td class="col-old">manual</td><td class="col-new">KS45: 30 days · 90/180/360 days · 180 h / 2’160 h</td></tr>
               <tr><td class="k">Jahresmodell (FR GE TI VD VS)</td><td class="col-old">not supported</td><td class="col-new">annual rate-determining income · monthly or year-end correction</td></tr>
-              <tr><td class="k">Side jobs</td><td class="col-old">manual</td><td class="col-new">total degree · extrapolate 100% · other income · fixed rate · fixed amount</td></tr>
+              <tr><td class="k">Side jobs</td><td class="col-old">manual</td><td class="col-new">total degree · extrapolate 100% · other income · median value (no degree) · fixed rate · fixed amount</td></tr>
               <tr><td class="k">Audit trail</td><td class="col-old">amount only</td><td class="col-new">QST Slip Detail: income · RDI · rate · tariff revision · paid · delta</td></tr>
               <tr><td class="k">Declaration</td><td class="col-old">manual</td><td class="col-new">report per canton · commission · print template · XLSX</td></tr>
             </tbody>
@@ -648,6 +648,7 @@ tr.sum td { font-weight: 600; background: var(--ground); }
               <tr><td class="k">Total degree</td><td colspan="2">(periodic + 13th) × total degree ÷ own degree (Employment Degrees, required)</td><td>6.4 · 7.3.2</td></tr>
               <tr><td class="k">Extrapolate 100%</td><td colspan="2">(periodic + 13th) × 100 ÷ own degree (required)</td><td>6.4 · 7.3.2</td></tr>
               <tr><td class="k">Other income</td><td>+ monthly gross</td><td>+ monthly gross × 12</td><td>6.4</td></tr>
+              <tr><td class="k">Median value (no degree)</td><td>at least tariff C median value</td><td>at least median value × 12</td><td>6.4 · 7.3.2</td></tr>
               <tr><td class="k">Aperiodic</td><td>+ unconverted</td><td>+ Σ unconverted</td><td>6.6 · 7.3.1</td></tr>
               <tr><td class="k">Replacement income</td><td colspan="2">taxable · counts like periodic pay · hourly wages: not rate-determining</td><td>6.5 · 6.10 · 7.5.4</td></tr>
               <tr><td class="k">13th salary</td><td>amount ÷ worked days in period × 90/180/360 · frequency from settings</td><td>added when paid · setting on + 13th in structure: projected from January (1/12 of periodic), replaced by payouts</td><td>6.3 · 7.1</td></tr>
@@ -881,12 +882,12 @@ tr.sum td { font-weight: 600; background: var(--ground); }
                 <dt>Decide</dt><dd>review decision: implemented</dd>
               </dl></td></tr>
 
-              <tr class="item"><td><span class="pill p-limit">Limitation</span></td><td>side job without a determinable employment degree</td><td class="where">payroll.calculate</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl20" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>
+              <tr class="item"><td><span class="pill p-tested">Resolved</span></td><td>side job without a determinable employment degree · option “Median Value (No Degree)”</td><td class="where">payroll.calculate</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl20" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>
               <tr class="detail" id="cl20" hidden><td colspan="4"><dl class="explain">
-                <dt>What</dt><dd>“Total Degree” and “Extrapolate 100%” need an employment degree · jobs without one (e.g. flat-rate caretaker) have no option</dd>
-                <dt>Why</dt><dd>KS45 §6.4 ex. 9 / §7.3.2: the employer uses the canton’s tariff C median value as rate-determining income for such a job</dd>
-                <dt>Effect</dt><dd>median value is imported (QST Tariff › Median Value) but not used · workaround: fixed rate</dd>
-                <dt>Decide</dt><dd>add side-job option “Median value (no degree)”</dd>
+                <dt>What</dt><dd>side-job option “Median Value (No Degree)” for jobs without a determinable employment degree (e.g. flat-rate caretaker) · rate-determining income raised to the canton’s tariff C median value: monthly max(periodic + 13th, median), annual max(…, median × 12) · aperiodic pay added · no employment degree needed</dd>
+                <dt>Why</dt><dd>KS45 §6.4 ex. 9 / §7.3.2: the employer grosses up such a job to the amount the canton uses for tariff C (ex. 9: side job 500 → rate-determining 5’425) · median value from the tariff file (record 13, QST Tariff › Median Value)</dd>
+                <dt>Effect</dt><dd>jobs earning more than the median keep their own income · tariff without median value → error on the slip, submit blocked · tests: KS45 §6.4 ex. 9 (monthly), annual variant, above-median case, missing median, database test with a synthetic tariff</dd>
+                <dt>Decide</dt><dd>review decision: implemented</dd>
               </dl></td></tr>
 
               <tr class="item"><td><span class="pill p-tested">Tested</span></td><td>Payroll Entry &gt; 30 employees (background job)</td><td class="where">—</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl11" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>
@@ -920,9 +921,9 @@ tr.sum td { font-weight: 600; background: var(--ground); }
                 <dt>Decide</dt><dd>quick manual check in desk</dd>
               </dl></td></tr>
 
-              <tr class="item"><td><span class="pill p-scope">Scope</span></td><td>61 tests: 24 unit · 25 KS45 examples · 12 integration (rolled back)</td><td class="where">test_quellensteuer.py</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl15" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>
+              <tr class="item"><td><span class="pill p-scope">Scope</span></td><td>65 tests: 25 unit · 27 KS45 examples · 13 integration (rolled back)</td><td class="where">test_quellensteuer.py</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl15" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>
               <tr class="detail" id="cl15" hidden><td colspan="4"><dl class="explain">
-                <dt>What</dt><dd>test_quellensteuer: 24 unit tests, database and tariffs mocked · test_ks45: KS45 §6.3–6.6 income examples, §7.3–7.4 and §8.2–8.4 as month-by-month slip ledgers checked against every deduction and correction in the KS45 tables · test_quellensteuer_integration: 12 database tests, commits disabled, everything rolled back after the run</dd>
+                <dt>What</dt><dd>test_quellensteuer: 25 unit tests, database and tariffs mocked · test_ks45: KS45 §6.3–6.6 income examples, §7.3–7.4 and §8.2–8.4 as month-by-month slip ledgers checked against every deduction and correction in the KS45 tables · test_quellensteuer_integration: 13 database tests, commits disabled, everything rolled back after the run</dd>
                 <dt>Why</dt><dd>run with <code>bench --site … run-tests --module …</code> (<code>allow_tests</code> enabled on the dev site) · integration tests commit nothing</dd>
                 <dt>Effect</dt><dd>KS45 examples use the tariff rates printed in the examples · examples the module cannot calculate are listed as limitations above</dd>
                 <dt>Decide</dt><dd>—</dd>

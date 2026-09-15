@@ -28,12 +28,13 @@ def annual_rates(table):
     return lambda tariff, code, income: table[code, round(income * 12)]
 
 
-def run_ledger(test, staff, months, rates, models=None, changes=None, **settings):
+def run_ledger(test, staff, months, rates, models=None, changes=None, median=None, **settings):
     """Run months as consecutive salary slips and return (QST, correction) booked on each slip."""
     settings = frappe._dict({"enabled": 1, "go_live_date": date(2021, 1, 1), "prior_year_cutoff_month": 0, "min_correction": 0.05,
                              "rounding": 0.05, "thirteenth_frequency": "Yearly", "annual_model_correction": "Monthly",
                              "project_thirteenth": 1, "qst_component": "QST", "correction_component": "QST Correction", **settings})
-    tariffs = {canton: frappe._dict(name=canton, calculation_model=model) for canton, model in (models or {"ZH": "Annual"}).items()}
+    tariffs = {canton: frappe._dict(name=canton, calculation_model=model, median_value=median)
+               for canton, model in (models or {"ZH": "Annual"}).items()}
     paid, booked = {}, []
     for index, current in enumerate(months):
         if changes and index in changes:
@@ -112,6 +113,15 @@ class TestKS45MonthlyModel(unittest.TestCase):
                             models={"ZH": "Monthly"})
         self.assertEqual(booked, [(582.5, 0)])
 
+    def test_6_4_side_job_without_degree(self):
+        median = {"other_employment": "Median Value (No Degree)", "median_value": 5425}
+        self.assertAlmostEqual(monthly_rdi(month(date(2021, 4, 1), 500), median), 5425)
+        self.assertAlmostEqual(monthly_rdi(month(date(2021, 4, 1), 6000), median), 6000)
+        self.assertAlmostEqual(monthly_rdi(month(date(2021, 4, 1), 500, 1000), median), 6425)
+        booked = run_ledger(self, employee(record(other_employment="Median Value (No Degree)")), [month(date(2021, 4, 1), 500)],
+                            lambda tariff, code, income: {5425: 8.0}[round(income)], models={"ZH": "Monthly"}, median=5425)
+        self.assertEqual(booked, [(40, 0)])
+
 
 class TestKS45AnnualModel(unittest.TestCase):
     def test_7_3_1_constant_salary(self):
@@ -174,6 +184,11 @@ class TestKS45AnnualModel(unittest.TestCase):
         booked = run_ledger(self, employee(record()), months, annual_rates({("A0N", 66000): 10.5}), project_thirteenth=0)
         self.assertEqual(booked, [(577.5, 0)] * 12)
         self.assertEqual(sum(qst for qst, correction in booked), 6930)
+
+    def test_7_3_2_side_job_without_degree(self):
+        booked = run_ledger(self, employee(record(other_employment="Median Value (No Degree)")), months_2021([500] * 12),
+                            annual_rates({("A0N", 65100): 10.0}), median=5425, project_thirteenth=0)
+        self.assertEqual(booked, [(50, 0)] * 12)
 
 
 class TestKS45PersonalChanges(unittest.TestCase):

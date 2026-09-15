@@ -27,6 +27,7 @@ def tariff_text(canton, year, created, rates):
             lines.append("0601{0}{1:<10}{2}0101{3:09d}{4:09d} {5:02d}{6:09d}{7:05d}   ".format(
                 canton, code, year, round(income_from * 100), 5000, int(code[1]), 0, round(rate * 100)))
     lines.append("1201{0}PEL       {1}0101000000100999999999 0000000000000200   ".format(canton, year))
+    lines.append("1301{0}MED       {1}0101000000100999999999 0000054250000000   ".format(canton, year))
     return "\r\n".join(lines + ["99{0}{1}{2:08d}{3}".format(" " * 15, canton, len(lines) + 1, " " * 12)]) + "\r\n"
 
 
@@ -267,6 +268,11 @@ class TestQuellensteuerIntegration(FrappeTestCase):
         self.assertEqual(total, round(total, 2))
         self.assertAlmostEqual(commission, total * 0.02, 2)
         self.assertAlmostEqual(net, total - commission, 2)
+
+    def test_side_job_without_degree(self):
+        employee = self.employee("QST Median", {"valid_from": "2026-01-01", "canton": "ZZ", "other_employment": "Median Value (No Degree)"}, base=500)
+        slip = self.slip(employee.name, "2026-01-01")
+        self.assertEqual((self.amounts(slip), slip.qst_details[0].rate_determining_income, slip.qst_details[0].rate), ((40, 0), 5425, 8))
 
     def test_employee_validation(self):
         with self.assertRaises(frappe.ValidationError):

@@ -31,6 +31,7 @@ def days_30(start, end, joining=None, relieving=None):
 
 
 CROSS_BORDER_GROUPS = {"L": "A", "M": "B", "N": "C", "P": "H", "Q": "G", "R": "A", "S": "B", "T": "C", "U": "H", "V": "G", "SF": "A"}
+MEDIAN_MODE = "Median Value (No Degree)"
 
 
 def tariff_code(group, children=0, church_tax=False):
@@ -75,6 +76,8 @@ def monthly_rdi(month, record, own_degree=100):
         base = scale_to_degree((periodic * 30 / days if 0 < days < 30 else periodic) + thirteenth, record, own_degree)
         if record.get("other_employment") == "Other Income":
             base += record.get("other_income") or 0
+        elif record.get("other_employment") == MEDIAN_MODE:
+            base = max(base, record.get("median_value") or 0)
     return base + month["aperiodic"]
 
 
@@ -104,6 +107,8 @@ def annual_rdi(months, record, own_degree=100, full_year=False, project_thirteen
     base = scale_to_degree(base + thirteenth, record, own_degree)
     if record.get("other_employment") == "Other Income":
         base += (record.get("other_income") or 0) * 12
+    elif record.get("other_employment") == MEDIAN_MODE:
+        base = max(base, (record.get("median_value") or 0) * 12)
     return base + aperiodic
 
 

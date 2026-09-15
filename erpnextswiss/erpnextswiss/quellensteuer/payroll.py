@@ -5,7 +5,7 @@ from frappe import _
 from frappe.utils import cint, flt, fmt_money, getdate
 
 from erpnextswiss.erpnextswiss.quellensteuer.calculation import (
-    CROSS_BORDER_GROUPS, annual_rdi, days_30, month_end, monthly_rdi, tariff_code, tax_amount)
+    CROSS_BORDER_GROUPS, MEDIAN_MODE, annual_rdi, days_30, month_end, monthly_rdi, tariff_code, tax_amount)
 from erpnextswiss.erpnextswiss.quellensteuer.tariff import cache, get_bracket, get_tariff
 
 TYPE_KEYS = {"Periodic": "periodic", "Aperiodic": "aperiodic", "13th Salary": "thirteenth", "Replacement Income": "replacement"}
@@ -160,8 +160,9 @@ def receives_thirteenth(employee, period):
     return cache()[key]
 
 
-def record_values(record, settings):
-    return dict(record if isinstance(record, dict) else record.as_dict(), thirteenth_frequency=settings.thirteenth_frequency)
+def record_values(record, settings, tariff):
+    return dict(record if isinstance(record, dict) else record.as_dict(), thirteenth_frequency=settings.thirteenth_frequency,
+                median_value=flt(tariff.get("median_value")))
 
 
 def calculate(employee, months, current_period, settings):
@@ -192,6 +193,9 @@ def calculate(employee, months, current_period, settings):
             result["error"] = _("No Quellensteuer tariff for canton {0} in {1}").format(record.canton, period.year)
             continue
         result["model"] = result["tariff"].calculation_model
+        if record.other_employment == MEDIAN_MODE and not result["tariff"].get("median_value"):
+            result["error"] = _("No median value in tariff {0}, required for {1}").format(result["tariff"].name, _(MEDIAN_MODE))
+            continue
         if result["model"] == "Annual":
             year_periods = [p for p in sorted(months) if p.year == period.year and p <= max(current_period, period)
                             and getattr(get_record(employee, p), "canton", None) == record.canton]
@@ -200,11 +204,11 @@ def calculate(employee, months, current_period, settings):
                          and (not month["relieving"] or month["relieving"] >= date(period.year, 12, 31))
                          and same_canton_all_year(employee, period.year, record.canton))
             project = bool(settings.project_thirteenth) and receives_thirteenth(employee.name, year_periods[-1])
-            result["rdi"] = annual_rdi([months[p] for p in year_periods], record_values(last_record, settings),
+            result["rdi"] = annual_rdi([months[p] for p in year_periods], record_values(last_record, settings, result["tariff"]),
                                        own_degree(employee, year_periods[-1]) or 100, full_year, project)
             income = result["rdi"] / 12
         else:
-            result["rdi"] = income = monthly_rdi(month, record_values(record, settings), result["own_degree"] or 100)
+            result["rdi"] = income = monthly_rdi(month, record_values(record, settings, result["tariff"]), result["own_degree"] or 100)
         bracket = get_bracket(result["tariff"].name, result["code"], income)
         if not bracket:
             result["error"] = _("Tariff code {0} not found in {1}").format(result["code"], result["tariff"].name)

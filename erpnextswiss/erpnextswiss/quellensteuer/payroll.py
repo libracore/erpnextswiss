@@ -121,6 +121,18 @@ def own_degree(employee, period):
     return flt(max(degrees, key=lambda d: getdate(d.date)).degree) if degrees else 100
 
 
+def receives_thirteenth(employee, period):
+    """True if the employee's salary structure in a month contains a 13th salary component."""
+    key = ("thirteenth", employee, period)
+    if key not in cache():
+        structure = frappe.db.get_value("Salary Structure Assignment", {"employee": employee, "docstatus": 1, "from_date": ("<=", month_end(period))},
+                                        "salary_structure", order_by="from_date desc")
+        components = [name for name, qst_type in component_types().items() if qst_type == "13th Salary"]
+        cache()[key] = bool(structure and components and frappe.db.exists("Salary Detail", {
+            "parenttype": "Salary Structure", "parent": structure, "parentfield": "earnings", "salary_component": ("in", components)}))
+    return cache()[key]
+
+
 def record_values(record, settings):
     return dict(record if isinstance(record, dict) else record.as_dict(), thirteenth_frequency=settings.thirteenth_frequency)
 
@@ -154,8 +166,9 @@ def calculate(employee, months, current_period, settings):
                             and getattr(get_record(employee, p), "canton", None) == record.canton]
             last_record = get_record(employee, year_periods[-1])
             full_year = month["joining"] <= date(period.year, 1, 1) and (not month["relieving"] or month["relieving"] >= date(period.year, 12, 31))
+            project = bool(settings.project_thirteenth) and receives_thirteenth(employee.name, year_periods[-1])
             result["rdi"] = annual_rdi([months[p] for p in year_periods], record_values(last_record, settings),
-                                       own_degree(employee, year_periods[-1]), full_year)
+                                       own_degree(employee, year_periods[-1]), full_year, project)
             income = result["rdi"] / 12
         else:
             result["rdi"] = income = monthly_rdi(month, record_values(record, settings), result["own_degree"])

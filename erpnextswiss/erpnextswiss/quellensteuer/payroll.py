@@ -232,7 +232,7 @@ def detail_row(result, month, period, paid, delta, entry_type):
         "model": result["model"],
         "tariff_code": result["code"],
         "qst_tariff": result["tariff"].name if result["tariff"] else None,
-        "reason": (_("No cross-border certificate") if result.get("fallback") else record.other_employment if record.other_employment != "None" else None)
+        "reason": (_("No cross-border certificate") if result.get("fallback") else _(record.other_employment) if record.other_employment != "None" else None)
         if record else _("Not liable"),
         "periodic": month["periodic"],
         "aperiodic": month["aperiodic"],

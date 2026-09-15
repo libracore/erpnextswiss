@@ -88,6 +88,16 @@ class TestCalculation(unittest.TestCase):
         self.assertAlmostEqual(annual_rdi([month(date(2021, 1, 1), 4550, hours=130)], {"hourly_wage": 1}), 75600)
         self.assertAlmostEqual(annual_rdi([month(date(2021, 1, 1), 2000)], {"other_employment": "Extrapolate 100%"}, 70, True), 34285.71, 2)
 
+    def test_annual_rdi_projected_thirteenth(self):
+        yearly, half = {"thirteenth_frequency": "Yearly"}, {"thirteenth_frequency": "Half-yearly"}
+        self.assertAlmostEqual(annual_rdi([month(date(2021, 1, 1), 5000)], yearly, full_year=True, project_thirteenth=True), 65000)
+        december = [month(date(2021, m, 1), 5000, thirteenth=5000 if m == 12 else 0) for m in range(1, 13)]
+        self.assertAlmostEqual(annual_rdi(december, yearly, full_year=True, project_thirteenth=True), 65000)
+        june = [month(date(2021, m, 1), 5000, thirteenth=2500 if m == 6 else 0) for m in range(1, 7)]
+        self.assertAlmostEqual(annual_rdi(june[:5], half, full_year=True, project_thirteenth=True), 65000)
+        self.assertAlmostEqual(annual_rdi(june, half, full_year=True, project_thirteenth=True), 65000)
+        self.assertAlmostEqual(annual_rdi(june, half, full_year=True), 62500)
+
     def test_tax_and_code(self):
         self.assertEqual(tax_amount(5000, 10.9), 545)
         self.assertEqual(tax_amount(100, 1, 20), 20)
@@ -103,12 +113,24 @@ class TestPayroll(unittest.TestCase):
                             qst_records=[frappe._dict({"liable": 1, "canton": "ZZ", "tariff_group": "A", "children": 0, "church_tax": 0,
                                                        "other_employment": "None", **record}) for record in records])
 
-    def run_calculation(self, employee, salaries, model, rates):
+    def run_calculation(self, employee, salaries, model, rates, settings=None):
         tariff = frappe._dict(name="QST-ZZ-2021-20201201", calculation_model=model)
         months = {date(2021, i + 1, 1): month(date(2021, i + 1, 1), salary) for i, salary in enumerate(salaries)}
         with patch.object(payroll, "get_tariff", return_value=tariff), \
                 patch.object(payroll, "get_bracket", side_effect=lambda t, code, income: rates(code, income)):
-            return payroll.calculate(employee, months, max(months), self.settings)
+            return payroll.calculate(employee, months, max(months), settings or self.settings)
+
+    def test_annual_model_projects_thirteenth(self):
+        employee = self.employee({"valid_from": date(2021, 1, 1)})
+        rates = lambda code, income: frappe._dict(rate=10.4, min_tax=0)
+        settings = frappe._dict(self.settings, project_thirteenth=1)
+        with patch.object(payroll, "receives_thirteenth", return_value=True):
+            results = self.run_calculation(employee, [5000], "Annual", rates, settings)
+        self.assertAlmostEqual(results[date(2021, 1, 1)]["rdi"], 65000)
+        self.assertEqual(results[date(2021, 1, 1)]["tax"], 520)
+        with patch.object(payroll, "receives_thirteenth", return_value=False):
+            results = self.run_calculation(employee, [5000], "Annual", rates, settings)
+        self.assertAlmostEqual(results[date(2021, 1, 1)]["rdi"], 60000)
 
     def test_annual_model_recalculates_year(self):
         rates = lambda code, income: frappe._dict(rate={5000: 9.5, 5667: 10.9, 6000: 11.5}[round(income)], min_tax=0)

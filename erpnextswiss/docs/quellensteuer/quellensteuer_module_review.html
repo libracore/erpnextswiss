@@ -265,7 +265,7 @@ tr.sum td { font-weight: 600; background: var(--ground); }
       <span class="chip">7 custom fields</span>
       <span class="chip">3 doc hooks</span>
       <span class="chip">1 report · 1 patch</span>
-      <span class="chip">22 unit tests</span>
+      <span class="chip">24 unit tests</span>
     </div>
   </header>
 
@@ -323,6 +323,7 @@ tr.sum td { font-weight: 600; background: var(--ground); }
               <li>Monatsmodell · Jahresmodell</li>
               <li>monthly &amp; hourly wages</li>
               <li>entry/exit · 13th salary · side jobs</li>
+              <li>cross-border DE (L–Q) · IT (R–V) · FR special agreement (SFN) · FL (not liable)</li>
               <li>retro corrections · same year (+ prior year until cutoff month)</li>
               <li>declaration report + sample print</li>
             </ul>
@@ -331,7 +332,7 @@ tr.sum td { font-weight: 600; background: var(--ground); }
             <h3>Out</h3>
             <ul class="kw">
               <li>cantonal forms (customer adapts sample)</li>
-              <li>Grenzgänger · codes R–V skipped at import</li>
+              <li>work days abroad (KS45 §6.7 / §7.5.1)</li>
               <li>work days abroad</li>
               <li>ELM/Swissdec transmission (PAY-001)</li>
               <li>posting of commission</li>
@@ -449,7 +450,7 @@ tr.sum td { font-weight: 600; background: var(--ground); }
               <tr><td class="k">QST Tariff Import</td><td>log · <span class="mono">QST-IMP-#####</span></td><td><code>file</code> <code>status</code> Pending/Queued/Completed/Failed · <code>log</code> · button “Import”</td></tr>
               <tr><td class="k">QST Tariff</td><td>read-only · <span class="mono">QST-ZH-2026-20251208</span></td><td><code>canton</code> <code>year</code> <code>valid_from</code> <code>creation_date</code> <code>calculation_model</code> <code>content_hash</code> <code>record_count</code> <code>rate_count</code> <code>commission_pel/ppa/psp</code> <code>median_value</code> <code>first_imported_on</code></td></tr>
               <tr><td class="k">QST Tariff Rate</td><td>read-only · autoincrement</td><td><code>tariff</code> <code>record_type</code> 06/11 · <code>code</code> <code>income_from</code> <code>step</code> <code>children</code> <code>min_tax</code> <code>rate</code></td></tr>
-              <tr><td class="k">QST Employee Record</td><td>child of Employee</td><td><code>valid_from</code> <code>liable</code> <code>canton</code> <code>municipality</code> <code>tariff_group</code> <code>children</code> <code>church_tax</code> → <code>tariff_code</code> · <code>hourly_wage</code> · <code>other_employment</code> + <code>total_degree</code> / <code>other_income</code> / <code>fixed_rate</code> / <code>fixed_amount</code></td></tr>
+              <tr><td class="k">QST Employee Record</td><td>child of Employee</td><td><code>valid_from</code> <code>liable</code> <code>canton</code> <code>municipality</code> <code>tariff_group</code> <code>children</code> <code>church_tax</code> → <code>tariff_code</code> · <code>cross_border_valid_until</code> · <code>hourly_wage</code> · <code>other_employment</code> + <code>total_degree</code> / <code>other_income</code> / <code>fixed_rate</code> / <code>fixed_amount</code></td></tr>
               <tr><td class="k">QST Slip Detail</td><td>child of Salary Slip · read-only</td><td><code>period</code> <code>entry_type</code> Current/Correction · <code>tariff_code</code> <code>qst_tariff</code> · <code>periodic</code> <code>aperiodic</code> <code>thirteenth</code> <code>days</code> <code>hours</code> <code>own_degree</code> · <code>rate_determining_income</code> <code>rate</code> · <code>expected_tax</code> <code>previously_deducted</code> <code>tax</code></td></tr>
             </tbody>
           </table>
@@ -563,7 +564,7 @@ tr.sum td { font-weight: 600; background: var(--ground); }
           </div>
           <div class="grid2">
             <div class="code-anatomy" aria-label="Tariff code anatomy">
-              <span class="part"><b>B</b><small>group A B C D E G H L M N P Q</small></span>
+              <span class="part"><b>B</b><small>group A–H · L–Q · R–V · SF</small></span>
               <span class="part"><b>2</b><small>children 0–9</small></span>
               <span class="part"><b>N</b><small>church Y/N</small></span>
             </div>
@@ -571,7 +572,8 @@ tr.sum td { font-weight: 600; background: var(--ground); }
               <li>00 header · creation date = revision marker</li>
               <li>11 HEN/MEN/NON… · 12 PEL/PPA/PSP · 13 MED</li>
               <li>99 trailer · count incl. 00 + 99</li>
-              <li>G/Q → always <span class="mono">x9N</span> · missing Y/N → other variant used</li>
+              <li>G/Q/V → always <span class="mono">x9N</span> · SF → <span class="mono">SFN</span> · missing Y/N → other variant used</li>
+              <li>L–Q max. 4.5% (flat or capped progressive, per canton) · R–V 80% of ordinary · SFN 0% (already in the tariff rates)</li>
               <li>tx 02/03 (mutation/deletion) → rejected</li>
             </ul>
           </div>
@@ -842,12 +844,13 @@ tr.sum td { font-weight: 600; background: var(--ground); }
                 <dt>Decide</dt><dd>—</dd>
               </dl></td></tr>
 
-              <tr class="item"><td><span class="pill p-limit">Limitation</span></td><td>codes L M N P Q (cross-border DE) imported and selectable · R–V skipped</td><td class="where">parser.parse · QST Employee Record</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl10" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>
+              <tr class="item"><td><span class="pill p-limit">Limitation</span></td><td>cross-border DE / IT / FR via tariff codes + certificate · FL not liable · work days abroad excluded</td><td class="where">parser.parse · QST Employee Record</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl10" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>
               <tr class="detail" id="cl10" hidden><td colspan="4"><dl class="explain">
-                <dt>What</dt><dd>tariff groups L M N P Q are stored and offered in the employee record · only Italian codes R–V are skipped</dd>
-                <dt>Why</dt><dd>import filtered only the codes named as excluded</dd>
-                <dt>Effect</dt><dd>choosing L–Q calculates like a normal tariff, without cross-border rules → possibly wrong tax for Grenzgänger</dd>
-                <dt>Decide</dt><dd>remove L–Q from the selection (and skip at import), or keep for a later cross-border phase</dd>
+                <dt>What</dt><dd>all codes imported · tariff groups L–Q (DE), R–V (IT, TI/GR/VS), SF (FR special agreement) selectable · “Cross-border certificate valid until” per record · without a certificate covering the month: ordinary group (L/R→A, M/S→B, N/T→C, P/U→H, Q/V→G, SF→A), orange message, reason on detail row</dd>
+                <dt>Why</dt><dd>review decision · rates already in ESTV tariffs: L–Q max. 4.5% (flat in e.g. ZH/GE, capped progressive in e.g. BS/TG), R–V 80% of ordinary (TI 2026: R0N 6.7% vs A0N 8.4%), SFN 0% · condition: Gre-1/Gre-2 per calendar year, cantonal tariff confirmation, form 2041-AS</dd>
+                <dt>Effect</dt><dd>&gt; 60 non-return days (DE): canton recalculates after year-end from Gre-3 · 20 km / daily return / 25% home office (IT): confirmed by the canton · old Italian cross-border workers and Austria: ordinary tariffs · SF outside the eight agreement cantons: code not in tariff → slip blocked</dd>
+                <dt>Liechtenstein</dt><dd>DBA CH-FL: commuters with ≤ 45 non-return days at a private employer are taxed only in Liechtenstein → QST record not liable · public-law employers or &gt; 45 days → ordinary tariffs · no ESTV code needed · employer form for the Liechtenstein tax authority outside the module</dd>
+                <dt>Decide</dt><dd>work days abroad for non-residents remain excluded</dd>
               </dl></td></tr>
 
               <tr class="item"><td><span class="pill p-untested">Not tested</span></td><td>Payroll Entry &gt; 30 employees (background job)</td><td class="where">—</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl11" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>
@@ -883,7 +886,7 @@ tr.sum td { font-weight: 600; background: var(--ground); }
 
               <tr class="item"><td><span class="pill p-scope">Scope</span></td><td>tests run via bench console (site has <code>allow_tests</code> off)</td><td class="where">test_quellensteuer.py</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl15" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>
               <tr class="detail" id="cl15" hidden><td colspan="4"><dl class="explain">
-                <dt>What</dt><dd>22 unit tests (plain unittest, database and tariffs mocked), incl. slip validation blocking on a missing degree or earlier-month tariff, corrections skipped after a later slip, KS45 §8 canton changes and blocked concurrent imports · end-to-end checks were one-off scripts, not in the repo</dd>
+                <dt>What</dt><dd>24 unit tests (plain unittest, database and tariffs mocked), incl. slip validation blocking on a missing degree or earlier-month tariff, corrections skipped after a later slip, KS45 §8 canton changes, blocked concurrent imports and cross-border certificate fallback · end-to-end checks were one-off scripts, not in the repo</dd>
                 <dt>Why</dt><dd><code>bench run-tests</code> is blocked while <code>allow_tests</code> is off</dd>
                 <dt>Effect</dt><dd>no automated tests for import and payroll against a database</dd>
                 <dt>Decide</dt><dd>enable tests on the dev site and add integration tests</dd>

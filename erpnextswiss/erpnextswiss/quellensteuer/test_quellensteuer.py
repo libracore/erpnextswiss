@@ -139,21 +139,37 @@ class TestPayroll(unittest.TestCase):
                 patch.object(payroll, "get_bracket", side_effect=lambda t, code, income: rates(code, income)):
             return payroll.calculate(employee, months, max(months), settings or self.settings)
 
-    def validate_slip(self, employee, salaries, paid, tariffs, go_live=date(2021, 1, 1)):
+    def validate_slip(self, employee, salaries, paid, tariffs, go_live=date(2021, 1, 1), later_slip=None):
         settings = frappe._dict(self.settings, enabled=1, go_live_date=go_live, prior_year_cutoff_month=0, min_correction=0.05,
                                 qst_component="QST", correction_component="QST Correction", annual_model_correction="Monthly")
         months = {date(2021, i + 1, 1): month(date(2021, i + 1, 1), salary) for i, salary in enumerate(salaries)}
         slip = SlipStub(employee="EMP-TEST", start_date=max(months), end_date=month_end(max(months)))
         deductions = {}
         with patch.object(frappe, "get_cached_doc", return_value=settings), patch.object(frappe, "get_doc", return_value=employee), \
-                patch.object(frappe, "msgprint"), patch.object(frappe.db, "exists", return_value=None), \
+                patch.object(frappe, "msgprint") as msgprint, patch.object(frappe.db, "exists", return_value=later_slip), \
                 patch.object(payroll, "collect_months", return_value=(months, set())), \
                 patch.object(payroll, "get_paid", return_value=paid), \
                 patch.object(payroll, "get_tariff", side_effect=lambda canton, period: tariffs.get(period)), \
                 patch.object(payroll, "get_bracket", return_value=frappe._dict(rate=10.4, min_tax=0)), \
                 patch.object(payroll, "set_deduction", side_effect=lambda doc, component, amount: deductions.__setitem__(component, amount)):
             payroll.salary_slip_validate(slip)
+        slip.messages = msgprint.call_args_list
         return slip, deductions
+
+    def test_later_slip_skips_corrections_with_message(self):
+        employee = self.employee({"valid_from": date(2021, 1, 1)})
+        tariff = frappe._dict(name="QST-ZZ-2021-20201201", calculation_model="Monthly")
+        tariffs = {date(2021, m, 1): tariff for m in (1, 2, 3)}
+        paid = {date(2021, 1, 1): 500, date(2021, 2, 1): 520}
+        slip, deductions = self.validate_slip(employee, [5000] * 3, paid, tariffs, later_slip="Sal Slip/EMP-TEST/00004")
+        self.assertEqual((deductions["QST"], deductions["QST Correction"]), (520, 0))
+        self.assertEqual([row["period"] for row in slip.qst_details], [date(2021, 3, 1)])
+        self.assertEqual(len(slip.messages), 1)
+        self.assertIn("later month", slip.messages[0].args[0])
+        self.assertEqual(slip.messages[0].kwargs["indicator"], "orange")
+        slip, deductions = self.validate_slip(employee, [5000] * 3, paid, tariffs)
+        self.assertEqual((deductions["QST"], deductions["QST Correction"]), (520, 20))
+        self.assertEqual(slip.messages, [])
 
     def test_validate_blocks_missing_degree_in_current_month(self):
         employee = self.employee({"valid_from": date(2021, 1, 1), "other_employment": "Extrapolate 100%"})

@@ -265,7 +265,7 @@ tr.sum td { font-weight: 600; background: var(--ground); }
       <span class="chip">7 custom fields</span>
       <span class="chip">3 doc hooks</span>
       <span class="chip">1 report · 1 patch</span>
-      <span class="chip">19 unit tests</span>
+      <span class="chip">20 unit tests</span>
     </div>
   </header>
 
@@ -684,7 +684,7 @@ tr.sum td { font-weight: 600; background: var(--ground); }
             <ul class="kw">
               <li>month before <code>go_live_date</code></li>
               <li>month with <code>qst_skip</code> slip</li>
-              <li>a later month already submitted (warning-free skip)</li>
+              <li>a later month already submitted · orange message with pending amount</li>
               <li>|delta| &lt; <code>min_correction</code></li>
               <li>Jahresmodell + Year-end mode: only December or exit slip</li>
             </ul>
@@ -826,12 +826,12 @@ tr.sum td { font-weight: 600; background: var(--ground); }
                 <dt>Decide</dt><dd>moving back into an earlier canton within the same year: both stints counted together (not covered by KS45) · acceptable?</dd>
               </dl></td></tr>
 
-              <tr class="item"><td><span class="pill p-limit">Limitation</span></td><td>later month submitted → corrections silently skipped</td><td class="where">payroll.salary_slip_validate</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl8" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>
+              <tr class="item"><td><span class="pill p-limit">Limitation</span></td><td>later month submitted → corrections skipped · message shows pending amount</td><td class="where">payroll.salary_slip_validate</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl8" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>
               <tr class="detail" id="cl8" hidden><td colspan="4"><dl class="explain">
-                <dt>What</dt><dd>if any slip of a later month is submitted, this slip gets its current-month tax but no correction rows</dd>
+                <dt>What</dt><dd>if any slip of a later month is submitted, this slip gets its current-month tax but no correction rows · corrections still calculated</dd>
                 <dt>Why</dt><dd>corrections belong on the newest slip · avoids booking the same delta twice</dd>
-                <dt>Effect</dt><dd>re-creating a cancelled older slip shows no corrections and no message · pending deltas appear on the next new slip</dd>
-                <dt>Decide</dt><dd>add a warning message on the slip</dd>
+                <dt>Effect</dt><dd>review decision: orange message dialog “corrections of CHF … not applied … made on the newest salary slip”, only if corrections are pending · errors in those earlier months don’t block this slip · pending deltas appear on the next new slip</dd>
+                <dt>Decide</dt><dd>—</dd>
               </dl></td></tr>
 
               <tr class="item"><td><span class="pill p-limit">Limitation</span></td><td>concurrent imports could clash on reserved rate ids</td><td class="where">tariff.store</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl9" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>
@@ -883,7 +883,7 @@ tr.sum td { font-weight: 600; background: var(--ground); }
 
               <tr class="item"><td><span class="pill p-scope">Scope</span></td><td>tests run via bench console (site has <code>allow_tests</code> off)</td><td class="where">test_quellensteuer.py</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl15" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>
               <tr class="detail" id="cl15" hidden><td colspan="4"><dl class="explain">
-                <dt>What</dt><dd>19 unit tests (plain unittest, database and tariffs mocked), incl. slip validation blocking on a missing degree or earlier-month tariff and KS45 §8 canton changes · end-to-end checks were one-off scripts, not in the repo</dd>
+                <dt>What</dt><dd>20 unit tests (plain unittest, database and tariffs mocked), incl. slip validation blocking on a missing degree or earlier-month tariff, corrections skipped after a later slip, and KS45 §8 canton changes · end-to-end checks were one-off scripts, not in the repo</dd>
                 <dt>Why</dt><dd><code>bench run-tests</code> is blocked while <code>allow_tests</code> is off</dd>
                 <dt>Effect</dt><dd>no automated tests for import and payroll against a database</dd>
                 <dt>Decide</dt><dd>enable tests on the dev site and add integration tests</dd>

@@ -2,7 +2,7 @@ from datetime import date
 
 import frappe
 from frappe import _
-from frappe.utils import cint, flt, getdate
+from frappe.utils import cint, flt, fmt_money, getdate
 
 from erpnextswiss.erpnextswiss.quellensteuer.calculation import (
     annual_rdi, days_30, month_end, monthly_rdi, tariff_code, tax_amount)
@@ -25,12 +25,11 @@ def salary_slip_validate(doc, method=None):
     months, skipped = collect_months(doc, employee, scope_start, period)
     paid = get_paid(doc, scope_start)
     locked = skipped | {p for p in months if p < getdate(settings.go_live_date)}
-    if frappe.db.exists("Salary Slip", {"employee": doc.employee, "docstatus": 1, "start_date": (">", month_end(period))}):
-        locked |= set(months)
-    details, current, correction = [], 0, 0
+    later_slip = frappe.db.exists("Salary Slip", {"employee": doc.employee, "docstatus": 1, "start_date": (">", month_end(period))})
+    details, current, correction, pending = [], 0, 0, 0
     for month_period, result in sorted(calculate(employee, months, period, settings).items()):
         delta = flt(result["tax"] - paid.get(month_period, 0), 2)
-        if result["error"] and (month_period == period or month_period not in locked):
+        if result["error"] and (month_period == period or not (later_slip or month_period in locked)):
             doc.flags.qst_error = doc.flags.qst_error or result["error"]
             frappe.msgprint(result["error"], title=_("Quellensteuer"), indicator="red")
             if month_period != period:
@@ -40,12 +39,19 @@ def salary_slip_validate(doc, method=None):
         elif (month_period in locked or abs(delta) < flt(settings.min_correction)
               or not correction_allowed(result, doc, employee, settings)):
             continue
+        elif later_slip:
+            pending += delta
+            continue
         else:
             correction += delta
         if month_period == period and not (result["record"] or delta):
             continue
         details.append(detail_row(result, months[month_period], month_period, paid.get(month_period, 0), delta,
                                   "Current" if month_period == period else "Correction"))
+    if pending:
+        frappe.msgprint(_("Quellensteuer corrections of {0} for earlier months were not applied because a salary slip for a later month is already submitted. "
+                          "Corrections are made on the newest salary slip.").format(fmt_money(flt(pending, 2), currency=doc.get("currency"))),
+                        title=_("Quellensteuer"), indicator="orange")
     doc.set("qst_details", details)
     set_deduction(doc, settings.qst_component, current)
     set_deduction(doc, settings.correction_component, flt(correction, 2))

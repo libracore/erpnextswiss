@@ -57,13 +57,9 @@ def scale_to_degree(amount, record, own_degree):
     return amount
 
 
-def periodic_income(month, record):
-    return month["periodic"] + (month["thirteenth"] if record.get("thirteenth_frequency") == "Monthly" else 0)
-
-
 def monthly_rdi(month, record, own_degree=100):
     """Rate-determining monthly income under the monthly model (KS45 section 6)."""
-    periodic = periodic_income(month, record)
+    periodic = month["periodic"]
     if record.get("hourly_wage") and month.get("hours"):
         base = periodic / month["hours"] * 180
     else:
@@ -71,18 +67,15 @@ def monthly_rdi(month, record, own_degree=100):
         base = scale_to_degree(periodic * 30 / days if 0 < days < 30 else periodic, record, own_degree)
         if record.get("other_employment") == "Other Income":
             base += record.get("other_income") or 0
-    thirteenth = 0 if record.get("thirteenth_frequency") == "Monthly" else thirteenth_rdi(
+    return base + month["aperiodic"] + thirteenth_rdi(
         month["thirteenth"], record.get("thirteenth_frequency") or "Yearly", month_end(month["period"]),
         month.get("joining"), month.get("relieving"))
-    return base + month["aperiodic"] + thirteenth
 
 
 def annual_rdi(months, record, own_degree=100, full_year=False):
     """Rate-determining annual income under the annual model from the months so far (KS45 section 7)."""
-    periodic = [periodic_income(month, record) for month in months]
-    irregular = sum(month["aperiodic"] for month in months)
-    if record.get("thirteenth_frequency") != "Monthly":
-        irregular += sum(month["thirteenth"] for month in months)
+    periodic = [month["periodic"] for month in months]
+    irregular = sum(month["aperiodic"] + month["thirteenth"] for month in months)
     hours = sum(month.get("hours") or 0 for month in months)
     if record.get("hourly_wage") and hours:
         return sum(periodic) / hours * 2160 + irregular

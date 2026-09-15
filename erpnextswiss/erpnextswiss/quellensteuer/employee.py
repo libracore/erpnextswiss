@@ -1,9 +1,10 @@
 import frappe
 from frappe import _
-from frappe.utils import getdate, today
+from frappe.utils import flt, getdate, today
 
 from erpnextswiss.erpnextswiss.quellensteuer import is_enabled
 from erpnextswiss.erpnextswiss.quellensteuer.calculation import tariff_code
+from erpnextswiss.erpnextswiss.quellensteuer.payroll import DEGREE_MODES, own_degree
 from erpnextswiss.erpnextswiss.quellensteuer.tariff import get_tariff, has_code
 
 
@@ -25,6 +26,13 @@ def validate_employee(doc, method=None):
         if not row.canton or not row.tariff_group:
             frappe.throw(_("Quellensteuer row {0}: canton and tariff group are required").format(row.idx))
         row.tariff_code = tariff_code(row.tariff_group, row.children, row.church_tax)
+        if row.other_employment in DEGREE_MODES:
+            degree = own_degree(doc, valid_from)
+            if not degree:
+                frappe.throw(_("Quellensteuer row {0}: {1} requires an employment degree (Employment Degrees) in {2:%m.%Y}").format(
+                    row.idx, _(row.other_employment), valid_from))
+            if row.other_employment == "Total Degree" and flt(row.total_degree) < degree:
+                frappe.throw(_("Quellensteuer row {0}: total employment degree must be at least {1}%").format(row.idx, degree))
         if not frappe.db.get_value("QST Canton", row.canton, "import_tariffs"):
             frappe.db.set_value("QST Canton", row.canton, "import_tariffs", 1)
         tariff = get_tariff(row.canton, max(valid_from, getdate(today()).replace(month=1, day=1)))

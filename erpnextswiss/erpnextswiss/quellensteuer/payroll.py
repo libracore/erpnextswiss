@@ -10,6 +10,7 @@ from erpnextswiss.erpnextswiss.quellensteuer.tariff import cache, get_bracket, g
 
 TYPE_KEYS = {"Periodic": "periodic", "Aperiodic": "aperiodic", "13th Salary": "thirteenth"}
 SUM_KEYS = ("periodic", "aperiodic", "thirteenth", "hours")
+DEGREE_MODES = ("Total Degree", "Extrapolate 100%")
 
 
 def salary_slip_validate(doc, method=None):
@@ -29,11 +30,13 @@ def salary_slip_validate(doc, method=None):
     details, current, correction = [], 0, 0
     for month_period, result in sorted(calculate(employee, months, period, settings).items()):
         delta = flt(result["tax"] - paid.get(month_period, 0), 2)
+        if result["error"] and (month_period == period or month_period not in locked):
+            doc.flags.qst_error = doc.flags.qst_error or result["error"]
+            frappe.msgprint(result["error"], title=_("Quellensteuer"), indicator="red")
+            if month_period != period:
+                continue
         if month_period == period:
             current = delta
-            if result["error"]:
-                doc.flags.qst_error = result["error"]
-                frappe.msgprint(result["error"], title=_("Quellensteuer"), indicator="red")
         elif (month_period in locked or abs(delta) < flt(settings.min_correction)
               or not correction_allowed(result, doc, employee, settings)):
             continue
@@ -118,7 +121,7 @@ def get_record(employee, period):
 
 def own_degree(employee, period):
     degrees = [d for d in employee.get("employment_degrees") or [] if getdate(d.date) <= month_end(period)]
-    return flt(max(degrees, key=lambda d: getdate(d.date)).degree) if degrees else 100
+    return flt(max(degrees, key=lambda d: getdate(d.date)).degree) if degrees else None
 
 
 def receives_thirteenth(employee, period):
@@ -156,6 +159,9 @@ def calculate(employee, months, current_period, settings):
         if record.other_employment == "Fixed Amount":
             result["tax"] = flt(record.fixed_amount) if taxable else 0
             continue
+        if record.other_employment in DEGREE_MODES and not result["own_degree"]:
+            result["error"] = _("No employment degree for {0} in {1:%m.%Y}, required for {2}").format(employee.name, period, _(record.other_employment))
+            continue
         result["tariff"] = get_tariff(record.canton, period)
         if not result["tariff"]:
             result["error"] = _("No Quellensteuer tariff for canton {0} in {1}").format(record.canton, period.year)
@@ -168,10 +174,10 @@ def calculate(employee, months, current_period, settings):
             full_year = month["joining"] <= date(period.year, 1, 1) and (not month["relieving"] or month["relieving"] >= date(period.year, 12, 31))
             project = bool(settings.project_thirteenth) and receives_thirteenth(employee.name, year_periods[-1])
             result["rdi"] = annual_rdi([months[p] for p in year_periods], record_values(last_record, settings),
-                                       own_degree(employee, year_periods[-1]), full_year, project)
+                                       own_degree(employee, year_periods[-1]) or 100, full_year, project)
             income = result["rdi"] / 12
         else:
-            result["rdi"] = income = monthly_rdi(month, record_values(record, settings), result["own_degree"])
+            result["rdi"] = income = monthly_rdi(month, record_values(record, settings), result["own_degree"] or 100)
         bracket = get_bracket(result["tariff"].name, result["code"], income)
         if not bracket:
             result["error"] = _("Tariff code {0} not found in {1}").format(result["code"], result["tariff"].name)

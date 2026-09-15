@@ -208,6 +208,7 @@ svg.diagram { display: block; width: 100%; min-width: 720px; height: auto; color
 .p-untested { background: var(--warn-soft); color: var(--warn); }
 .p-limit { background: var(--accent-soft); color: var(--accent); }
 .p-scope { background: var(--old-soft); color: var(--old); }
+.p-tested { background: var(--new-soft); color: var(--new); }
 .pos { color: var(--new); }
 .neg { color: var(--accent); }
 tr.sum td { font-weight: 600; background: var(--ground); }
@@ -265,7 +266,7 @@ tr.sum td { font-weight: 600; background: var(--ground); }
       <span class="chip">7 custom fields</span>
       <span class="chip">3 doc hooks</span>
       <span class="chip">1 report · 1 patch</span>
-      <span class="chip">24 unit tests</span>
+      <span class="chip">58 tests · 12 integration</span>
     </div>
   </header>
 
@@ -358,6 +359,8 @@ tr.sum td { font-weight: 600; background: var(--ground); }
               <tr><td class="mono">erpnextswiss/quellensteuer/payroll.py</td><td>slip hook · month snapshots · ledger · corrections</td></tr>
               <tr><td class="mono">erpnextswiss/quellensteuer/employee.py</td><td>record validation · tariff code · canton import flag</td></tr>
               <tr><td class="mono">erpnextswiss/quellensteuer/test_quellensteuer.py</td><td>parser · calculation · payroll (mocked tariffs)</td></tr>
+              <tr><td class="mono">erpnextswiss/quellensteuer/test_ks45.py</td><td>KS45 §6–§8 examples · annual examples as month-by-month slip ledgers</td></tr>
+              <tr><td class="mono">erpnextswiss/quellensteuer/test_quellensteuer_integration.py</td><td>database end-to-end · rolled back after the run</td></tr>
               <tr><td class="mono">erpnextswiss/doctype/qst_*</td><td>8 doctypes</td></tr>
               <tr><td class="mono">erpnextswiss/report/quellensteuer_abrechnung</td><td>report · print template</td></tr>
               <tr><td class="mono">erpnextswiss/custom/{employee, salary_slip, salary_component}.json</td><td>custom fields · synced on migrate</td></tr>
@@ -853,20 +856,52 @@ tr.sum td { font-weight: 600; background: var(--ground); }
                 <dt>Decide</dt><dd>work days abroad for non-residents remain excluded</dd>
               </dl></td></tr>
 
-              <tr class="item"><td><span class="pill p-untested">Not tested</span></td><td>Payroll Entry &gt; 30 employees (background job)</td><td class="where">—</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl11" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>
-              <tr class="detail" id="cl11" hidden><td colspan="4"><dl class="explain">
-                <dt>What</dt><dd>HRMS creates and submits slips in a background job · the QST hook runs per slip (employee, past slips, deducted tax, cached tariff lookups)</dd>
-                <dt>Why</dt><dd>only single slips were created in the dev checks</dd>
-                <dt>Effect</dt><dd>runtime per slip unknown · an unexpected error (e.g. misconfigured component) would stop the batch · how HRMS reports a blocked submit (missing tariff) not seen</dd>
-                <dt>Decide</dt><dd>test with ~50 employees before go-live</dd>
+              <tr class="item"><td><span class="pill p-limit">Limitation</span></td><td>projected 13th salary = 1/12 of all periodic pay, incl. allowances</td><td class="where">calculation.annual_rdi</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl17" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>
+              <tr class="detail" id="cl17" hidden><td colspan="4"><dl class="explain">
+                <dt>What</dt><dd>with “Project 13th salary when known”, 1/12 of all components tagged Periodic is added · no metadata marks the 13th salary basis</dd>
+                <dt>Why</dt><dd>the 13th salary basis is contractual: usually base salary only, family allowances excluded</dd>
+                <dt>Effect</dt><dd>KS45 §7.4 ex. 6: 79’083 instead of 79’000 (same 50-CHF bracket) · can cross a bracket in other cases · Jahresmodell only, months before the payout only, difference corrected when the 13th is paid</dd>
+                <dt>Decide</dt><dd>review decision: keep for now · possible extension: checkbox “Basis for 13th salary” on Salary Component</dd>
               </dl></td></tr>
 
-              <tr class="item"><td><span class="pill p-untested">Not tested</span></td><td>several slips in same month · amended slips · prior-year corrections</td><td class="where">payroll</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl12" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>
+              <tr class="item"><td><span class="pill p-limit">Limitation</span></td><td>daily wages not converted (21.667 days / 260 days)</td><td class="where">calculation</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl18" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>
+              <tr class="detail" id="cl18" hidden><td colspan="4"><dl class="explain">
+                <dt>What</dt><dd>only monthly wages and hourly wages (180 h / 2’160 h) · no daily-wage option</dd>
+                <dt>Why</dt><dd>KS45 §6.5 / §7.3.3: daily wages paid irregularly are converted to 21.667 days per month or 260 days per year</dd>
+                <dt>Effect</dt><dd>daily-wage staff taxed like monthly wages → rate too low in short months · KS45 §6.5 ex. 2 not covered · workaround: express as hours, or fixed rate</dd>
+                <dt>Decide</dt><dd>add a daily-wage option with days per slip when a customer needs it</dd>
+              </dl></td></tr>
+
+              <tr class="item"><td><span class="pill p-limit">Limitation</span></td><td>replacement income paid through the employer (daily allowances) not supported</td><td class="where">Salary Component · payroll.build_month</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl19" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>
+              <tr class="detail" id="cl19" hidden><td colspan="4"><dl class="explain">
+                <dt>What</dt><dd>sickness or accident daily allowances paid via payroll are taxable but don’t raise the rate-determining income · <code>qst_type</code> only knows Periodic / Aperiodic / 13th Salary</dd>
+                <dt>Why</dt><dd>KS45 §6.5 ex. 6: taxable 5’825 incl. 2’000 daily allowance, rate-determining 7’500 without it · §6.10 / §7.5.4</dd>
+                <dt>Effect</dt><dd>tagged as Periodic or Aperiodic → rate too high · untagged → allowance not taxed</dd>
+                <dt>Decide</dt><dd>add <code>qst_type</code> “Replacement Income” (taxable, not rate-determining)</dd>
+              </dl></td></tr>
+
+              <tr class="item"><td><span class="pill p-limit">Limitation</span></td><td>side job without a determinable employment degree</td><td class="where">payroll.calculate</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl20" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>
+              <tr class="detail" id="cl20" hidden><td colspan="4"><dl class="explain">
+                <dt>What</dt><dd>“Total Degree” and “Extrapolate 100%” need an employment degree · jobs without one (e.g. flat-rate caretaker) have no option</dd>
+                <dt>Why</dt><dd>KS45 §6.4 ex. 9 / §7.3.2: the employer uses the canton’s tariff C median value as rate-determining income for such a job</dd>
+                <dt>Effect</dt><dd>median value is imported (QST Tariff › Median Value) but not used · workaround: fixed rate</dd>
+                <dt>Decide</dt><dd>add side-job option “Median value (no degree)”</dd>
+              </dl></td></tr>
+
+              <tr class="item"><td><span class="pill p-tested">Tested</span></td><td>Payroll Entry &gt; 30 employees (background job)</td><td class="where">—</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl11" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>
+              <tr class="detail" id="cl11" hidden><td colspan="4"><dl class="explain">
+                <dt>What</dt><dd>HRMS creates and submits slips in a background job · the QST hook runs per slip (employee, past slips, deducted tax, cached tariff lookups)</dd>
+                <dt>Test</dt><dd>integration test runs the background job functions directly: 31 employees + 1 without tariff → 32 slips created, batch not aborted, 31 × QST 400 · submission: 31 submitted, slip without tariff stays draft</dd>
+                <dt>Effect</dt><dd>dev VM: 32 slips created in 1.1 s, submitted in 1.0 s · accrual journal entry and e-mail not part of the test</dd>
+                <dt>Decide</dt><dd>—</dd>
+              </dl></td></tr>
+
+              <tr class="item"><td><span class="pill p-tested">Tested</span></td><td>several slips in same month · amended slips · prior-year corrections</td><td class="where">payroll</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl12" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>
               <tr class="detail" id="cl12" hidden><td colspan="4"><dl class="explain">
                 <dt>What</dt><dd>slips of the same month are merged (amounts summed, days capped at 30) · amended slip replaces the cancelled one · slips up to the cutoff month also correct last year</dd>
-                <dt>Why</dt><dd>logic exists, no test run yet</dd>
-                <dt>Effect</dt><dd>risk areas: separate bonus slip in the same month, day cap, annual income for last year</dd>
-                <dt>Decide</dt><dd>add integration tests for these cases</dd>
+                <dt>Test</dt><dd>second slip in January (other payroll entry): taxable 10’000, rate 12%, QST 800 after 400 already deducted · February cancelled and amended while March is submitted: amended slip taxed at new code, January correction reported as pending, April corrects January and March (−400) · December 2025 corrected on January 2026 slip (−200), not after the cutoff month</dd>
+                <dt>Effect</dt><dd>also covered: late marriage (Monatsmodell), corrected tariff revision (+100), Jahresmodell salary change (+150), cross-border certificate, disabled module, employee validation</dd>
+                <dt>Decide</dt><dd>—</dd>
               </dl></td></tr>
 
               <tr class="item"><td><span class="pill p-untested">Not tested</span></td><td>full-archive import (26 cantons, ≈180 MB) · performance</td><td class="where">tariff.import_tariffs</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl13" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>
@@ -877,19 +912,19 @@ tr.sum td { font-weight: 600; background: var(--ground); }
                 <dt>Decide</dt><dd>test once on staging, or recommend canton zips</dd>
               </dl></td></tr>
 
-              <tr class="item"><td><span class="pill p-untested">Not tested</span></td><td>report print template in browser · summary rounding fix</td><td class="where">report</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl14" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>
+              <tr class="item"><td><span class="pill p-untested">Not tested</span></td><td>report print template in browser</td><td class="where">report</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl14" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>
               <tr class="detail" id="cl14" hidden><td colspan="4"><dl class="explain">
-                <dt>What</dt><dd>report data checked in the console for ZH and GE · print template and rounded total not opened in the browser</dd>
+                <dt>What</dt><dd>report rows, total rounding, commission and net payable covered by an integration test · print template not opened in the browser</dd>
                 <dt>Effect</dt><dd>layout issues possible in print</dd>
                 <dt>Decide</dt><dd>quick manual check in desk</dd>
               </dl></td></tr>
 
-              <tr class="item"><td><span class="pill p-scope">Scope</span></td><td>tests run via bench console (site has <code>allow_tests</code> off)</td><td class="where">test_quellensteuer.py</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl15" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>
+              <tr class="item"><td><span class="pill p-scope">Scope</span></td><td>58 tests: 24 unit · 22 KS45 examples · 12 integration (rolled back)</td><td class="where">test_quellensteuer.py</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl15" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>
               <tr class="detail" id="cl15" hidden><td colspan="4"><dl class="explain">
-                <dt>What</dt><dd>24 unit tests (plain unittest, database and tariffs mocked), incl. slip validation blocking on a missing degree or earlier-month tariff, corrections skipped after a later slip, KS45 §8 canton changes, blocked concurrent imports and cross-border certificate fallback · end-to-end checks were one-off scripts, not in the repo</dd>
-                <dt>Why</dt><dd><code>bench run-tests</code> is blocked while <code>allow_tests</code> is off</dd>
-                <dt>Effect</dt><dd>no automated tests for import and payroll against a database</dd>
-                <dt>Decide</dt><dd>enable tests on the dev site and add integration tests</dd>
+                <dt>What</dt><dd>test_quellensteuer: 24 unit tests, database and tariffs mocked · test_ks45: KS45 §6.3–6.6 income examples, §7.3–7.4 and §8.2–8.4 as month-by-month slip ledgers checked against every deduction and correction in the KS45 tables · test_quellensteuer_integration: 12 database tests, commits disabled, everything rolled back after the run</dd>
+                <dt>Why</dt><dd>run with <code>bench --site … run-tests --module …</code> (<code>allow_tests</code> enabled on the dev site) · integration tests commit nothing</dd>
+                <dt>Effect</dt><dd>KS45 examples use the tariff rates printed in the examples · examples the module cannot calculate are listed as limitations above</dd>
+                <dt>Decide</dt><dd>—</dd>
               </dl></td></tr>
 
               <tr class="item"><td><span class="pill p-scope">Scope</span></td><td>commission shown, not posted · ELM export via PAY-001</td><td class="where">report</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl16" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>

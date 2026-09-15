@@ -41,11 +41,9 @@ def thirteenth_rdi(amount, frequency, end, joining=None, relieving=None):
     """Rate-determining part of a 13th salary paid in the month of end (KS45 6.3/6.6)."""
     if not amount or frequency not in PERIOD_MONTHS:
         return amount or 0
-    period = date(end.year, end.month - (end.month - 1) % PERIOD_MONTHS[frequency], 1)
-    worked = 0
-    while period <= end:
-        worked += days_30(period, month_end(period), joining, relieving)
-        period = add_months(period, 1)
+    start = date(end.year, end.month - (end.month - 1) % PERIOD_MONTHS[frequency], 1)
+    worked = sum(days_30(add_months(start, i), month_end(add_months(start, i)), joining, relieving)
+                 for i in range(PERIOD_MONTHS[frequency]))
     return amount / worked * PERIOD_MONTHS[frequency] * 30 if worked else amount
 
 

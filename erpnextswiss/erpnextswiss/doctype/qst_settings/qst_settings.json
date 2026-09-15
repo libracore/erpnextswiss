@@ -1,0 +1,146 @@
+{
+ "actions": [],
+ "creation": "2026-09-14 12:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "enabled",
+  "go_live_date",
+  "sec_components",
+  "qst_component",
+  "correction_component",
+  "sec_calculation",
+  "rounding",
+  "min_correction",
+  "thirteenth_frequency",
+  "col_calculation",
+  "annual_model_correction",
+  "prior_year_cutoff_month",
+  "sec_accounts",
+  "canton_accounts"
+ ],
+ "fields": [
+  {
+   "default": "0",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled"
+  },
+  {
+   "description": "Salary slips before this date are never corrected",
+   "fieldname": "go_live_date",
+   "fieldtype": "Date",
+   "label": "Go-live Date",
+   "mandatory_depends_on": "eval:doc.enabled"
+  },
+  {
+   "fieldname": "sec_components",
+   "fieldtype": "Section Break",
+   "label": "Salary Components"
+  },
+  {
+   "fieldname": "qst_component",
+   "fieldtype": "Link",
+   "label": "Quellensteuer Component",
+   "mandatory_depends_on": "eval:doc.enabled",
+   "options": "Salary Component"
+  },
+  {
+   "fieldname": "correction_component",
+   "fieldtype": "Link",
+   "label": "Correction Component",
+   "mandatory_depends_on": "eval:doc.enabled",
+   "options": "Salary Component"
+  },
+  {
+   "fieldname": "sec_calculation",
+   "fieldtype": "Section Break",
+   "label": "Calculation"
+  },
+  {
+   "default": "0.05",
+   "fieldname": "rounding",
+   "fieldtype": "Float",
+   "label": "Rounding"
+  },
+  {
+   "default": "0.05",
+   "fieldname": "min_correction",
+   "fieldtype": "Currency",
+   "label": "Minimum Correction"
+  },
+  {
+   "default": "Yearly",
+   "fieldname": "thirteenth_frequency",
+   "fieldtype": "Select",
+   "label": "13th Salary Frequency",
+   "options": "Monthly\nQuarterly\nHalf-yearly\nYearly"
+  },
+  {
+   "fieldname": "col_calculation",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Monthly",
+   "fieldname": "annual_model_correction",
+   "fieldtype": "Select",
+   "label": "Annual Model Corrections",
+   "options": "Monthly\nYear-end"
+  },
+  {
+   "default": "3",
+   "description": "Slips up to this month also correct months of the previous year",
+   "fieldname": "prior_year_cutoff_month",
+   "fieldtype": "Int",
+   "label": "Prior Year Corrections until Month"
+  },
+  {
+   "fieldname": "sec_accounts",
+   "fieldtype": "Section Break",
+   "label": "Canton Accounts"
+  },
+  {
+   "fieldname": "canton_accounts",
+   "fieldtype": "Table",
+   "label": "Canton Accounts",
+   "options": "QST Canton Account"
+  }
+ ],
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-09-14 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "ERPNextSwiss",
+ "name": "QST Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "HR Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

@@ -1,0 +1,158 @@
+{
+ "actions": [],
+ "creation": "2026-09-14 12:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "valid_from",
+  "liable",
+  "canton",
+  "municipality",
+  "col_tariff",
+  "tariff_group",
+  "children",
+  "church_tax",
+  "tariff_code",
+  "sec_income",
+  "hourly_wage",
+  "thirteenth_frequency",
+  "col_income",
+  "other_employment",
+  "total_degree",
+  "other_income",
+  "fixed_rate",
+  "fixed_amount",
+  "remarks"
+ ],
+ "fields": [
+  {
+   "description": "First day of a month",
+   "fieldname": "valid_from",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Valid From",
+   "reqd": 1
+  },
+  {
+   "default": "1",
+   "fieldname": "liable",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Liable"
+  },
+  {
+   "fieldname": "canton",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Canton",
+   "mandatory_depends_on": "eval:doc.liable",
+   "options": "QST Canton"
+  },
+  {
+   "fieldname": "municipality",
+   "fieldtype": "Link",
+   "label": "Municipality",
+   "options": "Municipality"
+  },
+  {
+   "fieldname": "col_tariff",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "tariff_group",
+   "fieldtype": "Select",
+   "label": "Tariff Group",
+   "mandatory_depends_on": "eval:doc.liable",
+   "options": "\nA\nB\nC\nD\nE\nG\nH\nL\nM\nN\nP\nQ"
+  },
+  {
+   "default": "0",
+   "fieldname": "children",
+   "fieldtype": "Int",
+   "label": "Children"
+  },
+  {
+   "default": "0",
+   "fieldname": "church_tax",
+   "fieldtype": "Check",
+   "label": "Church Tax"
+  },
+  {
+   "fieldname": "tariff_code",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Tariff Code",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sec_income",
+   "fieldtype": "Section Break",
+   "label": "Income"
+  },
+  {
+   "default": "0",
+   "fieldname": "hourly_wage",
+   "fieldtype": "Check",
+   "label": "Hourly Wage"
+  },
+  {
+   "fieldname": "thirteenth_frequency",
+   "fieldtype": "Select",
+   "label": "13th Salary Frequency",
+   "options": "\nMonthly\nQuarterly\nHalf-yearly\nYearly"
+  },
+  {
+   "fieldname": "col_income",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "None",
+   "fieldname": "other_employment",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Other Employment",
+   "options": "None\nTotal Degree\nExtrapolate 100%\nOther Income\nFixed Rate\nFixed Amount"
+  },
+  {
+   "depends_on": "eval:doc.other_employment=='Total Degree'",
+   "fieldname": "total_degree",
+   "fieldtype": "Percent",
+   "label": "Total Employment Degree"
+  },
+  {
+   "depends_on": "eval:doc.other_employment=='Other Income'",
+   "fieldname": "other_income",
+   "fieldtype": "Currency",
+   "label": "Other Gross Income per Month"
+  },
+  {
+   "depends_on": "eval:doc.other_employment=='Fixed Rate'",
+   "fieldname": "fixed_rate",
+   "fieldtype": "Percent",
+   "label": "Fixed Rate"
+  },
+  {
+   "depends_on": "eval:doc.other_employment=='Fixed Amount'",
+   "fieldname": "fixed_amount",
+   "fieldtype": "Currency",
+   "label": "Fixed Amount per Month"
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Small Text",
+   "label": "Remarks"
+  }
+ ],
+ "istable": 1,
+ "links": [],
+ "modified": "2026-09-14 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "ERPNextSwiss",
+ "name": "QST Employee Record",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

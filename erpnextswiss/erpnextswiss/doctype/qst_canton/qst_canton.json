@@ -1,0 +1,84 @@
+{
+ "actions": [],
+ "autoname": "field:canton",
+ "creation": "2026-09-14 12:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "canton",
+  "canton_name",
+  "calculation_model",
+  "import_tariffs"
+ ],
+ "fields": [
+  {
+   "fieldname": "canton",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Canton",
+   "length": 2,
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "canton_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Canton Name"
+  },
+  {
+   "default": "Monthly",
+   "fieldname": "calculation_model",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Calculation Model",
+   "options": "Monthly\nAnnual",
+   "reqd": 1
+  },
+  {
+   "default": "0",
+   "description": "Only tariffs of marked cantons are imported; if none is marked, all cantons are imported",
+   "fieldname": "import_tariffs",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Import Tariffs"
+  }
+ ],
+ "links": [],
+ "modified": "2026-09-14 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "ERPNextSwiss",
+ "name": "QST Canton",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "HR Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "canton_name",
+ "track_changes": 1
+}

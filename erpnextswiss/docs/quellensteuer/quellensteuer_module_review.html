@@ -265,7 +265,7 @@ tr.sum td { font-weight: 600; background: var(--ground); }
       <span class="chip">7 custom fields</span>
       <span class="chip">3 doc hooks</span>
       <span class="chip">1 report · 1 patch</span>
-      <span class="chip">11 unit tests</span>
+      <span class="chip">17 unit tests</span>
     </div>
   </header>
 
@@ -343,7 +343,7 @@ tr.sum td { font-weight: 600; background: var(--ground); }
               <li><code>QST Settings.enabled</code> off → all hooks return immediately</li>
               <li><code>qst_skip</code> per slip</li>
               <li>go-live date · no corrections before</li>
-              <li>missing tariff → warning on save · submit blocked</li>
+              <li>missing tariff or employment degree → warning on save · submit blocked</li>
             </ul>
           </div>
         </div>
@@ -640,8 +640,8 @@ tr.sum td { font-weight: 600; background: var(--ground); }
               <tr><td class="k">Base</td><td>periodic of month</td><td>full year: past + current × remaining months · else Σ periodic × 360 ÷ Σ days</td><td>6.2 · 7.3.1</td></tr>
               <tr><td class="k">Entry / exit</td><td>periodic × 30 ÷ days (30-day method)</td><td>via 360-day basis</td><td>6.6 · 7.3.4</td></tr>
               <tr><td class="k">Hourly (<code>hourly_wage</code>)</td><td>periodic ÷ hours × 180</td><td>Σ periodic ÷ Σ hours × 2’160</td><td>6.5 · 7.3.3</td></tr>
-              <tr><td class="k">Total degree</td><td colspan="2">periodic × total degree ÷ own degree (<code>employment_degrees</code>, default 100)</td><td>6.4 · 7.3.2</td></tr>
-              <tr><td class="k">Extrapolate 100%</td><td colspan="2">periodic × 100 ÷ own degree</td><td>6.4 · 7.3.2</td></tr>
+              <tr><td class="k">Total degree</td><td colspan="2">(periodic + 13th) × total degree ÷ own degree (Employment Degrees, required)</td><td>6.4 · 7.3.2</td></tr>
+              <tr><td class="k">Extrapolate 100%</td><td colspan="2">(periodic + 13th) × 100 ÷ own degree (required)</td><td>6.4 · 7.3.2</td></tr>
               <tr><td class="k">Other income</td><td>+ monthly gross</td><td>+ monthly gross × 12</td><td>6.4</td></tr>
               <tr><td class="k">Aperiodic</td><td>+ unconverted</td><td>+ Σ unconverted</td><td>6.6 · 7.3.1</td></tr>
               <tr><td class="k">13th salary</td><td>amount ÷ worked days in period × 90/180/360 · frequency from settings</td><td>added when paid · setting on + 13th in structure: projected from January (1/12 of periodic), replaced by payouts</td><td>6.3 · 7.1</td></tr>
@@ -794,12 +794,12 @@ tr.sum td { font-weight: 600; background: var(--ground); }
                 <dt>Decide</dt><dd>acceptable, or mark variable-pay staff as hourly wage</dd>
               </dl></td></tr>
 
-              <tr class="item"><td><span class="pill p-assume">Assumption</span></td><td>side-job scaling on periodic income only · other income × 12 annual</td><td class="where">calculation</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl4" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>
+              <tr class="item"><td><span class="pill p-assume">Assumption</span></td><td>side-job conversion of periodic pay + 13th · own degree required · other income × 12 annual</td><td class="where">calculation</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl4" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>
               <tr class="detail" id="cl4" hidden><td colspan="4"><dl class="explain">
-                <dt>What</dt><dd>Total degree / Extrapolate 100% scale periodic pay only · Other income adds the monthly gross (× 12 annual) · hourly wage ignores side-job modes</dd>
-                <dt>Why</dt><dd>KS45 §6.4 / §7.3.2: only periodic parts are converted · §6.5: 180 h / 2’160 h rule already covers several jobs</dd>
-                <dt>Effect</dt><dd>own degree from Employee › Employment Degrees (latest ≤ month end), 100% if missing → “Extrapolate 100%” without a degree changes nothing</dd>
-                <dt>Decide</dt><dd>require an employment degree when a side-job mode is set? · gross other income (implemented) vs net</dd>
+                <dt>What</dt><dd>Total degree / Extrapolate 100% convert periodic pay and 13th salary, not aperiodic pay · Other income adds the monthly gross (× 12 annual) · hourly wage ignores side-job modes</dd>
+                <dt>Why</dt><dd>KS45 §6.4 / §7.3.2: periodic parts converted, 13th included (§6.6 example 2: (2’000 + 2’000) ÷ 40% × 90%) · §6.5: 180 h / 2’160 h rule already covers several jobs</dd>
+                <dt>Effect</dt><dd>own degree from Employee › Employment Degrees (latest ≤ month end) · review decision: required for these two options → employee save fails without it, slip shows an error and cannot be submitted · total degree below own degree rejected</dd>
+                <dt>Decide</dt><dd>gross other income (implemented) vs net</dd>
               </dl></td></tr>
 
               <tr class="item"><td><span class="pill p-assume">Assumption</span></td><td>past months recomputed with today’s <code>qst_type</code> classification</td><td class="where">payroll.collect_months</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl5" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>
@@ -883,7 +883,7 @@ tr.sum td { font-weight: 600; background: var(--ground); }
 
               <tr class="item"><td><span class="pill p-scope">Scope</span></td><td>tests run via bench console (site has <code>allow_tests</code> off)</td><td class="where">test_quellensteuer.py</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl15" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>
               <tr class="detail" id="cl15" hidden><td colspan="4"><dl class="explain">
-                <dt>What</dt><dd>11 unit tests (plain unittest, tariffs mocked) · end-to-end checks were one-off scripts, not in the repo</dd>
+                <dt>What</dt><dd>17 unit tests (plain unittest, database and tariffs mocked), incl. slip validation blocking on a missing degree or earlier-month tariff · end-to-end checks were one-off scripts, not in the repo</dd>
                 <dt>Why</dt><dd><code>bench run-tests</code> is blocked while <code>allow_tests</code> is off</dd>
                 <dt>Effect</dt><dd>no automated tests for import and payroll against a database</dd>
                 <dt>Decide</dt><dd>enable tests on the dev site and add integration tests</dd>

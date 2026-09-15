@@ -1,10 +1,11 @@
 import unittest
 from datetime import date
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import frappe
+from frappe.utils.synchronization import filelock
 
-from erpnextswiss.erpnextswiss.quellensteuer import payroll
+from erpnextswiss.erpnextswiss.quellensteuer import payroll, tariff
 from erpnextswiss.erpnextswiss.quellensteuer.calculation import (
     annual_rdi, days_30, month_end, monthly_rdi, tariff_code, tax_amount, thirteenth_rdi)
 from erpnextswiss.erpnextswiss.quellensteuer.parser import TariffFileError, parse
@@ -46,6 +47,26 @@ class TestParser(unittest.TestCase):
             parse(tariff_file([rate_line("A0N", 1, 0)]).replace("ZZ00000003", "ZZ00000004"))
         with self.assertRaises(TariffFileError):
             parse(tariff_file([rate_line("A0N", 1, 0, transaction="02")]))
+
+
+class TestTariffImport(unittest.TestCase):
+    def test_start_refused_while_import_running(self):
+        doc = MagicMock()
+        with patch.object(frappe, "get_doc", return_value=doc), patch.object(tariff, "is_job_enqueued", return_value=True), \
+                patch.object(frappe, "enqueue") as enqueue:
+            with self.assertRaises(frappe.ValidationError):
+                tariff.start_import("QST-IMP-TEST")
+        enqueue.assert_not_called()
+        doc.db_set.assert_not_called()
+
+    def test_import_fails_while_locked(self):
+        doc = MagicMock(file="/private/files/tar26zz.zip")
+        with patch.object(frappe, "get_doc", return_value=doc), patch.object(tariff, "run_import") as run_import, \
+                patch.object(frappe.db, "rollback"), patch.object(frappe.db, "commit"), patch.object(frappe, "log_error"), \
+                filelock(tariff.IMPORT_JOB):
+            tariff.import_tariffs("QST-IMP-TEST")
+        run_import.assert_not_called()
+        self.assertEqual(doc.db_set.call_args[0][0]["status"], "Failed")
 
 
 class TestCalculation(unittest.TestCase):

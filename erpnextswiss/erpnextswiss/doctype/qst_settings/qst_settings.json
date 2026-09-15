@@ -13,6 +13,7 @@
   "rounding",
   "min_correction",
   "thirteenth_frequency",
+  "project_thirteenth",
   "col_calculation",
   "annual_model_correction",
   "prior_year_cutoff_month",
@@ -77,6 +78,13 @@
    "options": "Yearly\nHalf-yearly\nQuarterly"
   },
   {
+   "default": "0",
+   "description": "In Jahresmodell cantons, include the 13th salary in the rate-determining income from January, rather than correcting all months when it is paid",
+   "fieldname": "project_thirteenth",
+   "fieldtype": "Check",
+   "label": "Project 13th salary when known"
+  },
+  {
    "fieldname": "col_calculation",
    "fieldtype": "Column Break"
   },
@@ -108,7 +116,7 @@
  ],
  "issingle": 1,
  "links": [],
- "modified": "2026-09-15 12:00:00.000000",
+ "modified": "2026-09-15 14:00:00.000000",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "QST Settings",

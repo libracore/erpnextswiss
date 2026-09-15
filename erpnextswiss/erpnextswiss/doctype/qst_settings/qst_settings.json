@@ -74,7 +74,7 @@
    "fieldname": "thirteenth_frequency",
    "fieldtype": "Select",
    "label": "13th Salary Frequency",
-   "options": "Monthly\nQuarterly\nHalf-yearly\nYearly"
+   "options": "Yearly\nHalf-yearly\nQuarterly"
   },
   {
    "fieldname": "col_calculation",
@@ -108,7 +108,7 @@
  ],
  "issingle": 1,
  "links": [],
- "modified": "2026-09-14 12:00:00.000000",
+ "modified": "2026-09-15 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "QST Settings",

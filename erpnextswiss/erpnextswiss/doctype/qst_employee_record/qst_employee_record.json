@@ -15,7 +15,6 @@
   "tariff_code",
   "sec_income",
   "hourly_wage",
-  "thirteenth_frequency",
   "col_income",
   "other_employment",
   "total_degree",
@@ -96,12 +95,6 @@
    "label": "Hourly Wage"
   },
   {
-   "fieldname": "thirteenth_frequency",
-   "fieldtype": "Select",
-   "label": "13th Salary Frequency",
-   "options": "\nMonthly\nQuarterly\nHalf-yearly\nYearly"
-  },
-  {
    "fieldname": "col_income",
    "fieldtype": "Column Break"
   },
@@ -145,7 +138,7 @@
  ],
  "istable": 1,
  "links": [],
- "modified": "2026-09-14 12:00:00.000000",
+ "modified": "2026-09-15 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "QST Employee Record",

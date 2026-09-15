@@ -60,16 +60,16 @@ def scale_to_degree(amount, record, own_degree):
 def monthly_rdi(month, record, own_degree=100):
     """Rate-determining monthly income under the monthly model (KS45 section 6)."""
     periodic = month["periodic"]
+    thirteenth = thirteenth_rdi(month["thirteenth"], record.get("thirteenth_frequency") or "Yearly", month_end(month["period"]),
+                                month.get("joining"), month.get("relieving"))
     if record.get("hourly_wage") and month.get("hours"):
-        base = periodic / month["hours"] * 180
+        base = periodic / month["hours"] * 180 + thirteenth
     else:
         days = month.get("days", 30)
-        base = scale_to_degree(periodic * 30 / days if 0 < days < 30 else periodic, record, own_degree)
+        base = scale_to_degree((periodic * 30 / days if 0 < days < 30 else periodic) + thirteenth, record, own_degree)
         if record.get("other_employment") == "Other Income":
             base += record.get("other_income") or 0
-    return base + month["aperiodic"] + thirteenth_rdi(
-        month["thirteenth"], record.get("thirteenth_frequency") or "Yearly", month_end(month["period"]),
-        month.get("joining"), month.get("relieving"))
+    return base + month["aperiodic"]
 
 
 def thirteenth_covered_months(months, frequency):
@@ -82,10 +82,11 @@ def thirteenth_covered_months(months, frequency):
 def annual_rdi(months, record, own_degree=100, full_year=False, project_thirteenth=False):
     """Rate-determining annual income under the annual model from the months so far (KS45 section 7)."""
     periodic = [month["periodic"] for month in months]
-    irregular = sum(month["aperiodic"] + month["thirteenth"] for month in months)
+    aperiodic = sum(month["aperiodic"] for month in months)
+    thirteenth = sum(month["thirteenth"] for month in months)
     hours = sum(month.get("hours") or 0 for month in months)
     if record.get("hourly_wage") and hours:
-        return sum(periodic) / hours * 2160 + irregular
+        return sum(periodic) / hours * 2160 + thirteenth + aperiodic
     if full_year:
         base = sum(periodic[:-1]) + periodic[-1] * (13 - months[-1]["period"].month)
     else:
@@ -93,10 +94,10 @@ def annual_rdi(months, record, own_degree=100, full_year=False, project_thirteen
         base = sum(periodic) * 360 / days if days else 0
     if project_thirteenth:
         base += base / 12 * (12 - thirteenth_covered_months(months, record.get("thirteenth_frequency") or "Yearly")) / 12
-    base = scale_to_degree(base, record, own_degree)
+    base = scale_to_degree(base + thirteenth, record, own_degree)
     if record.get("other_employment") == "Other Income":
         base += (record.get("other_income") or 0) * 12
-    return base + irregular
+    return base + aperiodic
 
 
 def tax_amount(taxable, rate, min_tax=0, rounding=0.05):

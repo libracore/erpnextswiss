@@ -64,6 +64,9 @@ class TestCalculation(unittest.TestCase):
         self.assertAlmostEqual(thirteenth_rdi(5750, "Yearly", date(2021, 12, 31), relieving=date(2021, 12, 15)), 6000)
         self.assertAlmostEqual(thirteenth_rdi(2250, "Half-yearly", date(2021, 6, 30), date(2021, 2, 1), date(2021, 6, 15)), 3000)
         self.assertAlmostEqual(thirteenth_rdi(3250, "Yearly", date(2021, 10, 31), date(2021, 4, 1), date(2021, 10, 15)), 6000)
+        self.assertAlmostEqual(thirteenth_rdi(6000, "Yearly", date(2021, 11, 30)), 6000)
+        self.assertAlmostEqual(thirteenth_rdi(3000, "Half-yearly", date(2021, 5, 31), date(2021, 1, 1)), 3000)
+        self.assertAlmostEqual(thirteenth_rdi(3000, "Yearly", date(2021, 11, 30), date(2021, 7, 1)), 6000)
 
     def test_monthly_rdi(self):
         self.assertAlmostEqual(monthly_rdi(month(date(2022, 3, 1), 3500, 6000, days=16), {}), 12562.5)

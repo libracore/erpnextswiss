@@ -190,7 +190,7 @@ class TestQuellensteuerIntegration(FrappeTestCase):
         employee.save()
         february.cancel()
         amended = frappe.copy_doc(february)
-        amended.amended_from = february.name
+        amended.update({"docstatus": 0, "amended_from": february.name})
         frappe.local.qst_cache = {}
         with patch.object(frappe, "msgprint", wraps=frappe.msgprint) as msgprint:
             amended.insert()

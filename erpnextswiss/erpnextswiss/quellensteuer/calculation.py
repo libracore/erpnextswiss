@@ -72,7 +72,14 @@ def monthly_rdi(month, record, own_degree=100):
         month.get("joining"), month.get("relieving"))
 
 
-def annual_rdi(months, record, own_degree=100, full_year=False):
+def thirteenth_covered_months(months, frequency):
+    """Months of the year covered by 13th salary payouts so far."""
+    size = PERIOD_MONTHS.get(frequency, 12)
+    paid = [month["period"].month for month in months if month["thirteenth"]]
+    return min(12, -(-max(paid) // size) * size) if paid else 0
+
+
+def annual_rdi(months, record, own_degree=100, full_year=False, project_thirteenth=False):
     """Rate-determining annual income under the annual model from the months so far (KS45 section 7)."""
     periodic = [month["periodic"] for month in months]
     irregular = sum(month["aperiodic"] + month["thirteenth"] for month in months)
@@ -84,6 +91,8 @@ def annual_rdi(months, record, own_degree=100, full_year=False):
     else:
         days = sum(month.get("days", 30) for month in months)
         base = sum(periodic) * 360 / days if days else 0
+    if project_thirteenth:
+        base += base / 12 * (12 - thirteenth_covered_months(months, record.get("thirteenth_frequency") or "Yearly")) / 12
     base = scale_to_degree(base, record, own_degree)
     if record.get("other_employment") == "Other Income":
         base += (record.get("other_income") or 0) * 12

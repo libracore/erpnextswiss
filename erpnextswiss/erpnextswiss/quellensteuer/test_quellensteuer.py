@@ -33,7 +33,7 @@ class TestParser(unittest.TestCase):
                                   "1201ZZPEL       20260101000000100999999999 0000000000000200   ",
                                   "1301ZZMED       20260101000000100999999999 0000058750000000   "]))
         self.assertEqual((data["canton"], data["creation_date"], data["valid_from"]), ("ZZ", date(2025, 12, 1), date(2026, 1, 1)))
-        self.assertEqual([row["code"] for row in data["rows"]], ["A0N", "A0N"])
+        self.assertEqual([row["code"] for row in data["rows"]], ["A0N", "A0N", "R0N"])
         self.assertEqual((data["rows"][1]["income_from"], data["rows"][1]["step"], data["rows"][1]["rate"]), (3101, 50, 7.15))
         self.assertEqual((data["commission"]["PEL"], data["median_value"]), (2, 5875))
 
@@ -130,6 +130,7 @@ class TestCalculation(unittest.TestCase):
         self.assertEqual(tax_amount(100, 1, 20), 20)
         self.assertEqual(tax_amount(1234.56, 10), 123.45)
         self.assertEqual((tariff_code("B", 2, True), tariff_code("G", 3, True), tariff_code("A", 12)), ("B2Y", "G9N", "A9N"))
+        self.assertEqual((tariff_code("L", 1, True), tariff_code("V", 2), tariff_code("SF", 2, True)), ("L1Y", "V9N", "SFN"))
 
 
 class SlipStub(frappe._dict):
@@ -241,6 +242,26 @@ class TestPayroll(unittest.TestCase):
         results = self.calculate_move(records, {"BE": "Monthly", "TI": "Annual"}, date(2021, 9, 1), frappe._dict(self.settings, project_thirteenth=1), extra)
         self.assertEqual([round(results[date(2021, m, 1)]["rdi"]) for m in (2, 9)], [35000, 65000])
         self.assertEqual((results[date(2021, 2, 1)]["model"], results[date(2021, 9, 1)]["model"]), ("Monthly", "Annual"))
+
+    def test_cross_border_certificate(self):
+        rates = lambda code, income: frappe._dict(rate={"L0N": 4.5, "A0N": 10.4, "SFN": 0}[code], min_tax=0)
+        with_certificate = self.employee({"valid_from": date(2021, 1, 1), "tariff_group": "L", "cross_border_valid_until": date(2021, 12, 31)})
+        results = self.run_calculation(with_certificate, [5000], "Monthly", rates)
+        self.assertEqual((results[date(2021, 1, 1)]["code"], results[date(2021, 1, 1)]["tax"], results[date(2021, 1, 1)]["fallback"]), ("L0N", 225, False))
+        expired = self.employee({"valid_from": date(2021, 1, 1), "tariff_group": "L", "cross_border_valid_until": date(2020, 12, 31)})
+        results = self.run_calculation(expired, [5000], "Monthly", rates)
+        self.assertEqual((results[date(2021, 1, 1)]["code"], results[date(2021, 1, 1)]["tax"], results[date(2021, 1, 1)]["fallback"]), ("A0N", 520, True))
+        france = self.employee({"valid_from": date(2021, 1, 1), "tariff_group": "SF", "cross_border_valid_until": date(2021, 12, 31)})
+        results = self.run_calculation(france, [5000], "Monthly", rates)
+        self.assertEqual((results[date(2021, 1, 1)]["code"], results[date(2021, 1, 1)]["tax"]), ("SFN", 0))
+
+    def test_validate_shows_cross_border_fallback(self):
+        employee = self.employee({"valid_from": date(2021, 1, 1), "tariff_group": "M"})
+        tariff = frappe._dict(name="QST-ZZ-2021-20201201", calculation_model="Monthly")
+        slip, deductions = self.validate_slip(employee, [5000], {}, {date(2021, 1, 1): tariff})
+        self.assertEqual((slip.qst_details[0]["tariff_code"], slip.qst_details[0]["reason"]), ("B0N", "No cross-border certificate"))
+        self.assertEqual(len(slip.messages), 1)
+        self.assertIn("ordinary tariff B0N", slip.messages[0].args[0])
 
     def test_degree_required(self):
         rates = lambda code, income: frappe._dict(rate=10, min_tax=0)

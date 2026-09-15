@@ -76,6 +76,8 @@ class TestCalculation(unittest.TestCase):
         self.assertAlmostEqual(monthly_rdi(month(date(2021, 4, 1), 4500), {"other_employment": "Extrapolate 100%"}, 50), 9000)
         self.assertAlmostEqual(monthly_rdi(month(date(2021, 4, 1), 4400), {"other_employment": "Other Income", "other_income": 900}, 80), 5300)
         self.assertAlmostEqual(monthly_rdi(month(date(2021, 6, 1), 2520, hours=72, days=12), {"hourly_wage": 1}), 6300)
+        exit_40 = month(date(2022, 3, 1), 1000, 500, thirteenth=5000 / 12, days=15, relieving=date(2022, 3, 15))
+        self.assertAlmostEqual(monthly_rdi(exit_40, {"thirteenth_frequency": "Yearly", "other_employment": "Total Degree", "total_degree": 90}, 40), 9500)
 
     def test_annual_rdi(self):
         salaries = [5000] * 4 + [6000] * 6 + [8000]
@@ -87,6 +89,10 @@ class TestCalculation(unittest.TestCase):
         self.assertAlmostEqual(annual_rdi(partial, {}), 97094.34, 2)
         self.assertAlmostEqual(annual_rdi([month(date(2021, 1, 1), 4550, hours=130)], {"hourly_wage": 1}), 75600)
         self.assertAlmostEqual(annual_rdi([month(date(2021, 1, 1), 2000)], {"other_employment": "Extrapolate 100%"}, 70, True), 34285.71, 2)
+
+    def test_annual_rdi_thirteenth_scaled(self):
+        year = [month(date(2021, m, 1), 3000, thirteenth=3000 if m == 12 else 0) for m in range(1, 13)]
+        self.assertAlmostEqual(annual_rdi(year, {"other_employment": "Extrapolate 100%"}, 50, True), 78000)
 
     def test_annual_rdi_projected_thirteenth(self):
         yearly, half = {"thirteenth_frequency": "Yearly"}, {"thirteenth_frequency": "Half-yearly"}
@@ -105,6 +111,19 @@ class TestCalculation(unittest.TestCase):
         self.assertEqual((tariff_code("B", 2, True), tariff_code("G", 3, True), tariff_code("A", 12)), ("B2Y", "G9N", "A9N"))
 
 
+class SlipStub(frappe._dict):
+    def __init__(self, **kwargs):
+        super().__init__(flags=frappe._dict(), qst_details=[], **kwargs)
+
+    def set(self, key, value):
+        self[key] = value
+
+    def set_net_pay(self):
+        pass
+
+    compute_year_to_date = compute_month_to_date = compute_component_wise_year_to_date = set_net_pay
+
+
 class TestPayroll(unittest.TestCase):
     settings = frappe._dict(rounding=0.05, thirteenth_frequency="Yearly")
 
@@ -119,6 +138,55 @@ class TestPayroll(unittest.TestCase):
         with patch.object(payroll, "get_tariff", return_value=tariff), \
                 patch.object(payroll, "get_bracket", side_effect=lambda t, code, income: rates(code, income)):
             return payroll.calculate(employee, months, max(months), settings or self.settings)
+
+    def validate_slip(self, employee, salaries, paid, tariffs, go_live=date(2021, 1, 1)):
+        settings = frappe._dict(self.settings, enabled=1, go_live_date=go_live, prior_year_cutoff_month=0, min_correction=0.05,
+                                qst_component="QST", correction_component="QST Correction", annual_model_correction="Monthly")
+        months = {date(2021, i + 1, 1): month(date(2021, i + 1, 1), salary) for i, salary in enumerate(salaries)}
+        slip = SlipStub(employee="EMP-TEST", start_date=max(months), end_date=month_end(max(months)))
+        deductions = {}
+        with patch.object(frappe, "get_cached_doc", return_value=settings), patch.object(frappe, "get_doc", return_value=employee), \
+                patch.object(frappe, "msgprint"), patch.object(frappe.db, "exists", return_value=None), \
+                patch.object(payroll, "collect_months", return_value=(months, set())), \
+                patch.object(payroll, "get_paid", return_value=paid), \
+                patch.object(payroll, "get_tariff", side_effect=lambda canton, period: tariffs.get(period)), \
+                patch.object(payroll, "get_bracket", return_value=frappe._dict(rate=10.4, min_tax=0)), \
+                patch.object(payroll, "set_deduction", side_effect=lambda doc, component, amount: deductions.__setitem__(component, amount)):
+            payroll.salary_slip_validate(slip)
+        return slip, deductions
+
+    def test_validate_blocks_missing_degree_in_current_month(self):
+        employee = self.employee({"valid_from": date(2021, 1, 1), "other_employment": "Extrapolate 100%"})
+        tariff = frappe._dict(name="QST-ZZ-2021-20201201", calculation_model="Monthly")
+        slip, deductions = self.validate_slip(employee, [4500], {}, {date(2021, 1, 1): tariff})
+        self.assertIn("employment degree", slip.flags.qst_error)
+        self.assertEqual(deductions["QST"], 0)
+        with self.assertRaises(frappe.ValidationError):
+            payroll.salary_slip_before_submit(slip)
+
+    def test_validate_blocks_missing_tariff_in_earlier_month(self):
+        employee = self.employee({"valid_from": date(2021, 1, 1)})
+        tariff = frappe._dict(name="QST-ZZ-2021-20201201", calculation_model="Monthly")
+        tariffs = {date(2021, 1, 1): tariff, date(2021, 3, 1): tariff}
+        paid = {date(2021, 1, 1): 520, date(2021, 2, 1): 520}
+        slip, deductions = self.validate_slip(employee, [5000] * 3, paid, tariffs)
+        self.assertIn("tariff", slip.flags.qst_error)
+        self.assertEqual((deductions["QST"], deductions["QST Correction"]), (520, 0))
+        self.assertEqual([row["period"] for row in slip.qst_details], [date(2021, 3, 1)])
+        with self.assertRaises(frappe.ValidationError):
+            payroll.salary_slip_before_submit(slip)
+        slip, deductions = self.validate_slip(employee, [5000] * 3, paid, tariffs, go_live=date(2021, 3, 1))
+        self.assertIsNone(slip.flags.qst_error)
+        self.assertEqual((deductions["QST"], deductions["QST Correction"]), (520, 0))
+
+    def test_degree_required(self):
+        rates = lambda code, income: frappe._dict(rate=10, min_tax=0)
+        employee = self.employee({"valid_from": date(2021, 1, 1), "other_employment": "Extrapolate 100%"})
+        result = self.run_calculation(employee, [4500], "Monthly", rates)[date(2021, 1, 1)]
+        self.assertTrue(result["error"])
+        employee.employment_degrees = [frappe._dict(date=date(2021, 1, 1), degree=50)]
+        result = self.run_calculation(employee, [4500], "Monthly", rates)[date(2021, 1, 1)]
+        self.assertEqual((result["error"], result["rdi"]), (None, 9000))
 
     def test_annual_model_projects_thirteenth(self):
         employee = self.employee({"valid_from": date(2021, 1, 1)})

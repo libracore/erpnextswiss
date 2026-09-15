@@ -122,7 +122,7 @@ def own_degree(employee, period):
 
 
 def record_values(record, settings):
-    return dict(record if isinstance(record, dict) else record.as_dict(), thirteenth_frequency=record.thirteenth_frequency or settings.thirteenth_frequency)
+    return dict(record if isinstance(record, dict) else record.as_dict(), thirteenth_frequency=settings.thirteenth_frequency)
 
 
 def calculate(employee, months, current_period, settings):

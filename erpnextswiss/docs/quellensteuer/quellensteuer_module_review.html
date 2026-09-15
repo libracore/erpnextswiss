@@ -265,7 +265,7 @@ tr.sum td { font-weight: 600; background: var(--ground); }
       <span class="chip">7 custom fields</span>
       <span class="chip">3 doc hooks</span>
       <span class="chip">1 report · 1 patch</span>
-      <span class="chip">20 unit tests</span>
+      <span class="chip">22 unit tests</span>
     </div>
   </header>
 
@@ -834,12 +834,12 @@ tr.sum td { font-weight: 600; background: var(--ground); }
                 <dt>Decide</dt><dd>—</dd>
               </dl></td></tr>
 
-              <tr class="item"><td><span class="pill p-limit">Limitation</span></td><td>concurrent imports could clash on reserved rate ids</td><td class="where">tariff.store</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl9" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>
+              <tr class="item"><td><span class="pill p-limit">Limitation</span></td><td>concurrent imports prevented · queue check + lock</td><td class="where">tariff.store</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl9" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>
               <tr class="detail" id="cl9" hidden><td colspan="4"><dl class="explain">
                 <dt>What</dt><dd>import reserves a block of rate ids from the sequence, bulk-inserts, then moves the sequence past the block</dd>
                 <dt>Why</dt><dd>one sequence call per row is too slow for up to 316’000 rows per canton</dd>
-                <dt>Effect</dt><dd>two imports running at the same moment could get overlapping ids → duplicate key → that import fails and rolls back · no corrupt data · re-running fixes it</dd>
-                <dt>Decide</dt><dd>allow only one import at a time, or accept</dd>
+                <dt>Effect</dt><dd>review decision: one import at a time · “Import” refused while an import job is queued or running (fixed job id, deduplicated) · import runs under a site file lock (released if the worker dies) → a second import started anyway ends as Failed with the lock message</dd>
+                <dt>Decide</dt><dd>—</dd>
               </dl></td></tr>
 
               <tr class="item"><td><span class="pill p-limit">Limitation</span></td><td>codes L M N P Q (cross-border DE) imported and selectable · R–V skipped</td><td class="where">parser.parse · QST Employee Record</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl10" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>
@@ -883,7 +883,7 @@ tr.sum td { font-weight: 600; background: var(--ground); }
 
               <tr class="item"><td><span class="pill p-scope">Scope</span></td><td>tests run via bench console (site has <code>allow_tests</code> off)</td><td class="where">test_quellensteuer.py</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl15" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>
               <tr class="detail" id="cl15" hidden><td colspan="4"><dl class="explain">
-                <dt>What</dt><dd>20 unit tests (plain unittest, database and tariffs mocked), incl. slip validation blocking on a missing degree or earlier-month tariff, corrections skipped after a later slip, and KS45 §8 canton changes · end-to-end checks were one-off scripts, not in the repo</dd>
+                <dt>What</dt><dd>22 unit tests (plain unittest, database and tariffs mocked), incl. slip validation blocking on a missing degree or earlier-month tariff, corrections skipped after a later slip, KS45 §8 canton changes and blocked concurrent imports · end-to-end checks were one-off scripts, not in the repo</dd>
                 <dt>Why</dt><dd><code>bench run-tests</code> is blocked while <code>allow_tests</code> is off</dd>
                 <dt>Effect</dt><dd>no automated tests for import and payroll against a database</dd>
                 <dt>Decide</dt><dd>enable tests on the dev site and add integration tests</dd>

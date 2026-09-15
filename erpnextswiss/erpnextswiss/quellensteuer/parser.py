@@ -4,6 +4,8 @@ import re
 import zipfile
 from datetime import date
 
+from frappe import _
+
 FILE_PATTERN = re.compile(r"(?:^|/)tar(\d{2})([a-z]{2})\.txt$", re.IGNORECASE)
 DATA_RECORDS = ("06", "11", "12", "13")
 
@@ -36,19 +38,19 @@ def parse(text):
     """Parse one ESTV tariff file (record format D_DVS 0005) into a dict."""
     lines = [line.rstrip("\r\n") for line in text.splitlines() if line.strip()]
     if len(lines) < 2 or not lines[0].startswith("00") or not lines[-1].startswith("99"):
-        raise TariffFileError("Header or trailer record missing")
+        raise TariffFileError(_("Header or trailer record missing"))
     canton, trailer = lines[0][2:4], lines[-1]
     if trailer[17:19] != canton:
-        raise TariffFileError(f"Trailer canton {trailer[17:19]} does not match {canton}")
+        raise TariffFileError(_("Trailer canton {0} does not match {1}").format(trailer[17:19], canton))
     if int(trailer[19:27]) != len(lines):
-        raise TariffFileError(f"{canton}: trailer announces {int(trailer[19:27])} records, found {len(lines)}")
+        raise TariffFileError(_("{0}: trailer announces {1} records, found {2}").format(canton, int(trailer[19:27]), len(lines)))
     rows, data_lines, extra = [], [], {"commission": {}, "median_value": 0}
     for number, line in enumerate(lines[1:-1], start=2):
         record_type, code = line[0:2], line[6:16].strip()
         if record_type not in DATA_RECORDS or line[4:6] != canton:
-            raise TariffFileError(f"{canton}: invalid record in line {number}")
+            raise TariffFileError(_("{0}: invalid record in line {1}").format(canton, number))
         if line[2:4] != "01":
-            raise TariffFileError(f"{canton}: transaction type {line[2:4]} in line {number} is not supported")
+            raise TariffFileError(_("{0}: transaction type {1} in line {2} is not supported").format(canton, line[2:4], number))
         data_lines.append(line)
         if record_type == "12":
             extra["commission"][code] = to_amount(line[54:59])
@@ -66,7 +68,7 @@ def parse(text):
                 "rate": to_amount(line[54:59]),
             })
     if not rows:
-        raise TariffFileError(f"{canton}: no tariff records")
+        raise TariffFileError(_("{0}: no tariff records").format(canton))
     return {
         "canton": canton,
         "creation_date": to_date(lines[0][19:27]),

@@ -478,3 +478,143 @@ Unbilled Days Remaining,Unverrechnete Tage,
 Periods,Verrechnungsperioden,
 "Pending Final Invoice ({0} Days)","Ausstehende Schlussrechnung ({0} Tage)",
 "Pending Final Invoice: {0} Days Remaining","Ausstehende Schlussrechnung: {0} Tage verbleiben",
+13th Salary,13. Monatslohn
+13th Salary Frequency,Auszahlungsrhythmus 13. Monatslohn
+AHV Number,AHV-Nummer
+Annual Model Corrections,Korrekturen im Jahresmodell
+Another tariff import is queued or running. Please start this import when it has finished.,"Ein anderer Tarifimport ist bereits eingeplant oder läuft. Bitte diesen Import starten, sobald er abgeschlossen ist."
+Aperiodic,Aperiodisch
+BFS Number,BFS-Nummer
+Calculation,Berechnung
+Calculation Model,Berechnungsmodell
+Canton Accounts,Abrechnung pro Kanton
+Canton Name,Kantonsname
+Children,Kinder
+Church Tax,Kirchensteuer
+Commission Code,Code Bezugsprovision
+Commission Electronic (PEL) %,Bezugsprovision elektronisch (PEL) %
+Commission Paper (PPA) %,Bezugsprovision Papier (PPA) %
+Commission Simplified (PSP) %,Bezugsprovision vereinfachtes Abrechnungsverfahren (PSP) %
+Correction,Korrektur
+Correction Component,Gehaltskomponente Korrektur
+Cross-border Certificate Valid Until,Grenzgängerbescheinigung gültig bis
+Customer Number,Kundennummer
+Do not calculate Quellensteuer on this slip,Auf dieser Gehaltsabrechnung keine Quellensteuer berechnen
+ESTV Creation Date,Erstellungsdatum ESTV
+ESTV Tariff File (zip),ESTV-Tarifdatei (zip)
+Effective-dated data for Quellensteuer; changes apply from the month following the event,Quellensteuerdaten mit Gültigkeitsdatum; Änderungen gelten ab dem Monat nach dem Ereignis
+Entry Date,Eintrittsdatum
+Exit Date,Austrittsdatum
+Expected Tax,Geschuldete Quellensteuer
+Extrapolate 100%,Umrechnung auf 100%
+First Imported On,Erstmals importiert am
+First day of a month,Erster Tag eines Monats
+Fixed Amount,Fester Betrag
+Fixed Amount per Month,Fester Betrag pro Monat
+Go-live Date,Startdatum
+"Gre-1/Gre-2 (Germany), cantonal tariff confirmation (Italy) or form 2041-AS (France); without a certificate covering the month, the ordinary tariff is applied","Gre-1/Gre-2 (Deutschland), kantonale Tarifbestätigung (Italien) oder Formular 2041-AS (Frankreich); ohne gültige Bescheinigung für den Monat wird der ordentliche Tarif angewendet"
+Header Text,Text Kopfrecord
+Header or trailer record missing,Kopf- oder Schlussrecord fehlt
+Hourly Wage,Stundenlohn
+Hours for the rate-determining income of hourly wages; defaults to total working hours,Stunden für das satzbestimmende Einkommen bei Stundenlohn; ohne Angabe gilt die Gesamtarbeitszeit
+Import Tariffs,Tarife importieren
+"In Jahresmodell cantons, include the 13th salary in the rate-determining income from January, rather than correcting all months when it is paid","In Kantonen mit Jahresmodell den 13. Monatslohn ab Januar im satzbestimmenden Einkommen berücksichtigen, statt bei der Auszahlung alle Monate zu korrigieren"
+Income From,Steuerbares Einkommen ab
+Liable,Quellensteuerpflichtig
+"L–Q: cross-border Germany · R–V: cross-border Italy (TI, GR, VS) · SF: France special agreement","L–Q: Grenzgänger Deutschland · R–V: Grenzgänger Italien (TI, GR, VS) · SF: Sonderabkommen Frankreich"
+Median Value (No Degree),Medianwert (Beschäftigungsgrad unbestimmbar)
+Median Value (Tariff C),Medianwert (Tarif C)
+Minimum Correction,Minimale Korrektur
+Minimum Tax,Mindeststeuer
+Municipality,Gemeinde
+Net Payable,Zahlbetrag
+No Quellensteuer tariff for canton {0} in {1},Kein Quellensteuertarif für Kanton {0} im Jahr {1}
+No cross-border certificate,Keine Grenzgängerbescheinigung
+No cross-border certificate covering {0:%m.%Y} for tariff group {1}. The ordinary tariff {2} has been applied.,Keine gültige Grenzgängerbescheinigung für {0:%m.%Y} bei Tarifgruppe {1}. Der ordentliche Tarif {2} wurde angewendet.
+"No employment degree for {0} in {1:%m.%Y}, required for {2}","Kein Beschäftigungsgrad für {0} im {1:%m.%Y}, erforderlich für {2}"
+"No median value in tariff {0}, required for {1}","Kein Medianwert im Tarif {0}, erforderlich für {1}"
+No tariff files found,Keine Tarifdateien gefunden
+No tariff files found for cantons marked for import: {0},Keine Tarifdateien für die zum Import markierten Kantone gefunden: {0}
+Not liable,Nicht quellensteuerpflichtig
+"Only tariffs of marked cantons are imported; if none is marked, all cantons are imported","Nur Tarife markierter Kantone werden importiert; ist kein Kanton markiert, werden alle importiert"
+Other Employment,Weitere Erwerbstätigkeit
+Other Gross Income per Month,Weiteres Bruttoeinkommen pro Monat
+Other Income,Weiteres Bruttoeinkommen bekannt
+Own Degree,Eigener Beschäftigungsgrad
+Periodic,Periodisch
+"Periodic income is converted for the rate-determining income, aperiodic income is added unconverted. Replacement income (daily allowances paid through the employer) is taxable and counts like periodic income, except for hourly wages.","Periodische Einkünfte werden für das satzbestimmende Einkommen umgerechnet, aperiodische Einkünfte ohne Umrechnung addiert. Ersatzeinkünfte (über den Arbeitgeber ausbezahlte Taggelder) sind steuerbar und zählen wie periodische Einkünfte, ausser bei Stundenlohn."
+Previously Deducted,Bereits abgezogen
+Prior Year Corrections until Month,Vorjahreskorrekturen bis Monat
+Project 13th salary when known,"13. Monatslohn im Voraus berücksichtigen, wenn bekannt"
+QST Canton,Quellensteuer-Kanton
+QST Canton Account,Quellensteuer-Abrechnung Kanton
+QST Employee Record,Quellensteuerdaten Mitarbeiter
+QST Settings,Quellensteuer-Einstellungen
+QST Slip Detail,Quellensteuer-Detail Gehaltsabrechnung
+QST Tariff,Quellensteuertarif
+QST Tariff Import,Quellensteuertarif-Import
+QST Tariff Rate,Quellensteuertarif-Satz
+Quellensteuer,Quellensteuer
+Quellensteuer Abrechnung,Quellensteuer-Abrechnung
+Quellensteuer Component,Gehaltskomponente Quellensteuer
+Quellensteuer Details,Quellensteuer-Details
+Quellensteuer Hours,Quellensteuer-Stunden
+Quellensteuer Records,Quellensteuerdaten
+Quellensteuer Type,Quellensteuer-Art
+"Quellensteuer components are calculated automatically, please remove them from these salary structures: {0}","Quellensteuer-Komponenten werden automatisch berechnet, bitte aus diesen Gehaltsstrukturen entfernen: {0}"
+Quellensteuer corrections of {0} for earlier months were not applied because a salary slip for a later month is already submitted. Corrections are made on the newest salary slip.,"Quellensteuer-Korrekturen von {0} für frühere Monate wurden nicht angewendet, weil bereits eine Gehaltsabrechnung für einen späteren Monat gebucht ist. Korrekturen erfolgen auf der neuesten Gehaltsabrechnung."
+Quellensteuer row {0}: canton and tariff group are required,Quellensteuer Zeile {0}: Kanton und Tarifgruppe sind erforderlich
+Quellensteuer row {0}: duplicate valid from date,Quellensteuer Zeile {0}: Gültig-ab-Datum ist doppelt
+Quellensteuer row {0}: total employment degree must be at least {1}%,Quellensteuer Zeile {0}: Gesamtbeschäftigungsgrad muss mindestens {1}% betragen
+Quellensteuer row {0}: valid from must be the first day of a month,Quellensteuer Zeile {0}: Gültig ab muss der erste Tag eines Monats sein
+Quellensteuer row {0}: {1} requires an employment degree (Employment Degrees) in {2:%m.%Y},Quellensteuer Zeile {0}: {1} erfordert einen Beschäftigungsgrad (Anstellungsgrade) im {2:%m.%Y}
+Rate %,Steuersatz %
+Rate Count,Anzahl Tarifsätze
+Rate-determining Income,Satzbestimmendes Einkommen
+Record Count,Anzahl Records
+Record Type,Recordart
+Replacement Income,Ersatzeinkünfte
+Salary Components,Gehaltskomponenten
+Salary slips before this date are never corrected,Gehaltsabrechnungen vor diesem Datum werden nie korrigiert
+Skip Quellensteuer,Quellensteuer überspringen
+Slips up to this month also correct months of the previous year,Gehaltsabrechnungen bis zu diesem Monat korrigieren auch Monate des Vorjahres
+Tariff,Tarif
+Tariff Code,Tarifcode
+Tariff Group,Tarifgruppe
+Tariff Import,Tarifimport
+Tariff code {0} does not exist in {1},Tarifcode {0} existiert nicht in {1}
+Tariff code {0} not found in {1},Tarifcode {0} nicht gefunden in {1}
+Taxable Income,Steuerbares Einkommen
+Total Degree,Gesamtbeschäftigungsgrad bekannt
+Total Employment Degree,Gesamtbeschäftigungsgrad
+Trailer canton {0} does not match {1},Kanton {0} im Schlussrecord stimmt nicht mit {1} überein
+Year-end,Jahresende
+{0} must be a deduction,{0} muss ein Abzug sein
+"{0}: already imported, skipped","{0}: bereits importiert, übersprungen"
+{0}: imported {1} rates,{0}: {1} Tarifsätze importiert
+{0}: invalid record in line {1},{0}: ungültiger Record in Zeile {1}
+{0}: no tariff records,{0}: keine Tarifrecords
+{0}: revision already imported with different data,{0}: Revision bereits mit abweichenden Daten importiert
+"{0}: trailer announces {1} records, found {2}","{0}: Schlussrecord meldet {1} Records, gefunden {2}"
+{0}: transaction type {1} in line {2} is not supported,{0}: Transaktionsart {1} in Zeile {2} wird nicht unterstützt
+Annual,Jahresmodell,QST Canton
+Annual,Jahresmodell,QST Tariff
+Annual,Jahresmodell,QST Slip Detail
+Monthly,Monatsmodell,QST Canton
+Monthly,Monatsmodell,QST Tariff
+Monthly,Monatsmodell,QST Slip Detail
+Monthly,Laufend,QST Settings
+Current,Laufender Monat,QST Slip Detail
+Days,Tage,QST Slip Detail
+Hours,Stunden,QST Slip Detail
+Entry Type,Art,QST Slip Detail
+Tax,Quellensteuer,QST Slip Detail
+Tax,Quellensteuer,Quellensteuer Abrechnung
+Total Tax,Total Quellensteuer,Quellensteuer Abrechnung
+Commission,Bezugsprovision,Quellensteuer Abrechnung
+Fixed Rate,Fester Steuersatz,QST Employee Record
+None,Keine,QST Employee Record
+Income,Einkommen,QST Employee Record
+Valid From,Gültig ab,QST Employee Record
+Step,Tarifschritt,QST Tariff Rate
+Code,Tarifcode,QST Tariff Rate

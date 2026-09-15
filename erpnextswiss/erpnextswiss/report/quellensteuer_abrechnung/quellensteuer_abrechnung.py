@@ -21,16 +21,16 @@ def get_columns():
         {"label": _("AHV Number"), "fieldname": "social_security_number", "fieldtype": "Data", "width": 120},
         {"label": _("Date of Birth"), "fieldname": "date_of_birth", "fieldtype": "Date", "width": 95},
         {"label": _("BFS Number"), "fieldname": "bfsnr", "fieldtype": "Data", "width": 80},
-        {"label": _("Entry"), "fieldname": "date_of_joining", "fieldtype": "Date", "width": 95},
-        {"label": _("Exit"), "fieldname": "relieving_date", "fieldtype": "Date", "width": 95},
+        {"label": _("Entry Date"), "fieldname": "date_of_joining", "fieldtype": "Date", "width": 95},
+        {"label": _("Exit Date"), "fieldname": "relieving_date", "fieldtype": "Date", "width": 95},
         {"label": _("Canton"), "fieldname": "canton", "fieldtype": "Data", "width": 60},
         {"label": _("Period"), "fieldname": "period", "fieldtype": "Date", "width": 95},
-        {"label": _("Type"), "fieldname": "entry_type", "fieldtype": "Data", "width": 90},
+        {"label": _("Entry Type", context="QST Slip Detail"), "fieldname": "entry_type_label", "fieldtype": "Data", "width": 90},
         {"label": _("Tariff Code"), "fieldname": "tariff_code", "fieldtype": "Data", "width": 80},
         {"label": _("Taxable Income"), "fieldname": "taxable_income", "fieldtype": "Currency", "width": 120},
         {"label": _("Rate-determining Income"), "fieldname": "rate_determining_income", "fieldtype": "Currency", "width": 120},
         {"label": _("Rate %"), "fieldname": "rate", "fieldtype": "Float", "precision": 2, "width": 70},
-        {"label": _("Tax"), "fieldname": "tax", "fieldtype": "Currency", "width": 110},
+        {"label": _("Tax", context="Quellensteuer Abrechnung"), "fieldname": "tax", "fieldtype": "Currency", "width": 110},
         {"label": _("Salary Slip"), "fieldname": "salary_slip", "fieldtype": "Link", "options": "Salary Slip", "width": 150},
     ]
 
@@ -55,6 +55,7 @@ def get_data(filters):
     for row in rows:
         employee = employees.setdefault(row.employee, frappe.get_doc("Employee", row.employee))
         record = get_record(employee, getdate(row.period))
+        row.entry_type_label = _(row.entry_type, context="QST Slip Detail")
         row.bfsnr = frappe.get_cached_value("Municipality", record.municipality, "bfsnr") if record and record.municipality else None
     return rows
 
@@ -68,7 +69,7 @@ def get_summary(data, filters):
     commission = sum(flt(row.tax) * flt(frappe.get_cached_value("QST Tariff", row.qst_tariff, "commission_" + code.lower())) / 100
                      for row in data if row.qst_tariff)
     return [
-        {"label": _("Total Tax"), "value": total, "datatype": "Currency"},
-        {"label": _("Commission"), "value": flt(commission, 2), "datatype": "Currency"},
+        {"label": _("Total Tax", context="Quellensteuer Abrechnung"), "value": total, "datatype": "Currency"},
+        {"label": _("Commission", context="Quellensteuer Abrechnung"), "value": flt(commission, 2), "datatype": "Currency"},
         {"label": _("Net Payable"), "value": flt(total - commission, 2), "datatype": "Currency", "indicator": "Blue"},
     ]

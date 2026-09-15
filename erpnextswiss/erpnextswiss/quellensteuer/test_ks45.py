@@ -99,6 +99,19 @@ class TestKS45MonthlyModel(unittest.TestCase):
         self.assertAlmostEqual(monthly_rdi(c_ag, {"thirteenth_frequency": "Yearly", "other_employment": "Total Degree", "total_degree": 90}, 40), 9500)
         self.assertAlmostEqual(monthly_rdi(month(date(2022, 3, 1), 2600), {"other_employment": "Extrapolate 100%"}, 50), 5200)
 
+    def test_6_10_replacement_income_paid_to_employer(self):
+        self.assertAlmostEqual(monthly_rdi(month(date(2021, 3, 1), 4500, replacement=1000), {}), 5500)
+        booked = run_ledger(self, employee(record()), [month(date(2021, 3, 1), 4500, replacement=1000)],
+                            lambda tariff, code, income: {5500: 10.0}[round(income)], models={"ZH": "Monthly"})
+        self.assertEqual(booked, [(550, 0)])
+
+    def test_6_5_hourly_wage_with_daily_allowance(self):
+        july = month(date(2021, 7, 1), 2625, 1200, hours=75, replacement=2000)
+        self.assertAlmostEqual(monthly_rdi(july, {"hourly_wage": 1}), 7500)
+        booked = run_ledger(self, employee(record(hourly_wage=1)), [july], lambda tariff, code, income: {7500: 10.0}[round(income)],
+                            models={"ZH": "Monthly"})
+        self.assertEqual(booked, [(582.5, 0)])
+
 
 class TestKS45AnnualModel(unittest.TestCase):
     def test_7_3_1_constant_salary(self):
@@ -154,6 +167,13 @@ class TestKS45AnnualModel(unittest.TestCase):
         rates = annual_rates({("A0N", 120000): 16.9, ("A0N", 113143): 16.3, ("A0N", 97094): 14.6})
         booked = run_ledger(self, employee(record()), months, rates, project_thirteenth=0)
         self.assertEqual(booked, [(845, 0), (978, -30), (730, -187)])
+
+    def test_7_5_4_replacement_income_paid_to_employer(self):
+        months = months_2021([5500, 5500, 4500] + [5500] * 9)
+        months[2]["replacement"] = 1000
+        booked = run_ledger(self, employee(record()), months, annual_rates({("A0N", 66000): 10.5}), project_thirteenth=0)
+        self.assertEqual(booked, [(577.5, 0)] * 12)
+        self.assertEqual(sum(qst for qst, correction in booked), 6930)
 
 
 class TestKS45PersonalChanges(unittest.TestCase):

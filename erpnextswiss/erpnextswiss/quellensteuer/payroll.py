@@ -8,8 +8,8 @@ from erpnextswiss.erpnextswiss.quellensteuer.calculation import (
     CROSS_BORDER_GROUPS, annual_rdi, days_30, month_end, monthly_rdi, tariff_code, tax_amount)
 from erpnextswiss.erpnextswiss.quellensteuer.tariff import cache, get_bracket, get_tariff
 
-TYPE_KEYS = {"Periodic": "periodic", "Aperiodic": "aperiodic", "13th Salary": "thirteenth"}
-SUM_KEYS = ("periodic", "aperiodic", "thirteenth", "hours")
+TYPE_KEYS = {"Periodic": "periodic", "Aperiodic": "aperiodic", "13th Salary": "thirteenth", "Replacement Income": "replacement"}
+SUM_KEYS = ("periodic", "aperiodic", "thirteenth", "replacement", "hours")
 DEGREE_MODES = ("Total Degree", "Extrapolate 100%")
 
 
@@ -97,7 +97,7 @@ def component_types():
 def build_month(rows, types, start, end, hours, employee):
     joining = getdate(employee.date_of_joining)
     relieving = getdate(employee.relieving_date) if employee.relieving_date else None
-    month = {"period": start.replace(day=1), "periodic": 0, "aperiodic": 0, "thirteenth": 0, "hours": hours,
+    month = {"period": start.replace(day=1), "periodic": 0, "aperiodic": 0, "thirteenth": 0, "replacement": 0, "hours": hours,
              "days": days_30(start, end, joining, relieving), "joining": joining, "relieving": relieving}
     for row in rows:
         key = TYPE_KEYS.get(types.get(row.salary_component))
@@ -175,7 +175,7 @@ def calculate(employee, months, current_period, settings):
                                     "own_degree": own_degree(employee, period)}
         if not result["record"]:
             continue
-        taxable = month["periodic"] + month["aperiodic"] + month["thirteenth"]
+        taxable = month["periodic"] + month["aperiodic"] + month["thirteenth"] + month.get("replacement", 0)
         group = effective_group(record, period)
         result.update(code=tariff_code(group, record.children, record.church_tax), fallback=group != record.tariff_group)
         if record.other_employment == "Fixed Rate":
@@ -233,10 +233,11 @@ def detail_row(result, month, period, paid, delta, entry_type):
         "periodic": month["periodic"],
         "aperiodic": month["aperiodic"],
         "thirteenth": month["thirteenth"],
+        "replacement": month.get("replacement", 0),
         "days": month["days"],
         "hours": month["hours"],
         "own_degree": result["own_degree"],
-        "taxable_income": month["periodic"] + month["aperiodic"] + month["thirteenth"],
+        "taxable_income": month["periodic"] + month["aperiodic"] + month["thirteenth"] + month.get("replacement", 0),
         "rate_determining_income": flt(result["rdi"], 2),
         "rate": result["rate"],
         "expected_tax": result["tax"],

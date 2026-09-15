@@ -266,7 +266,7 @@ tr.sum td { font-weight: 600; background: var(--ground); }
       <span class="chip">7 custom fields</span>
       <span class="chip">3 doc hooks</span>
       <span class="chip">1 report · 1 patch</span>
-      <span class="chip">58 tests · 12 integration</span>
+      <span class="chip">61 tests · 12 integration</span>
     </div>
   </header>
 
@@ -454,7 +454,7 @@ tr.sum td { font-weight: 600; background: var(--ground); }
               <tr><td class="k">QST Tariff</td><td>read-only · <span class="mono">QST-ZH-2026-20251208</span></td><td><code>canton</code> <code>year</code> <code>valid_from</code> <code>creation_date</code> <code>calculation_model</code> <code>content_hash</code> <code>record_count</code> <code>rate_count</code> <code>commission_pel/ppa/psp</code> <code>median_value</code> <code>first_imported_on</code></td></tr>
               <tr><td class="k">QST Tariff Rate</td><td>read-only · autoincrement</td><td><code>tariff</code> <code>record_type</code> 06/11 · <code>code</code> <code>income_from</code> <code>step</code> <code>children</code> <code>min_tax</code> <code>rate</code></td></tr>
               <tr><td class="k">QST Employee Record</td><td>child of Employee</td><td><code>valid_from</code> <code>liable</code> <code>canton</code> <code>municipality</code> <code>tariff_group</code> <code>children</code> <code>church_tax</code> → <code>tariff_code</code> · <code>cross_border_valid_until</code> · <code>hourly_wage</code> · <code>other_employment</code> + <code>total_degree</code> / <code>other_income</code> / <code>fixed_rate</code> / <code>fixed_amount</code></td></tr>
-              <tr><td class="k">QST Slip Detail</td><td>child of Salary Slip · read-only</td><td><code>period</code> <code>entry_type</code> Current/Correction · <code>tariff_code</code> <code>qst_tariff</code> · <code>periodic</code> <code>aperiodic</code> <code>thirteenth</code> <code>days</code> <code>hours</code> <code>own_degree</code> · <code>rate_determining_income</code> <code>rate</code> · <code>expected_tax</code> <code>previously_deducted</code> <code>tax</code></td></tr>
+              <tr><td class="k">QST Slip Detail</td><td>child of Salary Slip · read-only</td><td><code>period</code> <code>entry_type</code> Current/Correction · <code>tariff_code</code> <code>qst_tariff</code> · <code>periodic</code> <code>aperiodic</code> <code>thirteenth</code> <code>replacement</code> <code>days</code> <code>hours</code> <code>own_degree</code> · <code>rate_determining_income</code> <code>rate</code> · <code>expected_tax</code> <code>previously_deducted</code> <code>tax</code></td></tr>
             </tbody>
           </table>
         </div>
@@ -469,7 +469,7 @@ tr.sum td { font-weight: 600; background: var(--ground); }
               <tr><td class="mono">Salary Slip.qst_hours</td><td>Float</td><td>hours for hourly RDI · default <code>total_working_hours</code></td></tr>
               <tr><td class="mono">Salary Slip.qst_skip</td><td>Check</td><td>no calculation · month excluded from corrections</td></tr>
               <tr><td class="mono">Salary Slip.qst_details</td><td>Table (read-only)</td><td>QST Slip Detail rows</td></tr>
-              <tr><td class="mono">Salary Component.qst_type</td><td>Select</td><td>— / Periodic / Aperiodic / 13th Salary · deductions count negative</td></tr>
+              <tr><td class="mono">Salary Component.qst_type</td><td>Select</td><td>— / Periodic / Aperiodic / 13th Salary / Replacement Income · deductions count negative</td></tr>
             </tbody>
           </table>
         </div>
@@ -649,6 +649,7 @@ tr.sum td { font-weight: 600; background: var(--ground); }
               <tr><td class="k">Extrapolate 100%</td><td colspan="2">(periodic + 13th) × 100 ÷ own degree (required)</td><td>6.4 · 7.3.2</td></tr>
               <tr><td class="k">Other income</td><td>+ monthly gross</td><td>+ monthly gross × 12</td><td>6.4</td></tr>
               <tr><td class="k">Aperiodic</td><td>+ unconverted</td><td>+ Σ unconverted</td><td>6.6 · 7.3.1</td></tr>
+              <tr><td class="k">Replacement income</td><td colspan="2">taxable · counts like periodic pay · hourly wages: not rate-determining</td><td>6.5 · 6.10 · 7.5.4</td></tr>
               <tr><td class="k">13th salary</td><td>amount ÷ worked days in period × 90/180/360 · frequency from settings</td><td>added when paid · setting on + 13th in structure: projected from January (1/12 of periodic), replaced by payouts</td><td>6.3 · 7.1</td></tr>
               <tr><td class="k">Fixed rate / amount</td><td colspan="2">no bracket · taxable × rate or fixed amount</td><td>SRS</td></tr>
               <tr><td class="k">Tax</td><td colspan="2">taxable × rate · ≥ min tax if taxable &gt; 0 · rounded 0.05</td><td>ESTV 4.4</td></tr>
@@ -831,20 +832,20 @@ tr.sum td { font-weight: 600; background: var(--ground); }
                 <dt>Decide</dt><dd>moving back into an earlier canton within the same year: both stints counted together (not covered by KS45) · acceptable?</dd>
               </dl></td></tr>
 
-              <tr class="item"><td><span class="pill p-limit">Limitation</span></td><td>later month submitted → corrections skipped · message shows pending amount</td><td class="where">payroll.salary_slip_validate</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl8" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>
+              <tr class="item"><td><span class="pill p-tested">Resolved</span></td><td>later month submitted → corrections skipped · message shows pending amount</td><td class="where">payroll.salary_slip_validate</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl8" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>
               <tr class="detail" id="cl8" hidden><td colspan="4"><dl class="explain">
                 <dt>What</dt><dd>if any slip of a later month is submitted, this slip gets its current-month tax but no correction rows · corrections still calculated</dd>
                 <dt>Why</dt><dd>corrections belong on the newest slip · avoids booking the same delta twice</dd>
                 <dt>Effect</dt><dd>review decision: orange message dialog “corrections of CHF … not applied … made on the newest salary slip”, only if corrections are pending · errors in those earlier months don’t block this slip · pending deltas appear on the next new slip</dd>
-                <dt>Decide</dt><dd>—</dd>
+                <dt>Decide</dt><dd>review decision: message is sufficient</dd>
               </dl></td></tr>
 
-              <tr class="item"><td><span class="pill p-limit">Limitation</span></td><td>concurrent imports prevented · queue check + lock</td><td class="where">tariff.store</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl9" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>
+              <tr class="item"><td><span class="pill p-tested">Resolved</span></td><td>concurrent imports prevented · queue check + lock</td><td class="where">tariff.store</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl9" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>
               <tr class="detail" id="cl9" hidden><td colspan="4"><dl class="explain">
                 <dt>What</dt><dd>import reserves a block of rate ids from the sequence, bulk-inserts, then moves the sequence past the block</dd>
                 <dt>Why</dt><dd>one sequence call per row is too slow for up to 316’000 rows per canton</dd>
                 <dt>Effect</dt><dd>review decision: one import at a time · “Import” refused while an import job is queued or running (fixed job id, deduplicated) · import runs under a site file lock (released if the worker dies) → a second import started anyway ends as Failed with the lock message</dd>
-                <dt>Decide</dt><dd>—</dd>
+                <dt>Decide</dt><dd>review decision: one import at a time</dd>
               </dl></td></tr>
 
               <tr class="item"><td><span class="pill p-limit">Limitation</span></td><td>cross-border DE / IT / FR via tariff codes + certificate · FL not liable · work days abroad excluded</td><td class="where">parser.parse · QST Employee Record</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl10" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>
@@ -872,12 +873,12 @@ tr.sum td { font-weight: 600; background: var(--ground); }
                 <dt>Decide</dt><dd>add a daily-wage option with days per slip when a customer needs it</dd>
               </dl></td></tr>
 
-              <tr class="item"><td><span class="pill p-limit">Limitation</span></td><td>replacement income paid through the employer (daily allowances) not supported</td><td class="where">Salary Component · payroll.build_month</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl19" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>
+              <tr class="item"><td><span class="pill p-tested">Resolved</span></td><td>replacement income paid through the employer (daily allowances) · <code>qst_type</code> Replacement Income</td><td class="where">Salary Component · payroll.build_month</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl19" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>
               <tr class="detail" id="cl19" hidden><td colspan="4"><dl class="explain">
-                <dt>What</dt><dd>sickness or accident daily allowances paid via payroll are taxable but don’t raise the rate-determining income · <code>qst_type</code> only knows Periodic / Aperiodic / 13th Salary</dd>
-                <dt>Why</dt><dd>KS45 §6.5 ex. 6: taxable 5’825 incl. 2’000 daily allowance, rate-determining 7’500 without it · §6.10 / §7.5.4</dd>
-                <dt>Effect</dt><dd>tagged as Periodic or Aperiodic → rate too high · untagged → allowance not taxed</dd>
-                <dt>Decide</dt><dd>add <code>qst_type</code> “Replacement Income” (taxable, not rate-determining)</dd>
+                <dt>What</dt><dd>new <code>qst_type</code> “Replacement Income” for sickness or accident daily allowances paid through the employer · always taxable · monthly and annual wages: counts like periodic pay · hourly wages: not rate-determining</dd>
+                <dt>Why</dt><dd>KS45 §6.10 / §7.5.4: allowance paid to the employer is taxed with the salary under the ordinary tariff (4’500 + 1’000 → 5’500; annual 5’500 × 12 = 66’000) · §6.5 ex. 6: for hourly wages the rate comes only from hourly wage × 180 h (taxable 5’825, rate-determining 7’500 without the 2’000 allowance)</dd>
+                <dt>Effect</dt><dd>correction of the earlier finding: for monthly wages, tagging the allowance as Periodic was already correct · the new type fixes hourly wages, where Periodic inflated the hourly figure · detail rows show the amount in a separate column · tests: KS45 §6.10, §6.5 ex. 6, §7.5.4 (12 × 577.50 = 6’930)</dd>
+                <dt>Decide</dt><dd>review decision: implemented</dd>
               </dl></td></tr>
 
               <tr class="item"><td><span class="pill p-limit">Limitation</span></td><td>side job without a determinable employment degree</td><td class="where">payroll.calculate</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl20" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>
@@ -919,7 +920,7 @@ tr.sum td { font-weight: 600; background: var(--ground); }
                 <dt>Decide</dt><dd>quick manual check in desk</dd>
               </dl></td></tr>
 
-              <tr class="item"><td><span class="pill p-scope">Scope</span></td><td>58 tests: 24 unit · 22 KS45 examples · 12 integration (rolled back)</td><td class="where">test_quellensteuer.py</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl15" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>
+              <tr class="item"><td><span class="pill p-scope">Scope</span></td><td>61 tests: 24 unit · 25 KS45 examples · 12 integration (rolled back)</td><td class="where">test_quellensteuer.py</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl15" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>
               <tr class="detail" id="cl15" hidden><td colspan="4"><dl class="explain">
                 <dt>What</dt><dd>test_quellensteuer: 24 unit tests, database and tariffs mocked · test_ks45: KS45 §6.3–6.6 income examples, §7.3–7.4 and §8.2–8.4 as month-by-month slip ledgers checked against every deduction and correction in the KS45 tables · test_quellensteuer_integration: 12 database tests, commits disabled, everything rolled back after the run</dd>
                 <dt>Why</dt><dd>run with <code>bench --site … run-tests --module …</code> (<code>allow_tests</code> enabled on the dev site) · integration tests commit nothing</dd>

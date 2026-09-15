@@ -22,9 +22,9 @@ def tariff_file(lines):
     return "\r\n".join(lines + ["99" + " " * 15 + "ZZ{0:08d}".format(len(lines) + 1) + " " * 12]) + "\r\n"
 
 
-def month(period, periodic=0, aperiodic=0, thirteenth=0, days=30, hours=0, joining=date(2010, 1, 1), relieving=None):
-    return {"period": period, "periodic": periodic, "aperiodic": aperiodic, "thirteenth": thirteenth, "days": days,
-            "hours": hours, "joining": joining, "relieving": relieving}
+def month(period, periodic=0, aperiodic=0, thirteenth=0, days=30, hours=0, joining=date(2010, 1, 1), relieving=None, replacement=0):
+    return {"period": period, "periodic": periodic, "aperiodic": aperiodic, "thirteenth": thirteenth, "replacement": replacement,
+            "days": days, "hours": hours, "joining": joining, "relieving": relieving}
 
 
 class TestParser(unittest.TestCase):

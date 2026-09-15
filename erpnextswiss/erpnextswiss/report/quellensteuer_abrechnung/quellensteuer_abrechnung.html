@@ -1,0 +1,37 @@
+<h2>{%= __("Quellensteuer Abrechnung") %}</h2>
+<p>
+    {%= filters.company || "" %}{% if (filters.canton) { %} &middot; {%= __("Canton") %} {%= filters.canton %}{% } %}<br>
+    {%= __("Period") %}: {%= frappe.datetime.str_to_user(filters.from_date) %} &ndash; {%= frappe.datetime.str_to_user(filters.to_date) %}
+</p>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>{%= __("AHV Number") %}</th>
+            <th>{%= __("Name") %}</th>
+            <th>{%= __("Date of Birth") %}</th>
+            <th>{%= __("BFS Number") %}</th>
+            <th>{%= __("Entry") %} / {%= __("Exit") %}</th>
+            <th>{%= __("Period") %}</th>
+            <th>{%= __("Tariff Code") %}</th>
+            <th class="text-right">{%= __("Taxable Income") %}</th>
+            <th class="text-right">{%= __("Rate %") %}</th>
+            <th class="text-right">{%= __("Tax") %}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for (let row of data) { if (!row.employee) continue; %}
+        <tr>
+            <td>{%= row.social_security_number || "" %}</td>
+            <td>{%= row.employee_name %}</td>
+            <td>{%= frappe.datetime.str_to_user(row.date_of_birth) %}</td>
+            <td>{%= row.bfsnr || "" %}</td>
+            <td>{%= frappe.datetime.str_to_user(row.date_of_joining) %}{% if (row.relieving_date) { %} / {%= frappe.datetime.str_to_user(row.relieving_date) %}{% } %}</td>
+            <td>{%= frappe.datetime.str_to_user(row.period) %}{% if (row.entry_type === "Correction") { %} ({%= __("Correction") %}){% } %}</td>
+            <td>{%= row.tariff_code || "" %}</td>
+            <td class="text-right">{%= format_currency(row.taxable_income) %}</td>
+            <td class="text-right">{%= (row.rate || 0).toFixed(2) %}</td>
+            <td class="text-right">{%= format_currency(row.tax) %}</td>
+        </tr>
+        {% } %}
+    </tbody>
+</table>

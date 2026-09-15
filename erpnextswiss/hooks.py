@@ -140,6 +140,13 @@ doc_events = {
         "on_submit": "erpnextswiss.erpnextswiss.doctype.contract.contract.sync_contract_status",
         "on_cancel": "erpnextswiss.erpnextswiss.doctype.contract.contract.sync_contract_status",
         "on_update": "erpnextswiss.erpnextswiss.doctype.contract.contract.sync_contract_status"
+    },
+    "Employee": {
+        "validate": "erpnextswiss.erpnextswiss.quellensteuer.employee.validate_employee"
+    },
+    "Salary Slip": {
+        "validate": "erpnextswiss.erpnextswiss.quellensteuer.payroll.salary_slip_validate",
+        "before_submit": "erpnextswiss.erpnextswiss.quellensteuer.payroll.salary_slip_before_submit"
     }
 }
 

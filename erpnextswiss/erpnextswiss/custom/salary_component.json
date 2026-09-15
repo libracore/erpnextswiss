@@ -1,0 +1,25 @@
+{
+ "custom_fields": [
+  {
+   "dt": "Salary Component",
+   "fieldname": "qst_type",
+   "fieldtype": "Select",
+   "label": "Quellensteuer Type",
+   "options": "\nPeriodic\nAperiodic\n13th Salary",
+   "insert_after": "depends_on_payment_days",
+   "description": "Periodic income is converted for the rate-determining income, aperiodic income is added unconverted",
+   "name": "Salary Component-qst_type",
+   "module": "ERPNextSwiss",
+   "creation": "2026-09-14 12:00:00.000000",
+   "modified": "2026-09-14 12:00:00.000000",
+   "owner": "Administrator",
+   "modified_by": "Administrator",
+   "docstatus": 0,
+   "idx": 0
+  }
+ ],
+ "custom_perms": [],
+ "doctype": "Salary Component",
+ "property_setters": [],
+ "sync_on_migrate": 1
+}

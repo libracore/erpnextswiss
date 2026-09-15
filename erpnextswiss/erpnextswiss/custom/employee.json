@@ -311,6 +311,37 @@
    "translatable": 0,
    "unique": 0,
    "width": null
+  },
+  {
+   "collapsible": 1,
+   "creation": "2026-09-14 12:00:00.000000",
+   "docstatus": 0,
+   "dt": "Employee",
+   "fieldname": "qst_section",
+   "fieldtype": "Section Break",
+   "idx": 44,
+   "insert_after": "carryover_and_payouts",
+   "label": "Quellensteuer",
+   "modified": "2026-09-14 12:00:00.000000",
+   "modified_by": "Administrator",
+   "name": "Employee-qst_section",
+   "owner": "Administrator"
+  },
+  {
+   "creation": "2026-09-14 12:00:00.000000",
+   "description": "Effective-dated data for Quellensteuer; changes apply from the month following the event",
+   "docstatus": 0,
+   "dt": "Employee",
+   "fieldname": "qst_records",
+   "fieldtype": "Table",
+   "idx": 45,
+   "insert_after": "qst_section",
+   "label": "Quellensteuer Records",
+   "modified": "2026-09-14 12:00:00.000000",
+   "modified_by": "Administrator",
+   "name": "Employee-qst_records",
+   "options": "QST Employee Record",
+   "owner": "Administrator"
   }
  ],
  "custom_perms": [],

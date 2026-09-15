@@ -109,7 +109,7 @@ def get_tariff(canton, day):
     key = ("tariff", canton, day)
     if key not in cache():
         tariffs = frappe.db.sql("""
-            SELECT `name`, `calculation_model`, `canton`
+            SELECT `name`, `calculation_model`, `canton`, `median_value`
             FROM `tabQST Tariff`
             WHERE `canton` = %s AND `year` = %s AND `valid_from` <= %s
             ORDER BY `creation_date` DESC, `first_imported_on` DESC

@@ -1,0 +1,108 @@
+{
+ "actions": [],
+ "autoname": "autoincrement",
+ "creation": "2026-09-14 12:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "tariff",
+  "record_type",
+  "code",
+  "valid_from",
+  "income_from",
+  "step",
+  "children",
+  "min_tax",
+  "rate"
+ ],
+ "fields": [
+  {
+   "fieldname": "tariff",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Tariff"
+  },
+  {
+   "fieldname": "record_type",
+   "fieldtype": "Data",
+   "label": "Record Type",
+   "length": 2
+  },
+  {
+   "fieldname": "code",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Code",
+   "length": 10
+  },
+  {
+   "fieldname": "valid_from",
+   "fieldtype": "Date",
+   "label": "Valid From"
+  },
+  {
+   "fieldname": "income_from",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Income From"
+  },
+  {
+   "fieldname": "step",
+   "fieldtype": "Currency",
+   "label": "Step"
+  },
+  {
+   "fieldname": "children",
+   "fieldtype": "Int",
+   "label": "Children"
+  },
+  {
+   "fieldname": "min_tax",
+   "fieldtype": "Currency",
+   "label": "Minimum Tax"
+  },
+  {
+   "fieldname": "rate",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Rate %",
+   "precision": "2"
+  }
+ ],
+ "in_create": 1,
+ "links": [],
+ "modified": "2026-09-14 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "ERPNextSwiss",
+ "name": "QST Tariff Rate",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager"
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "HR Manager"
+  },
+  {
+   "read": 1,
+   "report": 1,
+   "role": "HR User"
+  }
+ ],
+ "read_only": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

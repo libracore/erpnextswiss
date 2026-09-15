@@ -1,0 +1,175 @@
+{
+ "actions": [],
+ "creation": "2026-09-14 12:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "canton",
+  "year",
+  "valid_from",
+  "creation_date",
+  "calculation_model",
+  "col_main",
+  "first_imported_on",
+  "tariff_import",
+  "record_count",
+  "rate_count",
+  "content_hash",
+  "sec_details",
+  "header_text",
+  "median_value",
+  "col_details",
+  "commission_pel",
+  "commission_ppa",
+  "commission_psp"
+ ],
+ "fields": [
+  {
+   "fieldname": "canton",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Canton",
+   "options": "QST Canton",
+   "read_only": 1
+  },
+  {
+   "fieldname": "year",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Year",
+   "read_only": 1
+  },
+  {
+   "fieldname": "valid_from",
+   "fieldtype": "Date",
+   "label": "Valid From",
+   "read_only": 1
+  },
+  {
+   "fieldname": "creation_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "ESTV Creation Date",
+   "read_only": 1
+  },
+  {
+   "fieldname": "calculation_model",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Calculation Model",
+   "options": "Monthly\nAnnual"
+  },
+  {
+   "fieldname": "col_main",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "first_imported_on",
+   "fieldtype": "Datetime",
+   "label": "First Imported On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "tariff_import",
+   "fieldtype": "Link",
+   "label": "Tariff Import",
+   "options": "QST Tariff Import",
+   "read_only": 1
+  },
+  {
+   "fieldname": "record_count",
+   "fieldtype": "Int",
+   "label": "Record Count",
+   "read_only": 1
+  },
+  {
+   "fieldname": "rate_count",
+   "fieldtype": "Int",
+   "label": "Rate Count",
+   "read_only": 1
+  },
+  {
+   "fieldname": "content_hash",
+   "fieldtype": "Data",
+   "label": "Content Hash",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sec_details",
+   "fieldtype": "Section Break",
+   "label": "Details"
+  },
+  {
+   "fieldname": "header_text",
+   "fieldtype": "Data",
+   "label": "Header Text",
+   "read_only": 1
+  },
+  {
+   "fieldname": "median_value",
+   "fieldtype": "Currency",
+   "label": "Median Value (Tariff C)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "col_details",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "commission_pel",
+   "fieldtype": "Float",
+   "label": "Commission Electronic (PEL) %",
+   "read_only": 1
+  },
+  {
+   "fieldname": "commission_ppa",
+   "fieldtype": "Float",
+   "label": "Commission Paper (PPA) %",
+   "read_only": 1
+  },
+  {
+   "fieldname": "commission_psp",
+   "fieldtype": "Float",
+   "label": "Commission Simplified (PSP) %",
+   "read_only": 1
+  }
+ ],
+ "in_create": 1,
+ "links": [],
+ "modified": "2026-09-14 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "ERPNextSwiss",
+ "name": "QST Tariff",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager"
+  },
+  {
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "HR Manager"
+  },
+  {
+   "read": 1,
+   "report": 1,
+   "role": "HR User"
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

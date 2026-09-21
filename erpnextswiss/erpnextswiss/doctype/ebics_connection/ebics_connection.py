@@ -89,15 +89,29 @@ class ebicsConnection(Document):
             passphrase = get_decrypted_password("ebics Connection", self.name, "key_password", False)
             keyring = EbicsKeyRing(keys=self.get_keys_file_name(), passphrase=passphrase)
             user = EbicsUser(keyring=keyring, partnerid=self.partner_id, userid=self.user_id)
+            company = frappe.get_doc("Company", self.company)
+            address_name = frappe.db.sql("""
+                SELECT a.name
+                FROM `tabAddress` a
+                INNER JOIN `tabDynamic Link` dl ON dl.parent = a.name
+                WHERE dl.parenttype = 'Address'
+                  AND dl.link_doctype = 'Company'
+                  AND dl.link_name = %s
+                  AND a.disabled = 0
+                ORDER BY a.is_primary_address DESC, a.modified DESC
+                LIMIT 1
+            """, self.company)
+            address = frappe.get_doc("Address", address_name[0][0]) if address_name else None
             x509_dn = {
-                'commonName': '{0} ebics'.format(self.company or "libracore ERP"),
-                'organizationName': (self.company or "libracore ERP"),
-                'organizationalUnitName': 'Administration',
-                'countryName': 'CH',
-                'stateOrProvinceName': 'ZH',
-                'localityName': 'Winterthur',
-                'emailAddress': 'info@libracore.com'
+                'commonName': '{0} EBICS'.format(company.company_name),
+                'organizationName': company.company_name,
+                'organizationalUnitName': 'Buchhaltung',
+                'countryName': (self.get('scope') or 'CH'),
+                'localityName': (address.city if address else company.company_name),
+                'emailAddress': (company.email or frappe.session.user)
             }
+            if address and address.state:
+                x509_dn['stateOrProvinceName'] = address.state
             user.create_certificates(validity_period=5, **x509_dn)
             
         except Exception as err:

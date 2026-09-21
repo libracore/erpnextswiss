@@ -153,7 +153,7 @@ function recalculate_total(frm) {
 
 function transmit_ebics(frm) {
     frappe.call({
-        'method': 'erpnextswiss.erpnextswiss.doctype.ebics_conncetion.ebics_connection.execute_payment',
+        'method': 'erpnextswiss.erpnextswiss.doctype.ebics_connection.ebics_connection.execute_payment',
         'args': {
             'ebics_connection': locals.ebics_connection,
             'payment_proposal': frm.doc.name

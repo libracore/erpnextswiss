@@ -181,18 +181,21 @@ class ebicsConnection(Document):
         payment = frappe.get_doc("Payment Proposal", payment_proposal)
         
         # ebics v3.0 BTU/BTD
-        CCT = BusinessTransactionFormat(
-            service='MCT',
-            msg_name='pain.001',
-            scope=(self.get('scope') or 'CH')
-        )
+        payment_btf = {
+            'service': 'MCT',
+            'msg_name': 'pain.001',
+            'scope': (self.get('scope') or 'CH')
+        }
+        if self.get('payment_btf_version'):
+            payment_btf['version'] = self.get('payment_btf_version')
+        CCT = BusinessTransactionFormat(**payment_btf)
         
         # generate content
         xml_transaction = payment.create_bank_file()['content']
         
         # upload data using v3.0 (H005)
         client = self.get_client()
-        data = client.BTD(CCT, xml_transaction)
+        client.BTU(CCT, xml_transaction)
         
         return
         
@@ -205,12 +208,15 @@ class ebicsConnection(Document):
             client = self.get_client()
             if self.ebics_version == "H005":
                 # ebics v3.0 BTU/BTD
-                C53 = BusinessTransactionFormat(
-                    service='EOP',
-                    msg_name='camt.053',
-                    scope=(self.get('scope') or 'CH'),
-                    container='ZIP'
-                )
+                statement_btf = {
+                    'service': 'EOP',
+                    'msg_name': 'camt.053',
+                    'scope': (self.get('scope') or 'CH'),
+                    'container': 'ZIP'
+                }
+                if self.get('statement_btf_version'):
+                    statement_btf['version'] = self.get('statement_btf_version')
+                C53 = BusinessTransactionFormat(**statement_btf)
 
                 # download data using v3.0 (H005)
                 data = client.BTD(C53, date, date)
@@ -267,3 +273,10 @@ class ebicsConnection(Document):
         except Exception as err:
             frappe.throw( "{0}".format(err), _("Error") )
         return
+
+
+@frappe.whitelist(methods=["POST"])
+def execute_payment(ebics_connection, payment_proposal):
+    connection = frappe.get_doc("ebics Connection", ebics_connection)
+    connection.check_permission("write")
+    return connection.execute_payment(payment_proposal)

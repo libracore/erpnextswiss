@@ -13,6 +13,8 @@
   "partner_id",
   "user_id",
   "scope",
+  "payment_btf_version",
+  "statement_btf_version",
   "col_account",
   "company",
   "key_password",
@@ -151,6 +153,18 @@
    "fieldtype": "Select",
    "label": "Scope",
    "options": "CH\nAT\nDE\nLI\nFR\nIT\nES\nNL\nBE\nLU"
+  },
+  {
+   "description": "Optional EBICS 3.0 BTF version, for example 09 for pain.001.001.09.",
+   "fieldname": "payment_btf_version",
+   "fieldtype": "Data",
+   "label": "Payment BTF Version"
+  },
+  {
+   "description": "Optional EBICS 3.0 BTF version, for example 08 for camt.053.001.08.",
+   "fieldname": "statement_btf_version",
+   "fieldtype": "Data",
+   "label": "Statement BTF Version"
   }
  ],
  "modified": "2025-08-18 12:06:21.760865",

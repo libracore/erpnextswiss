@@ -14,6 +14,19 @@ from erpnextswiss.erpnextswiss.doctype.ebics_connection.ebics_connection import 
 )
 
 class TestebicsConnection(unittest.TestCase):
+	@patch("erpnextswiss.erpnextswiss.doctype.ebics_connection.ebics_connection.frappe.utils.get_site_path")
+	def test_keys_file_uses_absolute_site_path_without_prefixing_it_again(self, get_site_path):
+		get_site_path.return_value = "/home/frappe/frappe-bench/sites/erp.local"
+		connection = ebicsConnection({
+			"doctype": "ebics Connection",
+			"name": "AKB CantoConnect 1773",
+		})
+
+		self.assertEqual(
+			connection.get_keys_file_name(),
+			"/home/frappe/frappe-bench/sites/erp.local/AKB_CantoConnect_1773.keys",
+		)
+
 	@patch("erpnextswiss.erpnextswiss.doctype.ebics_connection.ebics_connection.BusinessTransactionFormat")
 	def test_execute_payment_uses_btu_with_configured_btf_version(self, btf):
 		connection = ebicsConnection({

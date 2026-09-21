@@ -60,8 +60,14 @@ class ebicsConnection(Document):
         
     def get_keys_file_name(self):
         keys_file = "{0}.keys".format((self.name or "").replace(" ", "_"))
-        full_keys_file_path = os.path.join(frappe.utils.get_bench_path(), "sites", frappe.utils.get_site_path()[2:], keys_file)
-        return full_keys_file_path
+        site_path = frappe.utils.get_site_path()
+        if not os.path.isabs(site_path):
+            site_path = os.path.join(
+                frappe.utils.get_bench_path(),
+                "sites",
+                site_path.removeprefix("./")
+            )
+        return os.path.join(site_path, keys_file)
 
     def get_client(self):
         passphrase = get_decrypted_password("ebics Connection", self.name, "key_password", False)

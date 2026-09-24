@@ -198,3 +198,16 @@ def sync_contract_status(doc, method):
 				child.invoice_status = doc.status
 		contract.save(ignore_permissions=True)
 
+def relink_amended_invoice(doc):
+    frappe.db.sql("""
+                    UPDATE
+                        `tabContract Period`
+                    SET
+                        `invoice` = %(new_name)s
+                    WHERE
+                        `invoice` = %(old_name)s;""",
+                    {
+                        'old_name': doc.amended_from,
+                        'new_name': doc.name
+                    }, as_dict=True)
+    return

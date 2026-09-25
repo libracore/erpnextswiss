@@ -3,14 +3,40 @@
 {% set address = frappe.db.get_value('Address', {'is_your_company_address': 1, 'address_title': doc.company}, ['address_line1', 'address_line2', 'pincode', 'city'], as_dict=True) %}
 {% set employee_address = frappe.db.get_value('Employee', doc.employee, 'current_address') %}
 {% set months = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'] %}
+{% set period_start = frappe.utils.getdate(doc.start_date or doc.posting_date) %}
 {% set period_end = frappe.utils.getdate(doc.end_date or doc.posting_date) %}
+{% set year_start = frappe.utils.getdate(period_end.year|string + '-01-01') %}
+{% set attendance_start = period_start if period_start < year_start else year_start %}
 {% set currency = doc.currency or 'CHF' %}
 {% set rounding_disabled = frappe.db.get_single_value('Payroll Settings', 'disable_rounded_total') %}
 {% set payable = doc.net_pay if rounding_disabled or doc.rounded_total is none else doc.rounded_total %}
 {% set labels = {'Basic': 'Monatslohn', 'AHV/IV/EO Arbeitnehmer': 'AHV / IV / EO', 'ALV Arbeitnehmer': 'Arbeitslosenversicherung (ALV)', 'BVG Arbeitnehmer': 'Pensionskasse (BVG)', 'UVG NBU Arbeitnehmer': 'Nichtberufsunfallversicherung (NBU)', 'KTG Arbeitnehmer': 'Krankentaggeldversicherung (KTG)'} %}
+{% set attendance = frappe.get_list('Attendance', filters={'employee': doc.employee, 'docstatus': 1, 'attendance_date': ['between', [attendance_start, period_end]]}, fields=['attendance_date', 'status', 'leave_type', 'half_day_status', 'overtime_type', 'actual_overtime_duration']) if frappe.get_list is defined else [] %}
+{% set time_totals = namespace(vacation_period=0, vacation_ytd=0, overtime_period=0, overtime_ytd=0, attendance_period=0, attendance_ytd=0) %}
+{% for entry in attendance %}
+  {% set entry_date = frappe.utils.getdate(entry.attendance_date) %}
+  {% set entry_overtime = entry.actual_overtime_duration or 0 %}
+  {% if entry_date >= year_start %}
+    {% set time_totals.attendance_ytd = time_totals.attendance_ytd + 1 %}
+    {% if entry.status in ['On Leave', 'Half Day'] and entry.leave_type == 'Ferien' %}
+      {% set leave_days = 0.5 if entry.status == 'Half Day' else 1 %}
+      {% set time_totals.vacation_ytd = time_totals.vacation_ytd + leave_days %}
+    {% endif %}
+    {% if entry.status == 'Present' and entry.overtime_type %}{% set time_totals.overtime_ytd = time_totals.overtime_ytd + entry_overtime %}{% endif %}
+  {% endif %}
+  {% if entry_date >= period_start %}
+    {% set time_totals.attendance_period = time_totals.attendance_period + 1 %}
+    {% if entry.status in ['On Leave', 'Half Day'] and entry.leave_type == 'Ferien' %}
+      {% set leave_days = 0.5 if entry.status == 'Half Day' else 1 %}
+      {% set time_totals.vacation_period = time_totals.vacation_period + leave_days %}
+    {% endif %}
+    {% if entry.status == 'Present' and entry.overtime_type %}{% set time_totals.overtime_period = time_totals.overtime_period + entry_overtime %}{% endif %}
+  {% endif %}
+{% endfor %}
 {% macro money(value) -%}{{ "{:,.2f}".format(value or 0).replace(',', "'") }}{%- endmacro %}
+{% macro quantity(value) -%}{{ "{:.2f}".format(value or 0).replace('.', ',').rstrip('0').rstrip(',') }}{%- endmacro %}
 {% macro date(value) -%}{{ frappe.utils.formatdate(value, 'dd.MM.yyyy') if value else '' }}{%- endmacro %}
-<!-- KT_SALARY_DESIGN_VERSION:2026.09.25 -->
+<!-- KT_SALARY_DESIGN_VERSION:2026.09.25-ferien-ueberstunden -->
 <style>
   @page { size: A4; margin: 16mm 18mm 16mm; }
   .print-format { padding: 0 !important; margin-top: 16mm; margin-bottom: 16mm; margin-left: 18mm; margin-right: 18mm; font-family: Arial, Helvetica, sans-serif !important; font-size: 10pt; color: #183441; }
@@ -37,6 +63,11 @@
   .print-format .kt-pay .meta td { padding: 2px 0 !important; font-size: 8.5pt; }
   .kt-pay .meta td:first-child { color: #50616b; width: 40%; }
   .kt-pay .meta td:last-child { text-align: right; }
+  .kt-pay .time-summary { margin: -10px 0 17px; border-left: 3px solid #00a9a5; background: #f3f7f8; }
+  .print-format .kt-pay .time-summary td { width: 25%; padding: 8px 9px !important; border-right: 1px solid #dce5e8; vertical-align: middle; }
+  .kt-pay .time-summary td:last-child { border-right: 0; }
+  .kt-pay .time-label { min-height: 23px; color: #506773; font-size: 7.2pt; line-height: 1.25; }
+  .kt-pay .time-value { margin-top: 2px; color: #003b53; font-size: 11pt; line-height: 1.2; font-weight: bold; white-space: nowrap; }
   .kt-pay .ledger thead { display: table-header-group; }
   .print-format .kt-pay .ledger th { padding: 0 0 7px !important; font-size: 8pt; color: #4c6572; border-bottom: 1px solid #9bafb9; text-align: left; }
   .kt-pay .ledger th.num, .kt-pay .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
@@ -59,8 +90,10 @@
   .kt-pay .employer table { margin-top: 5px; }
   .print-format .kt-pay .employer td { padding: 2px 0 !important; font-size: 8pt; color: #5d707b; }
   .print-format .kt-pay .employer td:first-child { width: 78%; padding-right: 10px !important; }
-  .kt-pay .reference { margin-top: 23px; border-top: 1px solid #dce4e8; padding-top: 8px; font-size: 7.5pt; color: #657783; overflow-wrap: anywhere; }
-  .kt-pay-footer { margin-top: -15mm !important; font-family: Arial, Helvetica, sans-serif; font-size: 7.5pt; color: #657783; text-align: right; }
+  .kt-pay-footer { margin-top: -15mm !important; font-family: Arial, Helvetica, sans-serif; font-size: 7pt; color: #657783; }
+  .kt-pay-footer table { width: 100%; border-collapse: collapse; border-top: 1px solid #dce4e8; }
+  .kt-pay-footer td { padding: 5px 0 0 !important; color: #657783; vertical-align: top; }
+  .kt-pay-footer td:last-child { text-align: right; white-space: nowrap; }
   @media screen { .print-format { margin: auto !important; padding: 16mm 18mm !important; } }
   @media print {
     .print-format { margin: 0 !important; width: auto !important; }
@@ -80,6 +113,12 @@
   </tr></table>
   <table class="person"><tr><td style="width:50%"><div class="eyebrow">Mitarbeitende Person</div><div class="person-name">{{ doc.employee_name|e }}</div>{% if employee_address %}<div class="address">{{ employee_address|e }}</div>{% endif %}</td>
     <td><table class="meta"><tr><td>Personal-Nr.</td><td>{{ doc.employee|e }}</td></tr><tr><td>Zeitraum</td><td>{{ date(doc.start_date) }} - {{ date(doc.end_date) }}</td></tr><tr><td>Belegdatum</td><td>{{ date(doc.posting_date) }}</td></tr></table></td>
+  </tr></table>
+  <table class="time-summary" aria-label="Ferien und Arbeitszeit"><tr>
+    <td><div class="time-label">Ferien bezogen · Lohnperiode</div><div class="time-value">{% if time_totals.attendance_period %}{{ quantity(time_totals.vacation_period) }} Tage{% else %}Nicht erfasst{% endif %}</div></td>
+    <td><div class="time-label">Ferien bezogen · seit 1. Januar {{ period_end.year }}</div><div class="time-value">{% if time_totals.attendance_ytd %}{{ quantity(time_totals.vacation_ytd) }} Tage{% else %}Nicht erfasst{% endif %}</div></td>
+    <td><div class="time-label">Erfasste Überstunden · Lohnperiode</div><div class="time-value">{% if time_totals.attendance_period %}{{ quantity(time_totals.overtime_period) }} Std.{% else %}Nicht erfasst{% endif %}</div></td>
+    <td><div class="time-label">Erfasste Überstunden · seit 1. Januar {{ period_end.year }}</div><div class="time-value">{% if time_totals.attendance_ytd %}{{ quantity(time_totals.overtime_ytd) }} Std.{% else %}Nicht erfasst{% endif %}</div></td>
   </tr></table>
   <table class="ledger">
     <thead><tr><th style="width:64%">Lohnbestandteil</th><th class="num" style="width:18%">Bezüge {{ currency|e }}</th><th class="num" style="width:18%">Abzüge {{ currency|e }}</th></tr></thead>
@@ -102,6 +141,5 @@
     <table>{% for row in doc.employer_contributions if row.amount %}<tr><td>{{ row.salary_component.replace(' Arbeitgeber Aufwand', '').replace(' Arbeitgeber', '')|e }}</td><td class="num">{{ money(row.amount) }}</td></tr>{% endfor %}</table>
   </div>
   {% endif %}
-  <div class="reference">{{ doc.company|e }} · Lohnabrechnung {{ months[period_end.month - 1] }} {{ period_end.year }} · {{ doc.employee|e }}<br>Beleg {{ doc.name|e }}</div>
 </div>
-<div id="footer-html" class="visible-pdf"><div class="kt-pay-footer">Seite <span class="page"></span> / <span class="topage"></span></div></div>
+<div id="footer-html" class="visible-pdf"><div class="kt-pay-footer"><table><tr><td>{{ doc.company|e }} · {{ months[period_end.month - 1] }} {{ period_end.year }} · {{ doc.employee|e }} · Beleg {{ doc.name|e }}</td><td>Seite <span class="page"></span> / <span class="topage"></span></td></tr></table></div></div>

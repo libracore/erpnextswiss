@@ -10,7 +10,9 @@ HTML is the source of truth; edit it in Git, not the generated database record.
 
 - A4, KT logo from Company, compact employee/period block, aligned credit/debit
   columns, prominent net pay, separate employer information, repeating table
-  headings and page numbers. Local Arial/Helvetica only; no external web fonts.
+  headings and page numbers. The time summary shows approved Ferien attendance
+  and recorded overtime for the slip period and year to date. Local
+  Arial/Helvetica only; no external web fonts.
 - The company phone field is deliberately not printed. No fabricated contact
   details, duplicate generic letterhead, workflow internals or full AHV number.
 - All amounts come from the Salary Slip; no rates, PK split or wage calculation
@@ -24,6 +26,14 @@ HTML is the source of truth; edit it in Git, not the generated database record.
   employee deductions. Only nonzero included earnings/deductions are itemized.
 - Company/employee address data are current master data, as in native printing;
   payroll amounts remain the historical saved slip values.
+- Time totals are read-only sums of submitted Attendance records through the
+  slip end date. Ferien is limited to the `Ferien` leave type; half-days count
+  as 0.5. Overtime is the saved `actual_overtime_duration` in hours for
+  submitted Present attendance with an overtime type, matching HRMS's source
+  records. If no submitted Attendance exists in a period, the summary says
+  `Nicht erfasst` instead of implying zero. These are not leave balances,
+  overtime pay, or proof of payment; no attendance or salary records are
+  created or amended by printing.
 
 The hierarchy is inspired by the public Abacus salary example (layout only, not
 its 2018 rates): https://media.abacus.ch/abs/offertstandards/de/finanzprogramme/5-2-3.pdf

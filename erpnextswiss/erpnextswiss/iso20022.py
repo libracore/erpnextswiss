@@ -26,6 +26,29 @@ def is_qr_iban(iban):
     return qr_iid.isdigit() and 30000 <= int(qr_iid) <= 31999
 
 
+def resolve_invoice_payment_details(invoice_iban, supplier_iban, supplier_esr, payment_type):
+    """Resolve an invoice payment-account override against supplier defaults."""
+    invoice_iban = normalize_iban(invoice_iban)
+    supplier_iban = normalize_iban(supplier_iban)
+    supplier_esr = normalize_iban(supplier_esr)
+    iban = invoice_iban or supplier_iban
+
+    if is_qr_iban(iban):
+        return "ESR", iban, iban
+
+    method = payment_type or "IBAN"
+    participant = None
+    if method == "ESR":
+        participant = supplier_esr
+        # An explicit invoice IBAN takes precedence over a supplier QR-IBAN.
+        if invoice_iban and (is_qr_iban(participant) or is_qr_iban(supplier_iban)):
+            method = "IBAN"
+            participant = None
+        elif not participant and is_qr_iban(supplier_iban):
+            participant = supplier_iban
+    return method, iban, participant
+
+
 def normalize_qr_reference(reference):
     return "".join((reference or "").split())
 

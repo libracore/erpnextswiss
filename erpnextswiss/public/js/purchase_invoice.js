@@ -54,17 +54,14 @@ frappe.ui.form.on('Purchase Invoice', {
         
         // check payment automation
         if ((frm.doc.outstanding_amount > 0) && (!frm.doc.is_paid)) {
-            // validate payment
-            if (!locals.iban) {
-                // no iban found
+            var payment_identifier = frm._payment_identifier || normalize_payment_identifier(frm.doc.iban);
+            if (!payment_identifier) {
                 frappe.msgprint(  __("Supplier has no suitable payment details.") );
                 frappe.validated = false;
-            } else {
-                if ((frm.doc.payment_type === "ESR") && (locals.iban.replaceAll(" ", "")[4] !== "3")){
-                    // invalid ESR reference
-                    frappe.msgprint(  __("Supplier has no valid QR-IBAN.") );
+            } else if ((frm.doc.payment_type === "ESR") && is_qr_iban_identifier(payment_identifier) &&
+                       (!frm.doc.esr_reference_number || !check_esr(frm.doc.esr_reference_number))) {
+                    frappe.msgprint(  __("Supplier has no valid QR-IBAN reference.") );
                     frappe.validated = false;
-                }
             }
         }
         // test valid characters in supplier invoice number
@@ -81,6 +78,17 @@ frappe.ui.form.on('Purchase Invoice', {
     },
     'payment_type': function(frm) {
         check_supplier_payment_details(frm);
+    },
+    'iban': function(frm) {
+        var entered_iban = normalize_payment_identifier(frm.doc.iban);
+        if (is_qr_iban_identifier(entered_iban) && frm.doc.payment_type !== "ESR") {
+            frm.set_value("payment_type", "ESR");
+        } else if (entered_iban && (entered_iban !== normalize_payment_identifier(frm._supplier_default_iban)) &&
+                   frm.doc.payment_type === "ESR") {
+            frm.set_value("payment_type", "IBAN");
+        } else {
+            check_supplier_payment_details(frm);
+        }
     }
 });
 
@@ -346,13 +354,26 @@ function pull_supplier_defaults(frm) {
             },
             "callback": function(response) {
                 var supplier = response.message;
-                cur_frm.set_value("payment_type", supplier.default_payment_method);
+                var supplier_iban = supplier.iban || "";
+                var default_method = supplier.default_payment_method || "IBAN";
+                if ((default_method === "ESR") && is_qr_iban_identifier(supplier.esr_participation_number)) {
+                    supplier_iban = supplier.esr_participation_number;
+                }
+                if (is_qr_iban_identifier(supplier_iban)) {
+                    default_method = "ESR";
+                }
+                if ((!frm.doc.iban) || (frm.doc.iban === frm._supplier_default_iban)) {
+                    frm._supplier_default_iban = supplier_iban;
+                    frm.set_value("iban", supplier_iban);
+                }
+                frm.set_value("payment_type", default_method);
             }
         });
     }
 }
 
 function check_supplier_payment_details(frm) {
+    frm._payment_identifier = null;
     if ((frm.doc.supplier) && (!frm.doc.is_return) && (!frm.doc.is_paid)) {
         frappe.call({
             "method": "frappe.client.get",
@@ -363,19 +384,40 @@ function check_supplier_payment_details(frm) {
             "async": false,
             "callback": function(response) {
                 var supplier = response.message;
+                var invoice_iban = normalize_payment_identifier(frm.doc.iban);
+                var supplier_iban = normalize_payment_identifier(supplier.iban);
+                var supplier_esr = normalize_payment_identifier(supplier.esr_participation_number);
                 if (cur_frm.doc.payment_type === "ESR") {
-                    cur_frm.dashboard.add_comment(__("ESR") + ": " + supplier.esr_participation_number, 'green', true);
-                    locals.iban = supplier.esr_participation_number;
-                } 
+                    var qr_iban = is_qr_iban_identifier(invoice_iban) ? invoice_iban :
+                        (is_qr_iban_identifier(supplier_esr) ? supplier_esr :
+                        (is_qr_iban_identifier(supplier_iban) ? supplier_iban : ""));
+                    frm._payment_identifier = qr_iban || supplier_esr;
+                    cur_frm.dashboard.add_comment(__("ESR") + ": " + (frm._payment_identifier || ""), 'green', true);
+                }
                 else if (cur_frm.doc.payment_type === "IBAN") {
-                    cur_frm.dashboard.add_comment(__("IBAN") + ": " + supplier.iban, 'green', true);
-                    locals.iban = supplier.iban;
+                    frm._payment_identifier = invoice_iban || supplier_iban;
+                    cur_frm.dashboard.add_comment(__("IBAN") + ": " + (frm._payment_identifier || ""), 'green', true);
                 }
                 else if (cur_frm.doc.payment_type === "SEPA") {
-                    cur_frm.dashboard.add_comment(__("SEPA") + ": " + supplier.iban, 'green', true);
-                    locals.iban = supplier.iban;
+                    frm._payment_identifier = invoice_iban || supplier_iban;
+                    cur_frm.dashboard.add_comment(__("SEPA") + ": " + (frm._payment_identifier || ""), 'green', true);
+                } else {
+                    frm._payment_identifier = invoice_iban || supplier_iban || supplier_esr;
                 }
             }
         });
     }
+}
+
+function normalize_payment_identifier(value) {
+    return (value || "").replace(/\s/g, "").toUpperCase();
+}
+
+function is_qr_iban_identifier(value) {
+    var iban = normalize_payment_identifier(value);
+    if (!/^CH[0-9A-Z]{19}$/.test(iban)) {
+        return false;
+    }
+    var iid = parseInt(iban.substring(4, 9), 10);
+    return iid >= 30000 && iid <= 31999;
 }

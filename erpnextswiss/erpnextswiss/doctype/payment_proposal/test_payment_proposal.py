@@ -12,6 +12,7 @@ from erpnextswiss.erpnextswiss.iso20022 import (
 	create_payment_file_name,
 	is_qr_iban,
 	is_valid_qr_reference,
+	resolve_invoice_payment_details,
 )
 
 class TestPaymentProposal(unittest.TestCase):
@@ -44,3 +45,21 @@ class TestPaymentProposal(unittest.TestCase):
 		self.assertTrue(is_valid_qr_reference("00 17010 00000 00000 00012 02132"))
 		self.assertFalse(is_valid_qr_reference("001701000000000000001202131"))
 		self.assertFalse(is_valid_qr_reference("120213"))
+
+	def test_invoice_iban_overrides_supplier_default(self):
+		self.assertEqual(
+			resolve_invoice_payment_details(
+				"CH86 0076 1649 7496 3200 2",
+				"CH98 3000 5248 2100 1701 C",
+				"CH98 3000 5248 2100 1701 C",
+				"ESR",
+			),
+			("IBAN", "CH8600761649749632002", None),
+		)
+
+	def test_invoice_qr_iban_uses_esr_payment_details(self):
+		qr_iban = "CH98 3000 5248 2100 1701 C"
+		self.assertEqual(
+			resolve_invoice_payment_details(qr_iban, "", "", "IBAN"),
+			("ESR", "CH983000524821001701C", "CH983000524821001701C"),
+		)

@@ -14,12 +14,14 @@ from erpnextswiss.erpnextswiss.iso20022 import (
     create_payment_file_name,
     is_qr_iban,
     is_valid_qr_reference,
+    resolve_invoice_payment_details,
 )
 from erpnextswiss.erpnextswiss.xml import validate_xml_against_xsd
 import html          # used to escape xml content
 from frappe.utils import cint, get_url_to_form, getdate, rounded
 from unidecode import unidecode     # used to remove German/French-type special characters from bank identifieres
 import os
+import re
 
 PAYMENT_REMARKS = "From Payment Proposal {0}"
 
@@ -57,10 +59,14 @@ class PaymentProposal(Document):
         for purchase_invoice in self.purchase_invoices: 
             pinv = frappe.get_doc("Purchase Invoice", purchase_invoice.purchase_invoice)
             supplier = frappe.get_doc("Supplier", pinv.supplier)
-            qr_iban = purchase_invoice.esr_participation_number or supplier.iban
-            if is_qr_iban(qr_iban):
-                purchase_invoice.payment_type = "ESR"
-                purchase_invoice.esr_participation_number = qr_iban
+            payment_type, payment_iban, esr_participation = resolve_invoice_payment_details(
+                _doc_get(pinv, "iban"),
+                supplier.iban,
+                purchase_invoice.esr_participation_number or supplier.esr_participation_number,
+                purchase_invoice.payment_type or supplier.default_payment_method,
+            )
+            purchase_invoice.payment_type = payment_type
+            purchase_invoice.esr_participation_number = esr_participation or ""
             # check addresses (mandatory in ISO 20022
             if not pinv.supplier_address:
                 frappe.throw( _("Address missing for purchase invoice <a href=\"/desk#Form/Purchase Invoice/{0}\">{0}</a>").format(pinv.name) )
@@ -70,9 +76,12 @@ class PaymentProposal(Document):
                     frappe.throw( _("ESR: missing transaction information (participant number or reference) in <a href=\"/desk#Form/Purchase Invoice/{0}\">{0}</a>").format(pinv.name) )
                 if is_qr_iban(purchase_invoice.esr_participation_number) and not is_valid_qr_reference(purchase_invoice.esr_reference):
                     frappe.throw( _("QRR: invalid 27-digit QR reference in <a href=\"/desk#Form/Purchase Invoice/{0}\">{0}</a>").format(pinv.name) )
+                if is_qr_iban(purchase_invoice.esr_participation_number):
+                    _validate_iban("".join(purchase_invoice.esr_participation_number.split()).upper())
             else:
-                if not supplier.iban:
+                if not payment_iban:
                     frappe.throw( _("Missing IBAN for purchase invoice <a href=\"/desk#Form/Purchase Invoice/{0}\">{0}</a>").format(pinv.name) )
+                _validate_iban("".join(payment_iban.split()).upper())
         # check expense records
         for expense_claim in self.expenses:
             emp = frappe.get_doc("Employee", expense_claim.employee)
@@ -98,13 +107,14 @@ class PaymentProposal(Document):
             references = []
             currency = ""
             address = ""
-            payment_type = "SEPA"
+            aggregated_payment_type = None
             # try executing in 90 days (will be reduced by actual due dates)
             exec_date = datetime.combine(getdate(self.date), datetime.min.time()) + timedelta(days=90)
             for purchase_invoice in self.purchase_invoices:
                 if purchase_invoice.supplier == supplier:
                     currency = purchase_invoice.currency
                     pinv = frappe.get_doc("Purchase Invoice", purchase_invoice.purchase_invoice)
+                    supl = frappe.get_doc("Supplier", supplier)
                     address = pinv.supplier_address
                     references.append(purchase_invoice.external_reference)
                     # find if skonto applies
@@ -124,14 +134,29 @@ class PaymentProposal(Document):
                         this_amount = purchase_invoice.amount
                         if exec_date.date() > due_date.date():
                             exec_date = due_date
-                    payment_type = purchase_invoice.payment_type
-                    if payment_type == "ESR" or self.individual_payments == 1:
+                    payment_type, payment_iban, esr_participation = resolve_invoice_payment_details(
+                        _doc_get(pinv, "iban"),
+                        supl.iban,
+                        supl.esr_participation_number,
+                        purchase_invoice.payment_type or supl.default_payment_method,
+                    )
+                    invoice_has_account_override = bool(
+                        _doc_get(pinv, "iban") and
+                        _normalize_bank_identifier(_doc_get(pinv, "iban")) !=
+                        _normalize_bank_identifier(supl.iban)
+                    )
+                    force_individual = (
+                        payment_type == "ESR"
+                        or self.individual_payments == 1
+                        or invoice_has_account_override
+                        or (amount > 0 and aggregated_payment_type != payment_type)
+                    )
+                    if force_individual:
                         # run as individual payment (not aggregated)
-                        supl = frappe.get_doc("Supplier", supplier)
                         addr = frappe.get_doc("Address", address)
                         self.add_payment(
                             receiver_name=supl.supplier_name, 
-                            iban=supl.iban, 
+                            iban=payment_iban,
                             payment_type=payment_type,
                             address_line1=addr.address_line1, 
                             address_line2="{0} {1}".format(addr.pincode, addr.city), 
@@ -143,13 +168,14 @@ class PaymentProposal(Document):
                             reference=purchase_invoice.external_reference, 
                             execution_date=skonto_date or due_date, 
                             esr_reference=purchase_invoice.esr_reference, 
-                            esr_participation_number=purchase_invoice.esr_participation_number, 
+                            esr_participation_number=esr_participation or purchase_invoice.esr_participation_number,
                             bic=supl.bic,
                             receiver_id=supl.name
                         )
                         total += this_amount
                     else:
                         amount += this_amount
+                        aggregated_payment_type = payment_type
                     # mark sales invoices as proposed
                     invoice = frappe.get_doc("Purchase Invoice", purchase_invoice.purchase_invoice)
                     invoice.is_proposed = 1
@@ -167,12 +193,10 @@ class PaymentProposal(Document):
             if amount > 0:
                 supl = frappe.get_doc("Supplier", supplier)
                 addr = frappe.get_doc("Address", address)
-                if payment_type == "ESR":           # prevent if last invoice was by ESR, but others are also present -> pay as IBAN
-                    payment_type = "IBAN"
                 self.add_payment(
                     receiver_name=supl.supplier_name, 
                     iban=supl.iban, 
-                    payment_type=payment_type,
+                    payment_type=aggregated_payment_type or "IBAN",
                     address_line1=addr.address_line1, 
                     address_line2="{0} {1}".format(addr.pincode, addr.city), 
                     country=addr.country, 
@@ -588,148 +612,520 @@ class PaymentProposal(Document):
                 return connections[0]['name']
         return 0
         
-# this function will create a new payment proposal
-@frappe.whitelist(methods=["POST"])
-def create_payment_proposal(date=None, company=None, currency=None):
-    frappe.only_for(("Accounts User", "Accounts Manager", "System Manager"))
-    if not date:
-        # get planning days
-        planning_days = int(frappe.get_value("ERPNextSwiss Settings", "ERPNextSwiss Settings", 'planning_days'))
-        date = datetime.now() + timedelta(days=planning_days) 
-        if not planning_days:
-            frappe.throw( _("Please configure the planning period in ERPNextSwiss Settings.") )
-    # check companies (take first created if none specififed)
-    if company == None:
-        companies = frappe.get_all("Company", filters={}, fields=['name'], order_by='creation')
-        company = companies[0]['name']
-    # get all suppliers with open purchase invoices
-    sql_query = ("""SELECT 
-                  `tabPurchase Invoice`.`supplier` AS `supplier`, 
-                  `tabPurchase Invoice`.`name` AS `name`,
-                  /* if creditor currency = document currency, use outstanding amount, otherwise grand total (in currency) */
-                  (IF (`tabPurchase Invoice`.`currency` = `tabAccount`.`account_currency`,
-                   `tabPurchase Invoice`.`outstanding_amount`,
-                   `tabPurchase Invoice`.`grand_total`
-                   )) AS `outstanding_amount`,
-                  `tabPurchase Invoice`.`due_date` AS `due_date`, 
-                  `tabPurchase Invoice`.`currency` AS `currency`,
-                  `tabPurchase Invoice`.`bill_no` AS `external_reference`,
-                  (IF (IFNULL(`tabPayment Terms Template`.`skonto_days`, 0) = 0, 
-                     `tabPurchase Invoice`.`due_date`, 
-                     (DATE_ADD(`tabPurchase Invoice`.`posting_date`, INTERVAL `tabPayment Terms Template`.`skonto_days` DAY))
-                     )) AS `skonto_date`,
-                  /* if creditor currency = document currency, use outstanding amount, otherwise grand total (in currency) */
-                  (IF (`tabPurchase Invoice`.`currency` = `tabAccount`.`account_currency`,
-                    (((100 - IFNULL(`tabPayment Terms Template`.`skonto_percent`, 0))/100) * `tabPurchase Invoice`.`outstanding_amount`),
-                    (((100 - IFNULL(`tabPayment Terms Template`.`skonto_percent`, 0))/100) * `tabPurchase Invoice`.`grand_total`)
-                    )) AS `skonto_amount`,
-                  `tabPurchase Invoice`.`payment_type` AS `payment_type`,
-                  `tabPurchase Invoice`.`esr_reference_number` AS `esr_reference`,
-                  `tabSupplier`.`esr_participation_number` AS `esr_participation_number`,
-                  `tabPurchase Invoice`.`currency` AS `currency`
-                FROM `tabPurchase Invoice` 
-                LEFT JOIN `tabPayment Terms Template` ON `tabPurchase Invoice`.`payment_terms_template` = `tabPayment Terms Template`.`name`
-                LEFT JOIN `tabSupplier` ON `tabPurchase Invoice`.`supplier` = `tabSupplier`.`name`
-                LEFT JOIN `tabAccount` ON `tabAccount`.`name` = `tabPurchase Invoice`.`credit_to`
-                WHERE `tabPurchase Invoice`.`docstatus` = 1 
-                  AND `tabPurchase Invoice`.`outstanding_amount` > 0
-                  AND ((`tabPurchase Invoice`.`due_date` <= '{date}') 
-                    OR ((IF (IFNULL(`tabPayment Terms Template`.`skonto_days`, 0) = 0, `tabPurchase Invoice`.`due_date`, (DATE_ADD(`tabPurchase Invoice`.`posting_date`, INTERVAL `tabPayment Terms Template`.`skonto_days` DAY)))) <= '{date}'))
-                  AND `tabPurchase Invoice`.`is_proposed` = 0
-                  AND `tabPurchase Invoice`.`company` = '{company}'
-                GROUP BY `tabPurchase Invoice`.`name`;""".format(date=date, company=company))
-    purchase_invoices = frappe.db.sql(sql_query, as_dict=True)
-    # get all purchase invoices that pending
+def _truthy(value, default=False):
+    if value is None or value == "":
+        return default
+    if isinstance(value, str):
+        return value.strip().lower() in ("1", "true", "yes", "y", "ja")
+    return bool(value)
+
+
+def _normalize_bank_identifier(value):
+    if value is None:
+        return None
+    return re.sub(r"[^0-9A-Za-z]", "", str(value)).upper()
+
+
+def _optional_float(value, fieldname):
+    if value is None or value == "":
+        return None
+    try:
+        return float(value)
+    except Exception:
+        frappe.throw(_("{0} must be a number.").format(fieldname))
+
+
+def _optional_int(value, fieldname):
+    if value is None or value == "":
+        return None
+    try:
+        return cint(value)
+    except Exception:
+        frappe.throw(_("{0} must be a whole number.").format(fieldname))
+
+
+def _assert_expected_total(actual, expected_total):
+    expected = _optional_float(expected_total, "expected_total")
+    if expected is not None and round(abs(float(actual or 0) - expected), 2) > 0:
+        frappe.throw(
+            _("Expected total {0} does not match calculated total {1}.").format(
+                expected, rounded(float(actual or 0), 2)
+            )
+        )
+
+
+def _assert_expected_count(actual, expected_count, fieldname):
+    expected = _optional_int(expected_count, fieldname)
+    if expected is not None and cint(actual) != expected:
+        frappe.throw(
+            _("Expected {0} {1} does not match calculated value {2}.").format(
+                fieldname, expected, actual
+            )
+        )
+
+
+def _require_confirmed(confirm, action):
+    if not _truthy(confirm):
+        frappe.throw(_("Confirmation is required before {0}.").format(action))
+
+
+def _get_default_company():
+    companies = frappe.get_all("Company", filters={}, fields=["name"], order_by="creation")
+    if not companies:
+        frappe.throw(_("Please create a company first."))
+    return companies[0]["name"]
+
+
+def _get_payment_proposal_cutoff(date):
+    if date:
+        return getdate(date)
+
+    planning_days = cint(frappe.get_value("ERPNextSwiss Settings", "ERPNextSwiss Settings", "planning_days"))
+    if not planning_days:
+        frappe.throw(_("Please configure the planning period in ERPNextSwiss Settings."))
+    return getdate(datetime.now() + timedelta(days=planning_days))
+
+
+def _include_salary_payments(include_salary_slips):
+    if include_salary_slips is None:
+        return cint(frappe.get_value("ERPNextSwiss Settings", "ERPNextSwiss Settings", "enable_salary_payment")) == 1
+    return _truthy(include_salary_slips)
+
+
+def _collect_payment_proposal_rows(date, company, currency=None, include_expense_claims=True, include_salary_slips=None):
+    date = _get_payment_proposal_cutoff(date)
+    company = company or _get_default_company()
+
+    purchase_invoices = frappe.db.sql(
+        """SELECT
+              `tabPurchase Invoice`.`supplier` AS `supplier`,
+              `tabPurchase Invoice`.`name` AS `name`,
+              /* if creditor currency = document currency, use outstanding amount, otherwise grand total (in currency) */
+              (IF (`tabPurchase Invoice`.`currency` = `tabAccount`.`account_currency`,
+               `tabPurchase Invoice`.`outstanding_amount`,
+               `tabPurchase Invoice`.`grand_total`
+               )) AS `outstanding_amount`,
+              `tabPurchase Invoice`.`due_date` AS `due_date`,
+              `tabPurchase Invoice`.`currency` AS `currency`,
+              `tabPurchase Invoice`.`bill_no` AS `external_reference`,
+              (IF (IFNULL(`tabPayment Terms Template`.`skonto_days`, 0) = 0,
+                 `tabPurchase Invoice`.`due_date`,
+                 (DATE_ADD(`tabPurchase Invoice`.`posting_date`, INTERVAL `tabPayment Terms Template`.`skonto_days` DAY))
+                 )) AS `skonto_date`,
+              /* if creditor currency = document currency, use outstanding amount, otherwise grand total (in currency) */
+              (IF (`tabPurchase Invoice`.`currency` = `tabAccount`.`account_currency`,
+                (((100 - IFNULL(`tabPayment Terms Template`.`skonto_percent`, 0))/100) * `tabPurchase Invoice`.`outstanding_amount`),
+                (((100 - IFNULL(`tabPayment Terms Template`.`skonto_percent`, 0))/100) * `tabPurchase Invoice`.`grand_total`)
+                )) AS `skonto_amount`,
+              `tabPurchase Invoice`.`payment_type` AS `payment_type`,
+              `tabPurchase Invoice`.`iban` AS `invoice_iban`,
+              `tabPurchase Invoice`.`esr_reference_number` AS `esr_reference`,
+              `tabSupplier`.`esr_participation_number` AS `esr_participation_number`,
+              `tabSupplier`.`iban` AS `supplier_iban`,
+              `tabSupplier`.`default_payment_method` AS `supplier_default_payment_method`
+            FROM `tabPurchase Invoice`
+            LEFT JOIN `tabPayment Terms Template` ON `tabPurchase Invoice`.`payment_terms_template` = `tabPayment Terms Template`.`name`
+            LEFT JOIN `tabSupplier` ON `tabPurchase Invoice`.`supplier` = `tabSupplier`.`name`
+            LEFT JOIN `tabAccount` ON `tabAccount`.`name` = `tabPurchase Invoice`.`credit_to`
+            WHERE `tabPurchase Invoice`.`docstatus` = 1
+              AND `tabPurchase Invoice`.`outstanding_amount` > 0
+              AND ((`tabPurchase Invoice`.`due_date` <= %(date)s)
+                OR ((IF (IFNULL(`tabPayment Terms Template`.`skonto_days`, 0) = 0, `tabPurchase Invoice`.`due_date`, (DATE_ADD(`tabPurchase Invoice`.`posting_date`, INTERVAL `tabPayment Terms Template`.`skonto_days` DAY)))) <= %(date)s))
+              AND `tabPurchase Invoice`.`is_proposed` = 0
+              AND `tabPurchase Invoice`.`company` = %(company)s
+            GROUP BY `tabPurchase Invoice`.`name`;""",
+        {"date": date, "company": company},
+        as_dict=True,
+    )
+
     total = 0.0
     invoices = []
     for invoice in purchase_invoices:
-        if not currency or invoice.currency == currency:
-            reference = invoice.external_reference or invoice.name
-            payment_type = invoice.payment_type
-            if is_qr_iban(invoice.esr_participation_number):
-                payment_type = "ESR"
-            new_invoice = { 
-                'supplier': invoice.supplier,
-                'purchase_invoice': invoice.name,
-                'amount': invoice.outstanding_amount,
-                'due_date': invoice.due_date,
-                'currency': invoice.currency,
-                'skonto_date': invoice.skonto_date,
-                'skonto_amount': invoice.skonto_amount,
-                'payment_type': payment_type,
-                'esr_reference': invoice.esr_reference,
-                'esr_participation_number': invoice.esr_participation_number,
-                'external_reference': unidecode(reference)
-            }
-            total += invoice.skonto_amount
-            invoices.append(new_invoice)
-    # get all open expense claims
-    sql_query = ("""SELECT `name`, 
-                  `employee`, 
-                  `total_sanctioned_amount` AS `amount`,
-                  `payable_account` 
-                FROM `tabExpense Claim`
-                WHERE `docstatus` = 1 
-                  AND `status` = "Unpaid" 
-                  AND `is_proposed` = 0
-                  AND `company` = '{company}';""".format(company=company))
-    expense_claims = frappe.db.sql(sql_query, as_dict=True)          
+        if currency and invoice.currency != currency:
+            continue
+        reference = invoice.external_reference or invoice.name
+        payment_type, payment_iban, esr_participation = resolve_invoice_payment_details(
+            invoice.invoice_iban,
+            invoice.supplier_iban,
+            invoice.esr_participation_number,
+            invoice.payment_type or invoice.supplier_default_payment_method,
+        )
+        skonto_amount = float(invoice.skonto_amount or 0)
+        invoices.append({
+            "supplier": invoice.supplier,
+            "purchase_invoice": invoice.name,
+            "amount": invoice.outstanding_amount,
+            "due_date": invoice.due_date,
+            "currency": invoice.currency,
+            "skonto_date": invoice.skonto_date,
+            "skonto_amount": invoice.skonto_amount,
+            "payment_type": payment_type,
+            "esr_reference": invoice.esr_reference,
+            "esr_participation_number": esr_participation or invoice.esr_participation_number,
+            "external_reference": unidecode(reference),
+        })
+        total += skonto_amount
+
     expenses = []
-    if not currency or currency == frappe.get_cached_value("Company", company, "default_currency"):
+    if _truthy(include_expense_claims, default=True) and (
+        not currency or currency == frappe.get_cached_value("Company", company, "default_currency")
+    ):
+        expense_claims = frappe.db.sql(
+            """SELECT `name`,
+                  `employee`,
+                  `total_sanctioned_amount` AS `amount`,
+                  `payable_account`
+                FROM `tabExpense Claim`
+                WHERE `docstatus` = 1
+                  AND `status` = "Unpaid"
+                  AND `is_proposed` = 0
+                  AND `company` = %(company)s;""",
+            {"company": company},
+            as_dict=True,
+        )
         for expense in expense_claims:
-            new_expense = { 
-                'expense_claim': expense.name,
-                'employee': expense.employee,
-                'amount': expense.amount,
-                'payable_account': expense.payable_account
-            }
-            total += expense.amount
-            expenses.append(new_expense)
-    # get all open salary slips
+            amount = float(expense.amount or 0)
+            expenses.append({
+                "expense_claim": expense.name,
+                "employee": expense.employee,
+                "amount": expense.amount,
+                "payable_account": expense.payable_account,
+            })
+            total += amount
+
     salaries = []
-    if cint(frappe.get_value("ERPNextSwiss Settings", "ERPNextSwiss Settings", "enable_salary_payment")) == 1:
-        sql_query = ("""SELECT `tabSalary Slip`.`name`, 
-                      `tabSalary Slip`.`employee`, 
-                      `tabSalary Slip`.`net_pay` AS `amount`,
-                      `tabCompany`.`default_payroll_payable_account` AS `payable_account`,
-                      `tabSalary Slip`.`posting_date` AS `posting_date`
-                    FROM `tabSalary Slip`
-                    LEFT JOIN `tabCompany` ON `tabSalary Slip`.`company` = `tabCompany`.`name`
-                    WHERE `tabSalary Slip`.`docstatus` = 1 
-                      AND `tabSalary Slip`.`is_proposed` = 0
-                      AND `tabSalary Slip`.`net_pay` > 0
-                      AND `tabSalary Slip`.`company` = '{company}';""".format(company=company))
-        salary_slips = frappe.db.sql(sql_query, as_dict=True)          
-        # append salary slips
-        if not currency or currency == frappe.get_cached_value("Company", company, "default_currency"):
-            for salary_slip in salary_slips:
-                new_salary = { 
-                    'salary_slip': salary_slip.name,
-                    'employee': salary_slip.employee,
-                    'amount': salary_slip.amount,
-                    'payable_account': salary_slip.payable_account,
-                    'target_date': salary_slip.posting_date
-                }
-                total += salary_slip.amount
-                salaries.append(new_salary)
-    # create new record
-    new_record = None
+    if _include_salary_payments(include_salary_slips) and (
+        not currency or currency == frappe.get_cached_value("Company", company, "default_currency")
+    ):
+        salary_slips = frappe.db.sql(
+            """SELECT `tabSalary Slip`.`name`,
+                  `tabSalary Slip`.`employee`,
+                  `tabSalary Slip`.`net_pay` AS `amount`,
+                  `tabCompany`.`default_payroll_payable_account` AS `payable_account`,
+                  `tabSalary Slip`.`posting_date` AS `posting_date`
+                FROM `tabSalary Slip`
+                LEFT JOIN `tabCompany` ON `tabSalary Slip`.`company` = `tabCompany`.`name`
+                WHERE `tabSalary Slip`.`docstatus` = 1
+                  AND `tabSalary Slip`.`is_proposed` = 0
+                  AND `tabSalary Slip`.`net_pay` > 0
+                  AND `tabSalary Slip`.`company` = %(company)s;""",
+            {"company": company},
+            as_dict=True,
+        )
+        for salary_slip in salary_slips:
+            amount = float(salary_slip.amount or 0)
+            salaries.append({
+                "salary_slip": salary_slip.name,
+                "employee": salary_slip.employee,
+                "amount": salary_slip.amount,
+                "payable_account": salary_slip.payable_account,
+                "target_date": salary_slip.posting_date,
+            })
+            total += amount
+
+    return {
+        "date": date,
+        "company": company,
+        "currency": currency,
+        "purchase_invoices": invoices,
+        "expenses": expenses,
+        "salaries": salaries,
+        "total": total,
+    }
+
+
+def _assert_payment_proposal_expectations(rows, expected_total=None, expected_purchase_invoice_count=None,
+                                          expected_expense_count=None, expected_salary_count=None):
+    _assert_expected_total(rows["total"], expected_total)
+    _assert_expected_count(
+        len(rows["purchase_invoices"]),
+        expected_purchase_invoice_count,
+        "expected_purchase_invoice_count",
+    )
+    _assert_expected_count(len(rows["expenses"]), expected_expense_count, "expected_expense_count")
+    _assert_expected_count(len(rows["salaries"]), expected_salary_count, "expected_salary_count")
+
+
+def _create_payment_proposal_record(date=None, company=None, currency=None, title=None, payment_date=None,
+                                    pay_from_account=None, include_expense_claims=True,
+                                    include_salary_slips=None, expected_total=None,
+                                    expected_purchase_invoice_count=None, expected_expense_count=None,
+                                    expected_salary_count=None, commit=True):
+    rows = _collect_payment_proposal_rows(
+        date=date,
+        company=company,
+        currency=currency,
+        include_expense_claims=include_expense_claims,
+        include_salary_slips=include_salary_slips,
+    )
+    _assert_payment_proposal_expectations(
+        rows,
+        expected_total=expected_total,
+        expected_purchase_invoice_count=expected_purchase_invoice_count,
+        expected_expense_count=expected_expense_count,
+        expected_salary_count=expected_salary_count,
+    )
+
+    if not rows["purchase_invoices"] and not rows["expenses"] and not rows["salaries"]:
+        return None
+
     now = datetime.now()
-    date = now + timedelta(days=1)
-    new_proposal = frappe.get_doc({
-        'doctype': "Payment Proposal",
-        'title': "{year:04d}-{month:02d}-{day:02d}".format(year=now.year, month=now.month, day=now.day),
-        'date': "{year:04d}-{month:02d}-{day:02d}".format(year=date.year, month=date.month, day=date.day),
-        'purchase_invoices': invoices,
-        'expenses': expenses,
-        'salaries': salaries,
-        'company': company,
-        'total': total
-    })
-    proposal_record = new_proposal.insert(ignore_permissions=True)      # ignore permissions, as noone has create permission to prevent the new button
-    new_record = proposal_record.name
+    payment_date = getdate(payment_date) if payment_date else getdate(now + timedelta(days=1))
+    proposal_data = {
+        "doctype": "Payment Proposal",
+        "title": title or "{year:04d}-{month:02d}-{day:02d}".format(year=now.year, month=now.month, day=now.day),
+        "date": "{year:04d}-{month:02d}-{day:02d}".format(
+            year=payment_date.year,
+            month=payment_date.month,
+            day=payment_date.day,
+        ),
+        "purchase_invoices": rows["purchase_invoices"],
+        "expenses": rows["expenses"],
+        "salaries": rows["salaries"],
+        "company": rows["company"],
+        "total": rows["total"],
+    }
+    if pay_from_account:
+        proposal_data["pay_from_account"] = pay_from_account
+
+    new_proposal = frappe.get_doc(proposal_data)
+    # The ordinary New button is intentionally disabled for this DocType; controlled helpers create via whitelisted flows.
+    proposal_record = new_proposal.insert(ignore_permissions=True)
+    if commit:
+        frappe.db.commit()
+    return proposal_record
+
+
+def _row_value(row, key):
+    if isinstance(row, dict):
+        return row.get(key)
+    return getattr(row, key, None)
+
+
+def _summarize_child_rows(rows, fields):
+    return [
+        {field: _row_value(row, field) for field in fields}
+        for row in (rows or [])
+    ]
+
+
+def _payment_proposal_summary(doc):
+    return {
+        "success": True,
+        "name": doc.name,
+        "url": get_url_to_form("Payment Proposal", doc.name),
+        "docstatus": doc.docstatus,
+        "title": doc.title,
+        "date": doc.date,
+        "company": doc.company,
+        "pay_from_account": doc.pay_from_account,
+        "total": float(doc.total or 0),
+        "purchase_invoice_count": len(doc.purchase_invoices or []),
+        "expense_count": len(doc.expenses or []),
+        "salary_count": len(doc.salaries or []),
+        "payment_count": len(doc.payments or []),
+        "purchase_invoices": _summarize_child_rows(
+            doc.purchase_invoices,
+            ("supplier", "purchase_invoice", "amount", "currency", "due_date", "payment_type", "external_reference"),
+        ),
+        "expenses": _summarize_child_rows(doc.expenses, ("employee", "expense_claim", "amount", "payable_account")),
+        "salaries": _summarize_child_rows(doc.salaries, ("employee", "salary_slip", "amount", "payable_account")),
+        "payments": _summarize_child_rows(
+            doc.payments,
+            ("receiver_name", "iban", "amount", "currency", "reference", "payment_type", "party_reference"),
+        ),
+    }
+
+
+# this function will create a new payment proposal for the desk list view
+@frappe.whitelist(methods=["POST"])
+def create_payment_proposal(date=None, company=None, currency=None):
+    frappe.only_for(("Accounts User", "Accounts Manager", "System Manager"))
+    proposal_record = _create_payment_proposal_record(
+        date=date,
+        company=company,
+        currency=currency,
+        include_expense_claims=True,
+        include_salary_slips=None,
+    )
+    if not proposal_record:
+        return None
+    return get_url_to_form("Payment Proposal", proposal_record.name)
+
+
+@frappe.whitelist(methods=["POST"])
+def create_payment_proposal_for_mcp(date=None, company=None, currency=None, pay_from_account=None, title=None,
+                                    include_expense_claims=1, include_salary_slips=0, submit=0,
+                                    expected_total=None, expected_purchase_invoice_count=None,
+                                    expected_expense_count=None, expected_salary_count=None,
+                                    payment_date=None, confirm=0, reason=None):
+    frappe.only_for(("Accounts User", "Accounts Manager", "System Manager"))
+    submit_now = _truthy(submit)
+    if submit_now:
+        _require_confirmed(confirm, "submitting a payment proposal")
+        if not pay_from_account:
+            frappe.throw(_("pay_from_account is required when submit is enabled."))
+
+    proposal_record = _create_payment_proposal_record(
+        date=date,
+        company=company,
+        currency=currency,
+        title=title,
+        payment_date=payment_date,
+        pay_from_account=pay_from_account,
+        include_expense_claims=include_expense_claims,
+        include_salary_slips=include_salary_slips,
+        expected_total=expected_total,
+        expected_purchase_invoice_count=expected_purchase_invoice_count,
+        expected_expense_count=expected_expense_count,
+        expected_salary_count=expected_salary_count,
+        commit=not submit_now,
+    )
+    if not proposal_record:
+        frappe.throw(_("No suitable invoices, expense claims or salary slips found."))
+
+    if submit_now:
+        proposal_record.submit()
+        frappe.db.commit()
+        proposal_record = frappe.get_doc("Payment Proposal", proposal_record.name)
+
+    return _payment_proposal_summary(proposal_record)
+
+
+@frappe.whitelist(methods=["POST"])
+def cancel_payment_proposal_for_mcp(payment_proposal=None, name=None, expected_total=None,
+                                    expected_payment_count=None, confirm=0, reason=None):
+    frappe.only_for(("Accounts User", "Accounts Manager", "System Manager"))
+    _require_confirmed(confirm, "cancelling a payment proposal")
+    proposal_name = payment_proposal or name
+    if not proposal_name:
+        frappe.throw(_("payment_proposal is required."))
+
+    doc = frappe.get_doc("Payment Proposal", proposal_name)
+    doc.check_permission("write")
+    if doc.docstatus != 1:
+        frappe.throw(_("Only submitted payment proposals can be cancelled."))
+    _assert_expected_total(doc.total, expected_total)
+    _assert_expected_count(len(doc.payments or []), expected_payment_count, "expected_payment_count")
+
+    doc.cancel()
     frappe.db.commit()
-    return get_url_to_form("Payment Proposal", new_record)
+    doc = frappe.get_doc("Payment Proposal", proposal_name)
+    return _payment_proposal_summary(doc)
+
+
+@frappe.whitelist(methods=["POST"])
+def create_payment_proposal_bank_file_for_mcp(payment_proposal=None, name=None, expected_total=None,
+                                              expected_payment_count=None, confirm=0, reason=None):
+    frappe.only_for(("Accounts User", "Accounts Manager", "System Manager"))
+    _require_confirmed(confirm, "creating a payment proposal bank file")
+    proposal_name = payment_proposal or name
+    if not proposal_name:
+        frappe.throw(_("payment_proposal is required."))
+
+    doc = frappe.get_doc("Payment Proposal", proposal_name)
+    doc.check_permission("write")
+    if doc.docstatus != 1:
+        frappe.throw(_("Only submitted payment proposals can be exported."))
+    _assert_expected_total(doc.total, expected_total)
+    _assert_expected_count(len(doc.payments or []), expected_payment_count, "expected_payment_count")
+
+    result = doc.create_bank_file()
+    return {
+        "success": True,
+        "name": doc.name,
+        "total": float(doc.total or 0),
+        "payment_count": len(doc.payments or []),
+        "file_name": result.get("file_name"),
+        "message_id": result.get("message_id"),
+        "content": result.get("content"),
+    }
+
+
+def _validate_iban(iban):
+    if not iban:
+        return
+    if not re.match(r"^[A-Z]{2}[0-9A-Z]{13,32}$", iban):
+        frappe.throw(_("Invalid IBAN format."))
+    rearranged = "{0}{1}".format(iban[4:], iban[:4])
+    converted = "".join(str(int(char, 36)) if char.isalpha() else char for char in rearranged)
+    checksum = 0
+    for char in converted:
+        checksum = (checksum * 10 + cint(char)) % 97
+    if checksum != 1:
+        frappe.throw(_("Invalid IBAN checksum."))
+
+
+def _validate_bic(bic):
+    if bic and not re.match(r"^[A-Z0-9]{8}([A-Z0-9]{3})?$", bic):
+        frappe.throw(_("Invalid BIC format."))
+
+
+def _doc_get(doc, fieldname):
+    try:
+        return doc.get(fieldname)
+    except Exception:
+        return getattr(doc, fieldname, None)
+
+
+def _set_supplier_field(doc, fieldname, value):
+    if not doc.meta.has_field(fieldname):
+        frappe.throw(_("Supplier field {0} is not available.").format(fieldname))
+    doc.set(fieldname, value)
+
+
+@frappe.whitelist(methods=["POST"])
+def set_supplier_payment_details_for_mcp(supplier=None, default_payment_method="IBAN", iban=None, bic=None,
+                                         esr_participation_number=None, clear_esr_participation_number=0,
+                                         confirm=0, reason=None):
+    frappe.only_for(("Accounts User", "Accounts Manager", "System Manager"))
+    _require_confirmed(confirm, "updating supplier payment details")
+    if not supplier:
+        frappe.throw(_("supplier is required."))
+
+    supplier_doc = frappe.get_doc("Supplier", supplier)
+    supplier_doc.check_permission("write")
+
+    default_payment_method = (default_payment_method or "").strip().upper()
+    if default_payment_method not in ("IBAN", "ESR", "SEPA"):
+        frappe.throw(_("Unsupported default payment method {0}.").format(default_payment_method))
+
+    normalized_iban = _normalize_bank_identifier(iban) if iban is not None else _normalize_bank_identifier(_doc_get(supplier_doc, "iban"))
+    normalized_bic = _normalize_bank_identifier(bic) if bic is not None else _normalize_bank_identifier(_doc_get(supplier_doc, "bic"))
+    normalized_esr = (
+        _normalize_bank_identifier(esr_participation_number)
+        if esr_participation_number is not None
+        else _normalize_bank_identifier(_doc_get(supplier_doc, "esr_participation_number"))
+    )
+
+    if default_payment_method in ("IBAN", "SEPA") and not normalized_iban:
+        frappe.throw(_("IBAN is required for payment method {0}.").format(default_payment_method))
+    if default_payment_method == "ESR" and not normalized_esr:
+        frappe.throw(_("ESR participation number is required for payment method ESR."))
+
+    _validate_iban(normalized_iban)
+    _validate_bic(normalized_bic)
+    _set_supplier_field(supplier_doc, "default_payment_method", default_payment_method)
+    if iban is not None:
+        _set_supplier_field(supplier_doc, "iban", normalized_iban)
+    if bic is not None:
+        _set_supplier_field(supplier_doc, "bic", normalized_bic)
+    if _truthy(clear_esr_participation_number):
+        _set_supplier_field(supplier_doc, "esr_participation_number", "")
+        normalized_esr = ""
+    elif esr_participation_number is not None:
+        _set_supplier_field(supplier_doc, "esr_participation_number", normalized_esr)
+
+    supplier_doc.save()
+    frappe.db.commit()
+    return {
+        "success": True,
+        "supplier": supplier_doc.name,
+        "default_payment_method": _doc_get(supplier_doc, "default_payment_method"),
+        "iban": _doc_get(supplier_doc, "iban"),
+        "bic": _doc_get(supplier_doc, "bic"),
+        "esr_participation_number": _doc_get(supplier_doc, "esr_participation_number"),
+    }
 
 # adds Windows-compatible line endings (to make the xml look nice)    
 def make_line(line):

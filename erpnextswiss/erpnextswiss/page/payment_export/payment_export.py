@@ -5,6 +5,7 @@
 from __future__ import unicode_literals
 import frappe
 from frappe import throw, _
+from frappe.utils import cint
 import time
 from erpnextswiss.erpnextswiss.common_functions import get_building_number, get_street_name, get_pincode, get_city
 from erpnextswiss.erpnextswiss.iso20022 import create_message_id, create_payment_file_name
@@ -18,6 +19,139 @@ def get_payments():
         order_by='posting_date')
     
     return { 'payments': payments }
+
+def _truthy(value, default=False):
+    if value is None or value == "":
+        return default
+    if isinstance(value, str):
+        return value.strip().lower() in ("1", "true", "yes", "y", "ja")
+    return bool(value)
+
+
+def _optional_float(value, fieldname):
+    if value is None or value == "":
+        return None
+    try:
+        return float(value)
+    except Exception:
+        frappe.throw(_("{0} must be a number.").format(fieldname))
+
+
+def _optional_int(value, fieldname):
+    if value is None or value == "":
+        return None
+    try:
+        return cint(value)
+    except Exception:
+        frappe.throw(_("{0} must be a whole number.").format(fieldname))
+
+
+def _assert_expected_total(actual, expected_total):
+    expected = _optional_float(expected_total, "expected_total")
+    if expected is not None and round(abs(float(actual or 0) - expected), 2) > 0:
+        frappe.throw(_("Expected total {0} does not match calculated total {1:.2f}.").format(expected, float(actual or 0)))
+
+
+def _assert_expected_count(actual, expected_count, fieldname):
+    expected = _optional_int(expected_count, fieldname)
+    if expected is not None and cint(actual) != expected:
+        frappe.throw(_("Expected {0} {1} does not match calculated value {2}.").format(fieldname, expected, actual))
+
+
+def _require_confirmed(confirm, action):
+    if not _truthy(confirm):
+        frappe.throw(_("Confirmation is required before {0}.").format(action))
+
+
+def _parse_payment_names(payments):
+    payment_names = frappe.parse_json(payments) if isinstance(payments, str) else payments
+    payment_names = list(filter(None, payment_names or []))
+    seen = set()
+    unique_names = []
+    for payment_name in payment_names:
+        payment_name = str(payment_name)
+        if payment_name in seen:
+            continue
+        seen.add(payment_name)
+        unique_names.append(payment_name)
+    return unique_names
+
+
+def _validate_payment_entries_for_export(payment_names):
+    total = 0.0
+    errors = []
+    records = []
+
+    for payment_name in payment_names:
+        try:
+            payment_record = frappe.get_doc("Payment Entry", payment_name)
+            payment_record.check_permission("write")
+        except Exception as err:
+            errors.append(_("{0}: cannot read payment entry ({1})").format(payment_name, err))
+            continue
+
+        if payment_record.docstatus != 0:
+            errors.append(_("{0}: payment entry is not a draft").format(payment_name))
+        if payment_record.payment_type != "Pay":
+            errors.append(_("{0}: payment entry is not a Pay entry").format(payment_name))
+
+        try:
+            payment_account = frappe.get_doc("Account", payment_record.paid_from)
+            if not payment_account.iban:
+                errors.append(_("{0}: no account IBAN found ({1})").format(payment_name, payment_record.paid_from))
+        except Exception as err:
+            errors.append(_("{0}: cannot read paying account ({1})").format(payment_name, err))
+
+        creditor_info = add_creditor_info(payment_record)
+        if not creditor_info:
+            errors.append(_("{0}: no creditor address or country found").format(payment_name))
+
+        if payment_record.transaction_type == "ESR":
+            if not payment_record.esr_participant_number:
+                errors.append(_("{0}: no ESR participation number found").format(payment_name))
+            if not payment_record.esr_reference:
+                errors.append(_("{0}: no ESR reference found").format(payment_name))
+        elif not payment_record.iban:
+            errors.append(_("{0}: no IBAN found").format(payment_name))
+
+        total += float(payment_record.paid_amount or 0)
+        records.append(payment_record)
+
+    if errors:
+        frappe.throw("<br>".join(errors))
+
+    return records, total
+
+
+@frappe.whitelist(methods=["POST"])
+def generate_payment_file_for_mcp(payments, expected_total=None, expected_count=None, confirm=0, reason=None):
+    frappe.only_for(("Accounts User", "Accounts Manager", "System Manager"))
+    _require_confirmed(confirm, "generating and submitting a payment export")
+
+    payment_names = _parse_payment_names(payments)
+    if not payment_names:
+        frappe.throw(_("Please select at least one payment."))
+
+    records, total = _validate_payment_entries_for_export(payment_names)
+    _assert_expected_total(total, expected_total)
+    _assert_expected_count(len(records), expected_count, "expected_count")
+
+    result = generate_payment_file(payment_names)
+    if not result:
+        frappe.throw(_("Payment export did not return a file."))
+    if result.get("skipped"):
+        frappe.throw(_("Payment export skipped entries: {0}").format(", ".join(result.get("skipped"))))
+
+    return {
+        "success": True,
+        "count": len(records),
+        "total": total,
+        "payment_entries": [record.name for record in records],
+        "file_name": result.get("file_name"),
+        "message_id": result.get("message_id"),
+        "content": result.get("content"),
+        "skipped": result.get("skipped") or [],
+    }
 
 @frappe.whitelist(methods=["POST"])
 def generate_payment_file(payments):

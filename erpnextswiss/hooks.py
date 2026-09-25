@@ -232,6 +232,7 @@ fixtures = [
             "Employee-old_social_security_number",
             "Purchase Invoice-section_payment",
             "Purchase Invoice-payment_type",
+            "Purchase Invoice-iban",
             "Purchase Invoice-column_payment",
             "Purchase Invoice-esr_reference_number",
             "GL Entry-exported_to_abacus",

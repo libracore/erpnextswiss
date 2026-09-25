@@ -7,6 +7,7 @@ from pathlib import Path
 
 import frappe
 from erpnextswiss.setup.email_templates import sync_email_templates
+from erpnextswiss.setup.salary_slip_print import sync_salary_slip_print_format
 from erpnextswiss.setup.workspace_routes import WORKSPACE_ROUTE_PAGES, retire_workspace_route_pages
 
 
@@ -66,6 +67,7 @@ def after_install():
     ensure_v16_desk_records()
     remove_production_unsafe_navbar_items()
     sync_email_templates()
+    sync_salary_slip_print_format()
     frappe.db.commit()
 
 
@@ -74,6 +76,7 @@ def after_migrate():
     ensure_v16_desk_records()
     remove_production_unsafe_navbar_items()
     sync_email_templates()
+    sync_salary_slip_print_format()
     frappe.db.commit()
 
 

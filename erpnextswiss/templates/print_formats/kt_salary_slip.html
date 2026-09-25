@@ -1,0 +1,107 @@
+{# Managed by erpnextswiss.setup.salary_slip_print. Presentation only; never recalculate payroll. #}
+{% set company = frappe.get_doc('Company', doc.company) %}
+{% set address = frappe.db.get_value('Address', {'is_your_company_address': 1, 'address_title': doc.company}, ['address_line1', 'address_line2', 'pincode', 'city'], as_dict=True) %}
+{% set employee_address = frappe.db.get_value('Employee', doc.employee, 'current_address') %}
+{% set months = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'] %}
+{% set period_end = frappe.utils.getdate(doc.end_date or doc.posting_date) %}
+{% set currency = doc.currency or 'CHF' %}
+{% set rounding_disabled = frappe.db.get_single_value('Payroll Settings', 'disable_rounded_total') %}
+{% set payable = doc.net_pay if rounding_disabled or doc.rounded_total is none else doc.rounded_total %}
+{% set labels = {'Basic': 'Monatslohn', 'AHV/IV/EO Arbeitnehmer': 'AHV / IV / EO', 'ALV Arbeitnehmer': 'Arbeitslosenversicherung (ALV)', 'BVG Arbeitnehmer': 'Pensionskasse (BVG)', 'UVG NBU Arbeitnehmer': 'Nichtberufsunfallversicherung (NBU)', 'KTG Arbeitnehmer': 'Krankentaggeldversicherung (KTG)'} %}
+{% macro money(value) -%}{{ "{:,.2f}".format(value or 0).replace(',', "'") }}{%- endmacro %}
+{% macro date(value) -%}{{ frappe.utils.formatdate(value, 'dd.MM.yyyy') if value else '' }}{%- endmacro %}
+<!-- KT_SALARY_DESIGN_VERSION:2026.09.25 -->
+<style>
+  @page { size: A4; margin: 16mm 18mm 16mm; }
+  .print-format { padding: 0 !important; margin-top: 16mm; margin-bottom: 16mm; margin-left: 18mm; margin-right: 18mm; font-family: Arial, Helvetica, sans-serif !important; font-size: 10pt; color: #183441; }
+  .kt-pay, .kt-pay * { box-sizing: border-box; font-family: Arial, Helvetica, sans-serif; }
+  .kt-pay { line-height: 1.42; color: #183441; }
+  .kt-pay table { width: 100%; border-collapse: collapse; table-layout: fixed; margin: 0; }
+  .print-format .kt-pay td, .print-format .kt-pay th { padding: 0 !important; vertical-align: top; border: 0; }
+  .print-format .kt-pay .brand td { padding-bottom: 18px !important; }
+  .kt-pay .brand { border-bottom: 2px solid #003b53; }
+  .kt-pay .logo { display: block; width: 230px; max-height: 68px; object-fit: contain; object-position: left center; }
+  .kt-pay .sender { text-align: right; color: #50616b; font-size: 8.5pt; line-height: 1.5; }
+  .kt-pay .sender strong { color: #173946; }
+  .kt-pay .eyebrow { font-size: 8pt; text-transform: uppercase; letter-spacing: 1.1px; color: #506773; }
+  .kt-pay .heading { margin: 24px 0 19px; }
+  .kt-pay h1 { margin: 0 0 3px; color: #003b53; font-size: 24pt; font-weight: 700; line-height: 1.15; letter-spacing: -.5px; }
+  .kt-pay .period { font-size: 13pt; color: #003b53; }
+  .kt-pay .confidential { text-align: right; vertical-align: middle; color: #647580; font-size: 8pt; }
+  .kt-pay .status { display: inline-block; border: 1px solid #ad5100; color: #854000; padding: 3px 7px; margin-top: 6px; font-weight: bold; }
+  .kt-pay .person { border-top: 1px solid #dae1e5; border-bottom: 1px solid #dae1e5; margin-bottom: 24px; }
+  .print-format .kt-pay .person > tbody > tr > td { padding: 13px 0 !important; }
+  .print-format .kt-pay .person > tbody > tr > td + td { padding-left: 20px !important; }
+  .kt-pay .person-name { font-weight: bold; font-size: 12pt; margin: 4px 0; color: #003b53; }
+  .kt-pay .address { white-space: pre-line; font-size: 9pt; }
+  .print-format .kt-pay .meta td { padding: 2px 0 !important; font-size: 8.5pt; }
+  .kt-pay .meta td:first-child { color: #50616b; width: 40%; }
+  .kt-pay .meta td:last-child { text-align: right; }
+  .kt-pay .ledger thead { display: table-header-group; }
+  .print-format .kt-pay .ledger th { padding: 0 0 7px !important; font-size: 8pt; color: #4c6572; border-bottom: 1px solid #9bafb9; text-align: left; }
+  .kt-pay .ledger th.num, .kt-pay .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .print-format .kt-pay .ledger td { padding: 5px 0 !important; border-bottom: 1px solid #e5eaed; font-size: 10pt; }
+  .print-format .kt-pay .ledger td:first-child { padding-right: 12px !important; overflow-wrap: break-word; }
+  .print-format .kt-pay .ledger .section td { padding-top: 12px !important; padding-bottom: 5px !important; border-bottom: 0; font-size: 8pt; text-transform: uppercase; letter-spacing: 1px; font-weight: bold; color: #42616f; }
+  .print-format .kt-pay .ledger .sum td { font-weight: bold; padding-top: 7px !important; padding-bottom: 7px !important; border-top: 1px solid #9bafb9; border-bottom: 0; }
+  .kt-pay .ledger tr, .kt-pay .person, .kt-pay .heading, .kt-pay .brand, .kt-pay .settlement, .kt-pay .employer tr { page-break-inside: avoid; break-inside: avoid; }
+  .kt-pay .settlement { margin-top: 17px; }
+  .kt-pay .net { background: #edf3f5; border-left: 4px solid #ff7900; }
+  .print-format .kt-pay .net td { padding: 13px 15px !important; vertical-align: middle !important; color: #003b53; }
+  .kt-pay .net-label { font-size: 12pt; font-weight: bold; }
+  .kt-pay .net-value { font-size: 23pt; font-weight: bold; line-height: 1.2; }
+  .kt-pay .net-currency { font-size: 11pt; font-weight: normal; margin-right: 6px; }
+  .kt-pay .bank { font-size: 8.5pt; margin-top: 10px; color: #50616b; }
+  .kt-pay .bank strong { color: #173946; }
+  .kt-pay .note { font-size: 8pt; color: #61727c; margin: 8px 0 0; }
+  .kt-pay .employer { margin-top: 23px; border-top: 1px solid #c5d2d8; padding-top: 10px; }
+  .kt-pay .employer h2 { margin: 0 0 3px; font-size: 9pt; color: #42616f; font-weight: bold; }
+  .kt-pay .employer table { margin-top: 5px; }
+  .print-format .kt-pay .employer td { padding: 2px 0 !important; font-size: 8pt; color: #5d707b; }
+  .print-format .kt-pay .employer td:first-child { width: 78%; padding-right: 10px !important; }
+  .kt-pay .reference { margin-top: 23px; border-top: 1px solid #dce4e8; padding-top: 8px; font-size: 7.5pt; color: #657783; overflow-wrap: anywhere; }
+  .kt-pay-footer { margin-top: -15mm !important; font-family: Arial, Helvetica, sans-serif; font-size: 7.5pt; color: #657783; text-align: right; }
+  @media screen { .print-format { margin: auto !important; padding: 16mm 18mm !important; } }
+  @media print {
+    .print-format { margin: 0 !important; width: auto !important; }
+    .kt-pay .net { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+<div class="kt-pay">
+  <table class="brand"><tr>
+    <td style="width:48%">{% if company.company_logo %}<img class="logo" src="{{ frappe.utils.get_url(company.company_logo)|e }}" alt="{{ doc.company|e }}">{% else %}<strong>{{ doc.company|e }}</strong>{% endif %}</td>
+    <td class="sender"><strong>{{ doc.company|e }}</strong><br>
+      {% if address %}{{ address.address_line1|e }}{% if address.address_line2 %}<br>{{ address.address_line2|e }}{% endif %}<br>{{ (address.pincode or '')|e }} {{ (address.city or '')|e }}<br>{% endif %}
+      {{ (company.email or company.website or '')|e }}
+    </td>
+  </tr></table>
+  <table class="heading"><tr><td style="width:76%"><h1>Lohnabrechnung</h1><div class="period">{{ months[period_end.month - 1] }} {{ period_end.year }}</div></td>
+    <td class="confidential">Persönlich / Vertraulich{% if doc.docstatus == 0 %}<br><span class="status">ENTWURF</span>{% elif doc.docstatus == 2 %}<br><span class="status">STORNIERT</span>{% endif %}</td>
+  </tr></table>
+  <table class="person"><tr><td style="width:50%"><div class="eyebrow">Mitarbeitende Person</div><div class="person-name">{{ doc.employee_name|e }}</div>{% if employee_address %}<div class="address">{{ employee_address|e }}</div>{% endif %}</td>
+    <td><table class="meta"><tr><td>Personal-Nr.</td><td>{{ doc.employee|e }}</td></tr><tr><td>Zeitraum</td><td>{{ date(doc.start_date) }} - {{ date(doc.end_date) }}</td></tr><tr><td>Belegdatum</td><td>{{ date(doc.posting_date) }}</td></tr></table></td>
+  </tr></table>
+  <table class="ledger">
+    <thead><tr><th style="width:64%">Lohnbestandteil</th><th class="num" style="width:18%">Bezüge {{ currency|e }}</th><th class="num" style="width:18%">Abzüge {{ currency|e }}</th></tr></thead>
+    <tbody>
+      {% for row in doc.earnings if row.amount and not row.statistical_component and not row.do_not_include_in_total %}<tr><td>{{ labels.get(row.salary_component, row.salary_component)|e }}</td><td class="num">{{ money(row.amount) }}</td><td></td></tr>{% endfor %}
+      <tr class="sum"><td>Bruttolohn</td><td class="num">{{ money(doc.gross_pay) }}</td><td></td></tr>
+      <tr class="section"><td colspan="3">Arbeitnehmerbeiträge und weitere Abzüge</td></tr>
+      {% for row in doc.deductions if row.amount and not row.statistical_component and not row.do_not_include_in_total %}<tr><td>{{ labels.get(row.salary_component, row.salary_component)|e }}</td><td></td><td class="num">{{ money(row.amount) }}</td></tr>{% endfor %}
+      <tr class="sum"><td>Total Abzüge</td><td></td><td class="num">{{ money(doc.total_deduction) }}</td></tr>
+    </tbody>
+  </table>
+  <div class="settlement">
+    <table class="net"><tr><td class="net-label" style="width:44%">Nettolohn</td><td class="num net-value"><span class="net-currency">{{ currency|e }}</span>{{ money(doc.net_pay) }}</td></tr></table>
+    {% if payable != doc.net_pay %}<div class="bank">Auszahlungsbetrag nach Rundung: <strong>{{ currency|e }} {{ money(payable) }}</strong></div>{% endif %}
+    {% if doc.bank_account_no %}<div class="bank">Zahlungsverbindung{% if doc.bank_name %} · {{ doc.bank_name|e }}{% endif %}<br><strong>{{ doc.bank_account_no|e }}</strong></div>{% endif %}
+    <p class="note">Diese Abrechnung ist keine Zahlungsbestätigung. Bereits geleistete Akontozahlungen sind separat abzugleichen.</p>
+  </div>
+  {% if doc.get('employer_contributions') %}
+  <div class="employer"><h2>Beiträge des Arbeitgebers</h2><div class="note" style="margin-top:0">Zur Information · Kein Abzug vom Nettolohn · Beträge in {{ currency|e }}</div>
+    <table>{% for row in doc.employer_contributions if row.amount %}<tr><td>{{ row.salary_component.replace(' Arbeitgeber Aufwand', '').replace(' Arbeitgeber', '')|e }}</td><td class="num">{{ money(row.amount) }}</td></tr>{% endfor %}</table>
+  </div>
+  {% endif %}
+  <div class="reference">{{ doc.company|e }} · Lohnabrechnung {{ months[period_end.month - 1] }} {{ period_end.year }} · {{ doc.employee|e }}<br>Beleg {{ doc.name|e }}</div>
+</div>
+<div id="footer-html" class="visible-pdf"><div class="kt-pay-footer">Seite <span class="page"></span> / <span class="topage"></span></div></div>

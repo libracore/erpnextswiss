@@ -5,7 +5,9 @@ from __future__ import unicode_literals
 
 import frappe
 import unittest
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
+
+from erpnextswiss.erpnextswiss.doctype.payment_proposal.payment_proposal import _normalize_payment_date
 
 from erpnextswiss.erpnextswiss.iso20022 import (
 	create_message_id,
@@ -16,6 +18,25 @@ from erpnextswiss.erpnextswiss.iso20022 import (
 )
 
 class TestPaymentProposal(unittest.TestCase):
+	def test_payment_date_accepts_date_objects_and_strings(self):
+		today = date(2026, 9, 26)
+		self.assertEqual(
+			_normalize_payment_date(date(2026, 9, 28), today),
+			datetime(2026, 9, 28),
+		)
+		self.assertEqual(
+			_normalize_payment_date("2026-09-28", today),
+			datetime(2026, 9, 28),
+		)
+		self.assertEqual(
+			_normalize_payment_date(datetime(2026, 9, 28, 14, 30), today),
+			datetime(2026, 9, 28, 14, 30),
+		)
+		self.assertEqual(
+			_normalize_payment_date(date(2026, 9, 25), today),
+			datetime(2026, 9, 26),
+		)
+
 	def test_message_id_is_unique_and_swift_safe(self):
 		first = create_message_id()
 		second = create_message_id()

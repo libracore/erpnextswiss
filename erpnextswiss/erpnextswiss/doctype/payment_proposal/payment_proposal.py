@@ -25,6 +25,21 @@ import re
 
 PAYMENT_REMARKS = "From Payment Proposal {0}"
 
+
+def _normalize_payment_date(execution_date, today=None):
+    """Return an execution date as datetime, accepting Frappe Date values too."""
+    if isinstance(execution_date, datetime):
+        pay_date = execution_date
+    else:
+        pay_date = datetime.fromisoformat(str(execution_date))
+
+    today = today or datetime.now().date()
+    if isinstance(today, datetime):
+        today = today.date()
+    if pay_date.date() < today:
+        pay_date = datetime.combine(today, datetime.min.time())
+    return pay_date
+
 XML_SCHEMA_FILES = {
     'CH': {
         '03':     "apps/erpnextswiss/erpnextswiss/public/xsd/pain.001.001.03.xsd",
@@ -335,14 +350,7 @@ class PaymentProposal(Document):
         address_line2, country, pincode, city, amount, currency, reference, execution_date, 
         esr_reference=None, esr_participation_number=None, bic=None, is_salary=0,
         receiver_id=None):
-            # prepare payment date
-            if isinstance(execution_date,datetime):
-                pay_date = execution_date
-            else:
-                pay_date = datetime.strptime(execution_date, "%Y-%m-%d")
-            # assure that payment date is not in th past
-            if pay_date.date() < datetime.now().date():
-                pay_date = datetime.now().date()
+            pay_date = _normalize_payment_date(execution_date)
             # append payment record
             new_payment = self.append('payments', {
                 'receiver': receiver_name,

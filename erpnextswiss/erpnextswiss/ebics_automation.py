@@ -20,7 +20,9 @@ from erpnextswiss.scripts.bank_file_admission import BankFileError, MAX_FILE_BYT
 
 PROFILE = "camt.053.001.08"
 MAX_DOWNLOADS_PER_RUN = 14
+MAX_ARCHIVED_DOWNLOADS = 10000
 _TRANSACTION_ID = re.compile(r"[A-Za-z0-9_-]{1,100}\Z")
+_RECEIPT_NAME = re.compile(r"statement-[0-9]{3}\.xml\Z")
 
 
 def _archive_bytes(data):
@@ -46,18 +48,38 @@ def _archive_bytes(data):
     return encoded
 
 
-def _zip_from_receipt(payload):
+def _receipt_files(payload):
     files = json.loads(payload)
     if not isinstance(files, dict) or len(files) > 64:
         raise BankFileError("Stored EBICS receipt is invalid")
+    result = {}
+    total = 0
+    for name, content in sorted(files.items()):
+        if not _RECEIPT_NAME.fullmatch(name) or not isinstance(content, str):
+            raise BankFileError("Stored EBICS receipt is invalid")
+        raw = content.encode("utf-8")
+        total += len(raw)
+        if not 0 < len(raw) <= MAX_FILE_BYTES or total > MAX_TOTAL_BYTES:
+            raise BankFileError("Stored EBICS receipt exceeds file limits")
+        result[name] = (raw, sha256(raw).hexdigest())
+    return result
+
+
+def _zip_from_receipt(payload, included_hashes=None):
+    files = _receipt_files(payload)
     if not files:
         return None
     output = BytesIO()
+    included = set(included_hashes) if included_hashes is not None else None
+    emitted = set()
     with ZipFile(output, "w", compression=ZIP_STORED, allowZip64=False) as archive:
-        for name, content in sorted(files.items()):
-            if not re.fullmatch(r"statement-[0-9]{3}\.xml", name) or not isinstance(content, str):
-                raise BankFileError("Stored EBICS receipt is invalid")
-            archive.writestr(name, content.encode("utf-8"))
+        for name, (raw, digest) in files.items():
+            if included is not None and (digest not in included or digest in emitted):
+                continue
+            archive.writestr(name, raw)
+            emitted.add(digest)
+    if not emitted:
+        return None
     return output.getvalue()
 
 
@@ -80,8 +102,8 @@ def _accounts(connection):
     return accounts
 
 
-def _preview(payload, connection):
-    archive = _zip_from_receipt(payload)
+def _preview(payload, connection, included_hashes=None):
+    archive = _zip_from_receipt(payload, included_hashes=included_hashes)
     if archive is None:
         return {"statements": []}
     return preview_camt_archive(archive, PROFILE, company=connection.company, accounts=_accounts(connection))
@@ -97,6 +119,38 @@ def _verify_receipt(record):
     if len(payload) != record.payload_bytes or sha256(payload).hexdigest() != record.payload_sha256:
         raise BankFileError("Stored EBICS receipt failed integrity verification")
     return payload
+
+
+def _known_files(connection):
+    """Build the first-seen per-file index, including legacy single-file receipts."""
+    known = {}
+    offset = 0
+    while offset < MAX_ARCHIVED_DOWNLOADS:
+        names = frappe.get_all("EBICS Download", filters={"connection": connection.name,
+                                                        "profile": PROFILE, "ack_state": "Confirmed"},
+                               pluck="name", order_by="creation asc, name asc",
+                               limit_start=offset, limit_page_length=100)
+        for name in names:
+            record = frappe.get_doc("EBICS Download", name)
+            for _, digest in _receipt_files(_verify_receipt(record)).values():
+                known.setdefault(digest, name)
+        if len(names) < 100:
+            return known
+        offset += len(names)
+    raise BankFileError("EBICS archive requires indexed review before further downloads")
+
+
+def _classify_files(payload, known_files):
+    hashes = list(dict.fromkeys(digest for _, digest in _receipt_files(payload).values()))
+    duplicate_sources = {digest: known_files[digest] for digest in hashes if digest in known_files}
+    new_hashes = [digest for digest in hashes if digest not in known_files]
+    sources = set(duplicate_sources.values())
+    return {
+        "file_hashes_json": json.dumps(hashes),
+        "new_file_hashes_json": json.dumps(new_hashes),
+        "duplicate_sources_json": json.dumps(duplicate_sources, sort_keys=True),
+        "duplicate_of": next(iter(sources)) if not new_hashes and len(sources) == 1 else None,
+    }, new_hashes
 
 
 def _acknowledge(connection, record, client=None):
@@ -116,7 +170,7 @@ def _pending_receipt(connection):
     return frappe.get_doc("EBICS Download", names[0]) if names else None
 
 
-def _download_pending(connection, requested_date):
+def _download_pending(connection, requested_date, known_files=None):
     """Fetch one bank-provided current file set, never a historical DateRange.
 
     requested_date is the ERP retrieval date for audit, not a filter sent to the
@@ -148,16 +202,22 @@ def _download_pending(connection, requested_date):
     name = _receipt_key(connection.name, transaction_id)
     if frappe.db.exists("EBICS Download", name):
         raise BankFileError("EBICS transaction identity is already archived")
+    if known_files is None:
+        known_files = _known_files(connection)
+    file_metadata, new_hashes = _classify_files(payload, known_files)
     record = frappe.get_doc({
         "doctype": "EBICS Download", "download_key": name, "connection": connection.name,
         "company": connection.company, "requested_date": requested_date.isoformat(),
         "profile": PROFILE, "bank_transaction_id": transaction_id, "ack_state": "Pending",
-        "processing_state": "Pending", "payload_sha256": sha256(payload).hexdigest(),
+        "processing_state": "Duplicate" if not new_hashes else "Pending", **file_metadata,
+        "payload_sha256": sha256(payload).hexdigest(),
         "payload_bytes": len(payload), "payload_json": payload.decode("utf-8"),
     }).insert(ignore_permissions=True)
     frappe.db.commit()
     _verify_receipt(frappe.get_doc("EBICS Download", record.name))
     _acknowledge(connection, record, client=client)
+    for digest in new_hashes:
+        known_files[digest] = record.name
     return record
 
 
@@ -270,7 +330,20 @@ def _book_exact_match(connection, statement, entry, download_name):
 def _process_download(connection, record):
     if record.ack_state != "Confirmed":
         raise BankFileError("Bank receipt must be confirmed before automatic booking")
-    preview = _preview(_verify_receipt(record), connection)
+    payload = _verify_receipt(record)
+    if record.new_file_hashes_json:
+        new_hashes = json.loads(record.new_file_hashes_json)
+        if (not isinstance(new_hashes, list) or any(not isinstance(item, str) for item in new_hashes)
+                or len(new_hashes) > 64):
+            raise BankFileError("EBICS new-file metadata is invalid")
+    else:
+        # Old receipts predate per-file metadata. They are only replayed after
+        # their durable bank receipt; the ledger reference guard still applies.
+        new_hashes = list(dict.fromkeys(digest for _, digest in _receipt_files(payload).values()))
+    if not new_hashes:
+        record.db_set("processing_state", "Duplicate", commit=True)
+        return {"booked": 0, "review": 0}
+    preview = _preview(payload, connection, included_hashes=new_hashes)
     booked = review = 0
     for statement in preview["statements"]:
         for entry in statement["entries"]:
@@ -305,23 +378,100 @@ def sync_connection(connection_name, debug=False):
                                  pluck="name", order_by="creation asc", limit_page_length=100)
         for name in waiting:
             _process_download(connection, frappe.get_doc("EBICS Download", name))
+        repeated_payloads = set()
+        duplicates = 0
         pending = _pending_receipt(connection)
         if pending:
             # Resolve an interrupted bank acknowledgement before any other BTD.
             resumed = _download_pending(connection, frappe.utils.getdate(pending.requested_date))
             if resumed.processing_state == "Pending":
                 _process_download(connection, resumed)
+            elif resumed.processing_state == "Duplicate":
+                repeated_payloads.add(resumed.payload_sha256)
+                duplicates += 1
+        known_files = _known_files(connection)
         # Each BTD without a date filter returns a bank-pending file set. Keep
         # fetching until the bank reports no data, but bound each scheduler run.
         # The request date is audit metadata only, never a file/date cursor.
         fetched = 0
+        exhausted = True
         for _ in range(MAX_DOWNLOADS_PER_RUN):
-            record = _download_pending(connection, frappe.utils.getdate())
+            record = _download_pending(connection, frappe.utils.getdate(), known_files)
             if record is None:
+                exhausted = False
                 break
+            if record.processing_state == "Duplicate":
+                duplicates += 1
+                if record.payload_sha256 in repeated_payloads:
+                    return {"status": "repeated_duplicate", "downloads_fetched": fetched,
+                            "duplicate_receipts": duplicates}
+                repeated_payloads.add(record.payload_sha256)
+                continue
             _process_download(connection, record)
             fetched += 1
-        return {"status": "ok", "downloads_fetched": fetched}
+        result = {"status": "limit_reached" if exhausted else "ok", "downloads_fetched": fetched}
+        if duplicates:
+            result["duplicate_receipts"] = duplicates
+        return result
+    finally:
+        lock.release()
+
+
+def reconcile_historical_receipts(connection_name, apply=False):
+    """Audit and optionally mark old repeated receipts; never delete bank data.
+
+    Default is read-only. An explicit boolean True updates only deduplication
+    metadata/status after validating every archived receipt in chronological
+    order. Existing booked entries are never silently reclassified.
+    """
+    if type(apply) is not bool:
+        raise ValueError("apply must be a boolean")
+    lock = frappe.cache().lock("ebics-download:" + connection_name, timeout=300, blocking_timeout=0)
+    if not lock.acquire(blocking=False):
+        return {"status": "already_running"}
+    try:
+        connection = frappe.get_doc("ebics Connection", connection_name)
+        known_files = {}
+        changed = duplicate = 0
+        offset = 0
+        while offset < MAX_ARCHIVED_DOWNLOADS:
+            names = frappe.get_all("EBICS Download", filters={"connection": connection.name,
+                                                            "profile": PROFILE, "ack_state": "Confirmed"},
+                                   pluck="name", order_by="creation asc, name asc",
+                                   limit_start=offset, limit_page_length=100)
+            for name in names:
+                record = frappe.get_doc("EBICS Download", name)
+                metadata, new_hashes = _classify_files(_verify_receipt(record), known_files)
+                if not new_hashes:
+                    if int(record.booked_count or 0):
+                        raise BankFileError("Historical duplicate with booked entries requires manual review")
+                    duplicate += 1
+                    target_state = "Duplicate"
+                else:
+                    if record.processing_state == "Duplicate":
+                        raise BankFileError("A unique historical receipt is marked duplicate")
+                    target_state = record.processing_state
+                updates = {key: value for key, value in metadata.items() if record.get(key) != value}
+                if record.processing_state != target_state:
+                    updates["processing_state"] = target_state
+                if updates:
+                    changed += 1
+                    if apply is True:
+                        record.db_set(updates, commit=False)
+                for digest in new_hashes:
+                    known_files[digest] = name
+            if len(names) < 100:
+                if apply is True:
+                    frappe.db.commit()
+                return {"status": "applied" if apply is True else "dry_run",
+                        "receipts_checked": offset + len(names), "receipts_changed": changed,
+                        "duplicate_receipts": duplicate}
+            offset += len(names)
+        raise BankFileError("EBICS archive exceeds safe reconciliation limit")
+    except Exception:
+        if apply is True:
+            frappe.db.rollback()
+        raise
     finally:
         lock.release()
 
@@ -329,6 +479,11 @@ def sync_connection(connection_name, debug=False):
 def sync(debug=False):
     for row in frappe.get_all("ebics Connection", filters={"enable_sync": 1}, pluck="name"):
         try:
-            sync_connection(row, debug=debug)
+            result = sync_connection(row, debug=debug)
+            if result.get("status") in ("limit_reached", "repeated_duplicate"):
+                frappe.log_error(title="EBICS retrieval needs bank review",
+                                 message="Connection {0}: {1}; downloads {2}, duplicates {3}".format(
+                                     row, result["status"], result.get("downloads_fetched", 0),
+                                     result.get("duplicate_receipts", 0)))
         except Exception as error:
             frappe.log_error(title="EBICS retrieval failed", message=type(error).__name__)

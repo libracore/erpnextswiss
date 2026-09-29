@@ -4,6 +4,7 @@
 from __future__ import unicode_literals
 
 from unittest.mock import MagicMock, patch
+from datetime import date, datetime
 
 import frappe
 import unittest
@@ -14,6 +15,13 @@ from erpnextswiss.erpnextswiss.doctype.ebics_connection.ebics_connection import 
 )
 
 class TestebicsConnection(unittest.TestCase):
+	def test_synced_until_accepts_database_date_and_normalizes_input(self):
+		for supplied in (date(2026, 9, 28), datetime(2026, 9, 28, 12, 30), "2026-09-28"):
+			with self.subTest(supplied=supplied):
+				connection = ebicsConnection({"doctype": "ebics Connection", "synced_until": supplied})
+				connection.before_save()
+				self.assertEqual(connection.synced_until, date(2026, 9, 28))
+
 	@patch("erpnextswiss.erpnextswiss.doctype.ebics_connection.ebics_connection.frappe.utils.get_site_path")
 	def test_keys_file_uses_absolute_site_path_without_prefixing_it_again(self, get_site_path):
 		get_site_path.return_value = "/home/frappe/frappe-bench/sites/erp.local"

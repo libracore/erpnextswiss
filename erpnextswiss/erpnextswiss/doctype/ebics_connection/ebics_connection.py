@@ -16,16 +16,17 @@ except:
 from frappe import _
 from frappe.utils.file_manager import save_file
 from frappe.utils.password import get_decrypted_password
-from datetime import datetime
+from datetime import date, datetime
 
 class ebicsConnection(Document):
     def before_save(self):
         # make sure synced_until is in date format
-        if self.synced_until and not type(self.synced_until) == datetime.date:
-            if type(self.synced_until) == str:
-                self.synced_until = datetime.strptime(self.synced_until, "%Y-%m-%d").date()
-            elif type(self.synced_until) == datetime.datetime:
-                self.synced_until =self.synced_until.date()
+        if isinstance(self.synced_until, datetime):
+            self.synced_until = self.synced_until.date()
+        elif isinstance(self.synced_until, str) and self.synced_until:
+            self.synced_until = datetime.strptime(self.synced_until, "%Y-%m-%d").date()
+        elif self.synced_until and not isinstance(self.synced_until, date):
+            raise TypeError("synced_until must be a date or an ISO date string")
                 
         return
         

@@ -176,6 +176,7 @@ class TestEbicsAutomation(TestCase):
         connection = MagicMock()
         connection.name = "AKB"
         connection.company = "KT Wärmesysteme AG"
+        connection.scope, connection.statement_btf_version = "CH", "08"
         client = connection.get_client.return_value
         client.BTD.return_value = {"bank.xml": "<Document/>"}
         client.last_trans_id = "BANK-TXN-123"
@@ -196,6 +197,39 @@ class TestEbicsAutomation(TestCase):
         # The AKB current-pending request must not contain Start/End DateRange.
         self.assertEqual(len(client.BTD.call_args.args), 1)
         self.assertEqual(client.BTD.call_args.kwargs, {})
+
+    def test_akb_legacy_statement_profile_uses_version_04_without_date_range(self):
+        connection = MagicMock(name="AKB", company="KT Wärmesysteme AG")
+        connection.name = "AKB"
+        connection.scope, connection.statement_btf_version = "CH", "04"
+        client = connection.get_client.return_value
+        client.BTD.return_value = {"bank.xml": xml("camt.053.001.04")}
+        client.last_trans_id = "BANK-TXN-LEGACY"
+        record = MagicMock()
+        record.name = "EBICS-LEGACY"
+        record.insert.return_value = record
+        created = []
+
+        def get_doc(value, *args):
+            if isinstance(value, dict):
+                created.append(value)
+            return record
+
+        with (patch.object(automation, "_pending_receipt", return_value=None),
+              patch.object(automation.frappe.db, "exists", return_value=False),
+              patch.object(automation, "_preview", return_value={"statements": []}) as preview,
+              patch.object(automation, "_known_files", return_value={}),
+              patch.object(automation.frappe, "get_doc", side_effect=get_doc),
+              patch.object(automation.frappe.db, "commit"),
+              patch.object(automation, "_verify_receipt"),
+              patch.object(automation, "_acknowledge") as acknowledge):
+            automation._download_pending(connection, date(2026, 9, 29))
+        self.assertEqual(client.BTD.call_args.args[0].version, "04")
+        self.assertEqual(len(client.BTD.call_args.args), 1)
+        self.assertEqual(client.BTD.call_args.kwargs, {})
+        self.assertEqual(created[0]["profile"], "camt.053.001.04")
+        self.assertEqual(preview.call_args.kwargs["profile"], "camt.053.001.04")
+        acknowledge.assert_called_once()
 
     def test_pending_receipt_is_replayed_without_second_download(self):
         connection = MagicMock()
@@ -223,6 +257,7 @@ class TestEbicsAutomation(TestCase):
     def test_no_bank_data_does_not_claim_a_historical_day_was_synced(self):
         connection = MagicMock()
         connection.name = "AKB"
+        connection.scope, connection.statement_btf_version = "CH", "08"
         connection.get_client.return_value.BTD.side_effect = Exception("EBICS_NO_DOWNLOAD_DATA_AVAILABLE")
         with patch.object(automation, "_pending_receipt", return_value=None):
             self.assertIsNone(automation._download_pending(connection, date(2026, 9, 29)))
@@ -286,6 +321,7 @@ class TestEbicsAutomation(TestCase):
     def test_repeated_bank_transaction_id_is_rejected_before_ack(self):
         connection = MagicMock(name="AKB")
         connection.name = "AKB"
+        connection.scope, connection.statement_btf_version = "CH", "08"
         connection.get_client.return_value.BTD.return_value = {"bank.xml": "<Document/>"}
         connection.get_client.return_value.last_trans_id = "BANK-TXN-123"
         with (patch.object(automation, "_pending_receipt", return_value=None),
@@ -310,6 +346,7 @@ class TestEbicsAutomation(TestCase):
         old_hash, new_hash = sha256(old).hexdigest(), sha256(new).hexdigest()
         connection = MagicMock(name="AKB", company="KT Wärmesysteme AG")
         connection.name = "AKB"
+        connection.scope, connection.statement_btf_version = "CH", "08"
         client = connection.get_client.return_value
         client.BTD.return_value = {"old.xml": old, "new.xml": new}
         client.last_trans_id = "BANK-TXN-MIXED"
@@ -341,6 +378,7 @@ class TestEbicsAutomation(TestCase):
     def test_repeat_with_new_transaction_id_is_archived_before_ack(self):
         connection = MagicMock(name="AKB", company="KT Wärmesysteme AG")
         connection.name = "AKB"
+        connection.scope, connection.statement_btf_version = "CH", "08"
         old = xml()
         old_hash = sha256(old).hexdigest()
         record = MagicMock()

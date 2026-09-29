@@ -27,6 +27,7 @@ MAX_XML_ELEMENTS = 100000
 MAX_XML_DEPTH = 64
 MAX_XML_ATTRIBUTES = 128
 PROFILES = {
+    "camt.053.001.04": "BkToCstmrStmt",
     "camt.053.001.08": "BkToCstmrStmt",
     "camt.054.001.08": "BkToCstmrDbtCdtNtfctn",
 }
@@ -99,7 +100,7 @@ def _parser(target=None):
     return parser
 
 
-@lru_cache(maxsize=2)
+@lru_cache(maxsize=3)
 def _schema(profile):
     _profile(profile)
     # Use only the existing packaged schema, never a document's schemaLocation.

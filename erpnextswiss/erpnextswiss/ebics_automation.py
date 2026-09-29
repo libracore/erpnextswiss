@@ -19,6 +19,7 @@ from erpnextswiss.scripts.bank_file_admission import BankFileError, MAX_FILE_BYT
 
 
 PROFILE = "camt.053.001.08"
+STATEMENT_PROFILES = {"04": "camt.053.001.04", "08": PROFILE}
 MAX_DOWNLOADS_PER_RUN = 14
 MAX_ARCHIVED_DOWNLOADS = 10000
 _TRANSACTION_ID = re.compile(r"[A-Za-z0-9_-]{1,100}\Z")
@@ -102,11 +103,19 @@ def _accounts(connection):
     return accounts
 
 
-def _preview(payload, connection, included_hashes=None):
+def _statement_profile(connection):
+    version = connection.statement_btf_version
+    if connection.scope != "CH" or version not in STATEMENT_PROFILES:
+        raise BankFileError("EBICS connection is not configured for a supported Swiss statement profile")
+    return STATEMENT_PROFILES[version]
+
+
+def _preview(payload, connection, included_hashes=None, profile=None):
     archive = _zip_from_receipt(payload, included_hashes=included_hashes)
     if archive is None:
         return {"statements": []}
-    return preview_camt_archive(archive, PROFILE, company=connection.company, accounts=_accounts(connection))
+    return preview_camt_archive(archive, profile or _statement_profile(connection),
+                                company=connection.company, accounts=_accounts(connection))
 
 
 def _receipt_key(connection_name, transaction_id):
@@ -127,7 +136,7 @@ def _known_files(connection):
     offset = 0
     while offset < MAX_ARCHIVED_DOWNLOADS:
         names = frappe.get_all("EBICS Download", filters={"connection": connection.name,
-                                                        "profile": PROFILE, "ack_state": "Confirmed"},
+                                                        "ack_state": "Confirmed"},
                                pluck="name", order_by="creation asc, name asc",
                                limit_start=offset, limit_page_length=100)
         for name in names:
@@ -184,9 +193,10 @@ def _download_pending(connection, requested_date, known_files=None):
 
     from fintech.ebics import BusinessTransactionFormat
 
+    profile = _statement_profile(connection)
     client = connection.get_client()
     btf = BusinessTransactionFormat(service="EOP", msg_name="camt.053", scope="CH", container="ZIP",
-                                    version="08")
+                                    version=connection.statement_btf_version)
     try:
         data = client.BTD(btf)
     except Exception as error:
@@ -198,7 +208,7 @@ def _download_pending(connection, requested_date, known_files=None):
     if not isinstance(transaction_id, str) or not _TRANSACTION_ID.fullmatch(transaction_id):
         raise BankFileError("EBICS did not supply a safe receipt transaction ID")
     payload = _archive_bytes(data)
-    _preview(payload, connection)  # Validate every file/account before positive bank receipt.
+    _preview(payload, connection, profile=profile)  # Validate every file/account before positive bank receipt.
     name = _receipt_key(connection.name, transaction_id)
     if frappe.db.exists("EBICS Download", name):
         raise BankFileError("EBICS transaction identity is already archived")
@@ -208,7 +218,7 @@ def _download_pending(connection, requested_date, known_files=None):
     record = frappe.get_doc({
         "doctype": "EBICS Download", "download_key": name, "connection": connection.name,
         "company": connection.company, "requested_date": requested_date.isoformat(),
-        "profile": PROFILE, "bank_transaction_id": transaction_id, "ack_state": "Pending",
+        "profile": profile, "bank_transaction_id": transaction_id, "ack_state": "Pending",
         "processing_state": "Duplicate" if not new_hashes else "Pending", **file_metadata,
         "payload_sha256": sha256(payload).hexdigest(),
         "payload_bytes": len(payload), "payload_json": payload.decode("utf-8"),
@@ -343,7 +353,7 @@ def _process_download(connection, record):
     if not new_hashes:
         record.db_set("processing_state", "Duplicate", commit=True)
         return {"booked": 0, "review": 0}
-    preview = _preview(payload, connection, included_hashes=new_hashes)
+    preview = _preview(payload, connection, included_hashes=new_hashes, profile=record.profile)
     booked = review = 0
     for statement in preview["statements"]:
         for entry in statement["entries"]:
@@ -371,8 +381,7 @@ def sync_connection(connection_name, debug=False):
         connection = frappe.get_doc("ebics Connection", connection_name)
         if not connection.enable_sync or not connection.activated or connection.ebics_version != "H005":
             return {"status": "disabled"}
-        if connection.scope != "CH" or connection.statement_btf_version != "08":
-            raise BankFileError("EBICS connection is not configured for the tested Swiss profile")
+        _statement_profile(connection)
         waiting = frappe.get_all("EBICS Download", filters={"connection": connection.name,
                                                           "ack_state": "Confirmed", "processing_state": "Pending"},
                                  pluck="name", order_by="creation asc", limit_page_length=100)

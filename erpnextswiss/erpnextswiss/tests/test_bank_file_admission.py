@@ -20,16 +20,18 @@ PROFILE = "camt.053.001.08"
 
 
 def xml(profile=PROFILE, currency="CHF", entries=False, multiple=False):
-    statement = profile == PROFILE
+    statement = profile.startswith("camt.053.")
     body = "BkToCstmrStmt" if statement else "BkToCstmrDbtCdtNtfctn"
     unit = "Stmt" if statement else "Ntfctn"
     account = "<Acct><Id><IBAN>CH9300762011623852957</IBAN></Id><Ccy>" + currency + "</Ccy></Acct>"
     balance = ("<Bal><Tp><CdOrPrtry><Cd>CLBD</Cd></CdOrPrtry></Tp><Amt Ccy=\"" + currency
                + "\">1234.00</Amt><CdtDbtInd>CRDT</CdtDbtInd><Dt><Dt>2026-09-12</Dt></Dt></Bal>")
+    status = "<Sts>BOOK</Sts>" if profile == "camt.053.001.04" else "<Sts><Cd>BOOK</Cd></Sts>"
     entry = ("<Ntry><Amt Ccy=\"" + currency + "\">12.34000</Amt><CdtDbtInd>CRDT</CdtDbtInd>"
-             "<Sts><Cd>BOOK</Cd></Sts><BookgDt><Dt>2026-09-12</Dt></BookgDt>"
+             + status + "<BookgDt><Dt>2026-09-12</Dt></BookgDt>"
              "<BkTxCd><Prtry><Cd>TEST</Cd></Prtry></BkTxCd></Ntry>")
-    row = "<" + unit + "><Id>statement-1</Id>" + account + (balance if statement else "")
+    created = "<CreDtTm>2026-09-12T10:00:00Z</CreDtTm>" if profile == "camt.053.001.04" else ""
+    row = "<" + unit + "><Id>statement-1</Id>" + created + account + (balance if statement else "")
     row += (entry if entries else "") + "</" + unit + ">"
     return ("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Document xmlns=\""
             "urn:iso:std:iso:20022:tech:xsd:" + profile + "\"><" + body + ">"

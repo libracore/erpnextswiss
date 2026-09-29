@@ -54,7 +54,7 @@ def prepare_camt_archive(payload, profile):
     """Format-only preparation. It grants no account access or import approval."""
     archive = read_bank_archive(payload, profile)
     namespace = '{urn:iso:std:iso:20022:tech:xsd:' + profile + '}'
-    unit = 'Stmt' if profile == 'camt.053.001.08' else 'Ntfctn'
+    unit = 'Stmt' if PROFILES[profile] == 'BkToCstmrStmt' else 'Ntfctn'
     statements = []
     entry_count = 0
     for file_index, source in enumerate(archive.files):
@@ -67,7 +67,7 @@ def prepare_camt_archive(payload, profile):
                 if entry_count > MAX_ENTRIES:
                     raise BankFileError('Bank preview exceeds entry limits')
                 entries.append({'index': entry_index, **_money(entry),
-                                'status': _text(entry, 'Sts/Cd') or _text(entry, 'Sts/Prtry'),
+                                'status': _text(entry, 'Sts/Cd') or _text(entry, 'Sts/Prtry') or _text(entry, 'Sts'),
                                 'booking_date': _date(entry, 'BookgDt'), 'value_date': _date(entry, 'ValDt'),
                                 'reversal': _text(entry, 'RvslInd') in ('true', '1'),
                                 'reference': _text(entry, 'AcctSvcrRef'), 'entry_reference': _text(entry, 'NtryRef'),

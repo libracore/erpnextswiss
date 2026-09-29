@@ -174,10 +174,11 @@ def _download_day(connection, requested_date):
 
 def _money(value):
     try:
-        amount = Decimal(str(value)).quantize(Decimal("0.01"))
+        amount = Decimal(str(value))
+        rounded = amount.quantize(Decimal("0.01"))
     except (InvalidOperation, TypeError, ValueError):
         return None
-    return amount if amount > 0 else None
+    return amount if amount > 0 and amount == rounded else None
 
 
 def _strict_invoice_candidate(connection, statement, entry):

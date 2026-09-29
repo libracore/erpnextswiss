@@ -64,6 +64,11 @@ class TestEbicsAutomation(TestCase):
         entry["candidates"].append(dict(entry["candidates"][0]))
         self.assertIsNone(automation._strict_invoice_candidate(MagicMock(), statement, entry))
 
+    def test_fractional_cent_is_not_rounded_into_an_auto_booking(self):
+        statement, entry = self._candidate()
+        entry["amount"] = "100.001"
+        self.assertIsNone(automation._strict_invoice_candidate(MagicMock(), statement, entry))
+
     def test_exact_match_rejects_foreign_company(self):
         statement, entry = self._candidate()
         connection = MagicMock(company="KT Wärmesysteme AG")

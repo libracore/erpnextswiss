@@ -14,6 +14,7 @@
   "user_id",
   "scope",
   "payment_btf_version",
+  "require_veu",
   "statement_btf_version",
   "col_account",
   "company",
@@ -159,6 +160,13 @@
    "fieldname": "payment_btf_version",
    "fieldtype": "Data",
    "label": "Payment BTF Version"
+  },
+  {
+   "default": "0",
+   "description": "Fail closed unless the bank reports a T (transport-only) permission for the exact payment format and debit account. The bank's VEU approval must be configured separately.",
+   "fieldname": "require_veu",
+   "fieldtype": "Check",
+   "label": "Require bank VEU for payments"
   },
   {
    "description": "Optional EBICS 3.0 BTF version, for example 08 for camt.053.001.08.",

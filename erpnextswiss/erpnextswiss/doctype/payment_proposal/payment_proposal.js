@@ -16,11 +16,14 @@ frappe.ui.form.on('Payment Proposal', {
                 'method': 'has_active_ebics_connection',
                 'doc': frm.doc,
                 'callback': function(response) {
-                    if (response.message.toString() !== "0") {
-                        locals.ebics_connection = response.message[0]['name'];
-                        frm.add_custom_button(__("Transmit by ebics"), function() {
-                            transmit_ebics(frm);
-                        }).addClass("btn-success");
+                    if (response.message && response.message.toString() !== "0") {
+                        locals.ebics_connection = response.message.name;
+                        if (!frm.doc.ebics_transfer_status) {
+                            let label = response.message.require_veu ? __("Transmit to bank VEU") : __("Transmit by ebics");
+                            frm.add_custom_button(label, function() {
+                                transmit_ebics(frm);
+                            }).addClass("btn-primary");
+                        }
                     }
                 }
             });
@@ -159,7 +162,12 @@ function transmit_ebics(frm) {
             'payment_proposal': frm.doc.name
         },
         'callback': function (response) {
-            frappe.msgprint( __("Payments transferred using ebics") );
+            if (response.message && response.message.status === 'awaiting_bank_veu') {
+                frappe.msgprint(__("Payment order submitted for bank VEU approval. It has not yet been approved or executed."));
+            } else if (response.message && response.message.status === 'transmitted') {
+                frappe.msgprint(__("Payment order transmitted via EBICS. Bank acceptance and execution remain to be checked."));
+            }
+            frm.reload_doc();
         }
     });
 }

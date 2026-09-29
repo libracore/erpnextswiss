@@ -16,7 +16,61 @@ except:
 from frappe import _
 from frappe.utils.file_manager import save_file
 from frappe.utils.password import get_decrypted_password
+from frappe.utils import cint
 from datetime import date, datetime
+from xml.etree import ElementTree
+
+
+def _xml_name(element):
+    return element.tag.rsplit('}', 1)[-1]
+
+
+def _xml_child(element, name):
+    return next((child for child in element if _xml_name(child) == name), None)
+
+
+def _xml_text(element, name):
+    child = _xml_child(element, name) if element is not None else None
+    return (child.text or '').strip() if child is not None else ''
+
+
+def _has_transport_permission(htd, debtor_iban, payment_btf):
+    """Trust only a current, account-specific T permission for this BTU format."""
+    root = ElementTree.fromstring(htd)
+    partner = _xml_child(root, 'PartnerInfo')
+    user = _xml_child(root, 'UserInfo')
+    if partner is None or user is None:
+        return False
+
+    account_ids = set()
+    for account in partner:
+        if _xml_name(account) != 'AccountInfo':
+            continue
+        account_number = _xml_text(account, 'AccountNumber')
+        if ''.join(account_number.split()).upper() == debtor_iban:
+            account_ids.add(account.get('ID'))
+    if not account_ids:
+        return False
+
+    levels = set()
+    for permission in user:
+        if _xml_name(permission) != 'Permission':
+            continue
+        if _xml_text(permission, 'AdminOrderType') != 'BTU':
+            continue
+        service = _xml_child(permission, 'Service')
+        if service is None or _xml_text(service, 'ServiceName') != payment_btf['service']:
+            continue
+        if _xml_text(service, 'Scope') != payment_btf['scope']:
+            continue
+        message = _xml_child(service, 'MsgName')
+        if message is None or (message.text or '').strip() != payment_btf['msg_name']:
+            continue
+        if payment_btf.get('version') and message.get('version') != payment_btf['version']:
+            continue
+        if _xml_text(permission, 'AccountID') in account_ids:
+            levels.add(permission.get('AuthorisationLevel'))
+    return levels == {'T'}
 
 class ebicsConnection(Document):
     def before_save(self):
@@ -198,8 +252,8 @@ class ebicsConnection(Document):
     @frappe.whitelist(methods=["POST"])
     def execute_payment(self, payment_proposal):
         self.check_permission("write")
-        frappe.get_doc("Payment Proposal", payment_proposal).check_permission("write")
         payment = frappe.get_doc("Payment Proposal", payment_proposal)
+        payment.check_permission("write")
         
         # ebics v3.0 BTU/BTD
         payment_btf = {
@@ -212,13 +266,56 @@ class ebicsConnection(Document):
         CCT = BusinessTransactionFormat(**payment_btf)
         
         # generate content
-        xml_transaction = payment.create_bank_file()['content']
+        bank_file = payment.create_bank_file()
+        xml_transaction = bank_file['content']
         
         # upload data using v3.0 (H005)
         client = self.get_client()
-        client.BTU(CCT, xml_transaction)
-        
-        return
+        if not cint(self.get('require_veu')):
+            client.BTU(CCT, xml_transaction)
+            return {'status': 'transmitted'}
+
+        if payment.docstatus != 1 or payment.company != self.company:
+            frappe.throw(_("Only submitted proposals for this EBICS connection's company may be sent."))
+        account = frappe.get_doc('Account', payment.pay_from_account)
+        debtor_iban = ''.join((account.iban or '').split()).upper()
+        if not debtor_iban or account.company != self.company:
+            frappe.throw(_("The debit account has no valid IBAN for this company."))
+        try:
+            transport_only = _has_transport_permission(client.HTD(), debtor_iban, payment_btf)
+        except (ElementTree.ParseError, TypeError, ValueError):
+            transport_only = False
+        if not transport_only:
+            frappe.throw(_("EBICS payment blocked: the bank has not confirmed a T (transport-only) permission for this debit account and payment format. Ask the bank to enable VEU; an E signature could execute the payment immediately."))
+
+        # Persist the attempt before contacting the bank. On a timeout or crash, an
+        # operator must reconcile the order instead of accidentally submitting twice.
+        locked = frappe.db.sql(
+            "SELECT ebics_transfer_status FROM `tabPayment Proposal` WHERE name = %s FOR UPDATE",
+            payment.name,
+        )
+        if not locked or locked[0][0]:
+            frappe.throw(_("This payment proposal has already been sent or attempted via EBICS. Check the bank status before any new submission."))
+        frappe.db.set_value('Payment Proposal', payment.name, {
+            'ebics_transfer_status': 'Sending',
+            'ebics_transfer_message_id': bank_file.get('message_id'),
+        }, update_modified=False)
+        frappe.db.commit()
+        try:
+            order_id = client.BTU(CCT, xml_transaction)
+        except Exception:
+            frappe.db.set_value('Payment Proposal', payment.name,
+                                'ebics_transfer_status', 'Transmission uncertain', update_modified=False)
+            frappe.db.commit()
+            raise
+        order_id = order_id if isinstance(order_id, str) else ''
+        frappe.db.set_value('Payment Proposal', payment.name, {
+            'ebics_transfer_status': 'Awaiting bank VEU',
+            'ebics_transfer_order_id': order_id,
+        }, update_modified=False)
+        frappe.db.commit()
+        return {'status': 'awaiting_bank_veu', 'order_id': order_id,
+                'message_id': bank_file.get('message_id')}
         
             
     def get_transactions(self, date, debug=False):

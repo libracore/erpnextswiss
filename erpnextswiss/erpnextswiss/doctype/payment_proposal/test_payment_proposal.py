@@ -5,9 +5,10 @@ from __future__ import unicode_literals
 
 import frappe
 import unittest
+from unittest.mock import MagicMock, patch
 from datetime import date, datetime, timezone
 
-from erpnextswiss.erpnextswiss.doctype.payment_proposal.payment_proposal import _normalize_payment_date
+from erpnextswiss.erpnextswiss.doctype.payment_proposal.payment_proposal import PaymentProposal, _normalize_payment_date
 
 from erpnextswiss.erpnextswiss.iso20022 import (
 	create_message_id,
@@ -18,6 +19,33 @@ from erpnextswiss.erpnextswiss.iso20022 import (
 )
 
 class TestPaymentProposal(unittest.TestCase):
+	def test_single_active_ebics_connection_is_available_without_statement(self):
+		proposal = PaymentProposal({
+			'doctype': 'Payment Proposal', 'company': 'KT Wärmesysteme AG',
+			'pay_from_account': 'AKB EUR',
+		})
+		proposal.check_permission = MagicMock()
+		account = frappe._dict(company='KT Wärmesysteme AG', iban='CH5900761649749632003')
+		with patch.object(frappe.db, 'get_value', return_value=account), \
+			patch.object(frappe.db, 'sql', return_value=[{'name': 'AKB', 'require_veu': 1}]) as sql:
+			result = proposal.has_active_ebics_connection()
+		self.assertEqual(result, {'name': 'AKB', 'require_veu': True})
+		sql.assert_called_once()
+
+	def test_multiple_ebics_connections_without_statement_are_ambiguous(self):
+		proposal = PaymentProposal({
+			'doctype': 'Payment Proposal', 'company': 'KT Wärmesysteme AG',
+			'pay_from_account': 'AKB EUR',
+		})
+		proposal.check_permission = MagicMock()
+		account = frappe._dict(company='KT Wärmesysteme AG', iban='CH5900761649749632003')
+		with patch.object(frappe.db, 'get_value', return_value=account), \
+			patch.object(frappe.db, 'sql', side_effect=[
+				[{'name': 'AKB', 'require_veu': 1}, {'name': 'OTHER', 'require_veu': 0}],
+				[],
+			]):
+			self.assertEqual(proposal.has_active_ebics_connection(), 0)
+
 	def test_payment_date_accepts_date_objects_and_strings(self):
 		today = date(2026, 9, 26)
 		self.assertEqual(

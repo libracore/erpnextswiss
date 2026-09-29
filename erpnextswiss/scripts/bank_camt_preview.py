@@ -142,7 +142,14 @@ def _matcher_xml(text):
 
 
 def _balance_check(statement):
-    if statement['page'] or statement['message_page']:
+    # A declared single page is a complete statement, not an incomplete
+    # fragment. Banks such as AKB emit MsgPgntn/PgNb=1 even when LastPgInd=true.
+    for page_field, last_field in (('page', 'last_page'), ('message_page', 'message_last_page')):
+        page = statement[page_field]
+        if page and (page != '1' or statement[last_field] not in ('true', '1')):
+            return 'requires_page_assembly'
+    if statement['page'] and statement['message_page'] and (
+            statement['page'] != statement['message_page']):
         return 'requires_page_assembly'
     opening = [b for b in statement['balances'] if b['type'] == 'OPBD']
     closing = [b for b in statement['balances'] if b['type'] == 'CLBD']

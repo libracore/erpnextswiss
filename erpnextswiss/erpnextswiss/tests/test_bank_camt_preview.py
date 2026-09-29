@@ -137,3 +137,14 @@ class TestBankCamtPreview(unittest.TestCase):
         self.assertEqual(preview._balance_check(statement), 'mismatch')
         statement['page'] = '1'
         self.assertEqual(preview._balance_check(statement), 'requires_page_assembly')
+        statement['last_page'] = 'true'
+        statement['balances'][1]['amount'] = '2.34'
+        self.assertEqual(preview._balance_check(statement), 'matched')
+        statement['last_page'] = 'false'
+        self.assertEqual(preview._balance_check(statement), 'requires_page_assembly')
+        statement['page'] = None
+        statement['message_page'] = '1'
+        statement['message_last_page'] = 'true'
+        self.assertEqual(preview._balance_check(statement), 'matched')
+        statement['message_page'] = '2'
+        self.assertEqual(preview._balance_check(statement), 'requires_page_assembly')

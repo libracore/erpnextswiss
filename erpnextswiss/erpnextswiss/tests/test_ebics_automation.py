@@ -150,6 +150,16 @@ class TestEbicsAutomation(TestCase):
         payment.submit.assert_called_once()
         commit.assert_called_once()
 
+    def test_replayed_entry_never_creates_a_second_payment(self):
+        statement, entry = self._candidate()
+        statement["account"] = "AKB bank account"
+        connection = MagicMock(company="KT Wärmesysteme AG")
+        with (patch.object(automation.frappe, "get_doc", return_value=self._invoice()),
+              patch.object(automation.frappe.db, "exists", return_value="PAY-EXISTING"),
+              patch("erpnextswiss.erpnextswiss.page.bank_wizard.bank_wizard.make_payment_entry") as make_payment):
+            self.assertFalse(automation._book_exact_match(connection, statement, entry, "EBICS-1"))
+        make_payment.assert_not_called()
+
     def test_archive_is_committed_before_ebics_acknowledgement(self):
         connection = MagicMock()
         connection.name = "AKB"
@@ -167,10 +177,12 @@ class TestEbicsAutomation(TestCase):
               patch.object(automation.frappe, "get_doc", side_effect=[record, record]),
               patch.object(automation.frappe.db, "commit", side_effect=lambda: events.append("commit")),
               patch.object(automation, "_verify_receipt", side_effect=lambda doc: events.append("readback")),
-              patch.object(automation, "_acknowledge", side_effect=lambda conn, doc, **kw: events.append("ack")),
-              patch.object(automation, "_advance", side_effect=lambda conn, day: events.append("cursor"))):
-            automation._download_day(connection, date(2026, 9, 28))
-        self.assertEqual(events, ["insert", "commit", "readback", "ack", "cursor"])
+              patch.object(automation, "_acknowledge", side_effect=lambda conn, doc, **kw: events.append("ack"))):
+            automation._download_pending(connection, date(2026, 9, 29))
+        self.assertEqual(events, ["insert", "commit", "readback", "ack"])
+        # The AKB current-pending request must not contain Start/End DateRange.
+        self.assertEqual(len(client.BTD.call_args.args), 1)
+        self.assertEqual(client.BTD.call_args.kwargs, {})
 
     def test_pending_receipt_is_replayed_without_second_download(self):
         connection = MagicMock()
@@ -178,10 +190,9 @@ class TestEbicsAutomation(TestCase):
         pending = MagicMock(requested_date="2026-09-28")
         events = []
         with (patch.object(automation, "_pending_receipt", return_value=pending),
-              patch.object(automation, "_acknowledge", side_effect=lambda c, d: events.append("ack")),
-              patch.object(automation, "_advance", side_effect=lambda c, d: events.append("cursor"))):
-            automation._download_day(connection, date(2026, 9, 28))
-        self.assertEqual(events, ["ack", "cursor"])
+              patch.object(automation, "_acknowledge", side_effect=lambda c, d: events.append("ack"))):
+            automation._download_pending(connection, date(2026, 9, 29))
+        self.assertEqual(events, ["ack"])
         connection.get_client.assert_not_called()
 
     def test_bank_receipt_is_confirmed_only_after_readback(self):
@@ -196,19 +207,17 @@ class TestEbicsAutomation(TestCase):
         self.assertEqual(events, ["readback", "bank_ack", "erp_ack"])
         connection.get_client.assert_not_called()
 
-    def test_no_bank_data_advances_date_without_payment(self):
+    def test_no_bank_data_does_not_claim_a_historical_day_was_synced(self):
         connection = MagicMock()
         connection.name = "AKB"
         connection.get_client.return_value.BTD.side_effect = Exception("EBICS_NO_DOWNLOAD_DATA_AVAILABLE")
-        events = []
-        with (patch.object(automation, "_pending_receipt", return_value=None),
-              patch.object(automation.frappe.db, "exists", return_value=False),
-              patch.object(automation, "_advance", side_effect=lambda conn, day: events.append(day))):
-            self.assertIsNone(automation._download_day(connection, date(2026, 9, 28)))
-        self.assertEqual(events, [date(2026, 9, 28)])
+        with patch.object(automation, "_pending_receipt", return_value=None):
+            self.assertIsNone(automation._download_pending(connection, date(2026, 9, 29)))
+        self.assertEqual(len(connection.get_client.return_value.BTD.call_args.args), 1)
+        connection.save.assert_not_called()
         connection.get_client.return_value.confirm_download.assert_not_called()
 
-    def test_daily_sync_rechecks_recent_empty_day_after_cursor_advanced(self):
+    def test_current_sync_fetches_multiple_bank_files_for_same_day(self):
         connection = MagicMock()
         connection.name = "AKB"
         connection.enable_sync = 1
@@ -216,27 +225,24 @@ class TestEbicsAutomation(TestCase):
         connection.ebics_version = "H005"
         connection.scope = "CH"
         connection.statement_btf_version = "08"
-        connection.synced_until = date(2026, 9, 29)
-
-        def getdate(value=None):
-            return date(2026, 9, 30) if value is None else (value if isinstance(value, date)
-                                                             else date.fromisoformat(value))
-
-        def archived(_doctype, filters):
-            return filters["requested_date"] != "2026-09-29"
+        first = MagicMock(name="FIRST")
+        second = MagicMock(name="SECOND")
 
         with (patch.object(automation.frappe, "cache"),
               patch.object(automation.frappe, "get_doc", return_value=connection),
               patch.object(automation.frappe, "get_all", return_value=[]),
-              patch.object(automation.frappe.db, "exists", side_effect=archived),
-              patch.object(automation.frappe.utils, "getdate", side_effect=getdate),
+              patch.object(automation.frappe.utils, "getdate", return_value=date(2026, 9, 29)),
               patch.object(automation, "_pending_receipt", return_value=None),
-              patch.object(automation, "_download_day", return_value=None) as download):
+              patch.object(automation, "_download_pending", side_effect=[first, second, None]) as download,
+              patch.object(automation, "_process_download") as process):
             result = automation.sync_connection("AKB")
-        self.assertEqual(result, {"status": "ok", "days_checked": 7})
-        download.assert_called_once_with(connection, date(2026, 9, 29))
+        self.assertEqual(result, {"status": "ok", "downloads_fetched": 2})
+        self.assertEqual(download.call_count, 3)
+        self.assertTrue(all(call.args == (connection, date(2026, 9, 29))
+                            for call in download.call_args_list))
+        self.assertEqual([call.args[1] for call in process.call_args_list], [first, second])
 
-    def test_daily_sync_replays_older_pending_receipt_first(self):
+    def test_current_sync_replays_older_pending_receipt_first(self):
         connection = MagicMock()
         connection.name = "AKB"
         connection.enable_sync = 1
@@ -244,7 +250,6 @@ class TestEbicsAutomation(TestCase):
         connection.ebics_version = "H005"
         connection.scope = "CH"
         connection.statement_btf_version = "08"
-        connection.synced_until = date(2026, 9, 29)
         pending = MagicMock(requested_date="2026-09-20", processing_state="Pending")
 
         def getdate(value=None):
@@ -254,14 +259,26 @@ class TestEbicsAutomation(TestCase):
         with (patch.object(automation.frappe, "cache"),
               patch.object(automation.frappe, "get_doc", return_value=connection),
               patch.object(automation.frappe, "get_all", return_value=[]),
-              patch.object(automation.frappe.db, "exists", return_value=True),
               patch.object(automation.frappe.utils, "getdate", side_effect=getdate),
               patch.object(automation, "_pending_receipt", return_value=pending),
-              patch.object(automation, "_download_day", return_value=pending) as download,
+              patch.object(automation, "_download_pending", side_effect=[pending, None]) as download,
               patch.object(automation, "_process_download") as process):
             automation.sync_connection("AKB")
-        download.assert_called_once_with(connection, date(2026, 9, 20))
+        self.assertEqual(download.call_args_list[0].args, (connection, date(2026, 9, 20)))
+        self.assertEqual(download.call_args_list[1].args, (connection, date(2026, 9, 30)))
         process.assert_called_once_with(connection, pending)
+
+    def test_repeated_bank_transaction_id_is_rejected_before_ack(self):
+        connection = MagicMock(name="AKB")
+        connection.name = "AKB"
+        connection.get_client.return_value.BTD.return_value = {"bank.xml": "<Document/>"}
+        connection.get_client.return_value.last_trans_id = "BANK-TXN-123"
+        with (patch.object(automation, "_pending_receipt", return_value=None),
+              patch.object(automation, "_preview", return_value={"statements": []}),
+              patch.object(automation.frappe.db, "exists", return_value=True)):
+            with self.assertRaisesRegex(BankFileError, "already archived"):
+                automation._download_pending(connection, date(2026, 9, 29))
+        connection.get_client.return_value.confirm_download.assert_not_called()
 
     @staticmethod
     def _candidate():

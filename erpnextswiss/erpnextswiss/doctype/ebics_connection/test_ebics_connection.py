@@ -16,7 +16,7 @@ from erpnextswiss.erpnextswiss.doctype.ebics_connection.ebics_connection import 
 )
 
 
-def htd_fixture(levels=("T",), account="CH8600761649749632002"):
+def htd_fixture(levels=("T",), account="CH8600761649749632002", signatures=2):
 	permissions = "".join(
 		'<Permission AuthorisationLevel="{0}"><AdminOrderType>BTU</AdminOrderType>'
 		'<Service><ServiceName>MCT</ServiceName><Scope>CH</Scope>'
@@ -26,8 +26,11 @@ def htd_fixture(levels=("T",), account="CH8600761649749632002"):
 	return (
 		'<HTDResponseOrderData xmlns="urn:org:ebics:H005">'
 		'<PartnerInfo><AccountInfo ID="ID0001"><AccountNumber international="true">{0}</AccountNumber>'
-		'</AccountInfo></PartnerInfo><UserInfo>{1}</UserInfo></HTDResponseOrderData>'
-	).format(account, permissions).encode()
+		'</AccountInfo><OrderInfo><AdminOrderType>BTU</AdminOrderType><Service>'
+		'<ServiceName>MCT</ServiceName><Scope>CH</Scope><MsgName version="09">pain.001</MsgName>'
+		'</Service><NumSigRequired>{2}</NumSigRequired></OrderInfo></PartnerInfo>'
+		'<UserInfo>{1}</UserInfo></HTDResponseOrderData>'
+	).format(account, permissions, signatures).encode()
 
 
 PAYMENT_BTF = {'service': 'MCT', 'msg_name': 'pain.001', 'scope': 'CH', 'version': '09'}
@@ -35,7 +38,7 @@ PAYMENT_BTF = {'service': 'MCT', 'msg_name': 'pain.001', 'scope': 'CH', 'version
 class TestebicsConnection(unittest.TestCase):
 	def test_veu_permission_requires_only_t_for_exact_account_and_format(self):
 		self.assertTrue(_has_transport_permission(htd_fixture(),
-			"CH8600761649749632002", PAYMENT_BTF))
+			"CH8600761649749632002", PAYMENT_BTF, min_signatures=2))
 		for levels, iban, btf in (
 			(("E",), "CH8600761649749632002", PAYMENT_BTF),
 			(("T", "E"), "CH8600761649749632002", PAYMENT_BTF),
@@ -43,13 +46,17 @@ class TestebicsConnection(unittest.TestCase):
 			(("T",), "CH8600761649749632002", {**PAYMENT_BTF, 'version': '03'}),
 		):
 			with self.subTest(levels=levels, iban=iban, btf=btf):
-				self.assertFalse(_has_transport_permission(htd_fixture(levels), iban, btf))
+				self.assertFalse(_has_transport_permission(htd_fixture(levels), iban, btf,
+					min_signatures=2))
+		self.assertFalse(_has_transport_permission(htd_fixture(signatures=1),
+			"CH8600761649749632002", PAYMENT_BTF, min_signatures=2))
 
 	@patch("erpnextswiss.erpnextswiss.doctype.ebics_connection.ebics_connection.BusinessTransactionFormat")
 	def test_veu_blocks_e_signature_before_upload(self, btf):
 		connection = ebicsConnection({
 			'doctype': 'ebics Connection', 'name': 'AKB', 'company': 'KT',
 			'scope': 'CH', 'payment_btf_version': '09', 'require_veu': 1,
+			'veu_signatures_required': 2,
 		})
 		connection.check_permission = MagicMock()
 		client = MagicMock()
@@ -70,6 +77,7 @@ class TestebicsConnection(unittest.TestCase):
 		connection = ebicsConnection({
 			'doctype': 'ebics Connection', 'name': 'AKB', 'company': 'KT',
 			'scope': 'CH', 'payment_btf_version': '09', 'require_veu': 1,
+			'veu_signatures_required': 2,
 		})
 		connection.check_permission = MagicMock()
 		client = MagicMock()
@@ -97,6 +105,7 @@ class TestebicsConnection(unittest.TestCase):
 		connection = ebicsConnection({
 			'doctype': 'ebics Connection', 'name': 'AKB', 'company': 'KT',
 			'scope': 'CH', 'payment_btf_version': '09', 'require_veu': 1,
+			'veu_signatures_required': 2,
 		})
 		connection.check_permission = MagicMock()
 		client = MagicMock()

@@ -34,8 +34,19 @@ def _xml_text(element, name):
     return (child.text or '').strip() if child is not None else ''
 
 
-def _has_transport_permission(htd, debtor_iban, payment_btf):
-    """Trust only a current, account-specific T permission for this BTU format."""
+def _matches_payment_service(service, payment_btf):
+    if service is None or _xml_text(service, 'ServiceName') != payment_btf['service']:
+        return False
+    if _xml_text(service, 'Scope') != payment_btf['scope']:
+        return False
+    message = _xml_child(service, 'MsgName')
+    if message is None or (message.text or '').strip() != payment_btf['msg_name']:
+        return False
+    return not payment_btf.get('version') or message.get('version') == payment_btf['version']
+
+
+def _has_transport_permission(htd, debtor_iban, payment_btf, min_signatures=1):
+    """Trust only account-specific T and the bank's required signature quorum."""
     root = ElementTree.fromstring(htd)
     partner = _xml_child(root, 'PartnerInfo')
     user = _xml_child(root, 'UserInfo')
@@ -52,21 +63,27 @@ def _has_transport_permission(htd, debtor_iban, payment_btf):
     if not account_ids:
         return False
 
+    # HTD OrderInfo gives the bank's minimum signature count for this BTF.
+    # Missing or conflicting order information is not evidence of a safe VEU.
+    signature_counts = []
+    for order in partner:
+        if _xml_name(order) != 'OrderInfo' or _xml_text(order, 'AdminOrderType') != 'BTU':
+            continue
+        if _matches_payment_service(_xml_child(order, 'Service'), payment_btf):
+            try:
+                signature_counts.append(int(_xml_text(order, 'NumSigRequired')))
+            except ValueError:
+                return False
+    if not signature_counts or min(signature_counts) < min_signatures:
+        return False
+
     levels = set()
     for permission in user:
         if _xml_name(permission) != 'Permission':
             continue
         if _xml_text(permission, 'AdminOrderType') != 'BTU':
             continue
-        service = _xml_child(permission, 'Service')
-        if service is None or _xml_text(service, 'ServiceName') != payment_btf['service']:
-            continue
-        if _xml_text(service, 'Scope') != payment_btf['scope']:
-            continue
-        message = _xml_child(service, 'MsgName')
-        if message is None or (message.text or '').strip() != payment_btf['msg_name']:
-            continue
-        if payment_btf.get('version') and message.get('version') != payment_btf['version']:
+        if not _matches_payment_service(_xml_child(permission, 'Service'), payment_btf):
             continue
         if _xml_text(permission, 'AccountID') in account_ids:
             levels.add(permission.get('AuthorisationLevel'))
@@ -282,11 +299,14 @@ class ebicsConnection(Document):
         if not debtor_iban or account.company != self.company:
             frappe.throw(_("The debit account has no valid IBAN for this company."))
         try:
-            transport_only = _has_transport_permission(client.HTD(), debtor_iban, payment_btf)
+            transport_only = _has_transport_permission(
+                client.HTD(), debtor_iban, payment_btf,
+                min_signatures=max(1, cint(self.get('veu_signatures_required'))),
+            )
         except (ElementTree.ParseError, TypeError, ValueError):
             transport_only = False
         if not transport_only:
-            frappe.throw(_("EBICS payment blocked: the bank has not confirmed a T (transport-only) permission for this debit account and payment format. Ask the bank to enable VEU; an E signature could execute the payment immediately."))
+            frappe.throw(_("EBICS payment blocked: the bank has not confirmed a T (transport-only) permission and the configured VEU signature quorum for this debit account and payment format. Ask the bank to enable VEU; an E signature could execute the payment immediately."))
 
         # Persist the attempt before contacting the bank. On a timeout or crash, an
         # operator must reconcile the order instead of accidentally submitting twice.

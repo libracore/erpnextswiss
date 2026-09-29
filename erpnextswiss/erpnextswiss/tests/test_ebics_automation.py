@@ -69,6 +69,10 @@ class TestEbicsAutomation(TestCase):
         entry["amount"] = "100.001"
         self.assertIsNone(automation._strict_invoice_candidate(MagicMock(), statement, entry))
 
+    def test_invoice_reference_must_be_a_complete_token(self):
+        self.assertTrue(automation._reference_mentions("SINV-1", "Payment for SINV-1 / thanks"))
+        self.assertFalse(automation._reference_mentions("SINV-1", "Payment for SINV-12"))
+
     def test_exact_match_rejects_foreign_company(self):
         statement, entry = self._candidate()
         connection = MagicMock(company="KT Wärmesysteme AG")

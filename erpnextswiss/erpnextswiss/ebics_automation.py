@@ -181,6 +181,12 @@ def _money(value):
     return amount if amount > 0 and amount == rounded else None
 
 
+def _reference_mentions(value, text):
+    if not isinstance(value, str) or not value or not isinstance(text, str):
+        return False
+    return bool(re.search(r"(?<![A-Za-z0-9])" + re.escape(value) + r"(?![A-Za-z0-9])", text))
+
+
 def _strict_invoice_candidate(connection, statement, entry):
     """Return one live invoice only when bank, matcher and ledger all agree."""
     if (statement["balance_check"] != "matched" or entry["issues"]
@@ -213,12 +219,12 @@ def _strict_invoice_candidate(connection, statement, entry):
             or invoice.currency != statement["currency"]):
         return None
     reference_text = candidate.get("transaction_reference") or ""
-    accepted = {str(invoice.name), str(invoice.get("bill_no") or ""),
-                str(invoice.get("esr_reference") or ""),
-                str(invoice.get("esr_reference_number") or ""),
-                str(invoice.get("reference_number_full") or "")}
-    accepted.discard("")
-    if not any(value in reference_text for value in accepted):
+    accepted = {str(invoice.name)}
+    accepted.update(str(value) for value in (invoice.get("bill_no"), invoice.get("esr_reference"),
+                                             invoice.get("esr_reference_number"),
+                                             invoice.get("reference_number_full"))
+                    if value and len(str(value)) >= 6)
+    if not any(_reference_mentions(value, reference_text) for value in accepted):
         return None
     return candidate, doctype, invoice, amount
 

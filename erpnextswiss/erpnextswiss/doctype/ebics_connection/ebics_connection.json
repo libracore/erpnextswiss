@@ -15,6 +15,7 @@
   "scope",
   "payment_btf_version",
   "require_veu",
+  "veu_signatures_required",
   "statement_btf_version",
   "col_account",
   "company",
@@ -167,6 +168,14 @@
    "fieldname": "require_veu",
    "fieldtype": "Check",
    "label": "Require bank VEU for payments"
+  },
+  {
+   "default": "1",
+   "depends_on": "eval:doc.require_veu",
+   "description": "Minimum number of electronic signatures reported by the bank for this payment format. For a collective two-signature mandate, set to 2 and ask the bank to configure it accordingly.",
+   "fieldname": "veu_signatures_required",
+   "fieldtype": "Int",
+   "label": "Required bank VEU signatures"
   },
   {
    "description": "Optional EBICS 3.0 BTF version, for example 08 for camt.053.001.08.",

@@ -8,9 +8,11 @@ ending 2003. An `E` upload may be executable without a separate bank approval.
 The `ebics Connection.require_veu` switch must be enabled for `AKB CantoConnect
 1773` after deploying this version. It rejects a payment before BTU unless the
 bank's current HTD response contains **only `T`** for the exact debit IBAN and
-payment BTF. It fails closed if the account, format or bank response is missing or
-ambiguous. This switch cannot change a bank mandate: AKB must convert the user
-to transport-only `T` and enable the intended approver(s) in its VEU application
+payment BTF. For KT, set `veu_signatures_required=2`; the same HTD response must
+report at least two required signatures for that BTF. It fails closed if the
+account, format, signature count or bank response is missing or ambiguous. This
+switch cannot change a bank mandate: AKB must convert the user to transport-only
+`T` and enable two collective signatories in its VEU application
 for both accounts. Until then, EBICS payment uploads are deliberately blocked;
 statement retrieval is unaffected.
 

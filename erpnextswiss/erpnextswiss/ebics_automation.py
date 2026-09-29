@@ -4,7 +4,6 @@ The old statement importer acknowledges before persistence and may submit a
 Payment Entry while downloading. This module never calls that importer.
 """
 
-from datetime import date, timedelta
 from decimal import Decimal, InvalidOperation
 from hashlib import sha256
 from io import BytesIO
@@ -20,7 +19,7 @@ from erpnextswiss.scripts.bank_file_admission import BankFileError, MAX_FILE_BYT
 
 
 PROFILE = "camt.053.001.08"
-MAX_DAYS_PER_RUN = 14
+MAX_DOWNLOADS_PER_RUN = 14
 _TRANSACTION_ID = re.compile(r"[A-Za-z0-9_-]{1,100}\Z")
 
 
@@ -100,13 +99,6 @@ def _verify_receipt(record):
     return payload
 
 
-def _advance(connection, requested_date):
-    if not connection.synced_until or frappe.utils.getdate(connection.synced_until) < requested_date:
-        connection.synced_until = requested_date.isoformat()
-        connection.save(ignore_permissions=True)
-        frappe.db.commit()
-
-
 def _acknowledge(connection, record, client=None):
     if record.ack_state == "Confirmed":
         return
@@ -124,18 +116,17 @@ def _pending_receipt(connection):
     return frappe.get_doc("EBICS Download", names[0]) if names else None
 
 
-def _download_day(connection, requested_date):
+def _download_pending(connection, requested_date):
+    """Fetch one bank-provided current file set, never a historical DateRange.
+
+    requested_date is the ERP retrieval date for audit, not a filter sent to the
+    bank. The bank may provide several files for the same day, so it is not a
+    uniqueness key; the EBICS transaction ID is.
+    """
     pending = _pending_receipt(connection)
     if pending:
-        if frappe.utils.getdate(pending.requested_date) != requested_date:
-            raise BankFileError("An earlier EBICS bank receipt remains unacknowledged")
         _acknowledge(connection, pending)
-        _advance(connection, requested_date)
         return pending
-
-    if frappe.db.exists("EBICS Download", {"connection": connection.name,
-                                          "requested_date": requested_date.isoformat()}):
-        raise BankFileError("A confirmed EBICS download exists without a completed cursor")
 
     from fintech.ebics import BusinessTransactionFormat
 
@@ -143,10 +134,9 @@ def _download_day(connection, requested_date):
     btf = BusinessTransactionFormat(service="EOP", msg_name="camt.053", scope="CH", container="ZIP",
                                     version="08")
     try:
-        data = client.BTD(btf, requested_date.isoformat(), requested_date.isoformat())
+        data = client.BTD(btf)
     except Exception as error:
         if str(error) == "EBICS_NO_DOWNLOAD_DATA_AVAILABLE":
-            _advance(connection, requested_date)
             return None
         raise
 
@@ -168,7 +158,6 @@ def _download_day(connection, requested_date):
     frappe.db.commit()
     _verify_receipt(frappe.get_doc("EBICS Download", record.name))
     _acknowledge(connection, record, client=client)
-    _advance(connection, requested_date)
     return record
 
 
@@ -301,7 +290,7 @@ def _process_download(connection, record):
 
 
 def sync_connection(connection_name, debug=False):
-    """Daily idempotent retrieval; no outgoing bank payment is possible here."""
+    """Drain current pending bank files, with durable receipts and no payments."""
     lock = frappe.cache().lock("ebics-download:" + connection_name, timeout=300, blocking_timeout=0)
     if not lock.acquire(blocking=False):
         return {"status": "already_running"}
@@ -319,31 +308,20 @@ def sync_connection(connection_name, debug=False):
         pending = _pending_receipt(connection)
         if pending:
             # Resolve an interrupted bank acknowledgement before any other BTD.
-            resumed = _download_day(connection, frappe.utils.getdate(pending.requested_date))
+            resumed = _download_pending(connection, frappe.utils.getdate(pending.requested_date))
             if resumed.processing_state == "Pending":
                 _process_download(connection, resumed)
-        today = frappe.utils.getdate()
-        # Re-query recent empty days: a bank may publish an EOP statement after
-        # the first daily request. Confirmed archives are skipped, so a late
-        # statement cannot duplicate an already accepted download.
-        window_start = today - timedelta(days=7)
-        cursor_start = (frappe.utils.getdate(connection.synced_until) + timedelta(days=1)
-                        if connection.synced_until else window_start)
-        start = min(window_start, cursor_start)
-        processed = 0
-        while start < today and processed < MAX_DAYS_PER_RUN:
-            if frappe.db.exists("EBICS Download", {"connection": connection.name,
-                                                   "requested_date": start.isoformat(),
-                                                   "ack_state": "Confirmed"}):
-                processed += 1
-                start += timedelta(days=1)
-                continue
-            record = _download_day(connection, start)
-            if record:
-                _process_download(connection, record)
-            processed += 1
-            start += timedelta(days=1)
-        return {"status": "ok", "days_checked": processed}
+        # Each BTD without a date filter returns a bank-pending file set. Keep
+        # fetching until the bank reports no data, but bound each scheduler run.
+        # The request date is audit metadata only, never a file/date cursor.
+        fetched = 0
+        for _ in range(MAX_DOWNLOADS_PER_RUN):
+            record = _download_pending(connection, frappe.utils.getdate())
+            if record is None:
+                break
+            _process_download(connection, record)
+            fetched += 1
+        return {"status": "ok", "downloads_fetched": fetched}
     finally:
         lock.release()
 

@@ -338,32 +338,26 @@ class ebicsConnection(Document):
                 'message_id': bank_file.get('message_id')}
         
             
-    def get_transactions(self, date, debug=False):
-        if type(date) == date or type(date) == datetime:
+    def get_transactions(self, date=None, debug=False):
+        if self.ebics_version == "H005":
+            # H005 EOP is a current-pending bank delivery, not a date search.
+            # Route it through the durable receipt/acknowledgement workflow.
+            if date is not None:
+                raise ValueError("H005 historical date retrieval is not supported; use current pending EBICS sync")
+            from erpnextswiss.erpnextswiss.ebics_automation import sync_connection
+            return sync_connection(self.name, debug=debug)
+        if date is None:
+            raise ValueError("A date is required for legacy H004 statement retrieval")
+        if hasattr(date, "strftime"):
             date = date.strftime("%Y-%m-%d")
 
         try:
             client = self.get_client()
-            if self.ebics_version == "H005":
-                # ebics v3.0 BTU/BTD
-                statement_btf = {
-                    'service': 'EOP',
-                    'msg_name': 'camt.053',
-                    'scope': (self.get('scope') or 'CH'),
-                    'container': 'ZIP'
-                }
-                if self.get('statement_btf_version'):
-                    statement_btf['version'] = self.get('statement_btf_version')
-                C53 = BusinessTransactionFormat(**statement_btf)
-
-                # download data using v3.0 (H005)
-                data = client.BTD(C53, date, date)
-            else:
-                # use version 2.5
-                data = client.Z53(
-                    start=date,                     # should be in YYYY-MM-DD
-                    end=date,
-                )
+            # The historical H004 path is separate from current H005 delivery.
+            data = client.Z53(
+                start=date,                     # should be in YYYY-MM-DD
+                end=date,
+            )
             client.confirm_download()
             
             # check data

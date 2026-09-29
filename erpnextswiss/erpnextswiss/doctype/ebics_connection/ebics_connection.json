@@ -121,7 +121,8 @@
   {
    "fieldname": "synced_until",
    "fieldtype": "Date",
-   "label": "Synced until",
+   "label": "Früherer Datums-Cursor",
+   "description": "Nur Altdaten. Aktuelle H005-EBICS-Abrufe holen bereitliegende Bankdateien ohne Zeitraum; die tatsächlichen Eingänge stehen unter EBICS-Abrufe.",
    "read_only": 1
   },
   {

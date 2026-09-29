@@ -36,6 +36,24 @@ def htd_fixture(levels=("T",), account="CH8600761649749632002", signatures=2):
 PAYMENT_BTF = {'service': 'MCT', 'msg_name': 'pain.001', 'scope': 'CH', 'version': '09'}
 
 class TestebicsConnection(unittest.TestCase):
+	@patch("erpnextswiss.erpnextswiss.ebics_automation.sync_connection")
+	def test_h005_legacy_entry_uses_current_pending_safe_sync(self, sync_connection):
+		connection = ebicsConnection({"doctype": "ebics Connection", "name": "AKB", "ebics_version": "H005"})
+		connection.get_client = MagicMock()
+		sync_connection.return_value = {"status": "ok", "downloads_fetched": 1}
+		self.assertEqual(connection.get_transactions(), sync_connection.return_value)
+		sync_connection.assert_called_once_with("AKB", debug=False)
+		connection.get_client.assert_not_called()
+
+	@patch("erpnextswiss.erpnextswiss.ebics_automation.sync_connection")
+	def test_h005_legacy_entry_rejects_historical_date_without_bank_contact(self, sync_connection):
+		connection = ebicsConnection({"doctype": "ebics Connection", "name": "AKB", "ebics_version": "H005"})
+		connection.get_client = MagicMock()
+		with self.assertRaisesRegex(ValueError, "historical date retrieval is not supported"):
+			connection.get_transactions(date(2026, 9, 26))
+		connection.get_client.assert_not_called()
+		sync_connection.assert_not_called()
+
 	def test_veu_permission_requires_only_t_for_exact_account_and_format(self):
 		self.assertTrue(_has_transport_permission(htd_fixture(),
 			"CH8600761649749632002", PAYMENT_BTF, min_signatures=2))

@@ -156,7 +156,7 @@ function erstelle_teilrechnung_pop_up(frm) {
                 'fieldtype': 'Percent',
                 'label': 'Arbeitsfortschritt in % von ' + entry,
                 'default': charged,
-                'reqd': 1,
+                'reqd': 0,
                 'description': 'Bereits verrechneter Arbeitsfortschritt: ' + String(charged) + '%'
             });
         }
@@ -170,7 +170,9 @@ function erstelle_teilrechnung_pop_up(frm) {
         function(values){
             frappe.msgprint("Die Teilrechnung wird erstellt, bitte haben Sie einwenig Gedult.", "Bitte warten");
             setTimeout(function(){ 
-                for (const [key, value] of Object.entries(values)) {
+                for (const field of fields) {
+                    const key = field.fieldname;
+                    const value = values[key] ?? 0;
                     frappe.call({
                         "method": "erpnextswiss.erpnextswiss.page.bkp_importer.utils.set_amount_to_bill",
                         "args": {

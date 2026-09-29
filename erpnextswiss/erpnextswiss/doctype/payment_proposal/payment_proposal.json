@@ -26,7 +26,11 @@
   "use_intermediate",
   "single_payment",
   "column_intermdiate_account",
-  "intermediate_account"
+  "intermediate_account",
+  "section_ebics_transfer",
+  "ebics_transfer_status",
+  "ebics_transfer_message_id",
+  "ebics_transfer_order_id"
  ],
  "fields": [
   {
@@ -169,6 +173,33 @@
    "fieldname": "single_payment",
    "fieldtype": "Check",
    "label": "Execute as one single payment"
+  },
+  {
+   "fieldname": "section_ebics_transfer",
+   "fieldtype": "Section Break",
+   "label": "EBICS transfer"
+  },
+  {
+   "fieldname": "ebics_transfer_status",
+   "fieldtype": "Select",
+   "label": "EBICS transfer status",
+   "options": "\nSending\nAwaiting bank VEU\nAwaiting bank outcome (pre-VEU)\nTransmission uncertain",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "ebics_transfer_message_id",
+   "fieldtype": "Data",
+   "label": "EBICS message ID",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "ebics_transfer_order_id",
+   "fieldtype": "Data",
+   "label": "EBICS order ID",
+   "read_only": 1,
+   "no_copy": 1
   }
  ],
  "in_create": 1,

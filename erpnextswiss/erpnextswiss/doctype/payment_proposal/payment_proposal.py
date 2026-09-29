@@ -605,19 +605,23 @@ class PaymentProposal(Document):
     @frappe.whitelist()
     def has_active_ebics_connection(self):
         statements = frappe.db.sql("""
-            SELECT `ebics_connection` 
+            SELECT `ebics_connection`
             FROM `tabebics Statement`
-            WHERE `account` = "{account}"
-            ORDER BY `creation` DESC;
-            """.format(account=self.pay_from_account), as_dict=True)
+            WHERE `account` = %s
+            ORDER BY `creation` DESC
+            LIMIT 1
+            """, self.pay_from_account, as_dict=True)
         if len(statements) > 0:
             connections = frappe.db.sql("""
-            SELECT `activated`, `name` 
+            SELECT `activated`, `name`, `require_veu`
             FROM `tabebics Connection`
-            WHERE `name` = "{conn}";
-            """.format(conn=statements[0]['ebics_connection']), as_dict=True)
-            if len(connections) > 0:
-                return connections[0]['name']
+            WHERE `name` = %s
+            """, statements[0]['ebics_connection'], as_dict=True)
+            if connections and connections[0]['activated']:
+                return {
+                    'name': connections[0]['name'],
+                    'require_veu': bool(connections[0]['require_veu']),
+                }
         return 0
         
 def _truthy(value, default=False):

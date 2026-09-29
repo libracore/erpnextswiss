@@ -1,0 +1,31 @@
+{
+ "doctype": "DocType",
+ "name": "EBICS Download",
+ "module": "ERPNextSwiss",
+ "autoname": "field:download_key",
+ "engine": "InnoDB",
+ "track_changes": 0,
+ "index_web_pages_for_search": 0,
+ "field_order": ["download_key", "connection", "company", "requested_date", "profile", "bank_transaction_id", "ack_state", "processing_state", "payload_sha256", "payload_bytes", "payload_json", "booked_count", "review_count"],
+ "fields": [
+  {"fieldname": "download_key", "fieldtype": "Data", "label": "Download identity", "read_only": 1, "reqd": 1, "unique": 1},
+  {"fieldname": "connection", "fieldtype": "Link", "label": "EBICS connection", "options": "ebics Connection", "read_only": 1, "reqd": 1, "in_list_view": 1},
+  {"fieldname": "company", "fieldtype": "Link", "label": "Company", "options": "Company", "read_only": 1, "reqd": 1},
+  {"fieldname": "requested_date", "fieldtype": "Date", "label": "Requested date", "read_only": 1, "reqd": 1, "in_list_view": 1},
+  {"fieldname": "profile", "fieldtype": "Data", "label": "Bank format", "read_only": 1, "reqd": 1},
+  {"fieldname": "bank_transaction_id", "fieldtype": "Data", "label": "Bank transaction ID", "read_only": 1, "reqd": 1},
+  {"fieldname": "ack_state", "fieldtype": "Select", "label": "Bank receipt", "options": "Pending\nConfirmed", "read_only": 1, "reqd": 1, "in_list_view": 1},
+  {"fieldname": "processing_state", "fieldtype": "Select", "label": "Accounting", "options": "Pending\nCompleted\nReview", "read_only": 1, "reqd": 1, "in_list_view": 1},
+  {"fieldname": "payload_sha256", "fieldtype": "Data", "label": "Payload SHA-256", "read_only": 1, "reqd": 1},
+  {"fieldname": "payload_bytes", "fieldtype": "Int", "label": "Payload bytes", "read_only": 1, "reqd": 1},
+  {"fieldname": "payload_json", "fieldtype": "Code", "label": "Bank XML payload (confidential)", "read_only": 1, "reqd": 1},
+  {"fieldname": "booked_count", "fieldtype": "Int", "label": "Automatically booked", "read_only": 1},
+  {"fieldname": "review_count", "fieldtype": "Int", "label": "Needs review", "read_only": 1}
+ ],
+ "permissions": [
+  {"role": "Accounts Manager", "read": 1, "report": 1},
+  {"role": "System Manager", "read": 1, "report": 1}
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC"
+}

@@ -21,7 +21,7 @@ approval, execution or debit. The proposal cannot be uploaded again automaticall
 Only a verified bank response and bank booking can close the payment lifecycle.
 
 The pre-VEU Kronoterm order `AAAC`, message ID
-`MSG-20260929121625788170-951516D0f33239`, belongs to Payment Proposal
+`MSG-20260929121625788170-951516D0`, belongs to Payment Proposal
 `0v2pp78s3s`. It was sent under the old `E` entitlement and must be marked
 `Awaiting bank outcome (pre-VEU)` on production migration, with order/message
 IDs filled, before the new send action is made available. Its HAC DS05 means

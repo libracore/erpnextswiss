@@ -604,6 +604,23 @@ class PaymentProposal(Document):
         
     @frappe.whitelist()
     def has_active_ebics_connection(self):
+        self.check_permission('read')
+        account = frappe.db.get_value('Account', self.pay_from_account,
+                                      ['company', 'iban'], as_dict=True)
+        if not account or account.company != self.company or not account.iban:
+            return 0
+        connections = frappe.db.sql("""
+            SELECT name, require_veu
+            FROM `tabebics Connection`
+            WHERE company = %s AND activated = 1
+            """, self.company, as_dict=True)
+        if len(connections) == 1:
+            return {
+                'name': connections[0]['name'],
+                'require_veu': bool(connections[0]['require_veu']),
+            }
+        # With several active connections, only an existing statement can
+        # disambiguate the account. Never guess a payment transport endpoint.
         statements = frappe.db.sql("""
             SELECT `ebics_connection`
             FROM `tabebics Statement`
@@ -611,17 +628,11 @@ class PaymentProposal(Document):
             ORDER BY `creation` DESC
             LIMIT 1
             """, self.pay_from_account, as_dict=True)
-        if len(statements) > 0:
-            connections = frappe.db.sql("""
-            SELECT `activated`, `name`, `require_veu`
-            FROM `tabebics Connection`
-            WHERE `name` = %s
-            """, statements[0]['ebics_connection'], as_dict=True)
-            if connections and connections[0]['activated']:
-                return {
-                    'name': connections[0]['name'],
-                    'require_veu': bool(connections[0]['require_veu']),
-                }
+        if statements:
+            matched = next((connection for connection in connections
+                            if connection['name'] == statements[0]['ebics_connection']), None)
+            if matched:
+                return {'name': matched['name'], 'require_veu': bool(matched['require_veu'])}
         return 0
         
 def _truthy(value, default=False):

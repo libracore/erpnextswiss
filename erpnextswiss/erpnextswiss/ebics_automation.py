@@ -316,11 +316,28 @@ def sync_connection(connection_name, debug=False):
                                  pluck="name", order_by="creation asc", limit_page_length=100)
         for name in waiting:
             _process_download(connection, frappe.get_doc("EBICS Download", name))
+        pending = _pending_receipt(connection)
+        if pending:
+            # Resolve an interrupted bank acknowledgement before any other BTD.
+            resumed = _download_day(connection, frappe.utils.getdate(pending.requested_date))
+            if resumed.processing_state == "Pending":
+                _process_download(connection, resumed)
         today = frappe.utils.getdate()
-        start = (frappe.utils.getdate(connection.synced_until) + timedelta(days=1)
-                 if connection.synced_until else today - timedelta(days=7))
+        # Re-query recent empty days: a bank may publish an EOP statement after
+        # the first daily request. Confirmed archives are skipped, so a late
+        # statement cannot duplicate an already accepted download.
+        window_start = today - timedelta(days=7)
+        cursor_start = (frappe.utils.getdate(connection.synced_until) + timedelta(days=1)
+                        if connection.synced_until else window_start)
+        start = min(window_start, cursor_start)
         processed = 0
         while start < today and processed < MAX_DAYS_PER_RUN:
+            if frappe.db.exists("EBICS Download", {"connection": connection.name,
+                                                   "requested_date": start.isoformat(),
+                                                   "ack_state": "Confirmed"}):
+                processed += 1
+                start += timedelta(days=1)
+                continue
             record = _download_day(connection, start)
             if record:
                 _process_download(connection, record)

@@ -208,6 +208,61 @@ class TestEbicsAutomation(TestCase):
         self.assertEqual(events, [date(2026, 9, 28)])
         connection.get_client.return_value.confirm_download.assert_not_called()
 
+    def test_daily_sync_rechecks_recent_empty_day_after_cursor_advanced(self):
+        connection = MagicMock()
+        connection.name = "AKB"
+        connection.enable_sync = 1
+        connection.activated = 1
+        connection.ebics_version = "H005"
+        connection.scope = "CH"
+        connection.statement_btf_version = "08"
+        connection.synced_until = date(2026, 9, 29)
+
+        def getdate(value=None):
+            return date(2026, 9, 30) if value is None else (value if isinstance(value, date)
+                                                             else date.fromisoformat(value))
+
+        def archived(_doctype, filters):
+            return filters["requested_date"] != "2026-09-29"
+
+        with (patch.object(automation.frappe, "cache"),
+              patch.object(automation.frappe, "get_doc", return_value=connection),
+              patch.object(automation.frappe, "get_all", return_value=[]),
+              patch.object(automation.frappe.db, "exists", side_effect=archived),
+              patch.object(automation.frappe.utils, "getdate", side_effect=getdate),
+              patch.object(automation, "_pending_receipt", return_value=None),
+              patch.object(automation, "_download_day", return_value=None) as download):
+            result = automation.sync_connection("AKB")
+        self.assertEqual(result, {"status": "ok", "days_checked": 7})
+        download.assert_called_once_with(connection, date(2026, 9, 29))
+
+    def test_daily_sync_replays_older_pending_receipt_first(self):
+        connection = MagicMock()
+        connection.name = "AKB"
+        connection.enable_sync = 1
+        connection.activated = 1
+        connection.ebics_version = "H005"
+        connection.scope = "CH"
+        connection.statement_btf_version = "08"
+        connection.synced_until = date(2026, 9, 29)
+        pending = MagicMock(requested_date="2026-09-20", processing_state="Pending")
+
+        def getdate(value=None):
+            return date(2026, 9, 30) if value is None else (value if isinstance(value, date)
+                                                             else date.fromisoformat(value))
+
+        with (patch.object(automation.frappe, "cache"),
+              patch.object(automation.frappe, "get_doc", return_value=connection),
+              patch.object(automation.frappe, "get_all", return_value=[]),
+              patch.object(automation.frappe.db, "exists", return_value=True),
+              patch.object(automation.frappe.utils, "getdate", side_effect=getdate),
+              patch.object(automation, "_pending_receipt", return_value=pending),
+              patch.object(automation, "_download_day", return_value=pending) as download,
+              patch.object(automation, "_process_download") as process):
+            automation.sync_connection("AKB")
+        download.assert_called_once_with(connection, date(2026, 9, 20))
+        process.assert_called_once_with(connection, pending)
+
     @staticmethod
     def _candidate():
         candidate = {"amount": 100, "matched_amount": 100, "currency": "CHF",

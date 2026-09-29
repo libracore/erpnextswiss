@@ -28,8 +28,10 @@ und ruft einen Buchungspfad mit automatischem Differenzausgleich auf.
 ## Empfangs- und Buchungsgrenzen
 
 - BTD/EOP/CH/ZIP/camt.053.001.08, maximal 14 vergangene Tage pro Lauf und
-  initial hoechstens die letzten sieben Tage. Ein leerer Banktag wird im Cursor
-  als abgefragt vermerkt.
+  initial hoechstens die letzten sieben Tage. Leere Banktage werden trotz
+  Cursor-Fortschritt innerhalb eines rollierenden Sieben-Tage-Fensters erneut
+  abgefragt, falls die Bank einen Auszug verspaetet bereitstellt. Bereits
+  quittierte Tage werden anhand des Archivs uebersprungen.
 - Vom Python-SDK gelieferte XML-Inhalte werden als UTF-8 in einem
   `EBICS Download`-Datensatz gespeichert. Das JSON-Envelope und sein SHA-256
   werden nach einem ERP-Commit rueckgelesen. Erst dann geht die EBICS-Quittung

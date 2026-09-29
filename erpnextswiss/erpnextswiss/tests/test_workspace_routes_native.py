@@ -48,6 +48,34 @@ class TestWorkspaceRoutesNative(unittest.TestCase):
             frappe.get_doc("Workspace", workspace).save()
         self.assertEqual(retire_workspace_route_pages(), [])
 
+    def test_banking_navigation_survives_repeated_migration(self):
+        expected = {
+            "Kontoauszüge / EBICS-Abrufe": "EBICS Download",
+            "Bankbewegungen": "Bank Transaction",
+            "EBICS-Verbindungen": "ebics Connection",
+        }
+        for target in expected.values():
+            self.assertTrue(frappe.db.exists("DocType", target), target)
+
+        for _ in range(2):
+            ensure_v16_desk_records()
+            sidebar = frappe.get_doc("Workspace Sidebar", "Schweizer Buchhaltung")
+            sidebar_links = {
+                item.label: item.link_to for item in sidebar.items
+                if item.type == "Link" and item.link_type == "DocType"
+            }
+            payment = frappe.get_doc("Workspace", "Zahlungsverkehr")
+            payment_links = {item.label: item.link_to for item in payment.links}
+            payment_shortcuts = {item.label: item.link_to for item in payment.shortcuts}
+            settings = frappe.get_doc("Workspace", "Schweiz-Einstellungen")
+            settings_shortcuts = {item.label: item.link_to for item in settings.shortcuts}
+            for label, target in expected.items():
+                self.assertEqual(sidebar_links[label], target)
+                self.assertEqual(payment_links[label], target)
+                self.assertEqual(payment_shortcuts[label], target)
+            self.assertEqual(settings_shortcuts["EBICS-Verbindungen"], "ebics Connection")
+            self.assertEqual(payment_links["Ältere EBICS-Auszüge"], "ebics Statement")
+
     def test_legacy_upgrade_archives_proxies_and_preserves_workspace_content(self):
         before = {name: frappe.get_doc("Workspace", name).content for name in set(WORKSPACE_ROUTE_PAGES.values())}
         for name in WORKSPACE_ROUTE_PAGES:

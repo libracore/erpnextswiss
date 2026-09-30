@@ -39,12 +39,10 @@ def enqueue(args):
 def execute(doctype, name, title, lang=None, print_format=None, hashname=None, is_private=1, file_name=None):
     if lang:
         frappe.local.lang = lang
-
     doctype_folder = create_folder(_(doctype), "Home")
     title_folder = create_folder(title, doctype_folder)
 
     pdf_data = get_pdf_data(doctype, name, print_format)
-
     save_and_attach(pdf_data, doctype, name, title_folder, hashname, is_private, file_name)
     return
 

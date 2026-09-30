@@ -25,7 +25,7 @@ The software comes as-is without any warranty.
 Requires a Frappe/ERPNext 16 server instance (refer to [https://github.com/frappe/erpnext](https://github.com/frappe/erpnext)).
 
 ## Compatibility
-This fork targets Frappe/ERPNext 16. Upstream ERPNextSwiss is tested against libracore and ERPNext v2023/v2025, with older compatibility branches for v11 and v13/v14/v15.
+This branch targets Frappe/ERPNext 16. Upstream ERPNextSwiss is tested against libracore and ERPNext v2023/v2025, with older compatibility branches for v11 and v13/v14/v15.
 
 Additional v16 notes are kept in [README_V16.md](README_V16.md).
 

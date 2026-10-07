@@ -2,7 +2,7 @@
 #
 # asset_tools.py
 #
-# Copyright (C) libracore, 2017-2024
+# Copyright (C) libracore, 2017-2026
 # https://www.libracore.com or https://github.com/libracore
 #
 
@@ -19,7 +19,10 @@ def unlink_asset(asset_name):
         frappe.db.sql("""
             UPDATE `tabAsset`
             SET `purchase_invoice` = NULL, `purchase_receipt` = NULL
-            WHERE `name` = "{asset_name}";
-        """.format(asset_name=asset_name))
+            WHERE `name` = %(asset_name)s;
+        """, 
+        {
+            'asset_name': asset_name
+        })
         frappe.db.commit()
     return

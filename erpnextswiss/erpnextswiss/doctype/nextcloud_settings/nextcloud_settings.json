@@ -1,4 +1,5 @@
 {
+ "actions": [],
  "creation": "2024-01-03 08:56:44.266406",
  "doctype": "DocType",
  "editable_grid": 1,
@@ -12,7 +13,11 @@
   "password",
   "sec_contacts",
   "sync_contacts",
-  "address_book"
+  "address_book",
+  "sec_zugferd",
+  "enable_zugferd",
+  "invoice_inbox",
+  "processed_invoices"
  ],
  "fields": [
   {
@@ -62,10 +67,32 @@
    "fieldname": "verify_ssl",
    "fieldtype": "Check",
    "label": "Verify SSL"
+  },
+  {
+   "fieldname": "sec_zugferd",
+   "fieldtype": "Section Break",
+   "label": "ZUGFeRD Wizard Integration"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_zugferd",
+   "fieldtype": "Check",
+   "label": "Enable Invoice fetch from NextCloud"
+  },
+  {
+   "fieldname": "invoice_inbox",
+   "fieldtype": "Data",
+   "label": "Invoice Inbox Folder Path"
+  },
+  {
+   "fieldname": "processed_invoices",
+   "fieldtype": "Data",
+   "label": "Processed Invoices Folder Path"
   }
  ],
  "issingle": 1,
- "modified": "2024-01-04 19:39:57.496834",
+ "links": [],
+ "modified": "2025-11-07 17:09:43.827156",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "NextCloud Settings",
@@ -105,7 +132,9 @@
   }
  ],
  "quick_entry": 1,
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
+ "states": [],
  "track_changes": 1
 }

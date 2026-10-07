@@ -378,6 +378,33 @@ frappe.bank_wizard = {
                     frappe.bank_wizard.create_payment_entry(payment, transaction.txid);
                 });
             }
+            // pattern match (purchase invoice)
+            button = document.getElementById("btn-quick-pattern-pay-" + transaction.txid);
+            if (button) {
+                button.addEventListener("click", function(e) {
+                    e.target.disabled = true;
+                    let payment = {
+                        'amount': transaction.amount,
+                        'date': transaction.date,
+                        'paid_from': document.getElementById("bank_account").value,
+                        'paid_to': document.getElementById("payable_account").value,
+                        'reference_no': transaction.unique_reference,
+                        'type': "Pay",
+                        'party_type': "Supplier",
+                        'party': (transaction.party_match || default_supplier),
+                        'references': transaction.invoice_matches,
+                        'remarks': (transaction.transaction_reference + ", " + transaction.party_name + ", " + transaction.party_address),
+                        'auto_submit': 1,
+                        'party_iban': transaction.party_iban,
+                        'company': document.getElementById("company").value,
+                        'pattern': transaction.pattern
+                    }
+                    frappe.bank_wizard.quick_payment_entry(payment, transaction.txid);
+                });
+                if (auto_process_matches === 1) {
+                    button.click();
+                }
+            }
         } else {
             // quick match (sales invoice)
             let button = document.getElementById("btn-quick-sinv-" + transaction.txid);
@@ -469,6 +496,33 @@ frappe.bank_wizard = {
                     frappe.bank_wizard.create_payment_entry(payment, transaction.txid);
                 });
             }
+            // pattern match (purchase invoice)
+            button = document.getElementById("btn-quick-pattern-rec-" + transaction.txid);
+            if (button) {
+                button.addEventListener("click", function(e) {
+                    e.target.disabled = true;
+                    let payment = {
+                        'amount': transaction.amount,
+                        'date': transaction.date,
+                        'paid_from': document.getElementById("receivable_account").value,
+                        'paid_to': document.getElementById("bank_account").value,
+                        'reference_no': transaction.unique_reference,
+                        'type': "Receive",
+                        'party_type': "Customer",
+                        'party': (transaction.party_match || default_customer),
+                        'references': transaction.invoice_matches,
+                        'remarks': (transaction.transaction_reference + ", " + transaction.party_name + ", " + transaction.party_address),
+                        'auto_submit': 1,
+                        'party_iban': transaction.party_iban,
+                        'company': document.getElementById("company").value,
+                        'pattern': transaction.pattern
+                    }
+                    frappe.bank_wizard.quick_payment_entry(payment, transaction.txid);
+                });
+                if (auto_process_matches === 1) {
+                    button.click();
+                }
+            }
         }
         // add intermediate account handler
         button = document.getElementById("btn-close-intermediate-" + transaction.txid);
@@ -517,9 +571,9 @@ frappe.bank_wizard = {
     },
     quick_payment_entry: function(payment, txid) {
         frappe.call({
-            method: "erpnextswiss.erpnextswiss.page.bank_wizard.bank_wizard.make_payment_entry",
-            args: payment,
-            callback: function(r)
+            'method': "erpnextswiss.erpnextswiss.page.bank_wizard.bank_wizard.make_payment_entry",
+            'args': payment,
+            'callback': function(r)
             {
                 // show alert
                 frappe.show_alert( __("Transaction matched") );

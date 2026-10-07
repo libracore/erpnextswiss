@@ -33,22 +33,24 @@ app_include_js = [
 # include js in doctype views
 # doctype_js = {"doctype" : "public/js/doctype.js"}
 doctype_js = {
-    "Item" :            "public/js/item.js",
-    "Quotation" :       "public/js/quotation.js",
-    "Sales Order" :     "public/js/sales_order.js",
-    "Sales Invoice" :   "public/js/sales_invoice.js",
-    "Purchase Invoice" :   "public/js/purchase_invoice.js",
-    "Fiscal Year":      "public/js/fiscal_year.js",
-    "Supplier":         "public/js/supplier.js",
-    "Customer":         "public/js/customer.js",
-    "Address":          "public/js/address.js",
-    "Holiday List":     "public/js/holiday_list.js",
-    "Shipment":         "public/js/shipment.js"
+    "Item" :                "public/js/item.js",
+    "Quotation" :           "public/js/quotation.js",
+    "Sales Order" :         "public/js/sales_order.js",
+    "Sales Invoice" :       "public/js/sales_invoice.js",
+    "Purchase Invoice" :    "public/js/purchase_invoice.js",
+    "Fiscal Year":          "public/js/fiscal_year.js",
+    "Supplier":             "public/js/supplier.js",
+    "Customer":             "public/js/customer.js",
+    "Address":              "public/js/address.js",
+    "Holiday List":         "public/js/holiday_list.js",
+    "Shipment":             "public/js/shipment.js"
 }
+
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 doctype_list_js = {
     "Purchase Invoice" : "public/js/purchase_invoice_list.js"
 }
+
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
 
@@ -133,6 +135,11 @@ doc_events = {
     "Contact": {
         "on_update": "erpnextswiss.erpnextswiss.nextcloud.contacts.send_contact_to_nextcloud",
         "on_trash": "erpnextswiss.erpnextswiss.nextcloud.contacts.delete_contact_from_nextcloud"
+    },
+    "Sales Invoice": {
+        "on_submit": "erpnextswiss.erpnextswiss.doctype.contract.contract.sync_contract_status",
+        "on_cancel": "erpnextswiss.erpnextswiss.doctype.contract.contract.sync_contract_status",
+        "on_update": "erpnextswiss.erpnextswiss.doctype.contract.contract.sync_contract_status"
     }
 }
 
@@ -159,7 +166,8 @@ doc_events = {
 scheduler_events = {
     "daily": [
         "erpnextswiss.erpnextswiss.doctype.inspection_equipment.inspection_equipment.check_calibration_status",
-        "erpnextswiss.erpnextswiss.ebics.sync"
+        "erpnextswiss.erpnextswiss.ebics.background_sync",
+        "erpnextswiss.erpnextswiss.doctype.contract.contract.process_auto_contract_invoices"
     ],
     "hourly": [
         "erpnextswiss.erpnextswiss.edi.process_incoming"

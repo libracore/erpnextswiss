@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018-2024, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2018-2026, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
 #
 #
 
-import fitz
+import pymupdf
 import frappe
 
 # from PIL import Image
@@ -19,7 +19,7 @@ def find_supplier_from_pdf(pdf_file, company=None, debug=False):
     tax_ids, supplier_names = build_supplier_maps(company)
     
     # read pdf
-    with fitz.open(pdf_file) as doc:
+    with pymupdf.open(pdf_file) as doc:
         content_string = ""
         for page in doc:
             content_string += page.get_text()

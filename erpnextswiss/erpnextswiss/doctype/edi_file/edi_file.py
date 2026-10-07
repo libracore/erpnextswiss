@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2022, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2022-2026, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
 
 from __future__ import unicode_literals
@@ -20,6 +20,7 @@ class EDIFile(Document):
 
         return
 
+    @frappe.whitelist()
     def download_file(self):
         content = None
         if self.edi_type == "PRICAT":
@@ -28,6 +29,7 @@ class EDIFile(Document):
             content = download_desadv(self.name)
         return { 'content': content }
 
+    @frappe.whitelist()
     def get_item_details(self, item_code):
         item = frappe.get_doc("Item", item_code)
         price_list = frappe.get_value("EDI Connection", self.edi_connection, "price_list")
@@ -118,7 +120,7 @@ class EDIFile(Document):
                     is_private=True
                 )
                 # send mail
-                send(
+                frappe.sendmail(
                     recipients=frappe.get_value("EDI Connection", self.edi_connection, "email_recipient"),
                     subject=self.name,
                     message=self.name,

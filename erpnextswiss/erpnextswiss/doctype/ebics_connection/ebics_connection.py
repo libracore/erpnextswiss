@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2024, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2024-2025, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
 #
 
@@ -182,7 +182,7 @@ class ebicsConnection(Document):
         CCT = BusinessTransactionFormat(
             service='MCT',
             msg_name='pain.001',
-            scope='CH'
+            scope=(self.get('scope') or 'CH')
         )
         
         # generate content
@@ -206,7 +206,7 @@ class ebicsConnection(Document):
                 C53 = BusinessTransactionFormat(
                     service='EOP',
                     msg_name='camt.053',
-                    scope='CH',
+                    scope=(self.get('scope') or 'CH'),
                     container='ZIP'
                 )
 

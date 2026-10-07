@@ -74,13 +74,20 @@ def get_data():
             "label": _("Finance"),
             "icon": "fa fa-users",
             "items": [
-                   {
+                    {
                         "type": "report",
                         "name": "Account Sheets",
                         "label": _("Account Sheets"),
                         "doctype": "GL Entry",
                         "is_query_report": True
-                   }
+                    },
+                    {
+                        "type": "report",
+                        "name": "Betriebserfolg",
+                        "label": _("Betriebserfolg"),
+                        "doctype": "GL Entry",
+                        "is_query_report": True
+                    }
             ]
         },
         {
@@ -237,6 +244,12 @@ def get_data():
                     },
                     {
                        "type": "doctype",
+                       "name": "DPD Settings",
+                       "label": _("DPD Settings"),
+                       "description": _("DPD Settings")                   
+                    },
+                    {
+                       "type": "doctype",
                        "name": "Datatrans Settings",
                        "label": _("Datatrans Settings"),
                        "description": _("Datatrans Settings")                   
@@ -258,6 +271,12 @@ def get_data():
                        "name": "GitLab Settings",
                        "label": _("GitLab"),
                        "description": _("GitLab")                   
+                    },
+                    {
+                       "type": "doctype",
+                       "name": "Mautic Settings",
+                       "label": _("Mautic"),
+                       "description": _("Mautic")                   
                     },
                     {
                        "type": "doctype",

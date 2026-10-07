@@ -10,6 +10,12 @@ frappe.query_reports["Timesheet Month per Project"] = {
             "label": __("End date"),
             "fieldtype": "Date",
             "default" : frappe.datetime.get_today()
+        },
+        {
+            "fieldname":"employee",
+            "label": __("Employee"),
+            "fieldtype": "Link",
+            "options": "Employee"
         }
     ]
 }

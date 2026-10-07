@@ -63,7 +63,7 @@ cur_page.container.addEventListener("dblclick", function(event) {
                     'project': project
                 },
                 'callback': function(response) {
-                    frappe.show_alert( __("Created") + ": <a href='/desk#Form/Sales Invoice/" + response.message
+                    frappe.show_alert( __("Created") + ": <a href='/app/sales-invoice/" + response.message
                         + "'>" + response.message + "</a>");
                     frappe.query_report.refresh();
                 }

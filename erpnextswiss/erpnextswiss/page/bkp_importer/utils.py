@@ -351,49 +351,74 @@ def is_any_job_running(doctype, docname):
 
 def get_info(jobname):
     from rq import Queue, Worker
+
+    from frappe.utils import (
+        convert_utc_to_system_timezone,
+        format_datetime,
+    )
     from frappe.utils.background_jobs import get_redis_conn
-    from frappe.utils import format_datetime, cint, convert_utc_to_user_timezone
+
     colors = {
-        'queued': 'orange',
-        'failed': 'red',
-        'started': 'blue',
-        'finished': 'green'
+        "queued": "orange",
+        "deferred": "orange",
+        "scheduled": "orange",
+        "started": "blue",
+        "finished": "green",
+        "failed": "red",
+        "stopped": "red",
+        "canceled": "gray",
     }
+
     conn = get_redis_conn()
-    queues = Queue.all(conn)
-    workers = Worker.all(conn)
+    queues = Queue.all(connection=conn)
+    workers = Worker.all(connection=conn)
+
     jobs = []
-    show_failed=False
 
-    def add_job(j, name):
-        if j.kwargs.get('site')==frappe.local.site:
-            jobs.append({
-                'job_name': j.kwargs.get('kwargs', {}).get('playbook_method') \
-                    or str(j.kwargs.get('job_name')),
-                'status': j.status, 'queue': name,
-                'creation': format_datetime(convert_utc_to_user_timezone(j.created_at)),
-                'color': colors[j.status]
-            })
-            if j.exc_info:
-                jobs[-1]['exc_info'] = j.exc_info
+    def add_job(job, queue_name):
+        if not job:
+            return
 
-    for w in workers:
-        j = w.get_current_job()
-        if j:
-            add_job(j, w.name)
+        if job.kwargs.get("site") != frappe.local.site:
+            return
 
-    for q in queues:
-        if q.name != 'failed':
-            for j in q.get_jobs(): add_job(j, q.name)
+        status = job.get_status(refresh=True)
 
-    if cint(show_failed):
-        for q in queues:
-            if q.name == 'failed':
-                for j in q.get_jobs()[:10]: add_job(j, q.name)
-    
-    found_job = 'refresh'
+        background_job_name = (
+            job.kwargs.get("kwargs", {}).get("playbook_method")
+            or job.kwargs.get("job_name")
+            or ""
+        )
+
+        jobs.append({
+            "job_name": str(background_job_name),
+            "status": status,
+            "queue": queue_name,
+            "creation": (
+                format_datetime(
+                    convert_utc_to_system_timezone(job.created_at)
+                )
+                if job.created_at
+                else ""
+            ),
+            "color": colors.get(status, "gray"),
+            "exc_info": job.exc_info or "",
+        })
+
+    # Aktuell laufende Jobs
+    for worker in workers:
+        add_job(worker.get_current_job(), worker.name)
+
+    # Wartende Jobs
+    for queue in queues:
+        if queue.name == "failed":
+            continue
+
+        for job in queue.get_jobs():
+            add_job(job, queue.name)
+
     for job in jobs:
-        if job['job_name'] == jobname:
-            found_job = True
+        if job["job_name"] == jobname:
+            return True
 
-    return found_job
+    return "refresh"

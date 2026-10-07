@@ -1,0 +1,28 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th>{{ _("Campaign") }}</th>
+            <th>{{ _("Sent") }}</th>
+            <th>{{ _("Delivered") }}</th>
+            <th>{{ _("Clicked") }}</th>
+            <th>{{ _("Opened") }}</th>
+            <th>{{ _("Soft Bounce") }}</th>
+            <th>{{ _("Hard Bounce") }}</th>
+            <th>{{ _("Complaint") }}</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for c, v in campaigns.items() %}
+    <tr>
+        <th>{{ c or "-" }}</th>
+        <th>{{ v.messagesSent or "-" }}</th>
+        <th>{{ v.delivered or "-" }}</th>
+        <th>{{ v.clicked or "-" }}</th>
+        <th>{{ v.opened or "-" }}</th>
+        <th>{{ v.softBounces or "-" }}</th>
+        <th>{{ v.hardBounces or "-" }}</th>
+        <th>{{ v.complaints or "-" }}</th>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>

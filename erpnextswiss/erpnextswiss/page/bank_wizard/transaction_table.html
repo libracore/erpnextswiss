@@ -25,11 +25,13 @@
             <!-- Supplier -->
             {% if transaction.amount == transaction.matched_amount %}
              {% if transaction.invoice_matches %}
-               <button type="submit" class="btn btn-xs btn-primary" id="btn-quick-pinv-{{ transaction.txid }}">&rArr;</button>
+               <button type="submit" class="btn btn-xs btn-primary" id="btn-quick-pinv-{{ transaction.txid }}"><i class="fa fa-arrow-right"></i></button>
              {% endif %}
              {% if transaction.expense_matches %}
-               <button type="submit" class="btn btn-xs btn-primary" id="btn-quick-exp-{{ transaction.txid }}">&rArr;</button>
+               <button type="submit" class="btn btn-xs btn-primary" id="btn-quick-exp-{{ transaction.txid }}"><i class="fa fa-arrow-right"></i></button>
              {% endif %}
+            {% elif transaction.pattern %}
+               <button type="submit" class="btn btn-xs btn-primary" id="btn-quick-pattern-pay-{{ transaction.txid }}"><i class="fa fa-magic"></i></button>
             {% endif %}
             {% if transaction.invoice_matches %}
              <button type="submit" class="btn btn-xs btn-success" id="btn-close-pinv-{{ transaction.txid }}">{{ _("Purchase Invoice") }}</button>
@@ -47,7 +49,9 @@
           {% else %}
             <!-- Customer -->
             {% if transaction.amount == transaction.matched_amount %}
-             <button type="submit" class="btn btn-xs btn-primary" id="btn-quick-sinv-{{ transaction.txid }}">&rArr;</button>
+             <button type="submit" class="btn btn-xs btn-primary" id="btn-quick-sinv-{{ transaction.txid }}"><i class="fa fa-arrow-right"></i></button>
+            {% elif transaction.pattern %}
+               <button type="submit" class="btn btn-xs btn-primary" id="btn-quick-pattern-rec-{{ transaction.txid }}"><i class="fa fa-magic"></i></button>
             {% endif %}
             {% if transaction.invoice_matches %}
              <button type="submit" class="btn btn-xs btn-success" id="btn-close-sinv-{{ transaction.txid }}">{{ _("Sales Invoice") }}</button>

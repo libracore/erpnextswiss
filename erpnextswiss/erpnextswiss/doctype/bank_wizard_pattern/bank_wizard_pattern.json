@@ -1,0 +1,106 @@
+{
+ "creation": "2025-08-28 16:13:04.491191",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "target_field",
+  "disabled",
+  "col_1",
+  "operator",
+  "col_2",
+  "value",
+  "sec_action",
+  "deductions"
+ ],
+ "fields": [
+  {
+   "default": "Party Name",
+   "fieldname": "target_field",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Target Field",
+   "options": "Transaction Reference\nParty Name\nParty Address\nAmount\nUnallocated Amount",
+   "reqd": 1
+  },
+  {
+   "fieldname": "col_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "=",
+   "fieldname": "operator",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Operator",
+   "options": "=\nincludes\n&lt;",
+   "reqd": 1
+  },
+  {
+   "fieldname": "col_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "value",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Value",
+   "reqd": 1
+  },
+  {
+   "fieldname": "sec_action",
+   "fieldtype": "Section Break",
+   "label": "Action"
+  },
+  {
+   "fieldname": "deductions",
+   "fieldtype": "Table",
+   "label": "Deduction",
+   "options": "Bank Wizard Pattern Account",
+   "reqd": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "disabled",
+   "fieldtype": "Check",
+   "label": "Disabled"
+  }
+ ],
+ "modified": "2025-08-29 17:51:55.310651",
+ "modified_by": "Administrator",
+ "module": "ERPNextSwiss",
+ "name": "Bank Wizard Pattern",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Accounts Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "title_field": "value",
+ "track_changes": 1
+}

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2017-2024, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2017-2026, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
 
 from __future__ import unicode_literals
@@ -167,6 +167,7 @@ class AbacusExportFile(Document):
             return '""'
     
     # reset export flags
+    @frappe.whitelist()
     def reset_export_flags(self):
         sql_query = """UPDATE `tabGL Entry` SET `exported_to_abacus` = 0;"""
         frappe.db.sql(sql_query, as_dict=True)

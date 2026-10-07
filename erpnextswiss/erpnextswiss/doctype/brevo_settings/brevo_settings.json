@@ -1,0 +1,74 @@
+{
+ "actions": [],
+ "creation": "2024-08-29 14:44:59.395097",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "api_key",
+  "col_main",
+  "last_sync",
+  "sec_mappings",
+  "mappings"
+ ],
+ "fields": [
+  {
+   "fieldname": "api_key",
+   "fieldtype": "Password",
+   "label": "API Key"
+  },
+  {
+   "fieldname": "col_main",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "last_sync",
+   "fieldtype": "Datetime",
+   "label": "Last Sync",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sec_mappings",
+   "fieldtype": "Section Break",
+   "label": "Mappings"
+  },
+  {
+   "fieldname": "mappings",
+   "fieldtype": "Table",
+   "label": "Mappings",
+   "options": "Brevo Settings Mapping"
+  }
+ ],
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-06-24 15:12:59.322163",
+ "modified_by": "Administrator",
+ "module": "ERPNextSwiss",
+ "name": "Brevo Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "Sales Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

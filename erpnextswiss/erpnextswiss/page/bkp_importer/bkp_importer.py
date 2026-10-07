@@ -95,7 +95,7 @@ def _import_update_items(xml_files, site_name):
                     frappe.db.set_value("Item Group", item_group, "bkp_katalog_version", bkp_katalog_version)
             except Exception as e:
                 bkp_error = True
-                frappe.log_error("{0}".format(e), "BKP Importer: Lesen Artikel")
+                frappe.log_error(message=f"{e}", title="BKP Importer: Lesen Artikel")
         if not bkp_error:
             for item in items:
                 if not bkp_error:
@@ -119,16 +119,16 @@ def create_new_item(item, soup, item_group):
     except:
         try:
             uom = item.Einheit_Code.get('Einheit')
-        except:
-            frappe.log_error("Einheit konnte nicht ausgelesen werden\n\n{0}".format(e), "BKP Importer: Erstellen Artikel")
+        except Exception as e:
+            frappe.log_error(message=f"Einheit konnte nicht ausgelesen werden\n\n{e}", title="BKP Importer: Erstellen Artikel")
             return True
     try:
         preis = item.Preis_Bestimmen.Preis.Preis_Pos.get_text()
     except:
         try:
             preis = item.Preis.get_text()
-        except:
-            frappe.log_error("Preis konnte nicht ausgelesen werden\n\n{0}".format(e), "BKP Importer: Erstellen Artikel")
+        except Exception as e:
+            frappe.log_error(message=f"Preis konnte nicht ausgelesen werden\n\n{e}", title="BKP Importer: Erstellen Artikel")
             return True
     try:
         new_item = frappe.get_doc({
@@ -136,7 +136,7 @@ def create_new_item(item, soup, item_group):
             "item_code": item.get('Art_Nr_Anbieter'),
             "item_name": item.Art_Txt_Kurz.get_text(),
             "description": item.Art_Txt_Lang.get_text(),
-            "uom": uom,
+            "stock_uom": uom,
             "item_group": item_group,
             "is_stock_item": 0,
             "include_item_in_manufacturing": 0
@@ -149,7 +149,7 @@ def create_new_item(item, soup, item_group):
         else:
             return True
     except Exception as e:
-        frappe.log_error("{0}".format(e), "BKP Importer: Erstellen Artikel")
+        frappe.log_error(message=f"{e}", title="BKP Importer: Erstellen Artikel")
         return True
 
 def update_item(_item, soup, item_group):
@@ -158,22 +158,22 @@ def update_item(_item, soup, item_group):
     except:
         try:
             uom = _item.Einheit_Code.get('Einheit')
-        except:
-            frappe.log_error("Einheit konnte nicht ausgelesen werden\n\n{0}".format(e), "BKP Importer: Updaten Artikel")
+        except Exception as e:
+            frappe.log_error(f"Einheit konnte nicht ausgelesen werden\n\n{e}", "BKP Importer: Updaten Artikel")
             return True
     try:
         preis = _item.Preis_Bestimmen.Preis.Preis_Pos.get_text()
     except:
         try:
             preis = _item.Preis.get_text()
-        except:
-            frappe.log_error("Preis konnte nicht ausgelesen werden\n\n{0}".format(e), "BKP Importer: Updaten Artikel")
+        except Exception as e:
+            frappe.log_error(message=f"Preis konnte nicht ausgelesen werden\n\n{e}", title="BKP Importer: Updaten Artikel")
             return True
     try:
         item = frappe.get_doc("Item", _item.get('Art_Nr_Anbieter'))
         item.item_name = _item.Art_Txt_Kurz.get_text()
         item.description = _item.Art_Txt_Lang.get_text()
-        item.uom = uom
+        item.stock_uom = uom
         item.item_group = item_group
         item.save()
         frappe.db.commit()
@@ -183,7 +183,7 @@ def update_item(_item, soup, item_group):
         else:
             return True
     except Exception as e:
-        frappe.log_error("{0}".format(e), "BKP Importer: Updaten Artikel")
+        frappe.log_error(message=f"{e}", title="BKP Importer: Updaten Artikel")
         return True
 
 def create_item_group(item_group, bkp_katalog_version):
@@ -199,7 +199,7 @@ def create_item_group(item_group, bkp_katalog_version):
         frappe.db.commit()
         return False
     except Exception as e:
-        frappe.log_error("{0}".format(e), "BKP Importer: Erstellen Artikelgruppe")
+        frappe.log_error(message=f"{e}", title="BKP Importer: Erstellen Artikelgruppe")
         return True
 
 def create_item_price(item, price):
@@ -217,7 +217,7 @@ def create_item_price(item, price):
         frappe.db.commit()
         return False
     except Exception as e:
-        frappe.log_error("{0}".format(e), "BKP Importer: Erstellen Artikelpreis")
+        frappe.log_error(message=f"{e}", title="BKP Importer: Erstellen Artikelpreis")
         return True
 
 def update_item_price(item, price):
@@ -235,7 +235,7 @@ def update_item_price(item, price):
             return create_item_price(item, price)
     
     except Exception as e:
-        frappe.log_error("{0}".format(e), "BKP Importer: Update Artikelpreis")
+        frappe.log_error(message=f"{e}", title="BKP Importer: Update Artikelpreis")
         return True
 
 def unzip_file(path_to_file_folder, file):

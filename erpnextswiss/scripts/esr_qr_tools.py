@@ -2,7 +2,7 @@
 #
 # esr_qr_tools.py
 #
-# Copyright (C) libracore, 2017-2025
+# Copyright (C) libracore, 2017-2026
 # https://www.libracore.com or https://github.com/libracore
 #
 
@@ -13,8 +13,17 @@ import re
 # fetch supplier based on participant number
 @frappe.whitelist()
 def get_supplier_based_on_esr(participant):
-    participant_to_search = participant.replace("", "%").replace("0", "")
-    supplier = frappe.db.sql("""SELECT `name`, `supplier_name` FROM `tabSupplier` WHERE `esr_participation_number` LIKE '{participant}'""".format(participant=participant_to_search), as_dict=True)
+    participant_to_search = participant.replace("", "%").replace("0", "").replace(" ", "")
+    supplier = frappe.db.sql("""
+        SELECT `name`, `supplier_name` 
+        FROM `tabSupplier` 
+        WHERE `esr_participation_number` 
+        LIKE %(participant)s""", 
+        {
+            'participant': participant_to_search
+        }, 
+        as_dict=True
+    )
     if len(supplier) > 0:
         if len(supplier) > 1:
             return {

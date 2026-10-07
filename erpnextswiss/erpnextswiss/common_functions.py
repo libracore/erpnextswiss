@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018-2022, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2018-2026, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
 import frappe
 from frappe import _
@@ -64,11 +64,16 @@ def get_primary_address(target_name, target_type="Customer"):
         FROM `tabDynamic Link` 
         LEFT JOIN `tabAddress` ON `tabDynamic Link`.`parent` = `tabAddress`.`name`
         LEFT JOIN `tabCountry` ON `tabAddress`.`country` = `tabCountry`.`name`
-        WHERE `link_doctype` = '{type}' AND `link_name` = '{name}'
+        WHERE `link_doctype` = %(type)s AND `link_name` = %(name)s
         ORDER BY `tabAddress`.`is_primary_address` DESC
-        LIMIT 1;""".format(type=target_type, name=target_name)
+        LIMIT 1;""".format
     try:
-        return frappe.db.sql(sql_query, as_dict=True)[0]
+        return frappe.db.sql(sql_query, 
+            (
+                'type': target_type, 
+                'name': target_name
+            },
+            as_dict=True)[0]
     except:
         return None
 

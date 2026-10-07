@@ -22,7 +22,7 @@ def get_customer_address(customer):
     if address_name:
         if not frappe.db.exists("Address", address_name[0]['parent']):
             return None
-        if not frappe.get_doc("Address", address_name[0]['parent']).check_permission():
+        if not frappe.get_doc("Address", address_name[0]['parent']).has_permission("read"):
             return None
         address = frappe.get_doc("Address", address_name[0]['parent'])
         return address
@@ -48,7 +48,7 @@ def get_primary_customer_address(customer):
     if address_name:
         if not frappe.db.exists("Address", address_name[0]['parent']):
             return None
-        if not frappe.get_doc("Address", address_name[0]['parent']).check_permission():
+        if not frappe.get_doc("Address", address_name[0]['parent']).has_permission("read"):
             return None
         address = frappe.get_doc("Address", address_name[0]['parent'])
         return address
@@ -74,7 +74,7 @@ def get_primary_customer_contact(customer):
     if contact_name:
         if not frappe.db.exists("Contact", contact_name[0]['parent']):
             return None
-        if not frappe.get_doc("Contact", contact_name[0]['parent']).check_permission():
+        if not frappe.get_doc("Contact", contact_name[0]['parent']).has_permission("read"):
             return None
         contact = frappe.get_doc("Contact", contact_name[0]['parent'])
         return contact
@@ -97,7 +97,7 @@ def get_customer_contact(customer):
     if contact_name:
         if not frappe.db.exists("Contact", contact_name[0]['parent']):
             return None
-        if not frappe.get_doc("Contact", contact_name[0]['parent']).check_permission():
+        if not frappe.get_doc("Contact", contact_name[0]['parent']).has_permission("read"):
             return None
         contact = frappe.get_doc("Contact", contact_name[0]['parent'])
         return contact
@@ -120,7 +120,7 @@ def get_supplier_address(supplier):
     if address_name:
         if not frappe.db.exists("Address", address_name[0]['parent']):
             return None
-        if not frappe.get_doc("Address", address_name[0]['parent']).check_permission():
+        if not frappe.get_doc("Address", address_name[0]['parent']).has_permission("read"):
             return None
         address = frappe.get_doc("Address", address_name[0]['parent'])
         return address
@@ -146,7 +146,7 @@ def get_primary_supplier_address(supplier):
     if address_name:
         if not frappe.db.exists("Address", address_name[0]['parent']):
             return None
-        if not frappe.get_doc("Address", address_name[0]['parent']).check_permission():
+        if not frappe.get_doc("Address", address_name[0]['parent']).has_permission("read"):
             return None
         address = frappe.get_doc("Address", address_name[0]['parent'])
         return address
@@ -171,7 +171,7 @@ def get_primary_supplier_contact(supplier):
     if contact_name:
         if not frappe.db.exists("Contact", contact_name[0]['parent']):
             return None
-        if not frappe.get_doc("Contact", contact_name[0]['parent']).check_permission():
+        if not frappe.get_doc("Contact", contact_name[0]['parent']).has_permission("read"):
             return None
         contact = frappe.get_doc("Contact", contact_name[0]['parent'])
         return contact
@@ -196,7 +196,7 @@ def get_primary_company_address(company):
     if address_name:
         if not frappe.db.exists("Address", address_name[0]['parent']):
             return None
-        if not frappe.get_doc("Address", address_name[0]['parent']).check_permission():
+        if not frappe.get_doc("Address", address_name[0]['parent']).has_permission("read"):
             return None
         address = frappe.get_doc("Address", address_name[0]['parent'])
         return address

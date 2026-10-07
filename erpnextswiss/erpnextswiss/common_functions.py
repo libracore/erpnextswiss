@@ -69,7 +69,7 @@ def get_primary_address(target_name, target_type="Customer"):
         LIMIT 1;""".format
     try:
         return frappe.db.sql(sql_query, 
-            (
+            {
                 'type': target_type, 
                 'name': target_name
             },

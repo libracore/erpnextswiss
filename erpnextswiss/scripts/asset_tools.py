@@ -2,7 +2,7 @@
 #
 # asset_tools.py
 #
-# Copyright (C) libracore, 2017-2024
+# Copyright (C) libracore, 2017-2026
 # https://www.libracore.com or https://github.com/libracore
 #
 
@@ -13,13 +13,16 @@ This function will allow to unlink an asset from PREC and PINV, because otherwis
 
 Run from console using unlink_asset();
 """
-@frappe.whitelist(methods=["POST"])
+@frappe.whitelist()
 def unlink_asset(asset_name):
     if frappe.db.exists("Asset", asset_name):
-        asset = frappe.get_doc("Asset", asset_name)
-        asset.check_permission("write")
-        asset.db_set({
-            "purchase_invoice": None,
-            "purchase_receipt": None,
+        frappe.db.sql("""
+            UPDATE `tabAsset`
+            SET `purchase_invoice` = NULL, `purchase_receipt` = NULL
+            WHERE `name` = %(asset_name)s;
+        """, 
+        {
+            'asset_name': asset_name
         })
+        frappe.db.commit()
     return

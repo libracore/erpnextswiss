@@ -2,71 +2,20 @@
 #
 # item_tools.py
 #
-# Copyright (C) libracore, 2017-2024
+# Copyright (C) libracore, 2017-2026
 # https://www.libracore.com or https://github.com/libracore
 #
 # Execute with $ bench execute erpnextswiss.scripts.item_tools.<function>
 #
 
-from __future__ import unicode_literals
-
-import re
-
 import frappe
-
-# Regular expressions for supplier hint lines in Item descriptions.
-SUPPLIER_HINT_PATTERNS = (
-    re.compile(r"^\s*(?:lieferant|supplier)\s*[:\-]?\s*.*$", re.IGNORECASE),
-    re.compile(r"^\s*(?:lieferanten?nr\.?|liefernummer|supplier.?number|supplier.?no\.?)\s*[:\-]?\s*.*$", re.IGNORECASE),
-    re.compile(r"^\s*(?:eigener\s+lieferant|unserer\s+lieferant|unsere\s+lieferanten?)\s*[:\-]?\s*.*$", re.IGNORECASE),
-    re.compile(r"^\s*(?:bezug|bezugsquelle|quelle)\s+von\s*[:\-]?\s*.*$", re.IGNORECASE),
-    re.compile(r"^\s*(?:hersteller|manufacturer)\s*[:\-]?\s*.*$", re.IGNORECASE),
-)
-
-
-def _line_has_supplier_hint(line):
-    normalized_line = re.sub(r"<[^>]+>", "", line or "").strip().lower()
-    if not normalized_line:
-        return False
-    return any(pattern.match(normalized_line) for pattern in SUPPLIER_HINT_PATTERNS)
-
-
-def _clean_item_description(description):
-    if not description:
-        return description
-
-    separator_pattern = re.compile(r"<br\s*/?>|\r\n|\r|\n", re.IGNORECASE)
-    raw_lines = separator_pattern.split(description)
-    cleaned_lines = []
-
-    for line in raw_lines:
-        if _line_has_supplier_hint(line):
-            continue
-        cleaned_line = re.sub(r"\s+$", "", line or "").strip()
-        if cleaned_line:
-            cleaned_lines.append(cleaned_line)
-
-    return "<br>".join(cleaned_lines)
-
-
-def _normalize_for_compare(value):
-    if value is None:
-        return ""
-    return re.sub(
-        r"\s*<br\s*/?>\s*",
-        "<br>",
-        re.sub(r"\s+", "", value.strip().lower())
-    )
-
+import re
 
 @frappe.whitelist()
 def get_next_item_code():
     prefix = None
-    last_item_code = frappe.db.sql(
-        """SELECT `name` FROM `tabItem` ORDER BY CAST(`name` AS int) DESC LIMIT 1""",
-        as_dict=True
-    )
-    # Check if already an item exist
+    last_item_code = frappe.db.sql("""SELECT `name` FROM `tabItem` ORDER BY CAST(`name` AS int) DESC LIMIT 1""", as_dict=True)
+    #Check if already an item exist
     if last_item_code:
         last_item_code = str(last_item_code[0].name)
         last_item_code_len = len(last_item_code.split("-"))
@@ -78,85 +27,25 @@ def get_next_item_code():
         else:
             new_item_code = int(last_item_code) + 1
         return new_item_code
+        
     else:
         return 1
-
-
-@frappe.whitelist(methods=["POST"])
-def purge_supplier_hints_from_item_descriptions(apply=0, item_codes=None, limit=None):
-    """
-    Remove supplier hint lines from Item description fields.
-
-    Args:
-      apply (bool/int): 0 = dry-run, 1 = write changes
-      item_codes (str/list): optional item code filter (comma-separated string or list)
-      limit (int): optional maximum number of items to process
-    """
-    frappe.only_for("System Manager")
-    apply = int(apply)
-    if apply not in (0, 1):
-        frappe.throw("apply must be 0 (preview) or 1 (apply)", frappe.ValidationError)
-
-    filters = {"disabled": 0}
-    if item_codes:
-        if isinstance(item_codes, str):
-            item_codes = [c.strip() for c in item_codes.split(",") if c.strip()]
-        elif not isinstance(item_codes, list):
-            item_codes = [item_codes]
-        if item_codes:
-            filters["name"] = ["in", item_codes]
-
-    fields = ["name", "description"]
-    items = frappe.get_list("Item", filters=filters, fields=fields, limit_page_length=limit or 0)
-
-    preview = []
-    changed = 0
-    checked = 0
-    updates = []
-
-    for item in items:
-        checked += 1
-        changes = {}
-
-        old_description = item.get("description")
-        new_description = _clean_item_description(old_description)
-
-        if _normalize_for_compare(old_description) != _normalize_for_compare(new_description):
-            changes["description"] = {"before": old_description, "after": new_description}
-
-        if not changes:
-            continue
-
-        changed += 1
-        if len(preview) < 20:
-            preview.append({"item": item.get("name"), "changes": changes})
-
-        if apply:
-            updates.append((item.get("name"), new_description))
-
-    # Check the entire batch before any write; the calling Frappe transaction owns commit/rollback.
-    for item_code, _description in updates:
-        frappe.get_doc("Item", item_code).check_permission("write")
-    for item_code, description in updates:
-        frappe.db.set_value("Item", item_code, "description", description)
-
-    return {
-        "applied": bool(apply),
-        "checked": checked,
-        "changed": changed,
-        "preview": preview
-    }
-
-
+        
 @frappe.whitelist()
 def get_voucher_value(voucher_code, customer):
-    sql_query = u"""SELECT
+    value = frappe.db.sql("""
+                SELECT 
                     (IFNULL(SUM(`qty` * `base_rate`), 0)) AS `value`
-                FROM `tabSales Invoice Item`
-                WHERE
-                    `item_code` = '{voucher}'
-                    AND `parent` IN (SELECT `name` FROM `tabSales Invoice` WHERE `docstatus` = 1 AND `customer` = '{customer}');""".format(voucher=voucher_code, customer=customer)
-    value = frappe.db.sql(sql_query, as_dict=True)
+                FROM `tabSales Invoice Item` 
+                WHERE 
+                    `item_code` = %(voucher)s
+                    AND `parent` IN (SELECT `name` FROM `tabSales Invoice` WHERE `docstatus` = 1 AND `customer` = %(customer)s);""",
+            ,
+            {
+                'voucher': voucher_code,
+                'customer': customer
+            }, 
+            as_dict=True)
     if value:
         return { 'value': value[0].value }
     else:

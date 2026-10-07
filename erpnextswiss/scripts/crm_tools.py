@@ -2,23 +2,28 @@
 #
 # crm_tools.py
 #
-# Copyright (C) libracore, 2017-2024
+# Copyright (C) libracore, 2017-2026
 # https://www.libracore.com or https://github.com/libracore
 #
 
 import frappe
-from frappe import _
 
 # fetch the first available address from a customer
 @frappe.whitelist()
 def get_customer_address(customer):
-    sql_query = u"""SELECT `parent` FROM `tabDynamic Link` WHERE
+    address_name = frappe.db.sql("""SELECT `parent` FROM `tabDynamic Link` WHERE
         `link_doctype` = 'Customer'
-        AND `link_name` = '{customer}'
-        AND `parenttype` = 'Address'
-        """.format(customer=customer.replace("'", "''"))
-    address_name = frappe.db.sql(sql_query, as_dict=True)
+        AND `link_name` = %(customer)s
+        AND `parenttype` = 'Address';""",
+        {
+            'customer': customer
+        }, as_dict=True
+    )
     if address_name:
+        if not frappe.db.exists("Address", address_name[0]['parent']):
+            return None
+        if not frappe.get_doc("Address", address_name[0]['parent']).has_permission("read"):
+            return None
         address = frappe.get_doc("Address", address_name[0]['parent'])
         return address
     else:
@@ -27,16 +32,24 @@ def get_customer_address(customer):
 # fetch the primary available address from a customer
 @frappe.whitelist()
 def get_primary_customer_address(customer):
-    sql_query = u"""SELECT `tabDynamic Link`.`parent`, `tabAddress`.`is_primary_address`
+    address_name = frappe.db.sql("""SELECT `tabDynamic Link`.`parent`, `tabAddress`.`is_primary_address`
             FROM `tabDynamic Link` 
             LEFT JOIN `tabAddress` ON `tabAddress`.`name` = `tabDynamic Link`.`parent`
             WHERE  `tabDynamic Link`.`link_doctype` = 'Customer'
-                   AND `tabDynamic Link`.`link_name` = '{customer}'
+                   AND `tabDynamic Link`.`link_name` = %(customer)s
                    AND `tabDynamic Link`.`parenttype` = 'Address'
             ORDER BY `tabAddress`.`is_primary_address` DESC;
-        """.format(customer=customer.replace("'", "''"))
-    address_name = frappe.db.sql(sql_query, as_dict=True)
+        """,
+        {
+            'customer': customer
+        },
+        as_dict=True
+    )
     if address_name:
+        if not frappe.db.exists("Address", address_name[0]['parent']):
+            return None
+        if not frappe.get_doc("Address", address_name[0]['parent']).has_permission("read"):
+            return None
         address = frappe.get_doc("Address", address_name[0]['parent'])
         return address
     else:
@@ -45,16 +58,24 @@ def get_primary_customer_address(customer):
 # fetch the primary available contact from a customer
 @frappe.whitelist()
 def get_primary_customer_contact(customer):
-    sql_query = u"""SELECT `tabDynamic Link`.`parent`, `tabContact`.`is_primary_contact`
+    contact_name = frappe.db.sql("""SELECT `tabDynamic Link`.`parent`, `tabContact`.`is_primary_contact`
             FROM `tabDynamic Link` 
             LEFT JOIN `tabContact` ON `tabContact`.`name` = `tabDynamic Link`.`parent`
             WHERE  `tabDynamic Link`.`link_doctype` = 'Customer'
-                   AND `tabDynamic Link`.`link_name` = '{customer}'
+                   AND `tabDynamic Link`.`link_name` = %(customer)s
                    AND `tabDynamic Link`.`parenttype` = 'Contact'
             ORDER BY `tabContact`.`is_primary_contact` DESC;
-        """.format(customer=customer.replace("'", "''"))
-    contact_name = frappe.db.sql(sql_query, as_dict=True)
+        """, 
+        {
+            'customer': customer
+        },
+        as_dict=True
+    )
     if contact_name:
+        if not frappe.db.exists("Contact", contact_name[0]['parent']):
+            return None
+        if not frappe.get_doc("Contact", contact_name[0]['parent']).has_permission("read"):
+            return None
         contact = frappe.get_doc("Contact", contact_name[0]['parent'])
         return contact
     else:
@@ -63,13 +84,21 @@ def get_primary_customer_contact(customer):
 # fetch the first available contact from a customer
 @frappe.whitelist()
 def get_customer_contact(customer):
-    sql_query = u"""SELECT `parent` FROM `tabDynamic Link` WHERE
+    contact_name = frappe.db.sql("""SELECT `parent` FROM `tabDynamic Link` WHERE
         `link_doctype` = 'Customer'
-        AND `link_name` = '{customer}'
+        AND `link_name` = %(customer)s
         AND `parenttype` = 'Contact'
-        """.format(customer=customer.replace("'", "''"))
-    contact_name = frappe.db.sql(sql_query, as_dict=True)
+        """, 
+        {
+            'customer': customer
+        },
+        as_dict=True
+    )
     if contact_name:
+        if not frappe.db.exists("Contact", contact_name[0]['parent']):
+            return None
+        if not frappe.get_doc("Contact", contact_name[0]['parent']).has_permission("read"):
+            return None
         contact = frappe.get_doc("Contact", contact_name[0]['parent'])
         return contact
     else:
@@ -78,13 +107,21 @@ def get_customer_contact(customer):
 # fetch the first available address from a supplier
 @frappe.whitelist()
 def get_supplier_address(supplier):
-    sql_query = u"""SELECT `parent` FROM `tabDynamic Link` WHERE
+    address_name = frappe.db.sql("""SELECT `parent` FROM `tabDynamic Link` WHERE
         `link_doctype` = 'supplier'
-        AND `link_name` = '{supplier}'
-        AND `parenttype` = 'Address'
-        """.format(supplier=supplier.replace("'", "''"))
-    address_name = frappe.db.sql(sql_query, as_dict=True)
+        AND `link_name` = %(supplier)s
+        AND `parenttype` = 'Address';
+        """, 
+        {
+            'supplier': supplier
+        },
+        as_dict=True
+    )
     if address_name:
+        if not frappe.db.exists("Address", address_name[0]['parent']):
+            return None
+        if not frappe.get_doc("Address", address_name[0]['parent']).has_permission("read"):
+            return None
         address = frappe.get_doc("Address", address_name[0]['parent'])
         return address
     else:
@@ -93,16 +130,24 @@ def get_supplier_address(supplier):
 # fetch the primary available address from a supplier
 @frappe.whitelist()
 def get_primary_supplier_address(supplier):
-    sql_query = u"""SELECT `tabDynamic Link`.`parent`, `tabAddress`.`is_primary_address`
+    address_name = frappe.db.sql("""SELECT `tabDynamic Link`.`parent`, `tabAddress`.`is_primary_address`
             FROM `tabDynamic Link` 
             LEFT JOIN `tabAddress` ON `tabAddress`.`name` = `tabDynamic Link`.`parent`
             WHERE  `tabDynamic Link`.`link_doctype` = 'Supplier'
-                   AND `tabDynamic Link`.`link_name` = '{supplier}'
+                   AND `tabDynamic Link`.`link_name` = %(supplier)s
                    AND `tabDynamic Link`.`parenttype` = 'Address'
             ORDER BY `tabAddress`.`is_primary_address` DESC;
-        """.format(supplier=supplier.replace("'", "''"))
-    address_name = frappe.db.sql(sql_query, as_dict=True)
+        """, 
+        {
+            'supplier': supplier
+        },
+        as_dict=True
+    )
     if address_name:
+        if not frappe.db.exists("Address", address_name[0]['parent']):
+            return None
+        if not frappe.get_doc("Address", address_name[0]['parent']).has_permission("read"):
+            return None
         address = frappe.get_doc("Address", address_name[0]['parent'])
         return address
     else:
@@ -111,16 +156,23 @@ def get_primary_supplier_address(supplier):
 # fetch the primary available contact from a supplier
 @frappe.whitelist()
 def get_primary_supplier_contact(supplier):
-    sql_query = u"""SELECT `tabDynamic Link`.`parent`, `tabContact`.`is_primary_contact`
+    contact_name = frappe.db.sql("""SELECT `tabDynamic Link`.`parent`, `tabContact`.`is_primary_contact`
             FROM `tabDynamic Link` 
             LEFT JOIN `tabContact` ON `tabContact`.`name` = `tabDynamic Link`.`parent`
             WHERE  `tabDynamic Link`.`link_doctype` = 'Supplier'
-                   AND `tabDynamic Link`.`link_name` = '{supplier}'
+                   AND `tabDynamic Link`.`link_name` = %(supplier)s
                    AND `tabDynamic Link`.`parenttype` = 'Contact'
             ORDER BY `tabContact`.`is_primary_contact` DESC;
-        """.format(supplier=supplier.replace("'", "''"))
-    contact_name = frappe.db.sql(sql_query, as_dict=True)
+        """, 
+        {
+            'supplier': supplier
+        },
+        as_dict=True)
     if contact_name:
+        if not frappe.db.exists("Contact", contact_name[0]['parent']):
+            return None
+        if not frappe.get_doc("Contact", contact_name[0]['parent']).has_permission("read"):
+            return None
         contact = frappe.get_doc("Contact", contact_name[0]['parent'])
         return contact
     else:
@@ -129,55 +181,60 @@ def get_primary_supplier_contact(supplier):
 # fetch the primary available address from a customer
 @frappe.whitelist()
 def get_primary_company_address(company):
-    sql_query = u"""SELECT `tabDynamic Link`.`parent`, `tabAddress`.`is_primary_address`
+    address_name = frappe.db.sql("""SELECT `tabDynamic Link`.`parent`, `tabAddress`.`is_primary_address`
             FROM `tabDynamic Link` 
             LEFT JOIN `tabAddress` ON `tabAddress`.`name` = `tabDynamic Link`.`parent`
             WHERE  `tabDynamic Link`.`link_doctype` = "Company"
-                   AND `tabDynamic Link`.`link_name` = "{company}"
+                   AND `tabDynamic Link`.`link_name` = %(company)s
                    AND `tabDynamic Link`.`parenttype` = "Address"
             ORDER BY `tabAddress`.`is_primary_address` DESC;
-        """.format(company=company)
-    address_name = frappe.db.sql(sql_query, as_dict=True)
+        """, 
+        {
+            'company': company
+        }, 
+        as_dict=True)
     if address_name:
+        if not frappe.db.exists("Address", address_name[0]['parent']):
+            return None
+        if not frappe.get_doc("Address", address_name[0]['parent']).has_permission("read"):
+            return None
         address = frappe.get_doc("Address", address_name[0]['parent'])
         return address
     else:
         return None
 
-@frappe.whitelist(methods=["POST"])
+@frappe.whitelist()
 def update_contact_first_and_last_name(contact, firstname, lastname):
     contact = frappe.get_doc("Contact", contact)
-    contact.check_permission("write")
     contact.first_name = firstname
     contact.last_name = lastname
     contact.save()
-	
-@frappe.whitelist(methods=["POST"])
+
+@frappe.whitelist()
 def change_customer_without_impact_on_price(dt, record, customer, address=None, contact=None):
-    if dt not in ("Quotation", "Sales Order"):
-        frappe.throw(_("Customer changes are only supported for quotations and sales orders."))
-
-    transaction = frappe.get_doc(dt, record)
-    transaction.check_permission("write")
-    customer_doc = frappe.get_doc("Customer", customer)
-    customer_doc.check_permission("read")
-
-    updates = {
-        "customer_name": customer_doc.customer_name,
-    }
-    if dt == "Quotation":
-        updates["party_name"] = customer_doc.name
-    else:
-        updates["customer"] = customer_doc.name
-
+    additional_updates = ''
+    if not frappe.db.exist("Doctype", dt):
+        return
     if address:
-        address_doc = frappe.get_doc("Address", address)
-        address_doc.check_permission("read")
-        updates["customer_address"] = address_doc.name
+        additional_updates += ", `customer_address` = %(address)s"
     if contact:
-        contact_doc = frappe.get_doc("Contact", contact)
-        contact_doc.check_permission("read")
-        updates["contact_person"] = contact_doc.name
+        additional_updates += ", `contact_person` = %(contact)s"
+    if dt == 'Quotation':
+        update_query = """
+            UPDATE `tab{dt}` SET `party_name` = %(customer)s, `customer_name` = %(customer_name)s 
+            {additional_updates} 
+            WHERE `name` = %(record)s;""".format(dt=dt, additional_updates=additional_updates)
+    else:
+        update_query = """
+            UPDATE `tab{dt}` SET `customer` = %(customer)s, `customer_name` = %(customer_name)s
+            {additional_updates} 
+            WHERE `name` = %(record)s;""".format(dt=dt, additional_updates=additional_updates)
 
-    transaction.db_set(updates)
-    return transaction.name
+    frappe.db.sql(update_query, 
+        {
+            'customer': customer, 
+            'customer_name': frappe.get_doc("Customer", customer).customer_name, 
+            'record': record
+        },
+        as_list=True)
+    return

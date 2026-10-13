@@ -108,9 +108,9 @@ class VATDeclaration(Document):
             'z900': self.grants,
             'z910': self.donations,
             'rate1': self.rate_1,
-            'rate1_2024': self.rate_1,
+            'rate1_2024': self.rate_1_2024,
             'rate2': self.rate_2,
-            'rate2_2024': self.rate_2,
+            'rate2_2024': self.rate_2_2024,
             'acquisition_taxes': [{
                 'rate': 7.7 if str(self.start_date) < "2024-01-01" else 8.1,
                 'turnover': self.additional_amount_2024 or self.additional_amount

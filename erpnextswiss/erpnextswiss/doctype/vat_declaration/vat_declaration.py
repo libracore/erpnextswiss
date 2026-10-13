@@ -53,6 +53,8 @@ class VATDeclaration(Document):
             'transfers': "225",
             'non_taxable_services': "230",
             'losses': "235",
+            'grants': "900",
+            'donations': "910",
             'additional_amount_2024': "383",
             'additional_amount': "382"
         }
@@ -66,7 +68,9 @@ class VATDeclaration(Document):
 
         for column, fields in (("base_grand_total", totals), ("total_taxes_and_charges", taxes)):
             for fieldname, code in fields.items():
-                self.set(fieldname, get_view_sum("viewVAT_" + code, column, self.start_date, self.end_date, self.company))
+                view_name = "viewVAT_" + code
+                if frappe.db.exists("VAT query", view_name):
+                    self.set(fieldname, get_view_sum(view_name, column, self.start_date, self.end_date, self.company))
         self.calculate()
 
     @frappe.whitelist()

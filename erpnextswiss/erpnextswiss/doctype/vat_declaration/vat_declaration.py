@@ -11,6 +11,7 @@ from datetime import datetime
 
 # from this date on, net and flat tax rate declarations use the eCH-0217 simpleTaxRateMethod
 SIMPLE_METHOD_START = "2025-01-01"
+# deductions from total revenue (220-280)
 DEDUCTION_FIELDS = ("tax_free_services", "revenue_abroad", "transfers", "non_taxable_services", "losses", "misc")
 # (amount, rate, tax)
 EFFECTIVE_TAX_LINES = (
@@ -40,16 +41,21 @@ class VATDeclaration(Document):
         simple = self.is_simple_method()
         flat = self.vat_type == "flat"
         self.total_deductions = sum(flt(self.get(f)) for f in DEDUCTION_FIELDS)
+        # non-taxable revenue (205) only exists in the effective method
         self.taxable_revenue = flt(self.total_revenue) - (0 if flat else flt(self.non_taxable_revenue)) - self.total_deductions
 
+        # legacy fields: rate on net (effective) or gross (net tax rate) amount
         for amount, rate, tax in EFFECTIVE_TAX_LINES + FLAT_TAX_LINES:
             self.set(tax, flt(self.get(amount)) * flt(self.get(rate)) / 100)
+        # from 2025: tax is rounded per row and then summed, as in the ESTV calculation sheet
         for row in self.activities + self.acquisition_taxes:
             row.tax = flt(flt(row.turnover) * flt(row.rate) / 100, 2)
         self.activities_turnover = flt(sum(flt(r.turnover) for r in self.activities), 2)
         self.activities_tax = flt(sum(r.tax for r in self.activities), 2)
+        # average rate is for display only
         self.average_rate = 100 * self.activities_tax / self.activities_turnover if self.activities_turnover else 0
 
+        # from 2025, flat declarations use the activities and acquisition tax tables instead of the legacy fields
         tax_lines = EFFECTIVE_TAX_LINES if not flat else (() if simple else FLAT_TAX_LINES)
         self.total_tax = sum(flt(self.get(line[2])) for line in tax_lines)
         if simple:
@@ -59,12 +65,14 @@ class VATDeclaration(Document):
 
         self.total_pretax_reductions = (flt(self.pretax_material) + flt(self.pretax_investments)
             + flt(self.missing_pretax) - flt(self.pretax_correction_mixed) - flt(self.pretax_correction_other)
+            # forms 1050/1055 (470/471) were abolished in 2025
             + (0 if simple else flt(self.form_1050) + flt(self.form_1055)))
         self.payable_tax = self.total_tax - self.total_pretax_reductions
 
     @frappe.whitelist()
     def get_values(self):
         simple = self.is_simple_method()
+        # field: VAT query code, summed over base_grand_total
         totals = {
             'total_revenue': "200",
             'tax_free_services': "220",
@@ -75,6 +83,7 @@ class VATDeclaration(Document):
             'grants': "900",
             'donations': "910"
         }
+        # field: VAT query code, summed over total_taxes_and_charges
         taxes = {}
         if self.vat_type == "effective":
             totals.update({'normal_amount_2024': "303", 'reduced_amount_2024': "313", 'lodging_amount_2024': "343",
@@ -89,9 +98,11 @@ class VATDeclaration(Document):
         for column, fields in (("base_grand_total", totals), ("total_taxes_and_charges", taxes)):
             for fieldname, code in fields.items():
                 view_name = "viewVAT_" + code
+                # keep manually entered values if there is no VAT query
                 if frappe.db.exists("VAT query", view_name):
                     self.set(fieldname, self.get_view_sum(view_name, column))
 
+        # from 2025: turnover per activity and acquisition tax rate from the VAT queries in the table rows
         if simple:
             if self.vat_type == "flat":
                 self.update_table("activities", ["activity_id", "description", "rate", "vat_query"])
@@ -115,7 +126,9 @@ class VATDeclaration(Document):
             if row.vat_query:
                 row.turnover = self.get_view_sum(row.vat_query)
 
+    # activities for the XML, cumulated per ESTV activity ID and rate
     def get_supplies(self):
+        # the ESTV only accepts its own 5-character activity IDs
         invalid = ["#{0} {1}".format(r.idx, r.description or "") for r in self.activities
             if flt(r.turnover) and len((r.activity_id or "").strip()) != 5]
         if invalid:
@@ -173,6 +186,7 @@ class VATDeclaration(Document):
             'rate2': self.rate_2,
             'rate2_2024': self.rate_2_2024
         }
+        # acquisition tax: one entry per rate from 2025, a single legacy rate before
         if simple:
             data['acquisition_taxes'] = [{'rate': r.rate, 'turnover': r.turnover} for r in self.acquisition_taxes]
         else:
@@ -181,6 +195,7 @@ class VATDeclaration(Document):
                 'turnover': self.additional_amount_2024 or self.additional_amount
             }]
         # render file
+        # from 2025, net and flat tax rate methods share the eCH-0217 simpleTaxRateMethod
         if self.vat_type == "flat" and simple:
             data['supplies'] = self.get_supplies()
             template = 'erpnextswiss/templates/xml/taxes_simple.html'
@@ -191,6 +206,7 @@ class VATDeclaration(Document):
         content = frappe.render_template(template, data)
         return { 'content': content }
 
+# sum of a column of a VAT query in the given period
 def get_view_sum(view_name, column, start_date, end_date, company):
     # try to fetch total from VAT query
     if not frappe.db.exists("VAT query", view_name):

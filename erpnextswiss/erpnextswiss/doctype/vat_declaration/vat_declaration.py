@@ -99,8 +99,6 @@ class VATDeclaration(Document):
             'z333': self.amount_2_2024,
             'z342': self.lodging_amount,
             'z343': self.lodging_amount_2024,
-            'z382': self.additional_amount,
-            'z383': self.additional_amount_2024,
             'z400': self.pretax_material,
             'z405': self.pretax_investments,
             'z410': self.missing_pretax,
@@ -109,11 +107,14 @@ class VATDeclaration(Document):
             'z500': self.payable_tax,
             'z900': self.grants,
             'z910': self.donations,
-            'acquisition_rate': 7.7 if self.start_date < "2024-01-01" else 8.1,
             'rate1': self.rate_1,
             'rate1_2024': self.rate_1,
             'rate2': self.rate_2,
-            'rate2_2024': self.rate_2
+            'rate2_2024': self.rate_2,
+            'acquisition_taxes': [{
+                'rate': 7.7 if str(self.start_date) < "2024-01-01" else 8.1,
+                'turnover': self.additional_amount_2024 or self.additional_amount
+            }]
         }
         # render file
         if self.vat_type == "flat":

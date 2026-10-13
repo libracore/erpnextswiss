@@ -1,0 +1,23 @@
+{
+ "align_labels_right": 0,
+ "creation": "2026-10-13 10:00:00.000000",
+ "custom_format": 1,
+ "disabled": 0,
+ "doc_type": "VAT Declaration",
+ "docstatus": 0,
+ "doctype": "Print Format",
+ "font": "Default",
+ "html": "{% macro chf(value) %}{{ \"{:,.2f}\".format(value or 0).replace(\",\", \"'\") }}{% endmacro %}\n<h2>{{ _(\"Calculation sheet\") }}</h2>\n<p>{{ doc.company }}, {{ frappe.format(doc.start_date, {'fieldtype': 'Date'}) }} - {{ frappe.format(doc.end_date, {'fieldtype': 'Date'}) }}</p>\n<table class=\"table table-condensed\">\n    <thead>\n        <tr>\n            <th>{{ _(\"ESTV activity\") }}</th>\n            <th class=\"text-right\">{{ _(\"Turnover (gross)\") }}</th>\n            <th class=\"text-right\">{{ _(\"Tax Rate\") }}</th>\n            <th class=\"text-right\">{{ _(\"Tax\") }}</th>\n        </tr>\n    </thead>\n    <tbody>\n        {% for a in doc.activities if a.turnover %}\n        <tr>\n            <td>{{ a.description or \"\" }}{% if a.activity_id %} ({{ a.activity_id }}){% endif %}</td>\n            <td class=\"text-right\">{{ chf(a.turnover) }}</td>\n            <td class=\"text-right\">{{ \"{:g}\".format(a.rate or 0) }} %</td>\n            <td class=\"text-right\">{{ chf(a.tax) }}</td>\n        </tr>\n        {% endfor %}\n    </tbody>\n    <tfoot>\n        <tr>\n            <th>{{ _(\"Total\") }}</th>\n            <th class=\"text-right\">{{ chf(doc.activities_turnover) }}</th>\n            <th class=\"text-right\">{{ \"{:.2f}\".format(doc.average_rate or 0) }} %</th>\n            <th class=\"text-right\">{{ chf(doc.activities_tax) }}</th>\n        </tr>\n    </tfoot>\n</table>\n<p>{{ _(\"Transfer these values to item 322 or 323.\") }}</p>\n",
+ "idx": 0,
+ "line_breaks": 0,
+ "modified": "2026-10-13 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "ERPNextSwiss",
+ "name": "MwSt Berechnungsblatt",
+ "owner": "Administrator",
+ "print_format_builder": 0,
+ "print_format_type": "Jinja",
+ "raw_printing": 0,
+ "show_section_headings": 0,
+ "standard": "Yes"
+}

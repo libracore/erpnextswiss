@@ -9,6 +9,8 @@ from frappe import _
 from frappe.utils import flt
 from datetime import datetime
 
+# from this date on, net and flat tax rate declarations use the eCH-0217 simpleTaxRateMethod
+SIMPLE_METHOD_START = "2025-01-01"
 DEDUCTION_FIELDS = ("tax_free_services", "revenue_abroad", "transfers", "non_taxable_services", "losses", "misc")
 # (amount, rate, tax)
 EFFECTIVE_TAX_LINES = (
@@ -26,26 +28,43 @@ FLAT_TAX_LINES = (
     ("amount_2", "rate_2", "tax_2"),
 )
 
-
 class VATDeclaration(Document):
     def validate(self):
         self.calculate()
 
+    def is_simple_method(self):
+        return str(self.start_date or "") >= SIMPLE_METHOD_START
+
     @frappe.whitelist()
     def calculate(self):
+        simple = self.is_simple_method()
+        flat = self.vat_type == "flat"
         self.total_deductions = sum(flt(self.get(f)) for f in DEDUCTION_FIELDS)
-        self.taxable_revenue = flt(self.total_revenue) - flt(self.non_taxable_revenue) - self.total_deductions
+        self.taxable_revenue = flt(self.total_revenue) - (0 if flat else flt(self.non_taxable_revenue)) - self.total_deductions
+
         for amount, rate, tax in EFFECTIVE_TAX_LINES + FLAT_TAX_LINES:
             self.set(tax, flt(self.get(amount)) * flt(self.get(rate)) / 100)
-        self.total_tax = (sum(flt(self.get(line[2])) for line in EFFECTIVE_TAX_LINES + FLAT_TAX_LINES)
-            + flt(self.additional_tax_2024) + flt(self.additional_tax))
+        for row in self.activities + self.acquisition_taxes:
+            row.tax = flt(flt(row.turnover) * flt(row.rate) / 100, 2)
+        self.activities_turnover = flt(sum(flt(r.turnover) for r in self.activities), 2)
+        self.activities_tax = flt(sum(r.tax for r in self.activities), 2)
+        self.average_rate = 100 * self.activities_tax / self.activities_turnover if self.activities_turnover else 0
+
+        tax_lines = EFFECTIVE_TAX_LINES if not flat else (() if simple else FLAT_TAX_LINES)
+        self.total_tax = sum(flt(self.get(line[2])) for line in tax_lines)
+        if simple:
+            self.total_tax += sum(r.tax for r in self.acquisition_taxes) + (self.activities_tax if flat else 0)
+        else:
+            self.total_tax += flt(self.additional_tax_2024) + flt(self.additional_tax)
+
         self.total_pretax_reductions = (flt(self.pretax_material) + flt(self.pretax_investments)
             + flt(self.missing_pretax) - flt(self.pretax_correction_mixed) - flt(self.pretax_correction_other)
-            + flt(self.form_1050) + flt(self.form_1055))
+            + (0 if simple else flt(self.form_1050) + flt(self.form_1055)))
         self.payable_tax = self.total_tax - self.total_pretax_reductions
 
     @frappe.whitelist()
     def get_values(self):
+        simple = self.is_simple_method()
         totals = {
             'total_revenue': "200",
             'tax_free_services': "220",
@@ -54,24 +73,59 @@ class VATDeclaration(Document):
             'non_taxable_services': "230",
             'losses': "235",
             'grants': "900",
-            'donations': "910",
-            'additional_amount_2024': "383",
-            'additional_amount': "382"
+            'donations': "910"
         }
-        taxes = {'additional_tax_2024': "383", 'additional_tax': "382"}
+        taxes = {}
         if self.vat_type == "effective":
             totals.update({'normal_amount_2024': "303", 'reduced_amount_2024': "313", 'lodging_amount_2024': "343",
                 'normal_amount': "302", 'reduced_amount': "312", 'lodging_amount': "342"})
             taxes.update({'pretax_material': "400", 'pretax_investments': "405"})
-        else:
+        elif not simple:
             totals.update({'amount_1_2024': "323", 'amount_2_2024': "333", 'amount_1': "322", 'amount_2': "332"})
+        if not simple:
+            totals.update({'additional_amount_2024': "383", 'additional_amount': "382"})
+            taxes.update({'additional_tax_2024': "383", 'additional_tax': "382"})
 
         for column, fields in (("base_grand_total", totals), ("total_taxes_and_charges", taxes)):
             for fieldname, code in fields.items():
                 view_name = "viewVAT_" + code
                 if frappe.db.exists("VAT query", view_name):
-                    self.set(fieldname, get_view_sum(view_name, column, self.start_date, self.end_date, self.company))
+                    self.set(fieldname, self.get_view_sum(view_name, column))
+
+        if simple:
+            if self.vat_type == "flat":
+                self.update_table("activities", ["activity_id", "description", "rate", "vat_query"])
+            self.update_table("acquisition_taxes", ["rate", "vat_query"])
         self.calculate()
+
+    def get_view_sum(self, view_name, column="base_grand_total"):
+        return get_view_sum(view_name, column, self.start_date, self.end_date, self.company)
+
+    def update_table(self, table, fields):
+        # rows are configuration (rate, VAT query, ...) carried over from the previous declaration
+        if not self.get(table):
+            previous = frappe.get_all("VAT Declaration",
+                filters={'company': self.company, 'docstatus': ["<", 2], 'start_date': ["<", self.start_date]},
+                order_by="start_date desc", limit=1, pluck="name")
+            if previous:
+                self.set(table, frappe.get_all(frappe.get_meta(self.doctype).get_field(table).options,
+                    filters={'parent': previous[0], 'parenttype': self.doctype, 'parentfield': table},
+                    fields=fields, order_by="idx"))
+        for row in self.get(table):
+            if row.vat_query:
+                row.turnover = self.get_view_sum(row.vat_query)
+
+    def get_supplies(self):
+        invalid = ["#{0} {1}".format(r.idx, r.description or "") for r in self.activities
+            if flt(r.turnover) and len((r.activity_id or "").strip()) != 5]
+        if invalid:
+            frappe.throw(_("ESTV activity ID missing or invalid (5 characters) for: {0}").format(", ".join(invalid)))
+        supplies = {}
+        for r in self.activities:
+            if flt(r.turnover):
+                key = (r.activity_id.strip(), flt(r.rate))
+                supplies[key] = supplies.get(key, 0) + flt(r.turnover)
+        return [{'activity_id': a, 'rate': rate, 'turnover': turnover} for (a, rate), turnover in supplies.items()]
 
     @frappe.whitelist()
     def create_transfer_file(self):
@@ -79,6 +133,7 @@ class VATDeclaration(Document):
         if not tax_id or len(tax_id) < 12:
             frappe.throw( _("Tax ID/UID missing or invalid. Please configure for company {0}.").format(self.company) )
             
+        simple = self.is_simple_method()
         data = {
             'uid': (tax_id[3:].replace(".", "").replace("-", "")).strip(),
             'company': self.company,
@@ -116,14 +171,20 @@ class VATDeclaration(Document):
             'rate1': self.rate_1,
             'rate1_2024': self.rate_1_2024,
             'rate2': self.rate_2,
-            'rate2_2024': self.rate_2_2024,
-            'acquisition_taxes': [{
+            'rate2_2024': self.rate_2_2024
+        }
+        if simple:
+            data['acquisition_taxes'] = [{'rate': r.rate, 'turnover': r.turnover} for r in self.acquisition_taxes]
+        else:
+            data['acquisition_taxes'] = [{
                 'rate': 7.7 if str(self.start_date) < "2024-01-01" else 8.1,
                 'turnover': self.additional_amount_2024 or self.additional_amount
             }]
-        }
         # render file
-        if self.vat_type == "flat":
+        if self.vat_type == "flat" and simple:
+            data['supplies'] = self.get_supplies()
+            template = 'erpnextswiss/templates/xml/taxes_simple.html'
+        elif self.vat_type == "flat":
             template = 'erpnextswiss/templates/xml/taxes_net.html'
         else:
             template = 'erpnextswiss/templates/xml/taxes_effective.html'

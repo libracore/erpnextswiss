@@ -1,0 +1,16 @@
+{% extends "erpnextswiss/templates/xml/taxes_base.html" %}
+{% block method %}
+    <eCH-0217:simpleTaxRateMethod>
+        {%- for s in supplies %}
+        <eCH-0217:suppliesPerTaxRate>
+            <eCH-0217:activityID>{{ s.activity_id | e }}</eCH-0217:activityID>
+            <eCH-0217:taxRate>{{ "{:.2f}".format(s.rate) }}</eCH-0217:taxRate>
+            <eCH-0217:turnover>{{ "{:.2f}".format(s.turnover) }}</eCH-0217:turnover>
+        </eCH-0217:suppliesPerTaxRate>
+        {%- endfor %}
+{% include "erpnextswiss/templates/xml/taxes_acquisition.html" %}
+        {%- if z415 %}
+        <eCH-0217:inputTaxCorrections>{{ "{:.2f}".format(z415) }}</eCH-0217:inputTaxCorrections>
+        {%- endif %}
+    </eCH-0217:simpleTaxRateMethod>
+{% endblock %}

@@ -78,9 +78,18 @@ frappe.ui.form.on('VAT Declaration', {
     'amount_1_2024', 'amount_2_2024', 'amount_1', 'amount_2', 'rate_1_2024', 'rate_2_2024', 'rate_1', 'rate_2',
     'additional_amount_2024', 'additional_amount', 'additional_tax_2024', 'additional_tax',
     'pretax_material', 'pretax_investments', 'missing_pretax', 'pretax_correction_mixed', 'pretax_correction_other',
-    'form_1050', 'form_1055'
+    'form_1050', 'form_1055', 'vat_type', 'start_date'
 ].forEach(function(field) {
     frappe.ui.form.on('VAT Declaration', field, recalculate);
+});
+
+['VAT Declaration Activity', 'VAT Declaration Acquisition Tax'].forEach(function(doctype) {
+    frappe.ui.form.on(doctype, {
+        'turnover': recalculate,
+        'rate': recalculate,
+        'activities_remove': recalculate,
+        'acquisition_taxes_remove': recalculate
+    });
 });
 
 function recalculate(frm) {

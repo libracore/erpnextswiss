@@ -66,6 +66,14 @@
   "tax_2",
   "additional_tax_2024",
   "additional_tax",
+  "section_activities",
+  "activities",
+  "activities_turnover",
+  "column_break_activities",
+  "activities_tax",
+  "average_rate",
+  "section_acquisition_taxes",
+  "acquisition_taxes",
   "section_summary",
   "total_tax",
   "pretax_material",
@@ -595,10 +603,59 @@
    "fieldtype": "Data",
    "label": "Miscellaneous description",
    "length": 50
+  },
+  {
+   "depends_on": "eval:doc.vat_type == 'flat' && doc.start_date >= '2025-01-01'",
+   "fieldname": "section_activities",
+   "fieldtype": "Section Break",
+   "label": "Activities / calculation sheet"
+  },
+  {
+   "fieldname": "activities",
+   "fieldtype": "Table",
+   "label": "Activities",
+   "options": "VAT Declaration Activity"
+  },
+  {
+   "fieldname": "activities_turnover",
+   "fieldtype": "Float",
+   "label": "Supplies according to calculation sheet (322/323)",
+   "precision": "2",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_activities",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "activities_tax",
+   "fieldtype": "Float",
+   "label": "Tax according to calculation sheet",
+   "precision": "2",
+   "read_only": 1
+  },
+  {
+   "fieldname": "average_rate",
+   "fieldtype": "Percent",
+   "label": "Average rate",
+   "precision": "2",
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval:doc.start_date >= '2025-01-01'",
+   "fieldname": "section_acquisition_taxes",
+   "fieldtype": "Section Break",
+   "label": "Acquisition tax"
+  },
+  {
+   "fieldname": "acquisition_taxes",
+   "fieldtype": "Table",
+   "label": "Acquisition tax (382/383)",
+   "options": "VAT Declaration Acquisition Tax"
   }
  ],
  "is_submittable": 1,
- "modified": "2023-12-27 21:06:53.191523",
+ "modified": "2026-10-13 10:00:00.000000",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "VAT Declaration",

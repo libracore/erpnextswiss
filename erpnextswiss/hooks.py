@@ -43,6 +43,8 @@ doctype_js = {
     "Customer":             "public/js/customer.js",
     "Address":              "public/js/address.js",
     "Holiday List":         "public/js/holiday_list.js",
+    "Payroll Entry":        "public/js/payroll_entry.js",
+    "Salary Slip":          "public/js/salary_slip.js",
     "Shipment":             "public/js/shipment.js"
 }
 
@@ -147,6 +149,9 @@ doc_events = {
     "Salary Slip": {
         "validate": "erpnextswiss.erpnextswiss.quellensteuer.payroll.salary_slip_validate",
         "before_submit": "erpnextswiss.erpnextswiss.quellensteuer.payroll.salary_slip_before_submit"
+    },
+    "Payroll Entry": {
+        "validate": "erpnextswiss.erpnextswiss.quellensteuer.payroll.payroll_entry_validate"
     }
 }
 

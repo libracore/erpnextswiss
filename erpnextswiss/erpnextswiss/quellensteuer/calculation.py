@@ -1,21 +1,9 @@
-import calendar
+import math
 from datetime import date
 
+from frappe.utils import add_months, get_last_day
+
 PERIOD_MONTHS = {"Quarterly": 3, "Half-yearly": 6, "Yearly": 12}
-
-
-def round_to(value, step=0.05):
-    """Round an amount to the given step (e.g. 0.05 CHF)."""
-    return round(round(value / step) * step, 2) if step else round(value, 2)
-
-
-def month_end(day):
-    return day.replace(day=calendar.monthrange(day.year, day.month)[1])
-
-
-def add_months(day, months):
-    year, month = divmod(day.month - 1 + months, 12)
-    return date(day.year + year, month + 1, 1)
 
 
 def day_30(day):
@@ -48,7 +36,7 @@ def thirteenth_rdi(amount, frequency, end, joining=None, relieving=None):
     if not amount or frequency not in PERIOD_MONTHS:
         return amount or 0
     start = date(end.year, end.month - (end.month - 1) % PERIOD_MONTHS[frequency], 1)
-    worked = sum(days_30(add_months(start, i), month_end(add_months(start, i)), joining, relieving)
+    worked = sum(days_30(add_months(start, i), get_last_day(add_months(start, i)), joining, relieving)
                  for i in range(PERIOD_MONTHS[frequency]))
     return amount / worked * PERIOD_MONTHS[frequency] * 30 if worked else amount
 
@@ -67,7 +55,7 @@ def monthly_rdi(month, record, own_degree=100):
     """Rate-determining monthly income under the monthly model (KS45 section 6)."""
     hourly = record.get("hourly_wage") and month.get("hours")
     periodic = month["periodic"] + (0 if hourly else month.get("replacement", 0))
-    thirteenth = thirteenth_rdi(month["thirteenth"], record.get("thirteenth_frequency") or "Yearly", month_end(month["period"]),
+    thirteenth = thirteenth_rdi(month["thirteenth"], record.get("thirteenth_frequency") or "Yearly", get_last_day(month["period"]),
                                 month.get("joining"), month.get("relieving"))
     if hourly:
         base = periodic / month["hours"] * 180 + thirteenth
@@ -85,7 +73,7 @@ def thirteenth_covered_months(months, frequency):
     """Months of the year covered by 13th salary payouts so far."""
     size = PERIOD_MONTHS.get(frequency, 12)
     paid = [month["period"].month for month in months if month["thirteenth"]]
-    return min(12, -(-max(paid) // size) * size) if paid else 0
+    return min(12, math.ceil(max(paid) / size) * size) if paid else 0
 
 
 def annual_rdi(months, record, own_degree=100, full_year=False, project_thirteenth=False):
@@ -112,9 +100,7 @@ def annual_rdi(months, record, own_degree=100, full_year=False, project_thirteen
     return base + aperiodic
 
 
-def tax_amount(taxable, rate, min_tax=0, rounding=0.05):
-    """Tax for a taxable amount: rate in percent, at least the minimum tax."""
+def tax_amount(taxable, rate, min_tax=0):
+    """Tax for a taxable amount: rate in percent, at least the minimum tax. Rounding is left to the caller."""
     amount = taxable * rate / 100
-    if taxable > 0 and amount < min_tax:
-        amount = min_tax
-    return round_to(amount, rounding)
+    return min_tax if taxable > 0 and amount < min_tax else amount

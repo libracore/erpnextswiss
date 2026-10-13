@@ -7,8 +7,7 @@
  "field_order": [
   "canton",
   "canton_name",
-  "calculation_model",
-  "import_tariffs"
+  "calculation_model"
  ],
  "fields": [
   {
@@ -34,18 +33,10 @@
    "label": "Calculation Model",
    "options": "Monthly\nAnnual",
    "reqd": 1
-  },
-  {
-   "default": "0",
-   "description": "Only tariffs of marked cantons are imported; if none is marked, all cantons are imported",
-   "fieldname": "import_tariffs",
-   "fieldtype": "Check",
-   "in_list_view": 1,
-   "label": "Import Tariffs"
   }
  ],
  "links": [],
- "modified": "2026-09-14 12:00:00.000000",
+ "modified": "2026-10-05 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "QST Canton",

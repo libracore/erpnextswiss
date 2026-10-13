@@ -1,11 +1,11 @@
 import frappe
 from frappe import _
-from frappe.utils import flt, getdate, today
+from frappe.utils import flt, get_year_start, getdate, today
 
 from erpnextswiss.erpnextswiss.quellensteuer import is_enabled
 from erpnextswiss.erpnextswiss.quellensteuer.calculation import tariff_code
 from erpnextswiss.erpnextswiss.quellensteuer.payroll import DEGREE_MODES, own_degree
-from erpnextswiss.erpnextswiss.quellensteuer.tariff import get_tariff, has_code
+from erpnextswiss.erpnextswiss.quellensteuer.tariff import get_tariff, prefetch
 
 
 def validate_employee(doc, method=None):
@@ -26,15 +26,15 @@ def validate_employee(doc, method=None):
         if not row.canton or not row.tariff_group:
             frappe.throw(_("Quellensteuer row {0}: canton and tariff group are required").format(row.idx))
         row.tariff_code = tariff_code(row.tariff_group, row.children, row.church_tax)
-        if row.other_employment in DEGREE_MODES:
+        if row.tax_override and not flt(row.get(frappe.scrub(row.tax_override))):
+            frappe.throw(_("Quellensteuer row {0}: {1} requires a value").format(row.idx, _(row.tax_override)))
+        if row.other_employment in DEGREE_MODES and not row.tax_override:
             degree = own_degree(doc, valid_from)
             if not degree:
                 frappe.throw(_("Quellensteuer row {0}: {1} requires an employment degree (Employment Degrees) in {2:%m.%Y}").format(
                     row.idx, _(row.other_employment), valid_from))
             if row.other_employment == "Total Degree" and flt(row.total_degree) < degree:
                 frappe.throw(_("Quellensteuer row {0}: total employment degree must be at least {1}%").format(row.idx, degree))
-        if not frappe.db.get_value("QST Canton", row.canton, "import_tariffs"):
-            frappe.db.set_value("QST Canton", row.canton, "import_tariffs", 1)
-        tariff = get_tariff(row.canton, max(valid_from, getdate(today()).replace(month=1, day=1)))
-        if tariff and not has_code(tariff.name, row.tariff_code):
+        tariff = get_tariff(row.canton, max(valid_from, get_year_start(today())))
+        if tariff and not prefetch(tariff.name, row.tariff_code):
             frappe.msgprint(_("Tariff code {0} does not exist in {1}").format(row.tariff_code, tariff.name), alert=True)

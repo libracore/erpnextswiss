@@ -20,8 +20,12 @@
   "other_employment",
   "total_degree",
   "other_income",
+  "sec_override",
+  "tax_override",
   "fixed_rate",
   "fixed_amount",
+  "col_override",
+  "override_reference",
   "remarks"
  ],
  "fields": [
@@ -109,11 +113,12 @@
   },
   {
    "default": "None",
+   "description": "Side job handling per KS45 6.4 / 7.3.2",
    "fieldname": "other_employment",
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Other Employment",
-   "options": "None\nTotal Degree\nExtrapolate 100%\nOther Income\nMedian Value (No Degree)\nFixed Rate\nFixed Amount"
+   "options": "None\nTotal Degree\nExtrapolate 100%\nOther Income\nMedian Value (No Degree)"
   },
   {
    "depends_on": "eval:doc.other_employment=='Total Degree'",
@@ -128,26 +133,52 @@
    "label": "Other Gross Income per Month"
   },
   {
-   "depends_on": "eval:doc.other_employment=='Fixed Rate'",
+   "depends_on": "eval:doc.tax_override=='Fixed Rate'",
    "fieldname": "fixed_rate",
    "fieldtype": "Percent",
-   "label": "Fixed Rate"
+   "label": "Fixed Rate",
+   "mandatory_depends_on": "eval:doc.tax_override=='Fixed Rate'"
   },
   {
-   "depends_on": "eval:doc.other_employment=='Fixed Amount'",
+   "depends_on": "eval:doc.tax_override=='Fixed Amount'",
    "fieldname": "fixed_amount",
    "fieldtype": "Currency",
-   "label": "Fixed Amount per Month"
+   "label": "Fixed Amount per Month",
+   "mandatory_depends_on": "eval:doc.tax_override=='Fixed Amount'"
   },
   {
    "fieldname": "remarks",
    "fieldtype": "Small Text",
    "label": "Remarks"
+  },
+  {
+   "fieldname": "sec_override",
+   "fieldtype": "Section Break",
+   "label": "Tax Override"
+  },
+  {
+   "description": "Assigned by the tax office; replaces the tariff calculation",
+   "fieldname": "tax_override",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Tax Override",
+   "options": "\nFixed Rate\nFixed Amount"
+  },
+  {
+   "fieldname": "col_override",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "eval:doc.tax_override",
+   "description": "Decision or letter of the tax office",
+   "fieldname": "override_reference",
+   "fieldtype": "Data",
+   "label": "Ruling Reference"
   }
  ],
  "istable": 1,
  "links": [],
- "modified": "2026-09-17 12:00:00.000000",
+ "modified": "2026-10-05 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "QST Employee Record",

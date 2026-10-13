@@ -261,12 +261,12 @@ tr.sum td { font-weight: 600; background: var(--ground); }
     <h1>Quellensteuer <span class="flag">module</span> review</h1>
     <p class="lede">SRS PAY-002 · ESTV tariffs · automatic QST on salary slips · retro corrections · Monats- &amp; Jahresmodell · rules per ESTV Kreisschreiben&nbsp;45 (KS45)</p>
     <div class="meta">
-      <span class="chip">~2’070 lines added · 45 files</span>
-      <span class="chip">8 new doctypes</span>
-      <span class="chip">7 custom fields</span>
-      <span class="chip">3 doc hooks</span>
+      <span class="chip">~3’280 lines added · 47 files</span>
+      <span class="chip">9 new doctypes</span>
+      <span class="chip">8 custom fields</span>
+      <span class="chip">4 doc hooks</span>
       <span class="chip">1 report · 1 patch</span>
-      <span class="chip">65 tests · 13 integration</span>
+      <span class="chip">74 tests · 18 integration</span>
     </div>
   </header>
 
@@ -297,7 +297,7 @@ tr.sum td { font-weight: 600; background: var(--ground); }
             </thead>
             <tbody>
               <tr><td class="k">Rate</td><td class="col-old">% typed on Salary Structure Assignment (<code>quellensteuer_percent</code>)</td><td class="col-new">looked up in ESTV tariff · canton · code · income</td></tr>
-              <tr><td class="k">Tariff data</td><td class="col-old">none · looked up by hand</td><td class="col-new">zip import · revisions kept · duplicate-safe</td></tr>
+              <tr><td class="k">Tariff data</td><td class="col-old">none · looked up by hand</td><td class="col-new">zip import · revisions kept · duplicate-safe · all cantons for 1.8 MB, rates loaded per code</td></tr>
               <tr><td class="k">Deduction</td><td class="col-old">formula <code>BRUTTO * (quellensteuer_percent / 100)</code> per structure</td><td class="col-new">slip hook · no formula in structures</td></tr>
               <tr><td class="k">Taxable base</td><td class="col-old">structure-specific <code>BRUTTO</code> component</td><td class="col-new">components tagged <code>qst_type</code> · periodic / aperiodic / 13th</td></tr>
               <tr><td class="k">Employee data</td><td class="col-old">implicit in the %</td><td class="col-new">canton · tariff group · children · church · side job</td></tr>
@@ -305,8 +305,11 @@ tr.sum td { font-weight: 600; background: var(--ground); }
               <tr><td class="k">Changes (marriage, new tariff)</td><td class="col-old">recalculate by hand · book “Quellensteuer + / −”</td><td class="col-new">automatic delta per past month on current slip</td></tr>
               <tr><td class="k">Entry/exit · 13th · hourly</td><td class="col-old">manual</td><td class="col-new">KS45: 30 days · 90/180/360 days · 180 h / 2’160 h</td></tr>
               <tr><td class="k">Jahresmodell (FR GE TI VD VS)</td><td class="col-old">not supported</td><td class="col-new">annual rate-determining income · monthly or year-end correction</td></tr>
-              <tr><td class="k">Side jobs</td><td class="col-old">manual</td><td class="col-new">total degree · extrapolate 100% · other income · median value (no degree) · fixed rate · fixed amount</td></tr>
-              <tr><td class="k">Audit trail</td><td class="col-old">amount only</td><td class="col-new">QST Slip Detail: income · RDI · rate · tariff revision · paid · delta</td></tr>
+              <tr><td class="k">Side jobs</td><td class="col-old">manual</td><td class="col-new">total degree · extrapolate 100% · other income · median value (no degree)</td></tr>
+              <tr><td class="k">Audit trail</td><td class="col-old">amount only</td><td class="col-new">QST Slip Detail: income · RDI · rate · bracket · tariff revision · paid · delta · formula in words</td></tr>
+              <tr><td class="k">Tax office ruling (flat amount)</td><td class="col-old">% or amount typed per employee</td><td class="col-new">fixed rate or amount per employee, with ruling reference</td></tr>
+              <tr><td class="k">Something goes wrong in the run</td><td class="col-old">noticed on the slip, fixed by hand</td><td class="col-new">preflight on Payroll Entry · formula per row · skip and enter by hand</td></tr>
+              <tr><td class="k">Rounding</td><td class="col-old">0.05 by hand on the component</td><td class="col-new">exact cents · system rounding · every delta corrected</td></tr>
               <tr><td class="k">Declaration</td><td class="col-old">manual</td><td class="col-new">report per canton · commission · print template · XLSX</td></tr>
             </tbody>
           </table>
@@ -334,7 +337,6 @@ tr.sum td { font-weight: 600; background: var(--ground); }
             <ul class="kw">
               <li>cantonal forms (customer adapts sample)</li>
               <li>work days abroad (KS45 §6.7 / §7.5.1)</li>
-              <li>work days abroad</li>
               <li>ELM/Swissdec transmission (PAY-001)</li>
               <li>posting of commission</li>
             </ul>
@@ -345,7 +347,7 @@ tr.sum td { font-weight: 600; background: var(--ground); }
               <li><code>QST Settings.enabled</code> off → all hooks return immediately</li>
               <li><code>qst_skip</code> per slip</li>
               <li>go-live date · no corrections before</li>
-              <li>missing tariff or employment degree → warning on save · submit blocked</li>
+              <li>missing tariff or employment degree → warning on save · submit blocked · preflight on Payroll Entry</li>
             </ul>
           </div>
         </div>
@@ -354,17 +356,18 @@ tr.sum td { font-weight: 600; background: var(--ground); }
             <thead><tr><th>Path (erpnextswiss/…)</th><th>Role</th></tr></thead>
             <tbody>
               <tr><td class="mono">erpnextswiss/quellensteuer/parser.py</td><td>zip &amp; fixed-width parsing · validation · content hash · pure</td></tr>
-              <tr><td class="mono">erpnextswiss/quellensteuer/tariff.py</td><td>import job · duplicate rules · bulk insert · tariff &amp; bracket lookup</td></tr>
+              <tr><td class="mono">erpnextswiss/quellensteuer/tariff.py</td><td>import job · duplicate rules · on-demand rate loading · tariff &amp; bracket lookup</td></tr>
               <tr><td class="mono">erpnextswiss/quellensteuer/calculation.py</td><td>KS45 formulas · pure, unit-tested</td></tr>
               <tr><td class="mono">erpnextswiss/quellensteuer/payroll.py</td><td>slip hook · month snapshots · ledger · corrections</td></tr>
-              <tr><td class="mono">erpnextswiss/quellensteuer/employee.py</td><td>record validation · tariff code · canton import flag</td></tr>
+              <tr><td class="mono">erpnextswiss/quellensteuer/employee.py</td><td>record validation · tariff code · loads the rates the code needs</td></tr>
               <tr><td class="mono">erpnextswiss/quellensteuer/test_quellensteuer.py</td><td>parser · calculation · payroll (mocked tariffs)</td></tr>
               <tr><td class="mono">erpnextswiss/quellensteuer/test_ks45.py</td><td>KS45 §6–§8 examples · annual examples as month-by-month slip ledgers</td></tr>
               <tr><td class="mono">erpnextswiss/quellensteuer/test_quellensteuer_integration.py</td><td>database end-to-end · rolled back after the run</td></tr>
-              <tr><td class="mono">erpnextswiss/doctype/qst_*</td><td>8 doctypes</td></tr>
+              <tr><td class="mono">erpnextswiss/doctype/qst_*</td><td>9 doctypes</td></tr>
+              <tr><td class="mono">erpnextswiss/public/js/{payroll_entry, salary_slip}.js</td><td>“Check Quellensteuer” button · renders the formulas on the slip</td></tr>
               <tr><td class="mono">erpnextswiss/report/quellensteuer_abrechnung</td><td>report · print template</td></tr>
               <tr><td class="mono">erpnextswiss/custom/{employee, salary_slip, salary_component}.json</td><td>custom fields · synced on migrate</td></tr>
-              <tr><td class="mono">hooks.py · patches.txt · patches/v1_36_0</td><td>doc events · canton seed</td></tr>
+              <tr><td class="mono">hooks.py · patches.txt · patches/v1_36_0</td><td>doc events · canton seed · tax override and code catalogue patches</td></tr>
             </tbody>
           </table>
         </div>
@@ -375,7 +378,7 @@ tr.sum td { font-weight: 600; background: var(--ground); }
         <h2><span class="num">§3</span>Data model</h2>
         <figure>
           <div class="panel scroll">
-            <svg class="diagram" viewBox="0 0 920 484" role="img" aria-label="Eight new doctypes and three extended standard doctypes, with their links: import creates tariffs, tariffs hold rates, cantons supply the model, employees hold QST records, salary slips hold QST slip details that link to the tariff used.">
+            <svg class="diagram" viewBox="0 0 920 484" role="img" aria-label="Nine new doctypes and three extended standard doctypes, with their links: import creates tariffs, tariffs hold rates, cantons supply the model, employees hold QST records, salary slips hold QST slip details that link to the tariff used.">
               <defs>
                 <marker id="arr1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
                   <path d="M0 0 L10 5 L0 10 z" fill="currentColor"></path>
@@ -386,17 +389,17 @@ tr.sum td { font-weight: 600; background: var(--ground); }
               <text class="d-t2" x="34" y="67">zip upload · status · log</text>
               <rect class="d-box d-new" x="340" y="20" width="240" height="64" rx="4"></rect>
               <text class="d-t1" x="354" y="47">QST Tariff</text>
-              <text class="d-t2" x="354" y="67">1 revision per canton file</text>
+              <text class="d-t2" x="354" y="67">revision + code catalogue</text>
               <rect class="d-box d-new" x="660" y="20" width="240" height="64" rx="4"></rect>
               <text class="d-t1" x="674" y="47">QST Slip Detail</text>
               <text class="d-t2" x="674" y="67">child · ledger + snapshot</text>
 
               <rect class="d-box d-new" x="20" y="150" width="240" height="64" rx="4"></rect>
               <text class="d-t1" x="34" y="177">QST Canton</text>
-              <text class="d-t2" x="34" y="197">26 cantons · model · import flag</text>
+              <text class="d-t2" x="34" y="197">26 cantons · calculation model</text>
               <rect class="d-box d-new" x="340" y="150" width="240" height="64" rx="4"></rect>
               <text class="d-t1" x="354" y="177">QST Tariff Rate</text>
-              <text class="d-t2" x="354" y="197">brackets · 20k–316k rows/canton</text>
+              <text class="d-t2" x="354" y="197">brackets · only codes in use</text>
               <rect class="d-box d-ext" x="660" y="150" width="240" height="64" rx="4"></rect>
               <text class="d-t1" x="674" y="177">Salary Slip</text>
               <text class="d-t2" x="674" y="197">+ qst_hours · qst_skip · qst_details</text>
@@ -447,14 +450,15 @@ tr.sum td { font-weight: 600; background: var(--ground); }
           <table>
             <thead><tr><th>Doctype</th><th>Kind</th><th>Key fields</th></tr></thead>
             <tbody>
-              <tr><td class="k">QST Settings</td><td>single</td><td><code>enabled</code> <code>go_live_date</code> <code>qst_component</code> <code>correction_component</code> <code>rounding</code> 0.05 · <code>min_correction</code> 0.05 · <code>thirteenth_frequency</code> Yearly/Half-yearly/Quarterly · <code>project_thirteenth</code> off · <code>annual_model_correction</code> Monthly/Year-end · <code>prior_year_cutoff_month</code> 3</td></tr>
+              <tr><td class="k">QST Settings</td><td>single</td><td><code>enabled</code> <code>go_live_date</code> <code>qst_component</code> <code>correction_component</code> · <code>min_correction</code> 0.00 · <code>thirteenth_frequency</code> Yearly/Half-yearly/Quarterly · <code>project_thirteenth</code> off · <code>annual_model_correction</code> Monthly/Year-end · <code>prior_year_cutoff_month</code> 3</td></tr>
               <tr><td class="k">QST Canton Account</td><td>child of Settings</td><td><code>company</code> <code>canton</code> <code>customer_number</code> <code>commission_code</code> PEL/PPA/PSP</td></tr>
-              <tr><td class="k">QST Canton</td><td>master · name = code</td><td><code>canton_name</code> <code>calculation_model</code> Monthly/Annual · <code>import_tariffs</code></td></tr>
+              <tr><td class="k">QST Canton</td><td>master · name = code</td><td><code>canton_name</code> <code>calculation_model</code> Monthly/Annual</td></tr>
               <tr><td class="k">QST Tariff Import</td><td>log · <span class="mono">QST-IMP-#####</span></td><td><code>file</code> <code>status</code> Pending/Queued/Completed/Failed · <code>log</code> · button “Import”</td></tr>
-              <tr><td class="k">QST Tariff</td><td>read-only · <span class="mono">QST-ZH-2026-20251208</span></td><td><code>canton</code> <code>year</code> <code>valid_from</code> <code>creation_date</code> <code>calculation_model</code> <code>content_hash</code> <code>record_count</code> <code>rate_count</code> <code>commission_pel/ppa/psp</code> <code>median_value</code> <code>first_imported_on</code></td></tr>
+              <tr><td class="k">QST Tariff</td><td>read-only · <span class="mono">QST-ZH-2026-20251208</span></td><td><code>canton</code> <code>year</code> <code>valid_from</code> <code>creation_date</code> <code>calculation_model</code> <code>content_hash</code> <code>record_count</code> <code>rate_count</code> <code>commission_pel/ppa/psp</code> <code>median_value</code> <code>first_imported_on</code> · <code>codes</code></td></tr>
+              <tr><td class="k">QST Tariff Code</td><td>child of Tariff · read-only</td><td><code>code</code> <code>rate_count</code> <code>loaded</code> · one row per tariff code in the ESTV file · the catalogue that makes on-demand loading possible</td></tr>
               <tr><td class="k">QST Tariff Rate</td><td>read-only · autoincrement</td><td><code>tariff</code> <code>record_type</code> 06/11 · <code>code</code> <code>income_from</code> <code>step</code> <code>children</code> <code>min_tax</code> <code>rate</code></td></tr>
-              <tr><td class="k">QST Employee Record</td><td>child of Employee</td><td><code>valid_from</code> <code>liable</code> <code>canton</code> <code>municipality</code> <code>tariff_group</code> <code>children</code> <code>church_tax</code> → <code>tariff_code</code> · <code>cross_border_valid_until</code> · <code>hourly_wage</code> · <code>other_employment</code> + <code>total_degree</code> / <code>other_income</code> / <code>fixed_rate</code> / <code>fixed_amount</code></td></tr>
-              <tr><td class="k">QST Slip Detail</td><td>child of Salary Slip · read-only</td><td><code>period</code> <code>entry_type</code> Current/Correction · <code>tariff_code</code> <code>qst_tariff</code> · <code>periodic</code> <code>aperiodic</code> <code>thirteenth</code> <code>replacement</code> <code>days</code> <code>hours</code> <code>own_degree</code> · <code>rate_determining_income</code> <code>rate</code> · <code>expected_tax</code> <code>previously_deducted</code> <code>tax</code></td></tr>
+              <tr><td class="k">QST Employee Record</td><td>child of Employee</td><td><code>valid_from</code> <code>liable</code> <code>canton</code> <code>municipality</code> <code>tariff_group</code> <code>children</code> <code>church_tax</code> → <code>tariff_code</code> · <code>cross_border_valid_until</code> · <code>hourly_wage</code> · <code>other_employment</code> + <code>total_degree</code> / <code>other_income</code> · <code>tax_override</code> Fixed Rate/Fixed Amount + <code>fixed_rate</code> / <code>fixed_amount</code> / <code>override_reference</code></td></tr>
+              <tr><td class="k">QST Slip Detail</td><td>child of Salary Slip · read-only</td><td><code>period</code> <code>entry_type</code> Current/Correction · <code>tariff_code</code> <code>qst_tariff</code> · <code>periodic</code> <code>aperiodic</code> <code>thirteenth</code> <code>replacement</code> <code>days</code> <code>hours</code> <code>hourly_wage</code> <code>own_degree</code> · <code>rate_determining_income</code> <code>rate</code> <code>income_from</code> <code>min_tax</code> · <code>expected_tax</code> <code>previously_deducted</code> <code>tax</code> · <code>reason</code> stored untranslated, shown translated</td></tr>
             </tbody>
           </table>
         </div>
@@ -469,6 +473,7 @@ tr.sum td { font-weight: 600; background: var(--ground); }
               <tr><td class="mono">Salary Slip.qst_hours</td><td>Float</td><td>hours for hourly RDI · default <code>total_working_hours</code></td></tr>
               <tr><td class="mono">Salary Slip.qst_skip</td><td>Check</td><td>no calculation · month excluded from corrections</td></tr>
               <tr><td class="mono">Salary Slip.qst_details</td><td>Table (read-only)</td><td>QST Slip Detail rows</td></tr>
+              <tr><td class="mono">Salary Slip.qst_calculation</td><td>HTML</td><td>formulas of the slip, rendered on view in the reader’s language</td></tr>
               <tr><td class="mono">Salary Component.qst_type</td><td>Select</td><td>— / Periodic / Aperiodic / 13th Salary / Replacement Income · deductions count negative</td></tr>
             </tbody>
           </table>
@@ -535,14 +540,15 @@ tr.sum td { font-weight: 600; background: var(--ground); }
             </ul>
           </div>
           <div class="panel card">
-            <h3>Canton filter &amp; storage</h3>
+            <h3>Storage · rates on demand</h3>
             <ul class="kw">
-              <li>only <code>QST Canton.import_tariffs</code> · none marked → all</li>
-              <li>flag set automatically when an employee record uses the canton</li>
+              <li>every canton of the file is catalogued: header, code list, commission, median</li>
+              <li>rate rows read from the stored zip when a code is first used</li>
+              <li>saving an employee record loads the code it needs</li>
               <li>model (Monthly/Annual) copied from QST Canton per revision</li>
               <li>record 12 → commission % · record 13 → median (tariff C)</li>
-              <li>ids: sequence block reserved, then bulk insert (10k chunks)</li>
-              <li>2026 all cantons ≈ 3.2M rows · ZH 24’972 · GE 32’067</li>
+              <li>ids: sequence block reserved, then bulk insert per code</li>
+              <li>2026 all cantons 2.80 M rows ≈ 770 MB if stored · catalogue 1.8 MB · FR 2’000 rows per code, ZH 315</li>
             </ul>
           </div>
         </div>
@@ -615,7 +621,7 @@ tr.sum td { font-weight: 600; background: var(--ground); }
               <text class="d-t2" x="604" y="172">income_from ≤ RDI</text>
               <rect class="d-box d-new" x="780" y="120" width="160" height="72" rx="4"></rect>
               <text class="d-t1" x="794" y="150">Tax</text>
-              <text class="d-t2" x="794" y="172">≥ min tax · round 0.05</text>
+              <text class="d-t2" x="794" y="172">≥ min tax · to the cent</text>
               <rect class="d-box" x="780" y="224" width="160" height="60" rx="4"></rect>
               <text class="d-t1" x="794" y="249">Delta</text>
               <text class="d-t2" x="794" y="269">expected − deducted</text>
@@ -652,8 +658,8 @@ tr.sum td { font-weight: 600; background: var(--ground); }
               <tr><td class="k">Aperiodic</td><td>+ unconverted</td><td>+ Σ unconverted</td><td>6.6 · 7.3.1</td></tr>
               <tr><td class="k">Replacement income</td><td colspan="2">taxable · counts like periodic pay · hourly wages: not rate-determining</td><td>6.5 · 6.10 · 7.5.4</td></tr>
               <tr><td class="k">13th salary</td><td>amount ÷ worked days in period × 90/180/360 · frequency from settings</td><td>added when paid · setting on + 13th in structure: projected from January (1/12 of periodic), replaced by payouts</td><td>6.3 · 7.1</td></tr>
-              <tr><td class="k">Fixed rate / amount</td><td colspan="2">no bracket · taxable × rate or fixed amount</td><td>SRS</td></tr>
-              <tr><td class="k">Tax</td><td colspan="2">taxable × rate · ≥ min tax if taxable &gt; 0 · rounded 0.05</td><td>ESTV 4.4</td></tr>
+              <tr><td class="k">Tax override</td><td colspan="2">no bracket · taxable × fixed rate, or the fixed monthly amount of the tax office ruling</td><td>SRS</td></tr>
+              <tr><td class="k">Tax</td><td colspan="2">taxable × rate · ≥ min tax if taxable &gt; 0 · to the cent, system currency precision</td><td>ESTV 4.4</td></tr>
             </tbody>
           </table>
         </div>
@@ -742,7 +748,8 @@ tr.sum td { font-weight: 600; background: var(--ground); }
               <li><code>Employee.validate</code> → valid-from on 1st · unique · build code · flag canton · warn unknown code</li>
               <li><code>Salary Slip.validate</code> → calculate · rows · net pay · YTD</li>
               <li><code>Salary Slip.before_submit</code> → block on missing tariff/code</li>
-              <li>Payroll Entry: same hooks · errors don’t abort batch creation</li>
+              <li><code>Payroll Entry.validate</code> → lists employees whose tax cannot be determined · button “Check Quellensteuer”</li>
+              <li>Payroll Entry: same slip hooks · errors don’t abort batch creation</li>
             </ul>
           </div>
           <div class="panel card">
@@ -817,12 +824,12 @@ tr.sum td { font-weight: 600; background: var(--ground); }
                 <dt>Decide</dt><dd>intended (misconfiguration heals itself) or freeze classification per slip</dd>
               </dl></td></tr>
 
-              <tr class="item"><td><span class="pill p-assume">Assumption</span></td><td>one 13th frequency for all employees · 0.05 rounding per month</td><td class="where">QST Settings</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl6" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>
+              <tr class="item"><td><span class="pill p-assume">Assumption</span></td><td>one 13th frequency for all employees</td><td class="where">QST Settings</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl6" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>
               <tr class="detail" id="cl6" hidden><td colspan="4"><dl class="explain">
-                <dt>What</dt><dd>13th frequency Yearly / Half-yearly / Quarterly in settings only · each month’s tax rounded to 0.05 · correction = rounded expected − paid</dd>
+                <dt>What</dt><dd>13th frequency Yearly / Half-yearly / Quarterly in settings only · one setting for the whole company</dd>
                 <dt>Why</dt><dd>half-yearly/quarterly rare and not per employee (review decision) · 5-Rappen convention</dd>
-                <dt>Effect</dt><dd>companies mixing 13th payment schedules not supported · frequency only matters for entry/exit within the period · deltas always multiples of 0.05</dd>
-                <dt>Decide</dt><dd>rounding per month (implemented) vs on the declaration total</dd>
+                <dt>Effect</dt><dd>companies mixing 13th payment schedules not supported · frequency only matters for entry/exit within the period</dd>
+                <dt>Decide</dt><dd>review decision: keep one company-wide frequency</dd>
               </dl></td></tr>
 
               <tr class="item"><td><span class="pill p-limit">Limitation</span></td><td>canton change within year: each canton like entry/exit (KS45 §8) · moving back in the same year not covered</td><td class="where">payroll.calculate</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl7" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>
@@ -890,6 +897,56 @@ tr.sum td { font-weight: 600; background: var(--ground); }
                 <dt>Decide</dt><dd>review decision: implemented</dd>
               </dl></td></tr>
 
+              <tr class="item"><td><span class="pill p-tested">Resolved</span></td><td>tariff rates loaded per code on demand · 1.8 MB instead of 770 MB</td><td class="where">tariff.ensure_code</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl21" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>
+              <tr class="detail" id="cl21" hidden><td colspan="4"><dl class="explain">
+                <dt>What</dt><dd>the import stores only the header, the list of codes, commission and median value · the rates of a code are read from the stored ESTV file on first use · saving an employee record loads the code it needs · <code>QST Tariff Code.loaded</code> records what is stored locally</dd>
+                <dt>Why</dt><dd>all 26 cantons of one year are 2.80 M rate rows ≈ 770 MB in the database (measured 288 bytes per row): FR 87 MB, NW 86 MB, ZG 74 MB · each canton file holds ~170 codes, an employer uses a handful</dd>
+                <dt>Effect</dt><dd>measured on the dev VM: whole of Switzerland available for 1.8 MB · first use of FR A0N 0.84 s (2’000 rows) · payroll does not wait, the code is loaded when the employee record is saved and by the preflight check</dd>
+                <dt>File</dt><dd>each revision reads the file of the import it came from, checked by content hash — a newer archive never changes how an older revision loads · deleting that import is refused while one of its tariffs still has rates to load, and if a file goes missing anyway, any other import holding the same revision is used · tests cover both</dd>
+                <dt>Decide</dt><dd>review decision: lazy per code, zip kept as a file · a central tariff service (data.libracore.ch) stays possible, every lookup goes through <code>ensure_code</code></dd>
+              </dl></td></tr>
+
+              <tr class="item"><td><span class="pill p-tested">Resolved</span></td><td>formula per slip row · preflight on Payroll Entry · manual fallback</td><td class="where">payroll.explanation · payroll.preflight</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl22" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>
+              <tr class="detail" id="cl22" hidden><td colspan="4"><dl class="explain">
+                <dt>What</dt><dd>every detail row carries the bracket used (<code>income_from</code>, <code>min_tax</code>) and the slip shows the formula per period, e.g. “Monatsmodell · Steuerbar 5’000.00 · 20 von 30 Tagen · satzbestimmendes Einkommen 7’500.00 · B2N 10.50% ab 7’000.00 · Steuer 525.00” · Payroll Entry has a “Check Quellensteuer” button and warns on save, listing every employee whose tax cannot be determined · <code>qst_skip</code> leaves a slip untouched and locks that month against later corrections · <code>tax_override</code> sets a rate or amount per employee</dd>
+                <dt>Why</dt><dd>payroll is posted as a single journal entry · when one slip fails to submit, HRMS submits the others and books the accrual entry for those only — a partial payroll run</dd>
+                <dt>Effect</dt><dd>problems are visible before any slip exists · a blocked employee is unblocked with an override, or skipped and entered by hand · an undetermined tax still blocks submit, because a wrong deduction is harder to undo than a blocked run</dd>
+                <dt>Language</dt><dd>review decision: the sentence is not stored · it is rebuilt from the row’s own values whenever someone opens the slip, so it always reads in that person’s language and never goes stale · <code>reason</code> is a Select holding English values, translated on display</dd>
+                <dt>Decide</dt><dd>review decision: block submit, add preflight</dd>
+              </dl></td></tr>
+
+              <tr class="item"><td><span class="pill p-tested">Tested</span></td><td>QST in payroll accounting · also for refunds</td><td class="where">Payroll Entry · Journal Entry</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl23" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>
+              <tr class="detail" id="cl23" hidden><td colspan="4"><dl class="explain">
+                <dt>What</dt><dd>full Payroll Entry run with the real accrual journal entry, not a mock · salary components need an account per company, otherwise HRMS stops the run</dd>
+                <dt>Test</dt><dd>two employees: QST 800 credited to the QST account, payroll payable 9’200 = sum of net pay, debits = credits · refund case: a corrected revision lowers the rate, the slip shows current 300 and correction −100, the entry credits 200 and balances</dd>
+                <dt>Effect</dt><dd>the tax shown on the slip is exactly what reaches the accounts · negative corrections need no special treatment</dd>
+                <dt>Decide</dt><dd>—</dd>
+              </dl></td></tr>
+
+              <tr class="item"><td><span class="pill p-tested">Resolved</span></td><td>flat Quellensteuer assigned by the tax office · own field</td><td class="where">QST Employee Record.tax_override</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl24" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>
+              <tr class="detail" id="cl24" hidden><td colspan="4"><dl class="explain">
+                <dt>What</dt><dd><code>tax_override</code> (Fixed Rate / Fixed Amount) with <code>override_reference</code> for the ruling, separate from the side-job options · a patch moves existing values out of <code>other_employment</code></dd>
+                <dt>Why</dt><dd>a ruling of the tax office is not a side-job rule · a customer runs this case today</dd>
+                <dt>Effect</dt><dd>the override replaces the tariff calculation and needs neither tariff nor employment degree · retro corrections still work from the ledger · the slip row says “Fixed amount of the tax office: 450.00” · validation requires a value</dd>
+                <dt>Decide</dt><dd>review decision: own section</dd>
+              </dl></td></tr>
+
+              <tr class="item"><td><span class="pill p-tested">Resolved</span></td><td>no 0.05 rounding · exact cents · system-wide rounding setting</td><td class="where">calculation.tax_amount · QST Settings</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl25" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>
+              <tr class="detail" id="cl25" hidden><td colspan="4"><dl class="explain">
+                <dt>What</dt><dd>the <code>rounding</code> setting is gone · the tax is computed to the cent with the system currency precision and rounding method · <code>min_correction</code> defaults to 0.00, so even a one-cent difference is corrected · a month without a difference produces no correction row</dd>
+                <dt>Why</dt><dd>payroll may not be off by a single cent · neither KS45 nor the ESTV record format spec prescribe rounding of the deduction — the only rounding rule there is “rate rounded to two decimals” inside the iteration example</dd>
+                <dt>Effect</dt><dd>no rounding on salary component level · rounding is left where it belongs: the slip’s rounded total (Payroll Settings) and, if a canton asks for it, the declaration total · tests: 4’999 × 8% = 399.92 and a 0.01 correction</dd>
+                <dt>Decide</dt><dd>review decision: exact cents, book every delta</dd>
+              </dl></td></tr>
+
+              <tr class="item"><td><span class="pill p-tested">Resolved</span></td><td>own date and rounding helpers replaced by Frappe and Python</td><td class="where">calculation · payroll</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl26" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>
+              <tr class="detail" id="cl26" hidden><td colspan="4"><dl class="explain">
+                <dt>What</dt><dd><code>round_to</code>, <code>month_end</code>, <code>add_months</code> and a hand-rolled ceiling removed in favour of <code>frappe.utils.flt</code>/<code>rounded</code>, <code>get_last_day</code>, <code>get_first_day</code>, <code>add_months</code>, <code>get_year_start</code> and <code>math.ceil</code></dd>
+                <dt>Why</dt><dd>review point: nothing the framework or the standard library already provides should be reimplemented</dd>
+                <dt>Effect</dt><dd>~20 lines less and one rounding path instead of two · the 30-day helpers <code>day_30</code> and <code>days_30</code> stay: KS45-specific, no equivalent in Frappe</dd>
+                <dt>Decide</dt><dd>—</dd>
+              </dl></td></tr>
+
               <tr class="item"><td><span class="pill p-tested">Tested</span></td><td>Payroll Entry &gt; 30 employees (background job)</td><td class="where">—</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl11" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>
               <tr class="detail" id="cl11" hidden><td colspan="4"><dl class="explain">
                 <dt>What</dt><dd>HRMS creates and submits slips in a background job · the QST hook runs per slip (employee, past slips, deducted tax, cached tariff lookups)</dd>
@@ -906,12 +963,12 @@ tr.sum td { font-weight: 600; background: var(--ground); }
                 <dt>Decide</dt><dd>—</dd>
               </dl></td></tr>
 
-              <tr class="item"><td><span class="pill p-untested">Not tested</span></td><td>full-archive import (26 cantons, ≈180 MB) · performance</td><td class="where">tariff.import_tariffs</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl13" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>
+              <tr class="item"><td><span class="pill p-tested">Tested</span></td><td>full-archive import · 26 cantons in 5.4 s</td><td class="where">tariff.import_tariffs</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl13" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>
               <tr class="detail" id="cl13" hidden><td colspan="4"><dl class="explain">
-                <dt>What</dt><dd>zip read into memory · each canton file parsed and committed separately · job timeout 2 h</dd>
-                <dt>Why</dt><dd>only single-canton zips (ZH, GE) tested</dd>
-                <dt>Effect</dt><dd>all cantons ≈ 3.2 M rows: memory use and duration unknown · normally only cantons marked for import are read</dd>
-                <dt>Decide</dt><dd>test once on staging, or recommend canton zips</dd>
+                <dt>What</dt><dd>zip read into memory · every canton file parsed, committed separately · job timeout 2 h · only the header, code list, commission and median value are stored</dd>
+                <dt>Test</dt><dd>real ESTV archive <code>tar2026txt.zip</code> (11.9 MB) imported on the dev VM: 26 tariff revisions, 3’963 code entries, <b>5.4 s</b>, no rate rows</dd>
+                <dt>Effect</dt><dd>2.80 M rate rows stay in the file · catalogue costs 1.8 MB · no canton filter needed any more, the whole of Switzerland is always available</dd>
+                <dt>Decide</dt><dd>—</dd>
               </dl></td></tr>
 
               <tr class="item"><td><span class="pill p-untested">Not tested</span></td><td>report print template in browser</td><td class="where">report</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl14" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>
@@ -921,9 +978,9 @@ tr.sum td { font-weight: 600; background: var(--ground); }
                 <dt>Decide</dt><dd>quick manual check in desk</dd>
               </dl></td></tr>
 
-              <tr class="item"><td><span class="pill p-scope">Scope</span></td><td>65 tests: 25 unit · 27 KS45 examples · 13 integration (rolled back)</td><td class="where">test_quellensteuer.py</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl15" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>
+              <tr class="item"><td><span class="pill p-scope">Scope</span></td><td>74 tests: 29 unit · 27 KS45 examples · 18 integration (rolled back)</td><td class="where">test_quellensteuer.py</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl15" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>
               <tr class="detail" id="cl15" hidden><td colspan="4"><dl class="explain">
-                <dt>What</dt><dd>test_quellensteuer: 25 unit tests, database and tariffs mocked · test_ks45: KS45 §6.3–6.6 income examples, §7.3–7.4 and §8.2–8.4 as month-by-month slip ledgers checked against every deduction and correction in the KS45 tables · test_quellensteuer_integration: 13 database tests, commits disabled, everything rolled back after the run</dd>
+                <dt>What</dt><dd>test_quellensteuer: 29 unit tests, database and tariffs mocked · test_ks45: KS45 §6.3–6.6 income examples, §7.3–7.4 and §8.2–8.4 as month-by-month slip ledgers checked against every deduction and correction in the KS45 tables · test_quellensteuer_integration: 18 database tests including payroll accounting, commits disabled, everything rolled back after the run</dd>
                 <dt>Why</dt><dd>run with <code>bench --site … run-tests --module …</code> (<code>allow_tests</code> enabled on the dev site) · integration tests commit nothing</dd>
                 <dt>Effect</dt><dd>KS45 examples use the tariff rates printed in the examples · examples the module cannot calculate are listed as limitations above</dd>
                 <dt>Decide</dt><dd>—</dd>

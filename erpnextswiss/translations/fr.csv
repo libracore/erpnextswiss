@@ -390,7 +390,6 @@ Header Text,Texte de l'enregistrement d'en-tête
 Header or trailer record missing,Enregistrement d'en-tête ou de fin manquant
 Hourly Wage,Salaire horaire
 Hours for the rate-determining income of hourly wages; defaults to total working hours,"Heures pour le revenu déterminant le taux en cas de salaire horaire; à défaut, le total des heures travaillées"
-Import Tariffs,Importer les barèmes
 "In Jahresmodell cantons, include the 13th salary in the rate-determining income from January, rather than correcting all months when it is paid","Dans les cantons appliquant le modèle annuel, inclure le 13e salaire dans le revenu déterminant le taux dès janvier, au lieu de corriger tous les mois lors de son versement"
 Income From,Revenu imposable dès
 Liable,Soumis à l'impôt à la source
@@ -407,9 +406,7 @@ No cross-border certificate covering {0:%m.%Y} for tariff group {1}. The ordinar
 "No employment degree for {0} in {1:%m.%Y}, required for {2}","Aucun taux d'occupation pour {0} en {1:%m.%Y}, requis pour {2}"
 "No median value in tariff {0}, required for {1}","Aucune valeur médiane dans le barème {0}, requise pour {1}"
 No tariff files found,Aucun fichier de barèmes trouvé
-No tariff files found for cantons marked for import: {0},Aucun fichier de barèmes trouvé pour les cantons marqués pour l'importation : {0}
 Not liable,Non soumis à l'impôt à la source
-"Only tariffs of marked cantons are imported; if none is marked, all cantons are imported","Seuls les barèmes des cantons marqués sont importés; si aucun canton n'est marqué, tous sont importés"
 Other Employment,Autre activité lucrative
 Other Gross Income per Month,Autre revenu brut par mois
 Other Income,Autre revenu brut connu
@@ -493,3 +490,36 @@ Step,Échelon tarifaire,QST Tariff Rate
 Code,Code tarifaire,QST Tariff Rate
 Salary Slip,Bulletin de salaire,
 Employment Degrees,Taux d'occupation,
+Side job handling per KS45 6.4 / 7.3.2,"Activités lucratives à temps partiel selon la circulaire 45, ch. 6.4 / 7.3.2"
+Tax Override,Décision de l'autorité fiscale
+Assigned by the tax office; replaces the tariff calculation,Fixé par l'autorité fiscale; remplace le calcul selon le barème
+Ruling Reference,Référence de la décision
+Decision or letter of the tax office,Décision ou courrier de l'autorité fiscale
+Differences below this amount are not corrected; 0 corrects every difference,Les différences inférieures à ce montant ne sont pas corrigées; 0 corrige toute différence
+Bracket from,Tranche dès
+Rate rows in the ESTV file,Taux dans le fichier de l'AFC
+Tariff Codes,Codes tarifaires
+Rates are loaded from the ESTV file when a code is first used,Les taux sont chargés depuis le fichier de l'AFC lors de la première utilisation d'un code
+QST Tariff Code,Code du barème (impôt à la source)
+Rates Loaded,Taux chargés
+Rates of this code are stored locally,Les taux de ce code sont enregistrés localement
+"{0}: {1} tariff codes, {2} rates available","{0} : {1} codes tarifaires, {2} taux disponibles"
+"The ESTV file of tariff {0} is no longer available, please import it again","Le fichier de l'AFC du barème {0} n'est plus disponible, veuillez l'importer à nouveau"
+Quellensteuer row {0}: {1} requires a value,"Impôt à la source, ligne {0} : {1} requiert une valeur"
+"No employment degree for {0:%m.%Y}, required for {1}","Aucun taux d'occupation pour {0:%m.%Y}, requis pour {1}"
+Fixed amount of the tax office: {0},Montant fixé par l'autorité fiscale : {0}
+Taxable {0},Imposable {0}
+fixed rate {0}%,taux fixe {0} %
+Annual model,Modèle annuel
+Monthly model,Modèle mensuel
+{0} of 30 days,{0} jours sur 30
+employment degree {0}%,taux d'occupation {0} %
+rate-determining income {0},revenu déterminant le taux {0}
+minimum tax {0},impôt minimum {0}
+tax {0},impôt {0}
+Check Quellensteuer,Vérifier l'impôt à la source
+Checking Quellensteuer...,Vérification de l'impôt à la source...
+Quellensteuer can be calculated for all {0} employees.,L'impôt à la source peut être calculé pour les {0} employés.
+Fixed Rate,Taux fixe,QST Slip Detail
+{0}%,{0} %
+from {0},dès {0}

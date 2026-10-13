@@ -3,12 +3,13 @@ from datetime import date
 from unittest.mock import MagicMock, patch
 
 import frappe
+from frappe.utils import flt, get_last_day
 from frappe.utils.synchronization import filelock
 
 from erpnextswiss.erpnextswiss.quellensteuer import payroll, tariff
 from erpnextswiss.erpnextswiss.quellensteuer.calculation import (
-    annual_rdi, days_30, month_end, monthly_rdi, tariff_code, tax_amount, thirteenth_rdi)
-from erpnextswiss.erpnextswiss.quellensteuer.parser import TariffFileError, parse
+    annual_rdi, days_30, monthly_rdi, tariff_code, tax_amount, thirteenth_rdi)
+from erpnextswiss.erpnextswiss.quellensteuer.parser import TariffFileError, code_rows, parse
 
 
 def rate_line(code, income_from, rate, record_type="06", transaction="01", min_tax=0):
@@ -29,13 +30,21 @@ def month(period, periodic=0, aperiodic=0, thirteenth=0, days=30, hours=0, joini
 
 class TestParser(unittest.TestCase):
     def test_parse(self):
-        data = parse(tariff_file([rate_line("A0N", 1, 0), rate_line("A0N", 3101, 7.15), rate_line("R0N", 1, 3),
-                                  "1201ZZPEL       20260101000000100999999999 0000000000000200   ",
-                                  "1301ZZMED       20260101000000100999999999 0000058750000000   "]))
+        text = tariff_file([rate_line("A0N", 1, 0), rate_line("A0N", 3101, 7.15), rate_line("R0N", 1, 3),
+                            "1201ZZPEL       20260101000000100999999999 0000000000000200   ",
+                            "1301ZZMED       20260101000000100999999999 0000058750000000   "])
+        data = parse(text)
         self.assertEqual((data["canton"], data["creation_date"], data["valid_from"]), ("ZZ", date(2025, 12, 1), date(2026, 1, 1)))
-        self.assertEqual([row["code"] for row in data["rows"]], ["A0N", "A0N", "R0N"])
-        self.assertEqual((data["rows"][1]["income_from"], data["rows"][1]["step"], data["rows"][1]["rate"]), (3101, 50, 7.15))
+        self.assertEqual((data["codes"], data["rate_count"]), ({"A0N": 2, "R0N": 1}, 3))
         self.assertEqual((data["commission"]["PEL"], data["median_value"]), (2, 5875))
+
+    def test_code_rows_reads_one_code(self):
+        text = tariff_file([rate_line("A0N", 1, 0), rate_line("A0N", 3101, 7.15), rate_line("R0N", 1, 3),
+                            "1301ZZMED       20260101000000100999999999 0000058750000000   "])
+        rows = list(code_rows(text, "A0N"))
+        self.assertEqual([row["income_from"] for row in rows], [1, 3101])
+        self.assertEqual((rows[1]["step"], rows[1]["rate"], rows[1]["valid_from"]), (50, 7.15, date(2026, 1, 1)))
+        self.assertEqual([row["code"] for row in code_rows(text, "R0N")], ["R0N"])
 
     def test_hash_ignores_order(self):
         lines = [rate_line("A0N", 1, 0), rate_line("A0N", 3101, 7.15)]
@@ -74,7 +83,7 @@ class TestCalculation(unittest.TestCase):
         cases = {date(2023, 3, 31): (1, 30), date(2023, 3, 30): (1, 30), date(2023, 3, 29): (2, 29), date(2024, 2, 29): (1, 30),
                  date(2024, 2, 28): (1, 30), date(2023, 2, 28): (1, 30), date(2023, 2, 27): (4, 27)}
         for day, (entry_days, exit_days) in cases.items():
-            start, end = day.replace(day=1), month_end(day)
+            start, end = day.replace(day=1), get_last_day(day)
             self.assertEqual(days_30(start, end, joining=day), entry_days, day)
             self.assertEqual(days_30(start, end, relieving=day), exit_days, day)
         self.assertEqual(days_30(date(2022, 3, 1), date(2022, 3, 31), relieving=date(2022, 3, 16)), 16)
@@ -128,7 +137,8 @@ class TestCalculation(unittest.TestCase):
     def test_tax_and_code(self):
         self.assertEqual(tax_amount(5000, 10.9), 545)
         self.assertEqual(tax_amount(100, 1, 20), 20)
-        self.assertEqual(tax_amount(1234.56, 10), 123.45)
+        self.assertEqual(flt(tax_amount(4999, 8), 2), 399.92)
+        self.assertEqual(flt(tax_amount(1234.56, 10), 2), 123.46)
         self.assertEqual((tariff_code("B", 2, True), tariff_code("G", 3, True), tariff_code("A", 12)), ("B2Y", "G9N", "A9N"))
         self.assertEqual((tariff_code("L", 1, True), tariff_code("V", 2), tariff_code("SF", 2, True)), ("L1Y", "V9N", "SFN"))
 
@@ -140,6 +150,9 @@ class SlipStub(frappe._dict):
     def set(self, key, value):
         self[key] = value
 
+    def precision(self, fieldname, parentfield=None):
+        return 2
+
     def set_net_pay(self):
         pass
 
@@ -147,7 +160,7 @@ class SlipStub(frappe._dict):
 
 
 class TestPayroll(unittest.TestCase):
-    settings = frappe._dict(rounding=0.05, thirteenth_frequency="Yearly")
+    settings = frappe._dict(thirteenth_frequency="Yearly")
 
     def employee(self, *records):
         return frappe._dict(date_of_joining=date(2010, 1, 1), relieving_date=None, employment_degrees=[],
@@ -162,10 +175,10 @@ class TestPayroll(unittest.TestCase):
             return payroll.calculate(employee, months, max(months), settings or self.settings)
 
     def validate_slip(self, employee, salaries, paid, tariffs, go_live=date(2021, 1, 1), later_slip=None):
-        settings = frappe._dict(self.settings, enabled=1, go_live_date=go_live, prior_year_cutoff_month=0, min_correction=0.05,
+        settings = frappe._dict(self.settings, enabled=1, go_live_date=go_live, prior_year_cutoff_month=0, min_correction=0,
                                 qst_component="QST", correction_component="QST Correction", annual_model_correction="Monthly")
         months = {date(2021, i + 1, 1): month(date(2021, i + 1, 1), salary) for i, salary in enumerate(salaries)}
-        slip = SlipStub(employee="EMP-TEST", start_date=max(months), end_date=month_end(max(months)))
+        slip = SlipStub(employee="EMP-TEST", start_date=max(months), end_date=get_last_day(max(months)))
         deductions = {}
         with patch.object(frappe, "get_cached_doc", return_value=settings), patch.object(frappe, "get_doc", return_value=employee), \
                 patch.object(frappe, "msgprint") as msgprint, patch.object(frappe.db, "exists", return_value=later_slip), \
@@ -177,6 +190,45 @@ class TestPayroll(unittest.TestCase):
             payroll.salary_slip_validate(slip)
         slip.messages = msgprint.call_args_list
         return slip, deductions
+
+    def test_explanation_renders_from_detail_row(self):
+        row = frappe._dict(model="Monthly", reason=None, taxable_income=5000, days=20, hours=0, hourly_wage=0,
+                           own_degree=100, rate_determining_income=7500, tariff_code="B2N", rate=10.5,
+                           income_from=7000, min_tax=0, expected_tax=525)
+        text = payroll.explanation(row)
+        self.assertIn("Monthly model", text)
+        self.assertIn("20 of 30 days", text)
+        self.assertIn("rate-determining income", text)
+        self.assertIn("B2N 10.5% from", text)
+        self.assertIn("525", text)
+        self.assertNotIn("employment degree", text)
+        degree = payroll.explanation(frappe._dict(row, reason="Total Degree", own_degree=50))
+        self.assertIn("Total Degree", degree)
+        self.assertIn("employment degree 50.0%", degree)
+        first = payroll.explanation(frappe._dict(row, income_from=0))
+        self.assertIn("B2N 10.5%", first)
+        self.assertNotIn("from", first)
+        hourly = payroll.explanation(frappe._dict(row, hourly_wage=1, hours=95.5, days=30))
+        self.assertIn("95.5 hours", hourly)
+        self.assertNotIn("of 30 days", hourly)
+
+    def test_explanation_of_overrides_and_not_liable(self):
+        self.assertEqual(payroll.explanation(frappe._dict(reason="Not liable")), "Not liable")
+        amount = payroll.explanation(frappe._dict(reason="Fixed Amount", expected_tax=450))
+        self.assertIn("Fixed amount of the tax office", amount)
+        self.assertIn("450", amount)
+        rate = payroll.explanation(frappe._dict(reason="Fixed Rate", taxable_income=5000, rate=5, expected_tax=250))
+        self.assertIn("fixed rate 5.0%", rate)
+        self.assertNotIn("rate-determining income", rate)
+
+    def test_cent_correction_is_booked(self):
+        employee = self.employee({"valid_from": date(2021, 1, 1)})
+        tariff = frappe._dict(name="QST-ZZ-2021-20201201", calculation_model="Monthly")
+        tariffs = {date(2021, m, 1): tariff for m in (1, 2)}
+        slip, deductions = self.validate_slip(employee, [5000] * 2, {date(2021, 1, 1): 519.99}, tariffs)
+        self.assertEqual((deductions["QST"], deductions["QST Correction"]), (520, 0.01))
+        self.assertEqual([(row["period"], row["tax"]) for row in slip.qst_details],
+                         [(date(2021, 1, 1), 0.01), (date(2021, 2, 1), 520)])
 
     def test_later_slip_skips_corrections_with_message(self):
         employee = self.employee({"valid_from": date(2021, 1, 1)})
@@ -305,7 +357,7 @@ class TestPayroll(unittest.TestCase):
         self.assertEqual(results[date(2021, 6, 1)]["code"], "B0N")
 
     def test_not_liable_and_fixed(self):
-        employee = self.employee({"valid_from": date(2021, 1, 1), "other_employment": "Fixed Rate", "fixed_rate": 5},
+        employee = self.employee({"valid_from": date(2021, 1, 1), "tax_override": "Fixed Rate", "fixed_rate": 5},
                                  {"valid_from": date(2021, 3, 1), "liable": 0})
         results = self.run_calculation(employee, [5000] * 3, "Monthly", lambda code, income: None)
         self.assertEqual([results[date(2021, m, 1)]["tax"] for m in (1, 3)], [250, 0])

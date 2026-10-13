@@ -517,7 +517,6 @@ Header Text,Text Kopfrecord
 Header or trailer record missing,Kopf- oder Schlussrecord fehlt
 Hourly Wage,Stundenlohn
 Hours for the rate-determining income of hourly wages; defaults to total working hours,Stunden für das satzbestimmende Einkommen bei Stundenlohn; ohne Angabe gilt die Gesamtarbeitszeit
-Import Tariffs,Tarife importieren
 "In Jahresmodell cantons, include the 13th salary in the rate-determining income from January, rather than correcting all months when it is paid","In Kantonen mit Jahresmodell den 13. Monatslohn ab Januar im satzbestimmenden Einkommen berücksichtigen, statt bei der Auszahlung alle Monate zu korrigieren"
 Income From,Steuerbares Einkommen ab
 Liable,Quellensteuerpflichtig
@@ -534,9 +533,7 @@ No cross-border certificate covering {0:%m.%Y} for tariff group {1}. The ordinar
 "No employment degree for {0} in {1:%m.%Y}, required for {2}","Kein Beschäftigungsgrad für {0} im {1:%m.%Y}, erforderlich für {2}"
 "No median value in tariff {0}, required for {1}","Kein Medianwert im Tarif {0}, erforderlich für {1}"
 No tariff files found,Keine Tarifdateien gefunden
-No tariff files found for cantons marked for import: {0},Keine Tarifdateien für die zum Import markierten Kantone gefunden: {0}
 Not liable,Nicht quellensteuerpflichtig
-"Only tariffs of marked cantons are imported; if none is marked, all cantons are imported","Nur Tarife markierter Kantone werden importiert; ist kein Kanton markiert, werden alle importiert"
 Other Employment,Weitere Erwerbstätigkeit
 Other Gross Income per Month,Weiteres Bruttoeinkommen pro Monat
 Other Income,Weiteres Bruttoeinkommen bekannt
@@ -618,3 +615,36 @@ Income,Einkommen,QST Employee Record
 Valid From,Gültig ab,QST Employee Record
 Step,Tarifschritt,QST Tariff Rate
 Code,Tarifcode,QST Tariff Rate
+Side job handling per KS45 6.4 / 7.3.2,Teilzeit-Erwerbstätigkeiten nach KS45 6.4 / 7.3.2
+Tax Override,Vorgabe Steueramt
+Assigned by the tax office; replaces the tariff calculation,Vom Steueramt vorgegeben; ersetzt die Tarifberechnung
+Ruling Reference,Referenz der Verfügung
+Decision or letter of the tax office,Verfügung oder Schreiben des Steueramts
+Differences below this amount are not corrected; 0 corrects every difference,Differenzen unter diesem Betrag werden nicht korrigiert; 0 korrigiert jede Differenz
+Bracket from,Tarifstufe ab
+Rate rows in the ESTV file,Tarifsätze in der ESTV-Datei
+Tariff Codes,Tarifcodes
+Rates are loaded from the ESTV file when a code is first used,Die Tarifsätze werden bei der ersten Verwendung eines Codes aus der ESTV-Datei geladen
+QST Tariff Code,Quellensteuertarif-Code
+Rates Loaded,Tarifsätze geladen
+Rates of this code are stored locally,Die Tarifsätze dieses Codes sind lokal gespeichert
+"{0}: {1} tariff codes, {2} rates available","{0}: {1} Tarifcodes, {2} Tarifsätze verfügbar"
+"The ESTV file of tariff {0} is no longer available, please import it again","Die ESTV-Datei des Tarifs {0} ist nicht mehr verfügbar, bitte erneut importieren"
+Quellensteuer row {0}: {1} requires a value,Quellensteuer Zeile {0}: {1} erfordert einen Wert
+"No employment degree for {0:%m.%Y}, required for {1}","Kein Beschäftigungsgrad für {0:%m.%Y}, erforderlich für {1}"
+Fixed amount of the tax office: {0},Vom Steueramt vorgegebener Betrag: {0}
+Taxable {0},Steuerbar {0}
+fixed rate {0}%,fester Steuersatz {0}%
+Annual model,Jahresmodell
+Monthly model,Monatsmodell
+{0} of 30 days,{0} von 30 Tagen
+employment degree {0}%,Beschäftigungsgrad {0}%
+rate-determining income {0},satzbestimmendes Einkommen {0}
+minimum tax {0},Mindeststeuer {0}
+tax {0},Steuer {0}
+Check Quellensteuer,Quellensteuer prüfen
+Checking Quellensteuer...,Quellensteuer wird geprüft...
+Quellensteuer can be calculated for all {0} employees.,Die Quellensteuer kann für alle {0} Mitarbeiter berechnet werden.
+Fixed Rate,Fester Steuersatz,QST Slip Detail
+{0}%,{0}%
+from {0},ab {0}

@@ -18,11 +18,14 @@
   "replacement",
   "days",
   "hours",
+  "hourly_wage",
   "own_degree",
   "col_tax",
   "taxable_income",
   "rate_determining_income",
   "rate",
+  "income_from",
+  "min_tax",
   "expected_tax",
   "previously_deducted",
   "tax"
@@ -72,8 +75,9 @@
   },
   {
    "fieldname": "reason",
-   "fieldtype": "Data",
+   "fieldtype": "Select",
    "label": "Reason",
+   "options": "\nNot liable\nNo cross-border certificate\nTotal Degree\nExtrapolate 100%\nOther Income\nMedian Value (No Degree)\nFixed Rate\nFixed Amount",
    "read_only": 1
   },
   {
@@ -165,11 +169,30 @@
    "in_list_view": 1,
    "label": "Tax",
    "read_only": 1
+  },
+  {
+   "fieldname": "income_from",
+   "fieldtype": "Currency",
+   "label": "Bracket from",
+   "read_only": 1
+  },
+  {
+   "fieldname": "min_tax",
+   "fieldtype": "Currency",
+   "label": "Minimum Tax",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "hourly_wage",
+   "fieldtype": "Check",
+   "label": "Hourly Wage",
+   "read_only": 1
   }
  ],
  "istable": 1,
  "links": [],
- "modified": "2026-09-18 12:00:00.000000",
+ "modified": "2026-10-13 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "QST Slip Detail",

@@ -33,9 +33,9 @@ No payment entries to be paid found with status draft,Aucune écriture de paieme
 End,Fin,
 VAT type,Type de TVA,
 effective,effective,
-flat,taux de la dette fiscale nette,
-Revenue,Chiffre d'affaires,
-Get values,Récupérer les valeurs,
+flat,Taux de la dette fiscale nette / forfaitaire,
+Revenue,Revenu,
+Get values,Obtenez des valeurs,
 Recalculate,Recalculer,
 Total revenue (200),Total des contre-prestations (200),
 Non-taxable revenue (205),Contre-prestations non imposables (205),
@@ -351,6 +351,7 @@ Unbilled Days Remaining,Jours non facturés restants
 Periods,Périodes
 "Pending Final Invoice ({0} Days)","Facture finale en attente ({0} jours)"
 "Pending Final Invoice: {0} Days Remaining","Facture finale en attente : {0} jours restants"
+<<<<<<< HEAD
 13th Salary,13e salaire
 13th Salary Frequency,Périodicité du 13e salaire
 AHV Number,Numéro AVS
@@ -527,3 +528,22 @@ Quellensteuer row {0}: municipality of residence is required,"Impôt à la sourc
 Municipality of residence; its BFS number goes into the declaration,Commune de domicile ; son numéro OFS figure dans le décompte
 No municipalities imported yet. Quellensteuer records need the municipality of residence for its BFS number: import bfsnr_municipality.csv from the app folder erpnextswiss/public/res in the Municipality list.,Aucune commune n'a encore été importée. Les données de l'impôt à la source requièrent la commune de domicile pour son numéro OFS : veuillez importer bfsnr_municipality.csv du dossier erpnextswiss/public/res dans la liste des communes.
 Miscellaneous description,Désignation divers (280),
+=======
+Activities / calculation sheet,Activités / feuille de calcul,
+Activities,Activités,
+Supplies according to calculation sheet (322/323),Prestations selon la feuille de calcul (322/323),
+Tax according to calculation sheet,Impôt selon la feuille de calcul,
+Average rate,Taux moyen,
+Acquisition tax,Impôt sur les acquisitions,
+Acquisition tax (382/383),Impôt sur les acquisitions (382/383),
+Miscellaneous description,Désignation divers (280),
+VAT Declaration Activity,Décompte TVA activité,
+VAT Declaration Acquisition Tax,Décompte TVA impôt sur les acquisitions,
+ESTV activity ID,Code d'activité AFC,
+ESTV activity,Activité AFC,
+Turnover (gross),Chiffre d'affaires (brut),
+Turnover (net),Chiffre d'affaires (net),
+ESTV activity ID missing or invalid (5 characters) for: {0},Code d'activité AFC manquant ou invalide (5 caractères) pour : {0},
+Calculation sheet,Feuille de calcul,
+Transfer these values to item 322 or 323.,Reporter ces valeurs au chiffre 322 ou 323.,
+>>>>>>> e5b1ac5 (VAT Declaration: Support net and flat tax rate method from 2025)

@@ -1,0 +1,50 @@
+{
+ "creation": "2026-10-13 10:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "rate",
+  "vat_query",
+  "turnover",
+  "tax"
+ ],
+ "fields": [
+  {
+   "fieldname": "rate",
+   "fieldtype": "Percent",
+   "label": "Tax Rate",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "vat_query",
+   "fieldtype": "Link",
+   "label": "VAT query",
+   "options": "VAT query",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "turnover",
+   "fieldtype": "Currency",
+   "label": "Turnover (net)",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "tax",
+   "fieldtype": "Currency",
+   "label": "Tax",
+   "read_only": 1,
+   "in_list_view": 1
+  }
+ ],
+ "istable": 1,
+ "modified": "2026-10-13 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "ERPNextSwiss",
+ "name": "VAT Declaration Acquisition Tax",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

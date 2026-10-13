@@ -31,6 +31,26 @@ def make_declaration(**kwargs):
         'end_date': "2026-06-30"
     }, **kwargs))
 
+# Item Tax Templates with VAT declaration codes and their turnover in the period
+CODE_TEMPLATES = (
+    ("HANS21 - T", "Calculation sheet", 2.1, "12345", 1000.0),
+    ("CAR06 - T", "Calculation sheet", 0.6, "12346", 200.0),
+    ("WOH45 - T", "Calculation sheet", 4.5, "12347", 0.0),
+    ("Ausgenommen - T", "230", None, None, 5000.0),
+    ("Spende - T", "910", None, None, 300.0),
+)
+
+def get_values(doc, queries=None):
+    # runs get_values with the templates above and the given VAT queries {name: total} instead of database records
+    queries = queries or {}
+    templates = [frappe._dict(name=n, title=n.split(" - ")[0], vat_declaration_code=c, vat_description=None,
+        flat_tax_rate=r, estv_activity_id=a) for n, c, r, a, t in CODE_TEMPLATES]
+    with patch.object(type(doc), "get_code_templates", return_value=templates), \
+            patch.object(type(doc), "get_template_turnovers", return_value={n: t for n, c, r, a, t in CODE_TEMPLATES}), \
+            patch.object(type(doc), "get_view_sum", side_effect=lambda view_name, column="base_grand_total": queries[view_name]), \
+            patch.object(frappe.db, "exists", side_effect=lambda doctype, name=None: name in queries):
+        doc.get_values()
+
 def render_transfer_file(doc):
     with patch("frappe.get_value", return_value="CHE-123.456.789 MWST"):
         return ElementTree.fromstring(doc.create_transfer_file()['content'].encode("utf-8"))
@@ -93,3 +113,32 @@ class TestVATDeclaration(unittest.TestCase):
         xml = render_transfer_file(doc)
         self.assertEqual(len(xml.findall("e:netTaxRateMethod/e:suppliesPerTaxRate", NS)), 4)
         self.assertEqual(xml.find("e:netTaxRateMethod/e:acquisitionTax/e:taxRate", NS).text, "8.10")
+
+    def test_item_tax_template_codes(self):
+        doc = make_declaration(revenue_abroad=7, activities=[
+            {'description': "Leistungen 2024", 'activity_id': "T0001", 'rate': 2.1, 'turnover': 100}])
+        get_values(doc)
+        self.assertAlmostEqual(doc.total_revenue, 6200, places=2)
+        self.assertAlmostEqual(doc.non_taxable_services, 5000, places=2)
+        self.assertAlmostEqual(doc.donations, 300, places=2)
+        self.assertAlmostEqual(doc.revenue_abroad, 7, places=2)
+        self.assertEqual([(r.activity_id, r.rate, r.turnover) for r in doc.activities],
+            [("T0001", 2.1, 100), ("12345", 2.1, 1000), ("12346", 0.6, 200)])
+        self.assertAlmostEqual(doc.activities_tax, 2.1 + 21 + 1.2, places=2)
+
+    def test_vat_queries_take_precedence(self):
+        doc = make_declaration(activities=[{'item_tax_template': "CAR06 - T", 'vat_query': "Cafeteria", 'turnover': 0}])
+        get_values(doc, {'viewVAT_230': 4000, 'Cafeteria': 250})
+        self.assertAlmostEqual(doc.non_taxable_services, 4000, places=2)
+        self.assertAlmostEqual(doc.total_revenue, 6200, places=2)
+        self.assertEqual([(r.item_tax_template, r.turnover) for r in doc.activities],
+            [("HANS21 - T", 1000), ("CAR06 - T", 250)])
+
+    def test_unassigned_taxable_revenue(self):
+        doc = make_declaration(total_revenue=1500, activities=[{'activity_id': "12345", 'rate': 2.1, 'turnover': 1000}])
+        with patch("frappe.msgprint") as msgprint:
+            doc.validate()
+            self.assertEqual(msgprint.call_count, 1)
+            doc.total_revenue = 1000
+            doc.validate()
+            self.assertEqual(msgprint.call_count, 1)

@@ -1,0 +1,6 @@
+{%- for a in acquisition_taxes %}
+        <eCH-0217:acquisitionTax>
+            <eCH-0217:taxRate>{{ "{:.2f}".format(a.rate or 0) }}</eCH-0217:taxRate>
+            <eCH-0217:turnover>{{ "{:.2f}".format(a.turnover or 0) }}</eCH-0217:turnover>
+        </eCH-0217:acquisitionTax>
+{%- endfor %}

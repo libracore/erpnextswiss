@@ -4,6 +4,7 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
+  "item_tax_template",
   "activity_id",
   "description",
   "rate",
@@ -12,6 +13,14 @@
   "tax"
  ],
  "fields": [
+  {
+   "fieldname": "item_tax_template",
+   "fieldtype": "Link",
+   "in_list_view": 0,
+   "label": "Item Tax Template",
+   "options": "Item Tax Template",
+   "read_only": 1
+  },
   {
    "fieldname": "activity_id",
    "fieldtype": "Data",
@@ -54,7 +63,7 @@
   }
  ],
  "istable": 1,
- "modified": "2026-10-13 10:00:00.000000",
+ "modified": "2026-10-14 10:00:00.000000",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "VAT Declaration Activity",

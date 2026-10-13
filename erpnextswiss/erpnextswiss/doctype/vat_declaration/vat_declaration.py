@@ -3,6 +3,7 @@
 # For license information, please see license.txt
 
 from __future__ import unicode_literals
+import json
 import frappe
 from frappe.model.document import Document
 from frappe import _
@@ -80,6 +81,7 @@ class VATDeclaration(Document):
             'transfers': "225",
             'non_taxable_services': "230",
             'losses': "235",
+            'misc': "280",
             'grants': "900",
             'donations': "910"
         }
@@ -95,22 +97,85 @@ class VATDeclaration(Document):
             totals.update({'additional_amount_2024': "383", 'additional_amount': "382"})
             taxes.update({'additional_tax_2024': "383", 'additional_tax': "382"})
 
+        templates = self.get_code_templates()
+        turnovers = self.get_template_turnovers([t.name for t in templates])
+        self.set_code_totals(templates, turnovers, {code: field for field, code in totals.items()})
+
         for column, fields in (("base_grand_total", totals), ("total_taxes_and_charges", taxes)):
             for fieldname, code in fields.items():
                 view_name = "viewVAT_" + code
-                # keep manually entered values if there is no VAT query
+                # VAT queries take precedence over Item Tax Template codes and manually entered values
                 if frappe.db.exists("VAT query", view_name):
                     self.set(fieldname, self.get_view_sum(view_name, column))
 
         # from 2025: turnover per activity and acquisition tax rate from the VAT queries in the table rows
         if simple:
-            if self.vat_type == "flat":
+            activity_templates = [t for t in templates if t.vat_declaration_code == "Calculation sheet"]
+            if self.vat_type == "flat" and activity_templates:
+                self.set_activities(activity_templates, turnovers)
+            elif self.vat_type == "flat":
                 self.update_table("activities", ["activity_id", "description", "rate", "vat_query"])
             self.update_table("acquisition_taxes", ["rate", "vat_query"])
         self.calculate()
 
     def get_view_sum(self, view_name, column="base_grand_total"):
         return get_view_sum(view_name, column, self.start_date, self.end_date, self.company)
+
+    def get_code_templates(self):
+        return frappe.get_all("Item Tax Template",
+            filters={'company': self.company, 'vat_declaration_code': ["is", "set"]},
+            fields=["name", "title", "vat_declaration_code", "vat_description", "flat_tax_rate", "estv_activity_id"],
+            order_by="title")
+
+    def get_template_turnovers(self, templates):
+        if not templates:
+            return {}
+        items = frappe.db.sql("""
+            SELECT `sii`.`item_tax_template`, `sii`.`base_net_amount`, `sii`.`item_tax_rate`
+            FROM `tabSales Invoice Item` AS `sii`
+            JOIN `tabSales Invoice` AS `si` ON `si`.`name` = `sii`.`parent`
+            WHERE `si`.`docstatus` = 1
+              AND `si`.`company` = %(company)s
+              AND `si`.`posting_date` BETWEEN %(start_date)s AND %(end_date)s
+              AND `sii`.`item_tax_template` IN %(templates)s""",
+            {'company': self.company, 'start_date': self.start_date, 'end_date': self.end_date, 'templates': templates},
+            as_dict=True)
+        turnovers = {}
+        for item in items:
+            # gross amount based on the tax rates recorded on the invoice, so later rate changes do not affect past periods
+            rate = sum(flt(r) for r in json.loads(item.item_tax_rate or "{}").values())
+            turnovers[item.item_tax_template] = turnovers.get(item.item_tax_template, 0) + flt(item.base_net_amount) * (1 + rate / 100)
+        return turnovers
+
+    def set_code_totals(self, templates, turnovers, code_fields):
+        # only fields with at least one Item Tax Template code are set, all codes except 900/910 count towards 200
+        totals = {}
+        for t in templates:
+            amount = turnovers.get(t.name, 0)
+            codes = [t.vat_declaration_code] + ([] if t.vat_declaration_code in ("900", "910") else ["200"])
+            for code in codes:
+                if code in code_fields:
+                    totals[code] = totals.get(code, 0) + amount
+        for code, amount in totals.items():
+            self.set(code_fields[code], flt(amount, 2))
+
+    def set_activities(self, templates, turnovers):
+        # one row per Item Tax Template with turnover, a VAT query on a row overrides its turnover
+        queries = {r.item_tax_template: r.vat_query for r in self.activities if r.item_tax_template}
+        rows = [r.as_dict(no_default_fields=True) for r in self.activities if not r.item_tax_template]
+        for t in templates:
+            rows.append(frappe._dict({
+                'item_tax_template': t.name,
+                'activity_id': t.estv_activity_id,
+                'description': t.vat_description or t.title,
+                'rate': t.flat_tax_rate,
+                'vat_query': queries.get(t.name),
+                'turnover': flt(turnovers.get(t.name, 0), 2)
+            }))
+        for row in rows:
+            if row.vat_query:
+                row.turnover = self.get_view_sum(row.vat_query)
+        self.set("activities", [r for r in rows if not r.item_tax_template or flt(r.turnover, 2)])
 
     def update_table(self, table, fields):
         # rows are configuration (rate, VAT query, ...) carried over from the previous declaration

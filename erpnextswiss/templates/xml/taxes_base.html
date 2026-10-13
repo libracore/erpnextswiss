@@ -22,6 +22,12 @@
         <eCH-0217:transferNotificationProcedure>{{ "{:.2f}".format(z225 or 0) }}</eCH-0217:transferNotificationProcedure>
         <eCH-0217:suppliesExemptFromTax>{{ "{:.2f}".format(z230 or 0) }}</eCH-0217:suppliesExemptFromTax>
         <eCH-0217:reductionOfConsideration>{{ "{:.2f}".format(z235 or 0) }}</eCH-0217:reductionOfConsideration>
+        {%- if z280 %}
+        <eCH-0217:variousDeduction>
+            <eCH-0217:amountVariousDeduction>{{ "{:.2f}".format(z280) }}</eCH-0217:amountVariousDeduction>
+            <eCH-0217:descriptionVariousDeduction>{{ misc_description | e }}</eCH-0217:descriptionVariousDeduction>
+        </eCH-0217:variousDeduction>
+        {%- endif %}
     </eCH-0217:turnoverComputation>
 {% block method %}{% endblock %}
     <eCH-0217:payableTax>{{ "{:.2f}".format(z500 or 0) }}</eCH-0217:payableTax>

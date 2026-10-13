@@ -89,6 +89,8 @@ class VATDeclaration(Document):
             'z225': self.transfers,
             'z230': self.non_taxable_services,
             'z235': self.losses,
+            'z280': self.misc,
+            'misc_description': (self.misc_description or _("Miscellaneous"))[:50],
             'z302': self.normal_amount,
             'z303': self.normal_amount_2024,
             'z312': self.reduced_amount,

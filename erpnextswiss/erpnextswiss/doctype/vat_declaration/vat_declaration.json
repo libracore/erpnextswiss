@@ -26,6 +26,7 @@
   "non_taxable_services",
   "losses",
   "misc",
+  "misc_description",
   "total_deductions",
   "taxable_revenue",
   "section_tax_calculation",
@@ -587,6 +588,13 @@
    "label": "Additional (383)",
    "precision": "2",
    "depends_on": "eval:!(doc.start_date >= '2025-01-01')"
+  },
+  {
+   "depends_on": "eval:doc.misc",
+   "fieldname": "misc_description",
+   "fieldtype": "Data",
+   "label": "Miscellaneous description",
+   "length": 50
   }
  ],
  "is_submittable": 1,

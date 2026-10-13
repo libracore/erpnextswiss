@@ -40,7 +40,6 @@ def get_voucher_value(voucher_code, customer):
                 WHERE 
                     `item_code` = %(voucher)s
                     AND `parent` IN (SELECT `name` FROM `tabSales Invoice` WHERE `docstatus` = 1 AND `customer` = %(customer)s);""",
-            ,
             {
                 'voucher': voucher_code,
                 'customer': customer

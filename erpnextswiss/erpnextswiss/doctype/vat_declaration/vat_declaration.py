@@ -33,6 +33,14 @@ FLAT_TAX_LINES = (
 class VATDeclaration(Document):
     def validate(self):
         self.calculate()
+        self.check_activities_turnover()
+
+    def check_activities_turnover(self):
+        # from 2025, taxable revenue (299) must be fully assigned to activities, e.g. a missing code or VAT query shows here
+        difference = flt(self.taxable_revenue - self.activities_turnover, 2)
+        if self.vat_type == "flat" and self.is_simple_method() and difference:
+            frappe.msgprint(_("Taxable revenue (299) differs from the supplies according to the calculation sheet by {0}.").format(
+                frappe.format(difference, {'fieldtype': "Currency"})), indicator="orange", title=_("Warning"))
 
     def is_simple_method(self):
         return str(self.start_date or "") >= SIMPLE_METHOD_START

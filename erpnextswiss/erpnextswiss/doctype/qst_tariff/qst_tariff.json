@@ -21,7 +21,9 @@
   "col_details",
   "commission_pel",
   "commission_ppa",
-  "commission_psp"
+  "commission_psp",
+  "sec_codes",
+  "codes"
  ],
  "fields": [
   {
@@ -85,6 +87,7 @@
    "read_only": 1
   },
   {
+   "description": "Rate rows in the ESTV file",
    "fieldname": "rate_count",
    "fieldtype": "Int",
    "label": "Rate Count",
@@ -134,11 +137,24 @@
    "fieldtype": "Float",
    "label": "Commission Simplified (PSP) %",
    "read_only": 1
+  },
+  {
+   "fieldname": "sec_codes",
+   "fieldtype": "Section Break",
+   "label": "Tariff Codes"
+  },
+  {
+   "description": "Rates are loaded from the ESTV file when a code is first used",
+   "fieldname": "codes",
+   "fieldtype": "Table",
+   "label": "Tariff Codes",
+   "options": "QST Tariff Code",
+   "read_only": 1
   }
  ],
  "in_create": 1,
  "links": [],
- "modified": "2026-09-14 12:00:00.000000",
+ "modified": "2026-10-05 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "QST Tariff",

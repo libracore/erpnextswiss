@@ -1,0 +1,47 @@
+{
+ "actions": [],
+ "creation": "2026-10-05 12:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "code",
+  "rate_count",
+  "loaded"
+ ],
+ "fields": [
+  {
+   "fieldname": "code",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Tariff Code",
+   "read_only": 1
+  },
+  {
+   "fieldname": "rate_count",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Rate Count",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "description": "Rates of this code are stored locally",
+   "fieldname": "loaded",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Rates Loaded",
+   "read_only": 1
+  }
+ ],
+ "istable": 1,
+ "links": [],
+ "modified": "2026-10-05 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "ERPNextSwiss",
+ "name": "QST Tariff Code",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

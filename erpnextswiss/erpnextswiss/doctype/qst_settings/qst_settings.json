@@ -10,7 +10,6 @@
   "qst_component",
   "correction_component",
   "sec_calculation",
-  "rounding",
   "min_correction",
   "thirteenth_frequency",
   "project_thirteenth",
@@ -59,13 +58,8 @@
    "label": "Calculation"
   },
   {
-   "default": "0.05",
-   "fieldname": "rounding",
-   "fieldtype": "Float",
-   "label": "Rounding"
-  },
-  {
-   "default": "0.05",
+   "default": "0",
+   "description": "Differences below this amount are not corrected; 0 corrects every difference",
    "fieldname": "min_correction",
    "fieldtype": "Currency",
    "label": "Minimum Correction"
@@ -116,7 +110,7 @@
  ],
  "issingle": 1,
  "links": [],
- "modified": "2026-09-15 14:00:00.000000",
+ "modified": "2026-10-05 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "ERPNextSwiss",
  "name": "QST Settings",

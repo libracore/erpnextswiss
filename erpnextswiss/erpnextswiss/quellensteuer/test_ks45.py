@@ -3,9 +3,10 @@ from datetime import date
 from unittest.mock import patch
 
 import frappe
+from frappe.utils import get_last_day
 
 from erpnextswiss.erpnextswiss.quellensteuer import payroll
-from erpnextswiss.erpnextswiss.quellensteuer.calculation import month_end, monthly_rdi
+from erpnextswiss.erpnextswiss.quellensteuer.calculation import monthly_rdi
 from erpnextswiss.erpnextswiss.quellensteuer.test_quellensteuer import SlipStub, month
 
 
@@ -30,8 +31,8 @@ def annual_rates(table):
 
 def run_ledger(test, staff, months, rates, models=None, changes=None, median=None, **settings):
     """Run months as consecutive salary slips and return (QST, correction) booked on each slip."""
-    settings = frappe._dict({"enabled": 1, "go_live_date": date(2021, 1, 1), "prior_year_cutoff_month": 0, "min_correction": 0.05,
-                             "rounding": 0.05, "thirteenth_frequency": "Yearly", "annual_model_correction": "Monthly",
+    settings = frappe._dict({"enabled": 1, "go_live_date": date(2021, 1, 1), "prior_year_cutoff_month": 0, "min_correction": 0,
+                             "thirteenth_frequency": "Yearly", "annual_model_correction": "Monthly",
                              "project_thirteenth": 1, "qst_component": "QST", "correction_component": "QST Correction", **settings})
     tariffs = {canton: frappe._dict(name=canton, calculation_model=model, median_value=median)
                for canton, model in (models or {"ZH": "Annual"}).items()}
@@ -39,7 +40,7 @@ def run_ledger(test, staff, months, rates, models=None, changes=None, median=Non
     for index, current in enumerate(months):
         if changes and index in changes:
             changes[index](staff)
-        slip = SlipStub(employee=staff.name, start_date=current["period"], end_date=month_end(current["period"]))
+        slip = SlipStub(employee=staff.name, start_date=current["period"], end_date=get_last_day(current["period"]))
         deductions = {}
         with patch.object(frappe, "get_cached_doc", return_value=settings), patch.object(frappe, "get_doc", return_value=staff), \
                 patch.object(frappe, "msgprint"), patch.object(frappe.db, "exists", return_value=None), \

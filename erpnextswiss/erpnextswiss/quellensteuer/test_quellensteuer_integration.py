@@ -11,13 +11,13 @@ from frappe.utils import add_months, get_last_day, getdate
 from hrms.payroll.doctype.payroll_entry.payroll_entry import (
     PayrollEntry, create_salary_slips_for_employees, submit_salary_slips_for_employees)
 
-from erpnextswiss.erpnextswiss.quellensteuer.parser import parse
-from erpnextswiss.erpnextswiss.quellensteuer.tariff import import_tariffs, store
+from erpnextswiss.erpnextswiss.quellensteuer.payroll import explain_slip, preflight
+from erpnextswiss.erpnextswiss.quellensteuer.tariff import get_bracket, import_tariffs
 from erpnextswiss.erpnextswiss.report.quellensteuer_abrechnung.quellensteuer_abrechnung import execute as run_report
 
 MONTHLY_RATES = {"A0N": [(0, 4), (4000, 8), (6000, 10), (8000, 12)], "B0N": [(0, 2), (4000, 4), (6000, 5), (8000, 6)], "L0N": [(0, 4.5)]}
 ANNUAL_RATES = {"A0N": [(0, 4), (4000, 8), (5200, 9), (6000, 10)]}
-CANTONS = {"ZZ": "Monthly", "ZX": "Monthly", "ZY": "Monthly", "YY": "Annual", "YX": "Monthly"}
+CANTONS = {"ZZ": "Monthly", "ZX": "Monthly", "ZY": "Monthly", "ZW": "Monthly", "YY": "Annual", "YX": "Monthly"}
 
 
 def tariff_text(canton, year, created, rates):
@@ -50,16 +50,17 @@ class TestQuellensteuerIntegration(FrappeTestCase):
             cls.addClassCleanup(patcher.stop)
         cls.addClassCleanup(lambda: [os.remove(path) for path in cls.files if os.path.exists(path)])
         cls.company = frappe.get_all("Company", pluck="name", limit=1)[0]
-        cls.payable = frappe.db.get_value("Company", cls.company, "default_payroll_payable_account") or frappe.db.get_value(
-            "Account", {"company": cls.company, "account_type": "Payable", "is_group": 0}, "name")
+        cls.payable = cls.account("_QST Payroll Payable", "Liability")
+        cls.liability = cls.account("_QST Tax Payable", "Liability")
+        cls.expense = cls.account("_QST Salary Expense", "Expense")
         for year in (2025, 2026):
             if not frappe.db.get_value("Fiscal Year", {"year_start_date": ("<=", f"{year}-06-30"), "year_end_date": (">=", f"{year}-06-30")}):
                 frappe.get_doc({"doctype": "Fiscal Year", "year": f"QST {year}", "year_start_date": f"{year}-01-01", "year_end_date": f"{year}-12-31"}).insert()
         cls.holiday_list = frappe.get_doc({"doctype": "Holiday List", "holiday_list_name": "_QST Integration", "from_date": "2025-01-01",
                                            "to_date": "2026-12-31"}).insert().name
         for canton, model in CANTONS.items():
-            frappe.get_doc({"doctype": "QST Canton", "canton": canton, "canton_name": f"Test {canton}", "calculation_model": model,
-                            "import_tariffs": 1}).insert()
+            frappe.get_doc({"doctype": "QST Canton", "canton": canton, "canton_name": f"Test {canton}",
+                            "calculation_model": model}).insert()
         for component, abbr, component_type, qst_type in (("_QST Base", "QSTBASE", "Earning", "Periodic"), ("_QST Tax", "QSTTAX", "Deduction", None),
                                                           ("_QST Correction", "QSTCORR", "Deduction", None)):
             frappe.get_doc({"doctype": "Salary Component", "salary_component": component, "salary_component_abbr": abbr, "type": component_type,
@@ -70,13 +71,47 @@ class TestQuellensteuerIntegration(FrappeTestCase):
                                          "depends_on_payment_days": 0}]}).insert()
         structure.submit()
         cls.structure = structure.name
-        for canton, year, created, rates in (("ZZ", 2025, "20241201", MONTHLY_RATES), ("ZZ", 2026, "20251201", MONTHLY_RATES),
-                                             ("ZX", 2026, "20251201", MONTHLY_RATES), ("ZY", 2026, "20251201", MONTHLY_RATES),
-                                             ("YY", 2026, "20251201", ANNUAL_RATES)):
-            store(parse(tariff_text(canton, year, created, rates)), None)
-        cls.settings(enabled=1, go_live_date="2025-01-01", qst_component="_QST Tax", correction_component="_QST Correction", rounding=0.05,
-                     min_correction=0.05, thirteenth_frequency="Yearly", prior_year_cutoff_month=3, annual_model_correction="Monthly",
+        for component in ("_QST Base", "_QST Tax", "_QST Correction"):
+            doc = frappe.get_doc("Salary Component", component)
+            doc.append("accounts", {"company": cls.company, "account": cls.expense if component == "_QST Base" else cls.liability})
+            doc.save()
+        fixture = cls.upload_zip("qst-test-fixture.zip", {
+            "tar25zz.txt": tariff_text("ZZ", 2025, "20241201", MONTHLY_RATES),
+            "tar26zz.txt": tariff_text("ZZ", 2026, "20251201", MONTHLY_RATES),
+            "tar26zx.txt": tariff_text("ZX", 2026, "20251201", MONTHLY_RATES),
+            "tar26zy.txt": tariff_text("ZY", 2026, "20251201", MONTHLY_RATES),
+            "tar26zw.txt": tariff_text("ZW", 2026, "20251201", MONTHLY_RATES),
+            "tar26yy.txt": tariff_text("YY", 2026, "20251201", ANNUAL_RATES)})
+        assert fixture.status == "Completed", fixture.log
+        cls.settings(enabled=1, go_live_date="2025-01-01", qst_component="_QST Tax", correction_component="_QST Correction",
+                     min_correction=0, thirteenth_frequency="Yearly", prior_year_cutoff_month=3, annual_model_correction="Monthly",
                      project_thirteenth=0)
+
+    @classmethod
+    def account(cls, name, root_type):
+        """A plain ledger account without a party type, as payroll accounting needs."""
+        existing = frappe.db.get_value("Account", {"company": cls.company, "account_name": name}, "name")
+        if existing:
+            return existing
+        groups = {"company": cls.company, "root_type": root_type, "is_group": 1}
+        parent = (frappe.db.get_value("Account", dict(groups, parent_account=("is", "set")), "name")
+                  or frappe.db.get_value("Account", groups, "name"))
+        return frappe.get_doc({"doctype": "Account", "account_name": name, "company": cls.company, "parent_account": parent,
+                               "root_type": root_type, "is_group": 0}).insert().name
+
+    @classmethod
+    def upload_zip(cls, file_name, members):
+        """Import ESTV tariff files the way a user would: zip, attach, run the import."""
+        buffer = io.BytesIO()
+        with zipfile.ZipFile(buffer, "w") as archive:
+            for member, text in members.items():
+                archive.writestr(member, text)
+        file_doc = frappe.get_doc({"doctype": "File", "file_name": file_name, "content": buffer.getvalue(), "is_private": 1}).insert()
+        cls.files.append(file_doc.get_full_path())
+        imp = frappe.get_doc({"doctype": "QST Tariff Import", "file": file_doc.file_url}).insert()
+        import_tariffs(imp.name)
+        imp.reload()
+        return imp
 
     @staticmethod
     def settings(**values):
@@ -120,17 +155,23 @@ class TestQuellensteuerIntegration(FrappeTestCase):
     def details(slip):
         return [(str(row.period), row.entry_type, row.tariff_code, row.tax) for row in slip.qst_details]
 
+    def test_tariff_file_stays_available(self):
+        text = tariff_text("YX", 2026, "20260220", MONTHLY_RATES)
+        first = self.upload_zip("qst-test-fallback-1.zip", {"tar26yx.txt": text})
+        self.assertEqual(first.status, "Completed", first.log)
+        second = self.upload_zip("qst-test-fallback-2.zip", {"tar26yx.txt": text})
+        self.assertIn("already imported", second.log)
+        tariff = "QST-YX-2026-20260220"
+        with self.assertRaises(frappe.ValidationError):
+            frappe.delete_doc("QST Tariff Import", first.name)
+        frappe.delete_doc("File", frappe.db.get_value("File", {"file_url": first.file}, "name"), force=True, ignore_permissions=True)
+        self.assertEqual(get_bracket(tariff, "B0N", 5000).rate, 4)
+        frappe.db.delete("QST Tariff", {"canton": "YX"})
+        frappe.db.delete("QST Tariff Rate", {"tariff": tariff})
+
     def test_tariff_import_from_zip(self):
         def run(file_name, text):
-            buffer = io.BytesIO()
-            with zipfile.ZipFile(buffer, "w") as archive:
-                archive.writestr("tar26yx.txt", text)
-            file_doc = frappe.get_doc({"doctype": "File", "file_name": file_name, "content": buffer.getvalue(), "is_private": 1}).insert()
-            self.files.append(file_doc.get_full_path())
-            imp = frappe.get_doc({"doctype": "QST Tariff Import", "file": file_doc.file_url}).insert()
-            import_tariffs(imp.name)
-            imp.reload()
-            return imp
+            return self.upload_zip(file_name, {"tar26yx.txt": text})
 
         text = tariff_text("YX", 2026, "20260215", MONTHLY_RATES)
         first = run("qst-test-first.zip", text)
@@ -144,7 +185,12 @@ class TestQuellensteuerIntegration(FrappeTestCase):
         self.assertEqual(conflict.status, "Failed")
         self.assertIn("different data", conflict.log)
         self.assertEqual(frappe.db.count("QST Tariff", {"canton": "YX"}), 1)
-        self.assertEqual(frappe.db.count("QST Tariff Rate", {"tariff": "QST-YX-2026-20260215"}), 9)
+        self.assertEqual([(row.code, row.rate_count, row.loaded) for row in tariff.codes],
+                         [("A0N", 4, 0), ("B0N", 4, 0), ("L0N", 1, 0)])
+        self.assertEqual(frappe.db.count("QST Tariff Rate", {"tariff": tariff.name}), 0)
+        self.assertEqual(get_bracket(tariff.name, "A0N", 5000).rate, 8)
+        self.assertEqual(frappe.db.count("QST Tariff Rate", {"tariff": tariff.name}), 4)
+        self.assertEqual(frappe.db.get_value("QST Tariff Code", {"parent": tariff.name, "code": "A0N"}, "loaded"), 1)
         frappe.db.delete("QST Tariff", {"canton": "YX"})
         frappe.db.delete("QST Tariff Rate", {"tariff": "QST-YX-2026-20260215"})
 
@@ -167,7 +213,9 @@ class TestQuellensteuerIntegration(FrappeTestCase):
         employee = self.employee("QST Revision", {"valid_from": "2026-01-01", "canton": "ZX"})
         for start in ("2026-01-01", "2026-02-01"):
             self.assertEqual(self.amounts(self.slip(employee.name, start)), (400, 0))
-        store(parse(tariff_text("ZX", 2026, "20260301", {**MONTHLY_RATES, "A0N": [(0, 4), (4000, 9), (6000, 10), (8000, 12)]})), None)
+        revision = self.upload_zip("qst-test-revision.zip", {"tar26zx.txt": tariff_text(
+            "ZX", 2026, "20260301", {**MONTHLY_RATES, "A0N": [(0, 4), (4000, 9), (6000, 10), (8000, 12)]})})
+        self.assertEqual(revision.status, "Completed", revision.log)
         march = self.slip(employee.name, "2026-03-01")
         self.assertEqual(self.amounts(march), (450, 100))
         self.assertEqual({row.qst_tariff for row in march.qst_details}, {"QST-ZX-2026-20260301"})
@@ -257,6 +305,84 @@ class TestQuellensteuerIntegration(FrappeTestCase):
         self.assertEqual(sorted(states.values()), [0] + [1] * 31)
         self.assertEqual(states[employees[-1]], 0)
         print(f"\nPayroll Entry batch: 32 slips created in {created:.1f} s, submitted in {submitted:.1f} s")
+
+    def payroll_run(self, employees, start, accounting=True):
+        """Create and submit the salary slips of a payroll entry, with its accounting entry."""
+        frappe.local.qst_cache = {}
+        start_date, end_date = month_range(start)
+        entry = frappe.get_doc({"doctype": "Payroll Entry", "company": self.company, "posting_date": end_date, "payroll_frequency": "Monthly",
+                                "start_date": start_date, "end_date": end_date, "currency": "CHF", "exchange_rate": 1,
+                                "payroll_payable_account": self.payable})
+        entry.flags.ignore_validate = entry.flags.ignore_mandatory = True
+        entry.insert()
+        args = frappe._dict({"salary_slip_based_on_timesheet": 0, "payroll_frequency": "Monthly", "start_date": start_date, "end_date": end_date,
+                             "company": self.company, "posting_date": end_date, "deduct_tax_for_unclaimed_employee_benefits": 0,
+                             "deduct_tax_for_unsubmitted_tax_exemption_proof": 0, "payroll_entry": entry.name, "exchange_rate": 1, "currency": "CHF"})
+        create_salary_slips_for_employees(employees, args, publish_progress=False)
+
+        def reraise(process, payroll_entry, error):
+            raise error
+
+        with patch.object(PayrollEntry, "email_salary_slip"), \
+                patch("hrms.payroll.doctype.payroll_entry.payroll_entry.log_payroll_failure", reraise):
+            submit_salary_slips_for_employees(entry, entry.get_sal_slip_list(ss_status=0), publish_progress=False)
+        return entry, frappe.get_all("Salary Slip", filters={"payroll_entry": entry.name}, pluck="name")
+
+    def journal_rows(self, slips):
+        journal = frappe.db.get_value("Salary Slip", slips[0], "journal_entry")
+        self.assertTrue(journal, "no accrual journal entry was created")
+        self.assertEqual(frappe.db.get_value("Journal Entry", journal, "docstatus"), 1)
+        rows = frappe.get_all("Journal Entry Account", filters={"parent": journal}, fields=["account", "debit", "credit"])
+        return journal, rows
+
+    def test_payroll_accounting_entry(self):
+        employees = [self.employee(f"QST Accounting {index}", {"valid_from": "2026-01-01", "canton": "ZY"}).name for index in range(2)]
+        entry, slips = self.payroll_run(employees, "2026-07-01")
+        self.assertEqual(len(slips), 2)
+        taxes = sum(frappe.get_all("Salary Detail", filters={"parent": ("in", slips), "salary_component": "_QST Tax"}, pluck="amount"))
+        net = sum(frappe.get_all("Salary Slip", filters={"name": ("in", slips)}, pluck="net_pay"))
+        self.assertEqual((taxes, net), (800, 9200))
+        journal, rows = self.journal_rows(slips)
+        self.assertEqual(sum(row.credit for row in rows if row.account == self.liability), taxes)
+        self.assertEqual(sum(row.credit for row in rows if row.account == self.payable), net)
+        self.assertEqual(sum(row.debit for row in rows), sum(row.credit for row in rows))
+
+    def test_payroll_accounting_entry_with_refund(self):
+        employee = self.employee("QST Accounting Refund", {"valid_from": "2026-01-01", "canton": "ZW"})
+        self.assertEqual(self.amounts(self.slip(employee.name, "2026-09-01")), (400, 0))
+        revision = self.upload_zip("qst-test-refund.zip", {"tar26zw.txt": tariff_text(
+            "ZW", 2026, "20260901", {**MONTHLY_RATES, "A0N": [(0, 4), (4000, 6), (6000, 10), (8000, 12)]})})
+        self.assertEqual(revision.status, "Completed", revision.log)
+        entry, slips = self.payroll_run([employee.name], "2026-10-01")
+        current, correction = self.amounts(frappe.get_doc("Salary Slip", slips[0]))
+        self.assertEqual((current, correction), (300, -100))
+        journal, rows = self.journal_rows(slips)
+        self.assertEqual(sum(row.credit for row in rows if row.account == self.liability), 200)
+        self.assertEqual(sum(row.credit for row in rows if row.account == self.payable),
+                         frappe.db.get_value("Salary Slip", slips[0], "net_pay"))
+        self.assertEqual(sum(row.debit for row in rows), sum(row.credit for row in rows))
+
+    def test_preflight_reports_problems(self):
+        good = self.employee("QST Preflight Good", {"valid_from": "2026-01-01", "canton": "ZY"})
+        broken = self.employee("QST Preflight Broken", {"valid_from": "2026-01-01", "canton": "YX"})
+        start_date, end_date = month_range("2026-11-01")
+        entry = frappe.get_doc({"doctype": "Payroll Entry", "company": self.company, "posting_date": end_date, "payroll_frequency": "Monthly",
+                                "start_date": start_date, "end_date": end_date, "currency": "CHF", "exchange_rate": 1,
+                                "payroll_payable_account": self.payable,
+                                "employees": [{"employee": good.name, "employee_name": good.employee_name},
+                                              {"employee": broken.name, "employee_name": broken.employee_name}]})
+        entry.flags.ignore_validate = entry.flags.ignore_mandatory = True
+        entry.insert()
+        issues = preflight(entry.name)
+        self.assertEqual([(issue["employee"], "tariff" in issue["issue"]) for issue in issues], [(broken.name, True)])
+
+    def test_exact_cent_deduction(self):
+        employee = self.employee("QST Cents", {"valid_from": "2026-01-01", "canton": "ZZ"}, base=4999)
+        slip = self.slip(employee.name, "2026-12-01")
+        self.assertEqual(self.amounts(slip), (399.92, 0))
+        formula = explain_slip(slip.name)[0]
+        self.assertIn("399.92", formula["calculation"])
+        self.assertIn("A0N 8.0% from", formula["calculation"])
 
     def test_report(self):
         employee = self.employee("QST Report", {"valid_from": "2026-01-01", "canton": "ZZ"})

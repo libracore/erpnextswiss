@@ -43,7 +43,7 @@ CODE_TEMPLATES = (
 def get_values(doc, queries=None):
     # runs get_values with the templates above and the given VAT queries {name: total} instead of database records
     queries = queries or {}
-    templates = [frappe._dict(name=n, title=n.split(" - ")[0], vat_declaration_code=c, vat_description=None,
+    templates = [frappe._dict(name=n, title=n.split(" - ")[0], vat_declaration_code=c, description=None,
         flat_tax_rate=r, estv_activity_id=a) for n, c, r, a, t in CODE_TEMPLATES]
     with patch.object(type(doc), "get_code_templates", return_value=templates), \
             patch.object(type(doc), "get_template_turnovers", return_value={n: t for n, c, r, a, t in CODE_TEMPLATES}), \

@@ -132,7 +132,7 @@ class VATDeclaration(Document):
     def get_code_templates(self):
         return frappe.get_all("Item Tax Template",
             filters={'company': self.company, 'vat_declaration_code': ["is", "set"]},
-            fields=["name", "title", "vat_declaration_code", "vat_description", "flat_tax_rate", "estv_activity_id"],
+            fields=["name", "title", "vat_declaration_code", "description", "flat_tax_rate", "estv_activity_id"],
             order_by="title")
 
     def get_template_turnovers(self, templates):
@@ -175,7 +175,7 @@ class VATDeclaration(Document):
             rows.append(frappe._dict({
                 'item_tax_template': t.name,
                 'activity_id': t.estv_activity_id,
-                'description': t.vat_description or t.title,
+                'description': t.description or t.title,
                 'rate': t.flat_tax_rate,
                 'vat_query': queries.get(t.name),
                 'turnover': flt(turnovers.get(t.name, 0), 2)

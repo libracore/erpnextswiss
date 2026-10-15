@@ -107,6 +107,8 @@ class VATDeclaration(Document):
 
         templates = self.get_code_templates()
         turnovers = self.get_template_turnovers([t.name for t in templates])
+        if templates:
+            self.check_lines_without_template()
         self.set_code_totals(templates, turnovers, {code: field for field, code in totals.items()})
 
         for column, fields in (("base_grand_total", totals), ("total_taxes_and_charges", taxes)):
@@ -154,6 +156,26 @@ class VATDeclaration(Document):
             rate = sum(flt(r) for r in json.loads(item.item_tax_rate or "{}").values())
             turnovers[item.item_tax_template] = turnovers.get(item.item_tax_template, 0) + flt(item.base_net_amount) * (1 + rate / 100)
         return turnovers
+
+    def get_lines_without_template(self):
+        return frappe.db.sql("""
+            SELECT `si`.`name`, `sii`.`base_net_amount`
+            FROM `tabSales Invoice Item` AS `sii`
+            JOIN `tabSales Invoice` AS `si` ON `si`.`name` = `sii`.`parent`
+            WHERE `si`.`docstatus` = 1
+              AND `si`.`company` = %(company)s
+              AND `si`.`posting_date` BETWEEN %(start_date)s AND %(end_date)s
+              AND IFNULL(`sii`.`item_tax_template`, '') = ''""",
+            {'company': self.company, 'start_date': self.start_date, 'end_date': self.end_date}, as_dict=True)
+
+    def check_lines_without_template(self):
+        # with Item Tax Template codes, invoice lines without a template are missing from 200 and the activities
+        lines = self.get_lines_without_template()
+        if lines:
+            invoices = sorted(set(l.name for l in lines))
+            frappe.msgprint(_("{0} sales invoice lines without Item Tax Template (net {1}) are not included: {2}").format(
+                len(lines), frappe.format(sum(flt(l.base_net_amount) for l in lines), {'fieldtype': "Currency"}),
+                ", ".join(invoices[:10]) + (" ..." if len(invoices) > 10 else "")), indicator="orange", title=_("Warning"))
 
     def set_code_totals(self, templates, turnovers, code_fields):
         # only fields with at least one Item Tax Template code are set, all codes except 900/910 count towards 200

@@ -40,7 +40,7 @@ CODE_TEMPLATES = (
     ("Spende - T", "910", None, None, 300.0),
 )
 
-def get_values(doc, queries=None):
+def get_values(doc, queries=None, lines=None):
     # runs get_values with the templates above and the given VAT queries {name: total} instead of database records
     queries = queries or {}
     templates = [frappe._dict(name=n, title=n.split(" - ")[0], vat_declaration_code=c, description=None,
@@ -48,7 +48,8 @@ def get_values(doc, queries=None):
     with patch.object(type(doc), "get_code_templates", return_value=templates), \
             patch.object(type(doc), "get_template_turnovers", return_value={n: t for n, c, r, a, t in CODE_TEMPLATES}), \
             patch.object(type(doc), "get_view_sum", side_effect=lambda view_name, column="base_grand_total": queries[view_name]), \
-            patch.object(frappe.db, "exists", side_effect=lambda doctype, name=None: name in queries):
+            patch.object(frappe.db, "exists", side_effect=lambda doctype, name=None: name in queries), \
+            patch.object(type(doc), "get_lines_without_template", return_value=lines or []):
         doc.get_values()
 
 def render_transfer_file(doc):
@@ -142,3 +143,11 @@ class TestVATDeclaration(unittest.TestCase):
             doc.total_revenue = 1000
             doc.validate()
             self.assertEqual(msgprint.call_count, 1)
+
+    def test_lines_without_template(self):
+        with patch("frappe.msgprint") as msgprint:
+            get_values(make_declaration())
+            self.assertEqual(msgprint.call_count, 0)
+            get_values(make_declaration(), lines=[frappe._dict(name="SINV-1", base_net_amount=100)])
+            self.assertEqual(msgprint.call_count, 1)
+            self.assertIn("SINV-1", msgprint.call_args[0][0])

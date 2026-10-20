@@ -8,9 +8,10 @@ from frappe.utils.password import get_decrypted_password
 import requests
 import json
 from frappe.utils.background_jobs import enqueue
-from frappe.utils import cint, flt
+from frappe.utils import cint, flt, get_datetime, get_system_timezone
 from datetime import datetime
 from frappe.desk.doctype.tag.tag import add_tag
+from zoneinfo import ZoneInfo
 
 API_HOST = "https://api.brevo.com/v3/"
 
@@ -80,7 +81,8 @@ class BrevoSettings(Document):
                     value = flt(attributes.get(m.attribute))
                 else:
                     value = attributes.get(m.attribute)
-                contact.update({m.fieldname: value})
+                if value:                                   # only update in case we have a value (to prevent overwriting with blanks)
+                    contact.update({m.fieldname: value})
                 
                 if m.fieldname in ["phone", "mobile_no"] and value:
                     if "@" in value:
@@ -116,8 +118,9 @@ class BrevoSettings(Document):
         }
         if modified_since:
             if type(modified_since) == str:
-                modified_since = datetime.strptime(modified_since[:19], "%Y-%m-%d %H:%M:%S")
-            parameters['modifiedSince'] = modified_since.strftime("%Y-%m-%dT%H:%M:%S.000Z")
+                modified_since = get_datetime(modified_since)
+            dt = modified_since.replace(tzinfo=ZoneInfo(get_system_timezone()))
+            parameters['modifiedSince'] = dt.isoformat(timespec="milliseconds")
             
         endpoint = "{0}contacts".format(API_HOST)
 
@@ -323,6 +326,7 @@ class BrevoSettings(Document):
                     customer = frappe.get_doc("Customer", c.link_name)
                     break
         
+        modified = contact_doc.modified.replace(tzinfo=ZoneInfo(get_system_timezone())).isoformat(timespec="milliseconds")
         parameters = {
             'email': contact_doc.email_id,
             'ext_id': contact_doc.name,
@@ -340,7 +344,7 @@ class BrevoSettings(Document):
                 'DELIVRABILITE': contact_doc.get("deliverability") or "",
                 'FROM': contact_doc.get("source") or "",
                 'SOURCE': contact_doc.get("event_source") or "",
-                'LAST_MODIFIED': contact_doc.modified.strftime("%Y-%m-%dT%H:%M:%S.000Z")
+                'LAST_MODIFIED': modified
             }
         }
         if list_ids and len(list_ids) > 0:

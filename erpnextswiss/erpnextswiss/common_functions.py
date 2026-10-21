@@ -66,7 +66,7 @@ def get_primary_address(target_name, target_type="Customer"):
         LEFT JOIN `tabCountry` ON `tabAddress`.`country` = `tabCountry`.`name`
         WHERE `link_doctype` = %(type)s AND `link_name` = %(name)s
         ORDER BY `tabAddress`.`is_primary_address` DESC
-        LIMIT 1;""".format
+        LIMIT 1;"""
     try:
         return frappe.db.sql(sql_query, 
             {

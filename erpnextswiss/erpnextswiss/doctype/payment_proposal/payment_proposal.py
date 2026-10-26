@@ -203,7 +203,7 @@ class PaymentProposal(Document):
                 frappe.throw( _("Employee <a href=\"/desk#Form/Employee/{0}\">{0}</a> has no address.").format(emp.name) )
             address_lines = (emp.permanent_address or "").split("\n")
             plz_city = address_lines[1].split(" ")
-            cntry = frappe.get_value("Company", emp.company, "country")
+            cntry = get_country_from_iban(emp.bank_ac_no, frappe.get_value("Company", emp.company, "country"))
             self.add_payment(
                 receiver_name=emp.employee_name, 
                 iban=emp.bank_ac_no,
@@ -237,7 +237,7 @@ class PaymentProposal(Document):
                 frappe.throw( _("Employee <a href=\"/desk#Form/Employee/{0}\">{0}</a> has no address.").format(emp.name) )
             address_lines = emp.permanent_address.split("\n")
             plz_city = address_lines[1].split(" ")
-            cntry = frappe.get_value("Company", emp.company, "country")
+            cntry = get_country_from_iban(emp.bank_ac_no, frappe.get_value("Company", emp.company, "country"))
             self.add_payment(
                 receiver_name=emp.employee_name, 
                 iban=emp.bank_ac_no,
@@ -694,6 +694,11 @@ def create_payment_proposal(date=None, company=None, currency=None):
 # adds Windows-compatible line endings (to make the xml look nice)    
 def make_line(line):
     return line + "\r\n"
+
+# get the country of an account from its IBAN (e.g. DE for German employees), fallback to default
+def get_country_from_iban(iban, default_country):
+    country_code = (iban or "").replace(" ", "")[:2].lower()
+    return frappe.get_value("Country", {'code': country_code}, "name") or default_country
 
 
 """

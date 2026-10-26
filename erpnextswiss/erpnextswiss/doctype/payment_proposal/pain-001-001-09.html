@@ -72,13 +72,13 @@
         <Amt>
           <InstdAmt Ccy="{{ payment.currency }}">{{ "{:.2f}".format(payment.amount) }}</InstdAmt>
         </Amt>
-        {%- if payment.service_level == "IBAN" and xml_region == "CH" and (payment.iban[0:2] not in ("CH", "LI")) and payment.currency != "EUR" %}{# type 6 payment for USD #}
+        {%- if payment.service_level == "IBAN" and xml_region == "CH" and (payment.iban[0:2] not in ("CH", "LI")) and payment.bic %}{# foreign payment: creditor agent BIC (type 6, required by e.g. DE banks) #}
         <CdtrAgt>
-            <FinInstnId><BIC>{{ payment.bic }}</BIC></FinInstnId>
+            <FinInstnId><BICFI>{{ payment.bic }}</BICFI></FinInstnId>
         </CdtrAgt>
         {%- endif %}
         <Cdtr>
-          <Nm>{{ payment.creditor.name[:70] }}</Nm>
+          <Nm>{{ payment.creditor.name[:70] if payment.service_level == "SEPA" else payment.creditor.name[:140] }}</Nm>{# SPS 2025: 140 characters, SEPA 70 #}
           <PstlAdr>
             <StrtNm>{{ payment.creditor.street }}</StrtNm>
             <BldgNb>{% if payment.creditor.building %}{{ payment.creditor.building }}{% else %}0{% endif %}</BldgNb>

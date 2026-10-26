@@ -388,18 +388,15 @@ class PaymentProposal(Document):
         }
         company_address = get_primary_address(target_name=self.company, target_type="Company")
         if company_address:
-            data['company']['address_line1'] = html.escape(company_address.address_line1)
-            data['company']['address_line2'] = "{0} {1}".format(html.escape(company_address.pincode), html.escape(company_address.city))
+            # crop lines if required (length limitation), then escape
+            address_line1 = (company_address.address_line1 or "")[:35]
+            data['company']['address_line1'] = html.escape(address_line1)
+            data['company']['address_line2'] = html.escape("{0} {1}".format(company_address.pincode, company_address.city)[:35])
             data['company']['country_code'] = company_address['country_code']
-            data['company']['pincode'] = html.escape(company_address.pincode)
-            data['company']['city'] = html.escape(company_address.city)
-            # crop lines if required (length limitation)
-            data['company']['address_line1'] = data['company']['address_line1'][:35]
-            data['company']['address_line2'] = data['company']['address_line2'][:35]
-            data['company']['street'] = html.escape(get_street_name(data['company']['address_line1'])[:35])
-            data['company']['building'] = html.escape(get_building_number(data['company']['address_line1'])[:5])
-            data['company']['pincode'] = data['company']['pincode'][:16]
-            data['company']['city'] = data['company']['city'][:35]
+            data['company']['street'] = html.escape(get_street_name(address_line1)[:35])
+            data['company']['building'] = html.escape(get_building_number(address_line1)[:5])
+            data['company']['pincode'] = html.escape((company_address.pincode or "")[:16])
+            data['company']['city'] = html.escape((company_address.city or "")[:35])
         ### Payment Information (PmtInf, B-Level)
         # payment information records (1 .. 99'999)
         payment_account = frappe.get_doc('Account', self.pay_from_account)
@@ -426,7 +423,7 @@ class PaymentProposal(Document):
                 'currency': payment.currency,
                 'amount': round(payment.amount, 2),
                 'creditor': {
-                    'name': html.escape(payment.receiver),
+                    'name': html.escape(payment.receiver[:70] if payment.payment_type == "SEPA" else payment.receiver[:140]),     # SEPA: max. 70 characters
                     'address_line1': html.escape(payment.receiver_address_line1[:35]),
                     'address_line2': html.escape(payment.receiver_address_line2[:35]),
                     'street': html.escape(get_street_name(payment.receiver_address_line1)[:35]),

@@ -34,9 +34,15 @@
         <Nm>{{ company.name }}</Nm>
         {%- if company.address_line1 %}
         <PstlAdr>
+          {%- if company.street %}
           <StrtNm>{{ company.street }}</StrtNm>
-          <BldgNb>{% if company.building %}{{ company.building }}{% else %}0{% endif %}</BldgNb>
+          {%- endif %}
+          {%- if company.building %}
+          <BldgNb>{{ company.building }}</BldgNb>
+          {%- endif %}
+          {%- if company.pincode %}
           <PstCd>{{ company.pincode }}</PstCd>
+          {%- endif %}
           <TwnNm>{{ company.city }}</TwnNm>
           <Ctry>{{ company.country_code }}</Ctry>
           {#- <AdrLine>{{ company.address_line1 }}</AdrLine> ONLY AFTER 2015-11 #}
@@ -78,11 +84,17 @@
         </CdtrAgt>
         {%- endif %}
         <Cdtr>
-          <Nm>{{ payment.creditor.name[:70] if payment.service_level == "SEPA" else payment.creditor.name[:140] }}</Nm>{# SPS 2025: 140 characters, SEPA 70 #}
+          <Nm>{{ payment.creditor.name }}</Nm>
           <PstlAdr>
+            {%- if payment.creditor.street %}
             <StrtNm>{{ payment.creditor.street }}</StrtNm>
-            <BldgNb>{% if payment.creditor.building %}{{ payment.creditor.building }}{% else %}0{% endif %}</BldgNb>
+            {%- endif %}
+            {%- if payment.creditor.building %}
+            <BldgNb>{{ payment.creditor.building }}</BldgNb>
+            {%- endif %}
+            {%- if payment.creditor.pincode %}
             <PstCd>{{ payment.creditor.pincode }}</PstCd>
+            {%- endif %}
             <TwnNm>{{ payment.creditor.city }}</TwnNm>
             <Ctry>{{ payment.creditor.country_code }}</Ctry>
             {#- <AdrLine>{{ payment.creditor.address_line1 }}</AdrLine>ONLY AFTER 2015-11 #}

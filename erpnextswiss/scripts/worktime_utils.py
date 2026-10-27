@@ -49,6 +49,9 @@ def get_target_time(employee, company, from_date, to_date):
     '''
         Diese Methode liefert die SOLL-Zeit in Stunden.
 
+        Tage vor dem Eintrittsdatum des Mitarbeiters werden nicht
+        als SOLL-Zeit berücksichtigt.
+
         Wenn ein Tag aus dem Datumsbereich in einer gültigen
         Holiday-List vorkommt, wird dieser mit 0 SOLL-Stunden
         berechnet.
@@ -58,6 +61,13 @@ def get_target_time(employee, company, from_date, to_date):
 
     if from_date > to_date:
         frappe.throw("Das Startdatum darf nicht nach dem Enddatum liegen.")
+
+    date_of_joining = frappe.db.get_value("Employee", employee, "date_of_joining")
+    if date_of_joining:
+        from_date = max(from_date, getdate(date_of_joining))
+
+    if from_date > to_date:
+        return 0.0
 
     target_daily_hours = get_daily_hours(company)
     target_time_in_hours = 0.0

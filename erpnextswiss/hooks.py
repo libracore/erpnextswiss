@@ -41,6 +41,7 @@ doctype_js = {
     "Fiscal Year":          "public/js/fiscal_year.js",
     "Supplier":             "public/js/supplier.js",
     "Customer":             "public/js/customer.js",
+    "Employee":             "public/js/employee.js",
     "Address":              "public/js/address.js",
     "Holiday List":         "public/js/holiday_list.js",
     "Payroll Entry":        "public/js/payroll_entry.js",

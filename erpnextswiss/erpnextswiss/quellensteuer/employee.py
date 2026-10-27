@@ -3,7 +3,8 @@ from frappe import _
 from frappe.utils import flt, get_year_start, getdate, today
 
 from erpnextswiss.erpnextswiss.quellensteuer import is_enabled
-from erpnextswiss.erpnextswiss.quellensteuer.calculation import tariff_code
+from erpnextswiss.erpnextswiss.common_functions import get_pincode
+from erpnextswiss.erpnextswiss.quellensteuer.calculation import CROSS_BORDER_GROUPS, tariff_code
 from erpnextswiss.erpnextswiss.quellensteuer.payroll import DEGREE_MODES, own_degree
 from erpnextswiss.erpnextswiss.quellensteuer.tariff import get_tariff, prefetch
 
@@ -25,6 +26,8 @@ def validate_employee(doc, method=None):
             continue
         if not row.canton or not row.tariff_group:
             frappe.throw(_("Quellensteuer row {0}: canton and tariff group are required").format(row.idx))
+        if not row.municipality and row.tariff_group not in CROSS_BORDER_GROUPS:
+            frappe.throw(_("Quellensteuer row {0}: municipality of residence is required").format(row.idx))
         row.tariff_code = tariff_code(row.tariff_group, row.children, row.church_tax)
         if row.tax_override and not flt(row.get(frappe.scrub(row.tax_override))):
             frappe.throw(_("Quellensteuer row {0}: {1} requires a value").format(row.idx, _(row.tax_override)))
@@ -38,3 +41,21 @@ def validate_employee(doc, method=None):
         tariff = get_tariff(row.canton, max(valid_from, get_year_start(today())))
         if tariff and not prefetch(tariff.name, row.tariff_code):
             frappe.msgprint(_("Tariff code {0} does not exist in {1}").format(row.tariff_code, tariff.name), alert=True)
+
+
+@frappe.whitelist()
+def municipality_from_address(employee):
+    """Municipality of an employee, derived from the postal code in their address."""
+    address = frappe.db.get_value("Employee", employee, ["permanent_address", "current_address"], as_dict=True)
+    for text in (address or {}).values():
+        for line in (text or "").splitlines():
+            code = get_pincode(line)
+            if not (code.isdigit() and len(code) == 4):
+                continue
+            city = line[len(code):].strip().lower()
+            places = frappe.get_all("Pincode", filters={"pincode": code, "bfsnr": ("is", "set")},
+                                    fields=["city", "bfsnr"])
+            match = next((p for p in places if p.city.lower() == city), None) or (places[0] if places else None)
+            if match:
+                return match.bfsnr
+    return None

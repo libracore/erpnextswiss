@@ -648,3 +648,6 @@ Quellensteuer can be calculated for all {0} employees.,Die Quellensteuer kann f�
 Fixed Rate,Fester Steuersatz,QST Slip Detail
 {0}%,{0}%
 from {0},ab {0}
+Quellensteuer row {0}: municipality of residence is required,Quellensteuer Zeile {0}: Wohnsitzgemeinde ist erforderlich
+Municipality of residence; its BFS number goes into the declaration,Wohnsitzgemeinde; ihre BFS-Nummer erscheint in der Abrechnung
+No municipalities imported yet. Quellensteuer records need the municipality of residence for its BFS number: import bfsnr_municipality.csv from the app folder erpnextswiss/public/res in the Municipality list.,Es sind noch keine Gemeinden importiert. Die Quellensteuerdaten benötigen die Wohnsitzgemeinde für deren BFS-Nummer: bitte bfsnr_municipality.csv aus dem App-Ordner erpnextswiss/public/res in der Gemeindeliste importieren.

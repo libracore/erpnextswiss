@@ -266,7 +266,7 @@ tr.sum td { font-weight: 600; background: var(--ground); }
       <span class="chip">8 custom fields</span>
       <span class="chip">4 doc hooks</span>
       <span class="chip">1 report · 1 patch</span>
-      <span class="chip">74 tests · 18 integration</span>
+      <span class="chip">77 tests · 18 integration</span>
     </div>
   </header>
 
@@ -457,7 +457,7 @@ tr.sum td { font-weight: 600; background: var(--ground); }
               <tr><td class="k">QST Tariff</td><td>read-only · <span class="mono">QST-ZH-2026-20251208</span></td><td><code>canton</code> <code>year</code> <code>valid_from</code> <code>creation_date</code> <code>calculation_model</code> <code>content_hash</code> <code>record_count</code> <code>rate_count</code> <code>commission_pel/ppa/psp</code> <code>median_value</code> <code>first_imported_on</code> · <code>codes</code></td></tr>
               <tr><td class="k">QST Tariff Code</td><td>child of Tariff · read-only</td><td><code>code</code> <code>rate_count</code> <code>loaded</code> · one row per tariff code in the ESTV file · the catalogue that makes on-demand loading possible</td></tr>
               <tr><td class="k">QST Tariff Rate</td><td>read-only · autoincrement</td><td><code>tariff</code> <code>record_type</code> 06/11 · <code>code</code> <code>income_from</code> <code>step</code> <code>children</code> <code>min_tax</code> <code>rate</code></td></tr>
-              <tr><td class="k">QST Employee Record</td><td>child of Employee</td><td><code>valid_from</code> <code>liable</code> <code>canton</code> <code>municipality</code> <code>tariff_group</code> <code>children</code> <code>church_tax</code> → <code>tariff_code</code> · <code>cross_border_valid_until</code> · <code>hourly_wage</code> · <code>other_employment</code> + <code>total_degree</code> / <code>other_income</code> · <code>tax_override</code> Fixed Rate/Fixed Amount + <code>fixed_rate</code> / <code>fixed_amount</code> / <code>override_reference</code></td></tr>
+              <tr><td class="k">QST Employee Record</td><td>child of Employee</td><td><code>valid_from</code> <code>liable</code> <code>canton</code> <code>municipality</code> (required for residents) <code>tariff_group</code> <code>children</code> <code>church_tax</code> → <code>tariff_code</code> · <code>cross_border_valid_until</code> · <code>hourly_wage</code> · <code>other_employment</code> + <code>total_degree</code> / <code>other_income</code> · <code>tax_override</code> Fixed Rate/Fixed Amount + <code>fixed_rate</code> / <code>fixed_amount</code> / <code>override_reference</code></td></tr>
               <tr><td class="k">QST Slip Detail</td><td>child of Salary Slip · read-only</td><td><code>period</code> <code>entry_type</code> Current/Correction · <code>tariff_code</code> <code>qst_tariff</code> · <code>periodic</code> <code>aperiodic</code> <code>thirteenth</code> <code>replacement</code> <code>days</code> <code>hours</code> <code>hourly_wage</code> <code>own_degree</code> · <code>rate_determining_income</code> <code>rate</code> <code>income_from</code> <code>min_tax</code> · <code>expected_tax</code> <code>previously_deducted</code> <code>tax</code> · <code>reason</code> stored untranslated, shown translated</td></tr>
             </tbody>
           </table>
@@ -766,6 +766,7 @@ tr.sum td { font-weight: 600; background: var(--ground); }
             <h3>Setup · go-live</h3>
             <ul class="kw">
               <li>migrate → patch seeds 26 cantons (FR GE TI VD VS = Annual)</li>
+              <li>import municipalities: <code>bfsnr_municipality.csv</code> (2’158 entries, ships with the app) in the Municipality list · postal codes likewise</li>
               <li>tag salary components with <code>qst_type</code></li>
               <li>remove manual QST formulas from structures</li>
               <li>employee records from go-live month</li>
@@ -947,6 +948,14 @@ tr.sum td { font-weight: 600; background: var(--ground); }
                 <dt>Decide</dt><dd>—</dd>
               </dl></td></tr>
 
+              <tr class="item"><td><span class="pill p-tested">Resolved</span></td><td>BFS number of the municipality · prefilled from the address, required for residents</td><td class="where">patches · QST Employee Record</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl27" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>
+              <tr class="detail" id="cl27" hidden><td colspan="4"><dl class="explain">
+                <dt>What</dt><dd>the declaration needs the BFS number of the municipality of residence · the register ships with ERPNextSwiss (<code>public/res/bfsnr_municipality.csv</code>, 2’158 entries, plus 4’116 postal codes) and is imported once from the Municipality list · adding a Quellensteuer row prefills the municipality from the postal code in the employee’s address · the field is mandatory for residents and left empty for cross-border tariff groups (L–Q, R–V, SF), who have no Swiss municipality · QST Settings warns while the register is missing</dd>
+                <dt>Why</dt><dd>found while replicating a customer case: the table was empty, so the declaration would have shown no BFS number · the ESTV tariff files cannot supply it — all 26 canton files contain only record types 00, 06, 11, 12, 13 and 99 (tariffs, categories, commission, median)</dd>
+                <dt>Effect</dt><dd>importing the register takes seconds and is a one-off go-live step · no automatic import, because ERPNextSwiss also runs in Germany and Austria where Swiss municipalities are noise · link fields show “Küsnacht (ZH)” rather than the number 154 · no per-employee lookup: 8700 → 154 comes from the address</dd>
+                <dt>Decide</dt><dd>review decision: import on go-live, prefill, require</dd>
+              </dl></td></tr>
+
               <tr class="item"><td><span class="pill p-tested">Tested</span></td><td>Payroll Entry &gt; 30 employees (background job)</td><td class="where">—</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl11" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>
               <tr class="detail" id="cl11" hidden><td colspan="4"><dl class="explain">
                 <dt>What</dt><dd>HRMS creates and submits slips in a background job · the QST hook runs per slip (employee, past slips, deducted tax, cached tariff lookups)</dd>
@@ -978,9 +987,9 @@ tr.sum td { font-weight: 600; background: var(--ground); }
                 <dt>Decide</dt><dd>quick manual check in desk</dd>
               </dl></td></tr>
 
-              <tr class="item"><td><span class="pill p-scope">Scope</span></td><td>74 tests: 29 unit · 27 KS45 examples · 18 integration (rolled back)</td><td class="where">test_quellensteuer.py</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl15" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>
+              <tr class="item"><td><span class="pill p-scope">Scope</span></td><td>77 tests: 32 unit · 27 KS45 examples · 18 integration (rolled back)</td><td class="where">test_quellensteuer.py</td><td class="tg"><button class="fold" type="button" aria-expanded="false" aria-controls="cl15" aria-label="Show details"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6 L8 11 L13 6" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></button></td></tr>
               <tr class="detail" id="cl15" hidden><td colspan="4"><dl class="explain">
-                <dt>What</dt><dd>test_quellensteuer: 29 unit tests, database and tariffs mocked · test_ks45: KS45 §6.3–6.6 income examples, §7.3–7.4 and §8.2–8.4 as month-by-month slip ledgers checked against every deduction and correction in the KS45 tables · test_quellensteuer_integration: 18 database tests including payroll accounting, commits disabled, everything rolled back after the run</dd>
+                <dt>What</dt><dd>test_quellensteuer: 32 unit tests, database and tariffs mocked · test_ks45: KS45 §6.3–6.6 income examples, §7.3–7.4 and §8.2–8.4 as month-by-month slip ledgers checked against every deduction and correction in the KS45 tables · test_quellensteuer_integration: 18 database tests including payroll accounting, commits disabled, everything rolled back after the run</dd>
                 <dt>Why</dt><dd>run with <code>bench --site … run-tests --module …</code> (<code>allow_tests</code> enabled on the dev site) · integration tests commit nothing</dd>
                 <dt>Effect</dt><dd>KS45 examples use the tariff rates printed in the examples · examples the module cannot calculate are listed as limitations above</dd>
                 <dt>Decide</dt><dd>—</dd>

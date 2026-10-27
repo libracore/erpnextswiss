@@ -44,18 +44,19 @@ def validate_employee(doc, method=None):
 
 
 @frappe.whitelist()
-def municipality_from_address(employee):
-    """Municipality of an employee, derived from the postal code in their address."""
-    address = frappe.db.get_value("Employee", employee, ["permanent_address", "current_address"], as_dict=True)
-    for text in (address or {}).values():
+def location_from_address(employee):
+    """Municipality and canton of an employee, derived from the postal code in their address."""
+    addresses = frappe.db.get_value("Employee", employee, ["current_address", "permanent_address"]) or (None, None)
+    for text in addresses:
         for line in (text or "").splitlines():
             code = get_pincode(line)
             if not (code.isdigit() and len(code) == 4):
                 continue
             city = line[len(code):].strip().lower()
             places = frappe.get_all("Pincode", filters={"pincode": code, "bfsnr": ("is", "set")},
-                                    fields=["city", "bfsnr"])
-            match = next((p for p in places if p.city.lower() == city), None) or (places[0] if places else None)
-            if match:
-                return match.bfsnr
-    return None
+                                    fields=["city", "bfsnr", "canton_code"])
+            place = next((p for p in places if p.city.lower() == city), None) or (places[0] if places else None)
+            if place:
+                return {"municipality": place.bfsnr,
+                        "canton": place.canton_code if frappe.db.exists("QST Canton", place.canton_code) else None}
+    return {}

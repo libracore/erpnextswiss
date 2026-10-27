@@ -160,25 +160,34 @@ class SlipStub(frappe._dict):
     compute_year_to_date = compute_month_to_date = compute_component_wise_year_to_date = set_net_pay
 
 
-class TestMunicipality(unittest.TestCase):
-    def resolve(self, address, places):
-        with patch.object(frappe.db, "get_value", return_value=frappe._dict(address)), \
-                patch.object(frappe, "get_all", return_value=[frappe._dict(p) for p in places]):
-            return employee_record.municipality_from_address("HR-EMP-TEST")
+class TestAddressLocation(unittest.TestCase):
+    def resolve(self, current, permanent, places, canton_exists=True):
+        with patch.object(frappe.db, "get_value", return_value=(current, permanent)), \
+                patch.object(frappe, "get_all", return_value=[frappe._dict(place) for place in places]), \
+                patch.object(frappe.db, "exists", return_value=canton_exists):
+            return employee_record.location_from_address("HR-EMP-TEST")
 
-    def test_postal_code_resolves_to_municipality(self):
-        address = {"permanent_address": "Johannisburgstrasse 11\n8700 Küsnacht", "current_address": None}
-        self.assertEqual(self.resolve(address, [{"city": "Küsnacht ZH", "bfsnr": "154"}]), "154")
+    def test_postal_code_resolves_to_municipality_and_canton(self):
+        places = [{"city": "Effretikon", "bfsnr": "296", "canton_code": "ZH"}]
+        self.assertEqual(self.resolve("Im Tannacher 3\n8307 Effretikon", None, places),
+                         {"municipality": "296", "canton": "ZH"})
+
+    def test_current_address_wins_over_the_permanent_one(self):
+        places = [{"city": "Küsnacht ZH", "bfsnr": "154", "canton_code": "ZH"}]
+        self.assertEqual(self.resolve("Seestrasse 1\n8700 Küsnacht", "Calle Mayor 1\n28013 Madrid", places)["municipality"], "154")
 
     def test_city_decides_between_places_of_one_code(self):
-        address = {"permanent_address": "Hauptstrasse 1\n3000 Bern", "current_address": None}
-        places = [{"city": "Bern Bümpliz", "bfsnr": "351"}, {"city": "Bern", "bfsnr": "352"}]
-        self.assertEqual(self.resolve(address, places), "352")
+        places = [{"city": "Bern Bümpliz", "bfsnr": "351", "canton_code": "BE"},
+                  {"city": "Bern", "bfsnr": "352", "canton_code": "BE"}]
+        self.assertEqual(self.resolve("Hauptstrasse 1\n3000 Bern", None, places)["municipality"], "352")
+
+    def test_canton_only_when_it_is_a_quellensteuer_canton(self):
+        places = [{"city": "Effretikon", "bfsnr": "296", "canton_code": "ZH"}]
+        self.assertIsNone(self.resolve("8307 Effretikon", None, places, canton_exists=False)["canton"])
 
     def test_address_without_swiss_postal_code(self):
-        address = {"permanent_address": "Hauptstrasse 1\nD-79576 Weil am Rhein", "current_address": None}
-        self.assertIsNone(self.resolve(address, []))
-        self.assertIsNone(self.resolve({"permanent_address": None, "current_address": None}, []))
+        self.assertEqual(self.resolve("Hauptstrasse 1\nD-79576 Weil am Rhein", None, []), {})
+        self.assertEqual(self.resolve(None, None, []), {})
 
 
 class TestPayroll(unittest.TestCase):

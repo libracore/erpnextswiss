@@ -6,6 +6,7 @@ import frappe
 from frappe.utils import flt, get_last_day
 from frappe.utils.synchronization import filelock
 
+from erpnextswiss.erpnextswiss.quellensteuer import employee as employee_record
 from erpnextswiss.erpnextswiss.quellensteuer import payroll, tariff
 from erpnextswiss.erpnextswiss.quellensteuer.calculation import (
     annual_rdi, days_30, monthly_rdi, tariff_code, tax_amount, thirteenth_rdi)
@@ -157,6 +158,27 @@ class SlipStub(frappe._dict):
         pass
 
     compute_year_to_date = compute_month_to_date = compute_component_wise_year_to_date = set_net_pay
+
+
+class TestMunicipality(unittest.TestCase):
+    def resolve(self, address, places):
+        with patch.object(frappe.db, "get_value", return_value=frappe._dict(address)), \
+                patch.object(frappe, "get_all", return_value=[frappe._dict(p) for p in places]):
+            return employee_record.municipality_from_address("HR-EMP-TEST")
+
+    def test_postal_code_resolves_to_municipality(self):
+        address = {"permanent_address": "Johannisburgstrasse 11\n8700 Küsnacht", "current_address": None}
+        self.assertEqual(self.resolve(address, [{"city": "Küsnacht ZH", "bfsnr": "154"}]), "154")
+
+    def test_city_decides_between_places_of_one_code(self):
+        address = {"permanent_address": "Hauptstrasse 1\n3000 Bern", "current_address": None}
+        places = [{"city": "Bern Bümpliz", "bfsnr": "351"}, {"city": "Bern", "bfsnr": "352"}]
+        self.assertEqual(self.resolve(address, places), "352")
+
+    def test_address_without_swiss_postal_code(self):
+        address = {"permanent_address": "Hauptstrasse 1\nD-79576 Weil am Rhein", "current_address": None}
+        self.assertIsNone(self.resolve(address, []))
+        self.assertIsNone(self.resolve({"permanent_address": None, "current_address": None}, []))
 
 
 class TestPayroll(unittest.TestCase):

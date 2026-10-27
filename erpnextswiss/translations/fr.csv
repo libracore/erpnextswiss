@@ -523,3 +523,6 @@ Quellensteuer can be calculated for all {0} employees.,L'impôt à la source peu
 Fixed Rate,Taux fixe,QST Slip Detail
 {0}%,{0} %
 from {0},dès {0}
+Quellensteuer row {0}: municipality of residence is required,"Impôt à la source, ligne {0} : la commune de domicile est obligatoire"
+Municipality of residence; its BFS number goes into the declaration,Commune de domicile ; son numéro OFS figure dans le décompte
+No municipalities imported yet. Quellensteuer records need the municipality of residence for its BFS number: import bfsnr_municipality.csv from the app folder erpnextswiss/public/res in the Municipality list.,Aucune commune n'a encore été importée. Les données de l'impôt à la source requièrent la commune de domicile pour son numéro OFS : veuillez importer bfsnr_municipality.csv du dossier erpnextswiss/public/res dans la liste des communes.

@@ -58,6 +58,7 @@ class TestQuellensteuerIntegration(FrappeTestCase):
                 frappe.get_doc({"doctype": "Fiscal Year", "year": f"QST {year}", "year_start_date": f"{year}-01-01", "year_end_date": f"{year}-12-31"}).insert()
         cls.holiday_list = frappe.get_doc({"doctype": "Holiday List", "holiday_list_name": "_QST Integration", "from_date": "2025-01-01",
                                            "to_date": "2026-12-31"}).insert().name
+        cls.municipality = frappe.get_doc({"doctype": "Municipality", "bfsnr": "9999", "municipality": "_QST Testgemeinde"}).insert().name
         for canton, model in CANTONS.items():
             frappe.get_doc({"doctype": "QST Canton", "canton": canton, "canton_name": f"Test {canton}",
                             "calculation_model": model}).insert()
@@ -127,7 +128,8 @@ class TestQuellensteuerIntegration(FrappeTestCase):
             "doctype": "Employee", "first_name": first_name, "gender": frappe.get_all("Gender", pluck="name", limit=1)[0],
             "date_of_birth": "1985-01-01", "date_of_joining": joining, "company": self.company, "holiday_list": self.holiday_list, "status": "Active",
             "employment_degrees": [{"date": joining, "degree": degree}] if degree else [],
-            "qst_records": [{"liable": 1, "tariff_group": "A", "children": 0, **record} for record in records],
+            "qst_records": [{"liable": 1, "tariff_group": "A", "children": 0, "municipality": self.municipality, **record}
+                            for record in records],
         }).insert()
         for from_date, amount in assignments or [(joining, base)]:
             frappe.get_doc({"doctype": "Salary Structure Assignment", "employee": doc.name, "salary_structure": self.structure, "company": self.company,
@@ -201,7 +203,8 @@ class TestQuellensteuerIntegration(FrappeTestCase):
             self.assertEqual(self.amounts(slip), (400, 0))
             self.assertEqual(slip.net_pay, 4600)
         employee.reload()
-        employee.append("qst_records", {"valid_from": "2026-02-01", "liable": 1, "canton": "ZZ", "tariff_group": "B"})
+        employee.append("qst_records", {"valid_from": "2026-02-01", "liable": 1, "canton": "ZZ", "tariff_group": "B",
+                                        "municipality": self.municipality})
         employee.save()
         april = self.slip(employee.name, "2026-04-01")
         self.assertEqual(self.amounts(april), (200, -400))
@@ -257,7 +260,8 @@ class TestQuellensteuerIntegration(FrappeTestCase):
         for start in ("2025-11-01", "2025-12-01"):
             self.assertEqual(self.amounts(self.slip(employee.name, start)), (400, 0))
         employee.reload()
-        employee.append("qst_records", {"valid_from": "2025-12-01", "liable": 1, "canton": "ZZ", "tariff_group": "B"})
+        employee.append("qst_records", {"valid_from": "2025-12-01", "liable": 1, "canton": "ZZ", "tariff_group": "B",
+                                        "municipality": self.municipality})
         employee.save()
         january = self.slip(employee.name, "2026-01-01", submit=False)
         self.assertEqual(self.amounts(january), (200, -200))
@@ -404,6 +408,8 @@ class TestQuellensteuerIntegration(FrappeTestCase):
         with self.assertRaises(frappe.ValidationError):
             self.employee("QST Invalid Date", {"valid_from": "2026-01-15", "canton": "ZZ"})
         with self.assertRaises(frappe.ValidationError):
+            self.employee("QST No Municipality", {"valid_from": "2026-01-01", "canton": "ZZ", "municipality": None})
+        with self.assertRaises(frappe.ValidationError):
             self.employee("QST No Degree", {"valid_from": "2026-01-01", "canton": "ZZ", "other_employment": "Extrapolate 100%"})
         with self.assertRaises(frappe.ValidationError):
             self.employee("QST Low Total", {"valid_from": "2026-01-01", "canton": "ZZ", "other_employment": "Total Degree", "total_degree": 40}, degree=60)
@@ -411,7 +417,8 @@ class TestQuellensteuerIntegration(FrappeTestCase):
         self.assertEqual(employee.qst_records[0].tariff_code, "B2Y")
 
     def test_cross_border_certificate(self):
-        employee = self.employee("QST Cross Border", {"valid_from": "2026-01-01", "canton": "ZZ", "tariff_group": "L", "cross_border_valid_until": "2026-01-31"})
+        employee = self.employee("QST Cross Border", {"valid_from": "2026-01-01", "canton": "ZZ", "tariff_group": "L",
+                                                      "municipality": None, "cross_border_valid_until": "2026-01-31"})
         self.assertEqual(self.amounts(self.slip(employee.name, "2026-01-01")), (225, 0))
         february = self.slip(employee.name, "2026-02-01", submit=False)
         self.assertEqual((self.amounts(february), february.qst_details[-1].tariff_code), ((400, 0), "A0N"))

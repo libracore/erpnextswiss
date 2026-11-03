@@ -1,0 +1,5 @@
+/* limit the right block so the columns on the left keep their space */
+.level-right {
+    max-width: 120px;
+    min-width: 120px;
+}

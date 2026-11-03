@@ -10,6 +10,7 @@ dynamic = ["version"]
 dependencies = [
     # dependencies
     "frappe>=15.0",
+    "hrms",                 # since erpnext/v15, this is a separate module
     "bs4",
     "factur-x>=2.3",
     "unidecode",

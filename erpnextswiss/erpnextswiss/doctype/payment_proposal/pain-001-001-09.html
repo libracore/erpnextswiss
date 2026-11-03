@@ -35,9 +35,15 @@
         <Nm>{{ company.name }}</Nm>
         {%- if company.address_line1 %}
         <PstlAdr>
+          {%- if company.street %}
           <StrtNm>{{ company.street }}</StrtNm>
-          <BldgNb>{% if company.building %}{{ company.building }}{% else %}0{% endif %}</BldgNb>
+          {%- endif %}
+          {%- if company.building %}
+          <BldgNb>{{ company.building }}</BldgNb>
+          {%- endif %}
+          {%- if company.pincode %}
           <PstCd>{{ company.pincode }}</PstCd>
+          {%- endif %}
           <TwnNm>{{ company.city }}</TwnNm>
           <Ctry>{{ company.country_code }}</Ctry>
           {#- <AdrLine>{{ company.address_line1 }}</AdrLine> ONLY AFTER 2015-11 #}
@@ -72,17 +78,23 @@
         <Amt>
           <InstdAmt Ccy="{{ payment.currency }}">{{ "{:.2f}".format(payment.amount) }}</InstdAmt>
         </Amt>
-        {%- if payment.service_level == "IBAN" and xml_region == "CH" and (payment.iban[0:2] not in ("CH", "LI")) and payment.currency != "EUR" %}{# type 6 payment for USD #}
+        {%- if payment.service_level == "IBAN" and xml_region == "CH" and (payment.iban[0:2] not in ("CH", "LI")) and payment.bic %}{# foreign payment: creditor agent BIC (type 6, required by e.g. DE banks) #}
         <CdtrAgt>
-            <FinInstnId><BIC>{{ payment.bic }}</BIC></FinInstnId>
+            <FinInstnId><BICFI>{{ payment.bic }}</BICFI></FinInstnId>
         </CdtrAgt>
         {%- endif %}
         <Cdtr>
-          <Nm>{{ payment.creditor.name[:70] }}</Nm>
+          <Nm>{{ payment.creditor.name }}</Nm>
           <PstlAdr>
+            {%- if payment.creditor.street %}
             <StrtNm>{{ payment.creditor.street }}</StrtNm>
-            <BldgNb>{% if payment.creditor.building %}{{ payment.creditor.building }}{% else %}0{% endif %}</BldgNb>
+            {%- endif %}
+            {%- if payment.creditor.building %}
+            <BldgNb>{{ payment.creditor.building }}</BldgNb>
+            {%- endif %}
+            {%- if payment.creditor.pincode %}
             <PstCd>{{ payment.creditor.pincode }}</PstCd>
+            {%- endif %}
             <TwnNm>{{ payment.creditor.city }}</TwnNm>
             <Ctry>{{ payment.creditor.country_code }}</Ctry>
             {#- <AdrLine>{{ payment.creditor.address_line1 }}</AdrLine>ONLY AFTER 2015-11 #}

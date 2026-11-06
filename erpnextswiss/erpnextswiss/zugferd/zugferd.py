@@ -87,7 +87,7 @@ def get_content_from_zugferd(zugferd_xml, debug=False, company=None):
 
     if not company:
         company = frappe.defaults.get_global_default("company")
-        
+
     # seller information
     seller = soup.find('ram:sellertradeparty')
     invoice['supplier_name'] = seller.find('ram:name').string
@@ -169,7 +169,7 @@ def get_content_from_zugferd(zugferd_xml, debug=False, company=None):
             'company': company
         })
     if len(tax_template_match) > 0:
-        invoice['tax_template'] = tax_template_match[0]['parent']
+        invoice['tax_template'] = tax_template_match[0]['name']
     else:
         invoice['tax_template'] = None
 

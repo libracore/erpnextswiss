@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2019-2023, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2019-2026, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
 
 from __future__ import unicode_literals
@@ -20,7 +20,7 @@ class ZUGFeRDWizard(Document):
         xml_content = get_xml(file_path)
         invoice = None
         if xml_content:
-            invoice = get_content_from_zugferd(xml_content)
+            invoice = get_content_from_zugferd(xml_content, company=self.company)
         else:
             # zugferd failed, fall back to qr-reader
             qr_content = find_qr_content_from_pdf(file_path)

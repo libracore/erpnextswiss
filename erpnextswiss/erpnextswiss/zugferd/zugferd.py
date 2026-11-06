@@ -151,7 +151,7 @@ def get_content_from_zugferd(zugferd_xml, debug=False):
     invoice['tax_rate'] = tax_rate
     # find tax template matching the rate
     tax_template_match = frappe.get_all("Purchase Taxes and Charges",
-                                        filters={'rate': tax_rate},
+                                        filters={'rate': tax_rate, 'parenttype': 'Purchase Taxes and Charges Template'},
                                         fields=['parent'])
     if len(tax_template_match) > 0:
         invoice['tax_template'] = tax_template_match[0]['parent']

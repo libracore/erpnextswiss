@@ -167,7 +167,9 @@ def get_content_from_zugferd(zugferd_xml, debug=False, company=None):
         {
             'tax_rate': tax_rate,
             'company': company
-        })
+        },
+        as_dict=True
+    )
     if len(tax_template_match) > 0:
         invoice['tax_template'] = tax_template_match[0]['name']
     else:

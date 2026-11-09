@@ -246,7 +246,7 @@ def read_camt053(content, account):
         except:
             # node not found, probably wrong format
             iban = "n/a"
-            frappe.log_error("Unable to read structure. Please make sure that you have selected the correct format.", "BankWizard read_camt053")
+            frappe.log_error(title="Bank Wizard Read Camt", message="Unable to read structure. Please make sure that you have selected the correct format.", "BankWizard read_camt053")
             
     # find account by iban
     accounts = frappe.db.sql("""
@@ -364,7 +364,7 @@ def read_camt_transactions(transaction_entries, account, settings, debug=False, 
                                         party = "Bank internal"
                                     code = "{0}:{1}:{2}".format(date, amount, party)
                                     if settings.debug_mode:
-                                        frappe.log_error("Code: {0}".format(code))
+                                        frappe.log_error(title="Bank Wizard Debug", message="Code: {0}".format(code))
                                     unique_reference = hashlib.md5(code.encode("utf-8")).hexdigest()
                 # --- find amount and currency
                 if cint(settings.always_use_entry_amount):
@@ -490,7 +490,7 @@ def read_camt_transactions(transaction_entries, account, settings, debug=False, 
                                     transaction_reference = unique_reference
                 # debug: show collected record in error log
                 if settings.debug_mode:
-                    frappe.log_error("""type:{type}\ndate:{date}\namount:{currency} {amount}\nunique ref:{unique}
+                    frappe.log_error(title="Bank Wizard Debug", message="""type:{type}\ndate:{date}\namount:{currency} {amount}\nunique ref:{unique}
                         party:{party}\nparty address:{address}\nparty iban:{iban}\nremarks:{remarks}
                         payment_instruction_id:{payment_instruction_id}""".format(
                         type=credit_debit, date=date, currency=currency, amount=amount, unique=unique_reference,
@@ -506,7 +506,7 @@ def read_camt_transactions(transaction_entries, account, settings, debug=False, 
                     fields=['name'])
                 if match_payment_entry:
                     if debug or settings.debug_mode:
-                        frappe.log_error("Transaction {0} is already imported in {1}.".format(unique_reference, match_payment_entry[0]['name']))
+                        frappe.log_error(title="Bank Wizard Debug", message="Transaction {0} is already imported in {1}.".format(unique_reference, match_payment_entry[0]['name']))
                 else:
                     # try to find matching parties & invoices
                     party_match = None
@@ -566,7 +566,7 @@ def read_camt_transactions(transaction_entries, account, settings, debug=False, 
                                                 fields=['name', 'supplier', 'outstanding_amount', 'bill_no', 'esr_reference_number'])
                             except Exception as err:
                                 # this can be the case for malformed instruction ids
-                                frappe.log_error(err, "Match payment instruction error")
+                                frappe.log_error(message=err, title="Match payment instruction error")
                         # suppliers
                         if not possible_pinvs:
                             # no payment proposal, try to estimate from other data
@@ -697,7 +697,7 @@ def read_camt_transactions(transaction_entries, account, settings, debug=False, 
             match_payment_entry = frappe.get_all('Payment Entry', filters={'reference_no': unique_reference}, fields=['name'])
             if match_payment_entry:
                 if debug or settings.debug_mode:
-                    frappe.log_error("Transaction {0} is already imported in {1}.".format(unique_reference, match_payment_entry[0]['name']))
+                    frappe.log_error(title="Bank Wizard Debug", message="Transaction {0} is already imported in {1}.".format(unique_reference, match_payment_entry[0]['name']))
             else:
                 # --- find transaction type: paid or received: (DBIT: paid, CRDT: received)
                 credit_debit = entry_soup.cdtdbtind.get_text()
@@ -798,7 +798,7 @@ def read_camt_transactions(transaction_entries, account, settings, debug=False, 
             txn['unallocated_amount'] = flt(txn['amount']) - flt(txn['matched_amount'])
             txn['amount'] = flt(txn['amount'])
             for p in patterns:
-                frappe.log_error("{0}: {1}".format(p['value'], type(p['value'])))
+                frappe.log_error(title="Bank Wizard Pattern", message="{0}: {1}".format(p['value'], type(p['value'])))
                 try:
                     if p['operator'] == "=":
                         if (type(txn[FIELD_MAP[p['target_field']]]) == float and txn[FIELD_MAP[p['target_field']]] == flt(p['value'])) \
@@ -813,7 +813,7 @@ def read_camt_transactions(transaction_entries, account, settings, debug=False, 
                         txn['pattern'] = p['name']
                         break
                 except Exception as err:
-                    frappe.log_error( err , "Bank Wizard: Pattern Error")
+                    frappe.log_error(title="Bank Wizard: Pattern Error", message=err)
                 
                 
     return txns

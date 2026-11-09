@@ -246,7 +246,7 @@ def read_camt053(content, account):
         except:
             # node not found, probably wrong format
             iban = "n/a"
-            frappe.log_error(title="Bank Wizard Read Camt", message="Unable to read structure. Please make sure that you have selected the correct format.", "BankWizard read_camt053")
+            frappe.log_error(title="Bank Wizard Read Camt", message="Unable to read structure. Please make sure that you have selected the correct format.")
             
     # find account by iban
     accounts = frappe.db.sql("""

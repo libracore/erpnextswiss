@@ -69,57 +69,6 @@ def get_unpaid_sales_invoices_by_customer(customer):
     open_sales_invoices = frappe.db.sql(sql_query, as_dict=True)
     return open_sales_invoices
 
-# create a payment entry
-def create_payment_entry(date, to_account, received_amount, transaction_id, remarks, party_iban=None, auto_submit=False):
-    # get default customer
-    default_customer = get_default_customer()
-    if not frappe.db.exists('Payment Entry', {'reference_no': transaction_id}):
-        # create new payment entry
-        new_payment_entry = frappe.get_doc({
-            'doctype': 'Payment Entry',
-            'payment_type': "Receive",
-            'party_type': "Customer",
-            'party': default_customer,
-            # date is in DD.MM.YYYY
-            'posting_date': date,
-            'paid_to': to_account,
-            'received_amount': received_amount,
-            'paid_amount': received_amount,
-            'reference_no': transaction_id,
-            'reference_date': date,
-            'custom_remarks': 1,
-            'remarks': remarks,
-            'bank_account_no': party_iban
-        })
-        inserted_payment_entry = new_payment_entry.insert()
-        if auto_submit:
-            new_payment_entry.submit()
-        frappe.db.commit()
-        return inserted_payment_entry
-    else:
-        return None
-
-# creates the reference record in a payment entry
-def create_reference(payment_entry, sales_invoice):
-    # create a new payment entry reference
-    reference_entry = frappe.get_doc({
-        'doctype': "Payment Entry Reference",
-        'parent': payment_entry,
-        'parentfield': "references",
-        'parenttype': "Payment Entry",
-        'reference_doctype': "Sales Invoice",
-        'reference_name': sales_invoice,
-        'total_amount': frappe.get_value("Sales Invoice", sales_invoice, "base_grand_total"),
-        'outstanding_amount': frappe.get_value("Sales Invoice", sales_invoice, "outstanding_amount")
-    })
-    paid_amount = frappe.get_value("Payment Entry", payment_entry, "paid_amount")
-    if paid_amount > reference_entry.outstanding_amount:
-        reference_entry.allocated_amount = reference_entry.outstanding_amount
-    else:
-        reference_entry.allocated_amount = paid_amount
-    reference_entry.insert();
-    return
-
 def log(comment):
     new_comment = frappe.get_doc({"doctype": "Log"})
     new_comment.comment = comment

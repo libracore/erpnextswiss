@@ -885,14 +885,17 @@ def make_payment_entry(amount, date, reference_no, paid_from=None, paid_to=None,
     # automatically submit if enabled
     if auto_submit:
         matched_entry = frappe.get_doc("Payment Entry", new_entry.name) # include changes from reference
-        if matched_entry.difference_amount != 0:
+        if matched_entry.difference_amount or matched_entry.unallocated_amount:
             # for auto-submit, we need to clear this out to the exchange account
             exchange_account = frappe.get_cached_value("Company", matched_entry.company, "exchange_gain_loss_account")
             cost_center = frappe.get_cached_value("Company", matched_entry.company, "round_off_cost_center")
+            difference = matched_entry.difference_amount or \
+                ((-1) * matched_entry.unallocated_amount * \
+                 (matched_entry.source_exchange_rate if matched_entry.payment_type == "Pay" else matched_entry.target_exchange_rate))
             matched_entry.append("deductions", {
                 'account': exchange_account,
                 'cost_center': cost_center,
-                'amount': matched_entry.difference_amount
+                'amount': difference
             })
             matched_entry.save()
         matched_entry.submit()

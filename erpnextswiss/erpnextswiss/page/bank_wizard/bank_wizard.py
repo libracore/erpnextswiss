@@ -18,13 +18,13 @@ import datetime
 # returns the sales invoice reference (name string) or None
 def match_by_amount(amount):
     # get sales invoices
-    sql_query = ("""
+    sql_query = """
         SELECT `name`
         FROM `tabSales Invoice`
         WHERE `docstatus` = 1
-        AND `grand_total` = {0}
-        AND `status` != 'Paid'; """.format(amount) )
-    open_sales_invoices = frappe.db.sql(sql_query, as_dict=True)
+        AND `grand_total` = %(amount)s
+        AND `status` != 'Paid'; """
+    open_sales_invoices = frappe.db.sql(sql_query, {'amount': amount}, as_dict=True)
     if open_sales_invoices:
         if len(open_sales_invoices) == 1:
             # found exactly one match
@@ -64,9 +64,9 @@ def get_unpaid_sales_invoices_by_customer(customer):
         SELECT `name`
         FROM `tabSales Invoice`
         WHERE `docstatus` = 1
-        AND `customer` = '{0}'
-        AND `status` != 'Paid'; """.format(customer)
-    open_sales_invoices = frappe.db.sql(sql_query, as_dict=True)
+        AND `customer` = %(customer)s
+        AND `status` != 'Paid'; """
+    open_sales_invoices = frappe.db.sql(sql_query, {'customer': customer}, as_dict=True)
     return open_sales_invoices
 
 def log(comment):

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2019-2023, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2019-2026, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
 
 from __future__ import unicode_literals
@@ -20,7 +20,7 @@ class ZUGFeRDWizard(Document):
         xml_content = get_xml(file_path)
         invoice = None
         if xml_content:
-            invoice = get_content_from_zugferd(xml_content)
+            invoice = get_content_from_zugferd(xml_content, company=self.company)
         else:
             # zugferd failed, fall back to qr-reader
             qr_content = find_qr_content_from_pdf(file_path)
@@ -101,18 +101,23 @@ class ZUGFeRDWizard(Document):
             'supplier': invoice.get('supplier'),
             'currency': invoice.get('currency'),
             'bill_no': invoice.get('doc_id'),
-            'terms': invoice.get('terms')
+            'terms': invoice.get('terms'),
+            'posting_date': frappe.utils.nowdate()
         })
         if invoice.get('source') != 'QR' or cint(settings.get('ignore_bill_date')) == 0:
             pinv_doc.bill_date = invoice.get('posting_date')
         if invoice.get('source') != 'QR' or cint(settings.get('ignore_due_date')) == 0:
             pinv_doc.due_date = invoice.get('due_date')
-            
+        
+        if pinv_doc.due_date and pinv_doc.due_date < pinv_doc.posting_date:
+            pinv_doc.due_date = pinv_doc.posting_date
+        
         if invoice.get('esr_reference'):
             pinv_doc.esr_reference_number = invoice.get('esr_reference')
             pinv_doc.payment_type = "ESR"
             
         # find taxes and charges
+        tax_template_name = None
         if invoice.get('tax_template'):
             # the reader should already have identified the best tax template (supplier default, form)
             tax_template_name = invoice.get('tax_template')

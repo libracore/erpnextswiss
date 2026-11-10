@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018-2025, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2018-2026, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
 #
 #
@@ -80,11 +80,14 @@ Extracts the relevant content for a purchase invoice from a ZUGFeRD XML
 :params:zugferd_xml:    xml content (string)
 :return:                simplified dict with content
 """
-def get_content_from_zugferd(zugferd_xml, debug=False):
+def get_content_from_zugferd(zugferd_xml, debug=False, company=None):
     soup = BeautifulSoup(zugferd_xml, 'lxml')
     # dict for invoice
     invoice = {'source': 'ZUGFeRD'}
-  
+
+    if not company:
+        company = frappe.defaults.get_global_default("company")
+
     # seller information
     seller = soup.find('ram:sellertradeparty')
     invoice['supplier_name'] = seller.find('ram:name').string
@@ -150,11 +153,25 @@ def get_content_from_zugferd(zugferd_xml, debug=False):
     tax_rate = applicable_tax.find('ram:rateapplicablepercent').string
     invoice['tax_rate'] = tax_rate
     # find tax template matching the rate
-    tax_template_match = frappe.get_all("Purchase Taxes and Charges",
-                                        filters={'rate': tax_rate},
-                                        fields=['parent'])
+    tax_template_match = frappe.db.sql("""
+            SELECT `tabPurchase Taxes and Charges Template`.`name`
+            FROM `tabPurchase Taxes and Charges`
+            LEFT JOIN `tabPurchase Taxes and Charges Template` ON `tabPurchase Taxes and Charges`.`parent` = `tabPurchase Taxes and Charges Template`.`name`
+            WHERE
+                `tabPurchase Taxes and Charges`.`rate`= %(tax_rate)s
+                AND `tabPurchase Taxes and Charges`.`parenttype` = 'Purchase Taxes and Charges Template'
+                AND `tabPurchase Taxes and Charges Template`.`disabled` = 0
+                AND `tabPurchase Taxes and Charges Template`.`company` = %(company)s
+            ORDER BY `tabPurchase Taxes and Charges Template`.`is_default` DESC;
+        """,
+        {
+            'tax_rate': tax_rate,
+            'company': company
+        },
+        as_dict=True
+    )
     if len(tax_template_match) > 0:
-        invoice['tax_template'] = tax_template_match[0]['parent']
+        invoice['tax_template'] = tax_template_match[0]['name']
     else:
         invoice['tax_template'] = None
 

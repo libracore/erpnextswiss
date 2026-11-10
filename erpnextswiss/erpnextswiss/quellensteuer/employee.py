@@ -1,0 +1,62 @@
+import frappe
+from frappe import _
+from frappe.utils import flt, get_year_start, getdate, today
+
+from erpnextswiss.erpnextswiss.quellensteuer import is_enabled
+from erpnextswiss.erpnextswiss.common_functions import get_pincode
+from erpnextswiss.erpnextswiss.quellensteuer.calculation import CROSS_BORDER_GROUPS, tariff_code
+from erpnextswiss.erpnextswiss.quellensteuer.payroll import DEGREE_MODES, own_degree
+from erpnextswiss.erpnextswiss.quellensteuer.tariff import get_tariff, prefetch
+
+
+def validate_employee(doc, method=None):
+    """Validate Quellensteuer records and derive tariff codes."""
+    if not doc.get("qst_records") or not is_enabled():
+        return
+    seen = set()
+    for row in doc.qst_records:
+        valid_from = getdate(row.valid_from)
+        if valid_from.day != 1:
+            frappe.throw(_("Quellensteuer row {0}: valid from must be the first day of a month").format(row.idx))
+        if valid_from in seen:
+            frappe.throw(_("Quellensteuer row {0}: duplicate valid from date").format(row.idx))
+        seen.add(valid_from)
+        if not row.liable:
+            row.tariff_code = None
+            continue
+        if not row.canton or not row.tariff_group:
+            frappe.throw(_("Quellensteuer row {0}: canton and tariff group are required").format(row.idx))
+        if not row.municipality and row.tariff_group not in CROSS_BORDER_GROUPS:
+            frappe.throw(_("Quellensteuer row {0}: municipality of residence is required").format(row.idx))
+        row.tariff_code = tariff_code(row.tariff_group, row.children, row.church_tax)
+        if row.tax_override and not flt(row.get(frappe.scrub(row.tax_override))):
+            frappe.throw(_("Quellensteuer row {0}: {1} requires a value").format(row.idx, _(row.tax_override)))
+        if row.other_employment in DEGREE_MODES and not row.tax_override:
+            degree = own_degree(doc, valid_from)
+            if not degree:
+                frappe.throw(_("Quellensteuer row {0}: {1} requires an employment degree (Employment Degrees) in {2:%m.%Y}").format(
+                    row.idx, _(row.other_employment), valid_from))
+            if row.other_employment == "Total Degree" and flt(row.total_degree) < degree:
+                frappe.throw(_("Quellensteuer row {0}: total employment degree must be at least {1}%").format(row.idx, degree))
+        tariff = get_tariff(row.canton, max(valid_from, get_year_start(today())))
+        if tariff and not prefetch(tariff.name, row.tariff_code):
+            frappe.msgprint(_("Tariff code {0} does not exist in {1}").format(row.tariff_code, tariff.name), alert=True)
+
+
+@frappe.whitelist()
+def location_from_address(employee):
+    """Municipality and canton of an employee, derived from the postal code in their address."""
+    addresses = frappe.db.get_value("Employee", employee, ["current_address", "permanent_address"]) or (None, None)
+    for text in addresses:
+        for line in (text or "").splitlines():
+            code = get_pincode(line)
+            if not (code.isdigit() and len(code) == 4):
+                continue
+            city = line[len(code):].strip().lower()
+            places = frappe.get_all("Pincode", filters={"pincode": code, "bfsnr": ("is", "set")},
+                                    fields=["city", "bfsnr", "canton_code"])
+            place = next((p for p in places if p.city.lower() == city), None) or (places[0] if places else None)
+            if place:
+                return {"municipality": place.bfsnr,
+                        "canton": place.canton_code if frappe.db.exists("QST Canton", place.canton_code) else None}
+    return {}

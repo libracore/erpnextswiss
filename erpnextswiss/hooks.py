@@ -41,8 +41,11 @@ doctype_js = {
     "Fiscal Year":          "public/js/fiscal_year.js",
     "Supplier":             "public/js/supplier.js",
     "Customer":             "public/js/customer.js",
+    "Employee":             "public/js/employee.js",
     "Address":              "public/js/address.js",
     "Holiday List":         "public/js/holiday_list.js",
+    "Payroll Entry":        "public/js/payroll_entry.js",
+    "Salary Slip":          "public/js/salary_slip.js",
     "Shipment":             "public/js/shipment.js"
 }
 
@@ -140,6 +143,16 @@ doc_events = {
         "on_submit": "erpnextswiss.erpnextswiss.doctype.contract.contract.sync_contract_status",
         "on_cancel": "erpnextswiss.erpnextswiss.doctype.contract.contract.sync_contract_status",
         "on_update": "erpnextswiss.erpnextswiss.doctype.contract.contract.sync_contract_status"
+    },
+    "Employee": {
+        "validate": "erpnextswiss.erpnextswiss.quellensteuer.employee.validate_employee"
+    },
+    "Salary Slip": {
+        "validate": "erpnextswiss.erpnextswiss.quellensteuer.payroll.salary_slip_validate",
+        "before_submit": "erpnextswiss.erpnextswiss.quellensteuer.payroll.salary_slip_before_submit"
+    },
+    "Payroll Entry": {
+        "validate": "erpnextswiss.erpnextswiss.quellensteuer.payroll.payroll_entry_validate"
     }
 }
 

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2024-2025, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2024-2026, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
 #
 
@@ -24,8 +24,8 @@ class ebicsConnection(Document):
         if self.synced_until and not type(self.synced_until) == datetime.date:
             if type(self.synced_until) == str:
                 self.synced_until = datetime.strptime(self.synced_until, "%Y-%m-%d").date()
-            elif type(self.synced_until) == datetime.datetime:
-                self.synced_until =self.synced_until.date()
+            elif type(self.synced_until) == datetime:
+                self.synced_until = self.synced_until.date()
                 
         return
         

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018-6, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2018-2026, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
 
 from __future__ import unicode_literals
@@ -14,6 +14,8 @@ import html          # used to escape xml content
 from frappe.utils import cint, get_url_to_form, rounded
 from unidecode import unidecode     # used to remove German/French-type special characters from bank identifieres
 import os
+import re
+import unicodedata
 
 PAYMENT_REMARKS = "From Payment Proposal {0}"
 
@@ -33,6 +35,18 @@ XML_SCHEMA_FILES = {
         '09CH03': "apps/erpnextswiss/erpnextswiss/public/xsd/pain.001.001.09.ch.03.xsd"
     }
 }
+
+ALLOWED_CHARS = re.compile(r"[A-Za-z0-9+|?/\-:().,']")
+
+# Characters that don't decompose via NFKD
+TRANSLIT_CHARS = str.maketrans({
+    "ä": "ae", "ö": "oe", "ü": "ue",
+    "Ä": "Ae", "Ö": "Oe", "Ü": "Ue",
+    "ß": "ss", "æ": "ae", "Æ": "AE", "œ": "oe", "Œ": "OE",
+    "ø": "o", "Ø": "O", "đ": "d", "Đ": "D", "ł": "l", "Ł": "L",
+    "’": "'", "‘": "'", "–": "-", "—": "-", "_": "-",
+    "&": "+",
+})
 
 class PaymentProposal(Document):
     def validate(self):
@@ -406,6 +420,8 @@ class PaymentProposal(Document):
         data['company']['iban'] = "{0}".format(payment_account.iban.replace(" ", ""))
         data['company']['bic'] = "{0}".format(payment_account.bic.replace(" ", ""))
         data['payments'] = []
+        # end-to-end identification (should be used and unique within B-level; payment entry name)
+        end_to_end_id = clean_str(payment.reference, 35)
         for payment in self.payments:
             payment_content = ""
             payment_record = {
@@ -419,7 +435,7 @@ class PaymentProposal(Document):
                     'bic': "{0}".format(payment_account.bic)
                 },
                 'instruction_id': "INSTRID-{0}-{1}".format(self.name, transaction_count),          # instruction identification
-                'end_to_end_id': "{0}".format((payment.reference[:33] + '..') if len(payment.reference) > 35 else payment.reference.strip()),   # end-to-end identification (should be used and unique within B-level; payment entry name)
+                'end_to_end_id': end_to_end_id,
                 'currency': payment.currency,
                 'amount': round(payment.amount, 2),
                 'creditor': {
@@ -715,3 +731,15 @@ def release_from_payment_proposal(purchase_invoice):
         WHERE `purchase_invoice` = "{old_name}";""".format(new_name=new_name, old_name=pinv.name))
     frappe.db.commit()
     return
+
+def clean_str(s: str, max_len: int = 35) -> str:
+    s = s.translate(TRANSLIT_CHARS)
+    # é -> e, ñ -> n, ... (decompose, then drop combining marks)
+    s = unicodedata.normalize("NFKD", s)
+    s = "".join(c for c in s if not unicodedata.combining(c))
+    out = []
+    for c in s:
+        if ALLOWED_CHARS.fullmatch(c):
+            out.append(c)
+        # everything else is dropped
+    return s.strip()[:max_len].rstrip()

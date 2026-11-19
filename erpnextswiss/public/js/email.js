@@ -3,6 +3,7 @@
  *  doc                     document, e.g. cur_frm.doc
  *  frm                     form, e.g. cur_frm
  *  subject                 subject string, "Hello"
+ *  sender                  sender email address
  *  recipients              recipient string
  *  cc                      cc string
  *  bcc                     bcc string
@@ -115,15 +116,18 @@ frappe.erpnextswiss.MailComposer = Class.extend({
                 fieldname:"select_attachments"}
         ];
 
-        // add from if user has access to multiple email accounts
-        var email_accounts = frappe.boot.email_accounts.filter(function(account, idx){
-            return !in_list(["All Accounts", "Sent", "Spam", "Trash"], account.email_account) &&
-                account.enable_outgoing
-        })
-        if(frappe.boot.email_accounts && email_accounts.length > 1) {
+        var email_accounts = (frappe.boot.email_accounts || []).filter(function(account){
+            return !in_list(["All Accounts", "Sent", "Spam", "Trash"], account.email_account) && account.enable_outgoing
+        });
+        var senders = email_accounts.map(function(account) { return account.email_id; });
+        
+        if (this.sender && !in_list(senders, this.sender)) {
+            senders.unshift(this.sender);
+        }
+        
+        if(senders.length) {
             fields = [
-                {label: __("From"), fieldtype: "Select", reqd: 1, fieldname: "sender",
-                    options: email_accounts.map(function(e) { return e.email_id; }) }
+                {label: __("From"), fieldtype: "Select", reqd: 1, fieldname: "sender", options: senders, hidden: senders.length === 1 }
             ].concat(fields);
         }
 
@@ -147,7 +151,7 @@ frappe.erpnextswiss.MailComposer = Class.extend({
         this.dialog.set_value("bcc", this.bcc || '');
 
         if(this.dialog.fields_dict.sender) {
-            this.dialog.fields_dict.sender.set_value(this.sender || '');
+            this.dialog.fields_dict.sender.set_value(this.sender || this.dialog.fields_dict.sender.df.options[0]);
         }
         this.dialog.fields_dict.subject.set_value(this.subject || '');
 
@@ -285,7 +289,7 @@ frappe.erpnextswiss.MailComposer = Class.extend({
             if (!me.txt) {
                 var last_edited_communication = me.get_last_edited_communication();
                 if(last_edited_communication.content) {
-                    me.dialog.set_value("sender", last_edited_communication.sender || "");
+                    me.dialog.set_value("sender", me.sender || last_edited_communication.sender || me.dialog.get_value("sender"));
                     me.dialog.set_value("subject", last_edited_communication.subject || "");
                     me.dialog.set_value("recipients", last_edited_communication.recipients || "");
                     me.dialog.set_value("cc", last_edited_communication.cc || "");

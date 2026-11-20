@@ -420,9 +420,9 @@ class PaymentProposal(Document):
         data['company']['iban'] = "{0}".format(payment_account.iban.replace(" ", ""))
         data['company']['bic'] = "{0}".format(payment_account.bic.replace(" ", ""))
         data['payments'] = []
-        # end-to-end identification (should be used and unique within B-level; payment entry name)
-        end_to_end_id = clean_str(payment.reference, 35)
         for payment in self.payments:
+            # end-to-end identification (should be used and unique within B-level; payment entry name)
+            end_to_end_id = clean_str(payment.reference, 35)
             payment_content = ""
             payment_record = {
                 'id': "PMTINF-{0}-{1}".format(self.name, transaction_count),   # unique (in this file) identification for the payment ( e.g. PMTINF-01, PMTINF-PE-00005 )

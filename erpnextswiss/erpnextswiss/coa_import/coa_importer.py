@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018-2021, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2018-2026, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
 import frappe
 from frappe import _
@@ -116,7 +116,11 @@ def remove_old_company_account_defaults(company):
     frappe.db.commit()
 
 def delete_old_accounts(company):
-    accounts_to_delete = frappe.db.sql("""SELECT `name` FROM `tabAccount` WHERE `company` = '{company}'""".format(company=company), as_dict=True)
+    accounts_to_delete = frappe.db.sql("""
+        SELECT `name` FROM `tabAccount` WHERE `company` = %(company)s """, {'company': company}, as_dict=True)
     for account_to_delete in accounts_to_delete:
-        delete = frappe.db.sql("""DELETE FROM `tabAccount` WHERE `name` = '{account_to_delete}'""".format(account_to_delete=account_to_delete.name), as_list=True)
+        delete = frappe.db.sql("""
+            DELETE FROM `tabAccount` WHERE `name` = %(account_to_delete)s""",
+            {'account_to_delete': account_to_delete.name}
+        )
     frappe.db.commit()

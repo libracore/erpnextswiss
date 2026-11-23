@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2017-2025, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2017-2026, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
 
 from __future__ import unicode_literals
@@ -67,13 +67,23 @@ class VATDeclaration(Document):
 def get_view_total(view_name, start_date, end_date, company=None):
     # try to fetch total from VAT query
     if frappe.db.exists("VAT query", view_name):
-        sql_query = ("""SELECT IFNULL(SUM(`s`.`base_grand_total`), 0) AS `total` 
-                FROM ({query}) AS `s` 
-                WHERE `s`.`posting_date` >= '{start_date}' 
-                AND `s`.`posting_date` <= '{end_date}'""".format(
-                query=frappe.get_value("VAT query", view_name, "query"),
-                start_date=start_date, end_date=end_date).replace("{company}", company))
-        total = frappe.db.sql(sql_query, as_dict=True)
+        """
+        Note: the query in this function by design comes from the configration doctype. Content is controlled on system level.
+        """
+        sql_query = """SELECT IFNULL(SUM(`s`.`base_grand_total`), 0) AS `total` 
+                FROM (
+                    {query}
+                ) AS `s` 
+                WHERE `s`.`posting_date` >= %(start_date)s 
+                AND `s`.`posting_date` <= %(end_date)s 
+            """.format(query=frappe.get_value("VAT query", view_name, "query").replace("{company}", company).replace("%", "%%"))
+        total = frappe.db.sql(sql_query, 
+            {
+                'start_date': start_date, 
+                'end_date': end_date
+            },
+            as_dict=True
+        )
     else:
         # table missing, skip
         total = [{'total': 0}]
@@ -84,13 +94,19 @@ def get_view_total(view_name, start_date, end_date, company=None):
 def get_view_tax(view_name, start_date, end_date, company=None):
     # try to fetch total from VAT query
     if frappe.db.exists("VAT query", view_name):
-        sql_query = ("""SELECT IFNULL(SUM(`s`.`total_taxes_and_charges`), 0) AS `total` 
-                FROM ({query}) AS `s` 
-                WHERE `s`.`posting_date` >= '{start_date}' 
-                AND `s`.`posting_date` <= '{end_date}'""".format(
-                query=frappe.get_value("VAT query", view_name, "query"),
-                start_date=start_date, end_date=end_date).replace("{company}", company))
-        total = frappe.db.sql(sql_query, as_dict=True)
+        sql_query = """SELECT IFNULL(SUM(`s`.`total_taxes_and_charges`), 0) AS `total` 
+                FROM (
+                    {query}
+                ) AS `s` 
+                WHERE `s`.`posting_date` >= %(start_date)s 
+                AND `s`.`posting_date` <= %(end_date)s 
+            """.format(query=frappe.get_value("VAT query", view_name, "query").replace("{company}", company).replace("%", "%%"))
+        total = frappe.db.sql(sql_query, 
+            {
+                'start_date': start_date, 
+                'end_date': end_date
+            },
+            as_dict=True)
     else:
         # table missing, skip
         total = [{'total': 0}]
@@ -101,9 +117,15 @@ def get_view_tax(view_name, start_date, end_date, company=None):
 def get_tax_rate(taxes_and_charges_template):
     sql_query = ("""SELECT `rate` 
         FROM `tabPurchase Taxes and Charges` 
-        WHERE `parent` = '{0}' 
+        WHERE `parent` = %(taxes_and_charges_template)s
         ORDER BY `idx`;""".format(taxes_and_charges_template))
-    result = frappe.db.sql(sql_query, as_dict=True)
+    result = frappe.db.sql(
+        sql_query, 
+        {
+            'taxes_and_charges_template': taxes_and_charges_template
+        },
+        as_dict=True
+    )
     if result:
         return result[0].rate
     else:

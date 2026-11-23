@@ -1,4 +1,4 @@
-# Copyright (c) 2024, libracore and contributors
+# Copyright (c) 2024-2026, libracore and contributors
 # For license information, please see license.txt
 #
 # Data provider for Google Looker Studio / libracore looker connector
@@ -6,6 +6,7 @@
 import frappe
 from frappe.utils import cint 
 import urllib
+from frappe.qb import DocType, Field
 
 SENSITIVE_DOCTYPES = [
     'User', 
@@ -35,9 +36,17 @@ def get_data(doctype, from_date=None, to_date=None, fields=None):
     
     # prepare fields filter
     fields_filter = "*"
+    meta = frappe.get_meta(doctype)
+    valid = {f.fieldname for f in meta.get_fields()} | {
+        "name", "creation", "modified", "owner", "modified_by"
+    }
     if fields:
         if type(fields) == str:
             fields=fields.split(",")
+        
+        for f in fields:
+            if f no ind valid:
+                return {'error': f"'{f}' is not a valid field on {doctype}"}
         fields_filter = "`{0}`".format("`, `".join(fields))
         
     if doctype == "Sales Order":
@@ -48,7 +57,14 @@ def get_data(doctype, from_date=None, to_date=None, fields=None):
         data = get_sales_invoice_data(from_date, to_date, fields_filter)
     else:
         # fallback: return list
-        data = frappe.db.sql("""SELECT {fields} FROM `tab{doctype};""".format(doctype=doctype, fields=fields_filter), as_dict=True)
+        table = DocType(doctype)
+        
+        if not fields:
+            select_cols = [Field(f, table=table) for f in valid]
+        else:
+            select_cols = [Field(f, table=table) for f in fields]
+        query = frappe.qb.from_(table).select(*select_cols)
+        data = query.run(as_dict=True)
 
     return data
     
@@ -60,16 +76,21 @@ def get_report_permissions(doctype):
         SELECT `role`
         FROM `tabDocPerm`
         WHERE 
-            `parent` = "{doctype}" 
+            `parent` = %(doctype)s 
             AND `parenttype` = "DocType"
             AND `report` = 1
         UNION SELECT `role`
         FROM `tabCustom DocPerm`
         WHERE 
-            `parent` = "{doctype}" 
+            `parent` = %(doctype)s 
             AND `parenttype` = "DocType"
             AND `report` = 1
-        ;""".format(doctype=doctype), as_dict=True)
+        """,
+        {
+            'doctype': doctype
+        }, 
+        as_dict=True
+    )
     roles = []
     for r in role_permissions:
         roles.append(r['role'])
@@ -93,9 +114,9 @@ def has_report_permission(doctype):
 def get_sales_order_data(from_date=None, to_date=None, fields_filter="*"):
     conditions = ""
     if from_date:
-        conditions += """ AND `tabSales Order`.`transaction_date` >= "{from_date}" """.format(from_date=from_date)
+        conditions += """ AND `tabSales Order`.`transaction_date` >= %(from_date)s """
     if to_date:
-        conditions += """ AND `tabSales Order`.`transaction_date` <= "{to_date}" """.format(to_date=to_date)
+        conditions += """ AND `tabSales Order`.`transaction_date` <= %(to_date)s """
         
     sql_query = """
         SELECT {fields}
@@ -110,9 +131,15 @@ def get_sales_order_data(from_date=None, to_date=None, fields_filter="*"):
                 `tabSales Order`.`docstatus` = 1
                 {conditions}
         ) AS `raw`
-        ;""".format(conditions=conditions, fields=fields_filter)
+        """.format(conditions=conditions, fields=fields_filter)
         
-    data = frappe.db.sql(sql_query, as_dict=True)
+    data = frappe.db.sql(sql_query, 
+        {
+            'from_date': from_date,
+            'to_date': to_date
+        },
+        as_dict=True
+    )
     
     return data
         

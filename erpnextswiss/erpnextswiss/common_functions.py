@@ -53,6 +53,7 @@ def get_city(address_line):
 @frappe.whitelist()
 def get_primary_address(target_name, target_type="Customer"):
     sql_query = """SELECT 
+            `tabAddress`.`name`, 
             `tabAddress`.`address_line1`, 
             `tabAddress`.`address_line2`, 
             `tabAddress`.`pincode`, 
@@ -68,12 +69,17 @@ def get_primary_address(target_name, target_type="Customer"):
         ORDER BY `tabAddress`.`is_primary_address` DESC
         LIMIT 1;"""
     try:
-        return frappe.db.sql(sql_query, 
+        primary_addresses = frappe.db.sql(sql_query, 
             {
                 'type': target_type, 
                 'name': target_name
             },
-            as_dict=True)[0]
+            as_dict=True)
+        if len(primary_addresses) < 1:
+            return None
+        if not frappe.get_doc("Address", primary_addresses[0]['name']).has_permission("read"):
+            return None
+        return primary_addresses[0]
     except:
         return None
 

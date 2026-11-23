@@ -71,9 +71,9 @@ def calc_and_create_new_parent_list(parent_list, dt, dn):
                 IFNULL(SUM(`total`), 0) AS `element_total`
              FROM `tabHLK Structur Organisation`
              WHERE
-                `parent` = '{dn}'
-                AND `parent_element` = '{parent}';
-        """.format(dn=dn, parent=parent), as_list=True)[0][0]
+                `parent` = %(dn)s
+                AND `parent_element` = %(parent)s
+        """, {'dn': dn, 'parent': parent}, as_list=True)[0][0]
         
         document = frappe.get_doc(dt, dn)
         for structur_element in document.hlk_structur_organisation:
@@ -254,8 +254,15 @@ def make_sales_invoice(source_name, target_doc=None, ignore_permissions=False):
 @frappe.whitelist()
 def check_for_changed_line_items(record):
     try:
-        last_item_change = frappe.db.sql("""SELECT DISTINCT `modified` FROM `tabSales Order Item` WHERE `parent` = '{record}' LIMIT 1""".format(record=record), as_list=True)[0][0]
-        last_record_change = frappe.db.sql("""SELECT `modified` FROM `tabSales Order` WHERE `name` = '{record}'""".format(record=record), as_list=True)[0][0]
+        last_item_change = frappe.db.sql("""
+            SELECT DISTINCT `modified` 
+            FROM `tabSales Order Item` 
+            WHERE `parent` = %(record)s 
+            LIMIT 1""", {'record': record}, as_list=True)[0][0]
+        last_record_change = frappe.db.sql("""
+            SELECT `modified` 
+            FROM `tabSales Order` 
+            WHERE `name` = %(record)s """, {'record': record}, as_list=True)[0][0]
         
         if last_item_change != last_record_change:
             document = frappe.get_doc('Sales Order', record)
@@ -274,8 +281,26 @@ def check_for_changed_line_items(record):
                 if not structur_element.parent_element in parent_elements:
                     if not structur_element.main_element in sub_parent_elements:
                         # without items with 'variable_price'
-                        total_amount = flt(frappe.db.sql("""SELECT SUM(`amount`) FROM `tabSales Order Item` WHERE `hlk_element` = '{hlk_element}' AND `parent` = '{record}' AND `variable_price` = 0""".format(hlk_element=structur_element.main_element, record=record), as_list=True)[0][0])
-                        total_charged = flt(frappe.db.sql("""SELECT SUM(`billed_amt`) FROM `tabSales Order Item` WHERE `hlk_element` = '{hlk_element}' AND `parent` = '{record}' AND `variable_price` = 0""".format(hlk_element=structur_element.main_element, record=record), as_list=True)[0][0])
+                        total_amount = flt(frappe.db.sql("""
+                            SELECT SUM(`amount`) 
+                            FROM `tabSales Order Item` 
+                            WHERE `hlk_element` = %(hlk_element)s 
+                              AND `parent` = %(record)s 
+                              AND `variable_price` = 0""", 
+                            {
+                                'hlk_element': structur_element.main_element, 
+                                'record': record
+                            }, as_list=True)[0][0])
+                        total_charged = flt(frappe.db.sql("""
+                            SELECT SUM(`billed_amt`) 
+                            FROM `tabSales Order Item` 
+                            WHERE `hlk_element` = %(hlk_element)s 
+                              AND `parent` = %(record)s 
+                              AND `variable_price` = 0""",
+                              {
+                                'hlk_element': structur_element.main_element, 
+                                'record': record
+                              }, as_list=True)[0][0])
                         if total_amount > 0:
                             charged_in_percent = (flt(100) / total_amount) * total_charged
                         else:

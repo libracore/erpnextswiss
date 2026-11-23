@@ -34,20 +34,8 @@ def get_data():
                    {
                        "type": "page",
                        "name": "bankimport",
-                       "label": _("Bankimport"),
-                       "description": _("Bankimport")
-                   },
-                   {
-                       "type": "page",
-                       "name": "match_payments",
-                       "label": _("Zahlungen abgleichen"),
-                       "description": _("Zahlungen abgleichen")
-                   },
-                   {
-                       "type": "page",
-                       "name": "payment_export",
-                       "label": _("Zahlungsexport"),
-                       "description": _("Zahlungsexport")
+                       "label": _("Bank import"),
+                       "description": _("Bank import")
                    }
             ]
         },

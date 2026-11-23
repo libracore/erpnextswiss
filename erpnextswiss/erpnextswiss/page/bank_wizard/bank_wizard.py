@@ -167,6 +167,9 @@ def get_default_accounts(bank_account=None, company=None):
         'auto_process_matches': auto_process_matches
     }
 
+"""
+Note: the following endpoints expose the default accounts (name) to any logged in user. This is not critical information.
+"""
 @frappe.whitelist()
 def get_intermediate_account():
     account = frappe.get_value('ERPNextSwiss Settings', 'ERPNextSwiss Settings', 'intermediate_account')

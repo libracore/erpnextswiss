@@ -22,11 +22,7 @@ frappe.bankimport = {
 		$(frappe.render_template('bankimport', data)).appendTo(me.body);
 
 		// add menu button
-		this.page.add_menu_item("Zahlungen abgleichen", function() {
-			// navigate to bank import tool
-			window.location.href="/desk#match_payments";
-		});
-		this.page.add_menu_item("Vorlage debuggen", function() {
+		this.page.add_menu_item(__("Debug Template"), function() {
 			// navigate to bank import tool
 			$('.btn-parse-file').trigger('click', [true]);
 		});

@@ -22,10 +22,6 @@ frappe.bankimport = {
 		$(frappe.render_template('bankimport', data)).appendTo(me.body);
 
 		// add menu button
-		this.page.add_menu_item(__("Match payments"), function() {
-			// navigate to bank import tool
-			window.location.href="/desk#match_payments";
-		});
 		this.page.add_menu_item(__("Debug Template"), function() {
 			// navigate to bank import tool
 			$('.btn-parse-file').trigger('click', [true]);

@@ -36,18 +36,6 @@ def get_data():
                        "name": "bankimport",
                        "label": _("Bank import"),
                        "description": _("Bank import")
-                   },
-                   {
-                       "type": "page",
-                       "name": "match_payments",
-                       "label": _("Match payments"),
-                       "description": _("Match payments")
-                   },
-                   {
-                       "type": "page",
-                       "name": "payment_export",
-                       "label": _("Payment export"),
-                       "description": _("Payment export")
                    }
             ]
         },

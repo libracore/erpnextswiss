@@ -1,4 +1,4 @@
-# Copyright (c) 2013, libracore (https://www.libracore.com) and contributors
+# Copyright (c) 2013-2026, libracore (https://www.libracore.com) and contributors
 # For license information, please see license.txt
 
 from __future__ import unicode_literals
@@ -24,7 +24,7 @@ def execute(filters=None):
     return columns, data
 
 def get_employee_name(user):
-    employee = frappe.db.sql("""SELECT `name` FROM `tabEmployee` WHERE `user_id` = '{user}'""".format(user=user), as_dict=True)
+    employee = frappe.db.sql("""SELECT `name` FROM `tabEmployee` WHERE `user_id` = %(user)s """, {'user': user}, as_dict=True)
     try:
         employee = employee[0].name
     except:
@@ -77,9 +77,14 @@ def get_data_of_all_employees(filters):
         SELECT `name`, `employee_name` 
         FROM `tabEmployee` 
         WHERE 
-            `company` = "{company}"
-            AND (`relieving_date` IS NULL OR `relieving_date` >= "{start_date}")
-        ;""".format(company=filters.company, start_date=getdate(filters.from_date)), as_dict=True)
+            `company` = %(company)s
+            AND (`relieving_date` IS NULL OR `relieving_date` >= %(start_date)s)
+        ;""", 
+        {
+            'company': filters.company, 
+            'start_date': getdate(filters.from_date)
+        }, as_dict=True
+    )
     data = []
     
     for _employee in employees:
@@ -273,7 +278,10 @@ def get_actual_time(filters, employee, ignore_carryover=False):
     return actual_time
 
 def add_activity_type_determination(filters, columns):
-    additions = frappe.db.sql("""SELECT `company`, `activity_type`, `column_label` FROM `tabActivity Type Determination` WHERE `company` = '{company}' ORDER BY `idx` ASC""".format(company=filters.company), as_dict=True)
+    additions = frappe.db.sql("""
+        SELECT `company`, `activity_type`, `column_label` 
+        FROM `tabActivity Type Determination` 
+        WHERE `company` = %(company)s ORDER BY `idx` ASC""", {'company': filters.company}, as_dict=True)
     loop = 1
     for addition in additions:
         new_column = {"label": _(addition.column_label), "fieldname": "annex_" + str(loop), "fieldtype": "Float", "width": 50}
@@ -285,14 +293,26 @@ def get_activity_type_determinations(filters, employee):
     from_date = filters.from_date
     to_date = filters.to_date
     times = []
-    additions = frappe.db.sql("""SELECT `company`, `activity_type`, `column_label` FROM `tabActivity Type Determination` WHERE `company` = '{company}' ORDER BY `idx` ASC""".format(company=filters.company), as_dict=True)
+    additions = frappe.db.sql("""
+        SELECT `company`, `activity_type`, `column_label` 
+        FROM `tabActivity Type Determination` 
+        WHERE `company` = %(company)s ORDER BY `idx` ASC""", {'company': filters.company}, as_dict=True)
     for addition in additions:
         try:
-            actual_time = frappe.db.sql("""SELECT SUM(`hours`) FROM `tabTimesheet Detail`
-                                            WHERE DATE(`from_time`) >= '{from_date}' AND DATE(`from_time`) <= '{to_date}'
-                                            AND `docstatus` = 1 AND `activity_type` = '{activity_type}' AND `parent` IN (
-                                                SELECT `name` FROM `tabTimesheet` WHERE `employee` = '{employee}'
-                                            )""".format(from_date=from_date, to_date=to_date, employee=employee, activity_type=addition.activity_type), as_list=True)[0][0]
+            actual_time = frappe.db.sql("""
+                SELECT SUM(`hours`) FROM `tabTimesheet Detail`
+                WHERE DATE(`from_time`) >= %(from_date)s AND DATE(`from_time`) <= %(to_date)s
+                AND `docstatus` = 1 AND `activity_type` = %(activity_type)s AND `parent` IN (
+                    SELECT `name` FROM `tabTimesheet` WHERE `employee` = %(employee)s
+                )""",
+                {
+                    'from_date': from_date, 
+                    'to_date': to_date, 
+                    'employee': employee, 
+                    'activity_type': addition.activity_type
+                }, 
+                as_list=True
+            )[0][0]
             if not actual_time:
                 actual_time = 0
         except:
@@ -312,7 +332,7 @@ def get_daily_hours(filters):
 @frappe.whitelist()
 def get_company():
     user = frappe.session.user
-    employee = frappe.db.sql("""SELECT `name` FROM `tabEmployee` WHERE `user_id` = '{user}'""".format(user=user), as_dict=True)
+    employee = frappe.db.sql("""SELECT `name` FROM `tabEmployee` WHERE `user_id` = %(user)s """, {'user': user}, as_dict=True)
     try:
         employee_name = employee[0].name
         employee = frappe.get_doc("Employee", employee_name)

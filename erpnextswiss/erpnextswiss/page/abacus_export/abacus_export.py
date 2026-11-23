@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2017-2019, libracore and contributors
+# Copyright (c) 2017-2026, libracore and contributors
 # License: AGPL v3. See LICENCE
 #
 # NOTE: this is the old transfer method. 
@@ -61,11 +61,11 @@ def generate_transfer_file(start_date, end_date, limit=10000, aggregated=0):
                 LEFT JOIN `tabSales Invoice Item` ON `tabSales Invoice`.`name` = `tabSales Invoice Item`.`parent`
                 LEFT JOIN `tabSales Taxes and Charges` ON `tabSales Invoice`.`name` = `tabSales Taxes and Charges`.`parent`
                 WHERE
-                    `tabSales Invoice`.`posting_date` >= '{start_date}'
-                    AND `tabSales Invoice`.`posting_date` <= '{end_date}'
+                    `tabSales Invoice`.`posting_date` >= %(start_date)s
+                    AND `tabSales Invoice`.`posting_date` <= %(end_date)s
                     AND `tabSales Invoice`.`docstatus` = 1
                     AND `tabSales Invoice`.`exported_to_abacus` = 0
-                GROUP BY `key`""".format(start_date=start_date, end_date=end_date)
+                GROUP BY `key`"""
         else:
             sql_query = """SELECT DISTINCT `tabSales Invoice`.`name`, 
                   `tabSales Invoice`.`posting_date`, 
@@ -83,16 +83,34 @@ def generate_transfer_file(start_date, end_date, limit=10000, aggregated=0):
                 LEFT JOIN `tabSales Invoice Item` ON `tabSales Invoice`.`name` = `tabSales Invoice Item`.`parent`
                 LEFT JOIN `tabSales Taxes and Charges` ON (`tabSales Invoice`.`name` = `tabSales Taxes and Charges`.`parent` AND  `tabSales Taxes and Charges`.`idx` = 1)
                 WHERE
-                    `tabSales Invoice`.`posting_date` >= '{start_date}'
-                    AND `tabSales Invoice`.`posting_date` <= '{end_date}'
+                    `tabSales Invoice`.`posting_date` >= %(start_date)s
+                    AND `tabSales Invoice`.`posting_date` <= %(end_date)s
                     AND `tabSales Invoice`.`docstatus` = 1
                     AND `tabSales Invoice`.`exported_to_abacus` = 0 
-                LIMIT {limit}""".format(start_date=start_date, end_date=end_date, limit=limit)
+                LIMIT %(limit)s"""
         
-        items = frappe.db.sql(sql_query, as_dict=True)
+        items = frappe.db.sql(sql_query, 
+            {
+                'start_date': start_date, 
+                'end_date': end_date, 
+                'limit': limit
+            },
+            as_dict=True
+        )
         
         if aggregated == 1:
-            flag_sinvs_as_exportet = frappe.db.sql("""UPDATE `tabSales Invoice` SET `exported_to_abacus` = 1 WHERE `posting_date` >= '{start_date}' AND `posting_date` <= '{end_date}' AND `docstatus` = 1 AND `exported_to_abacus` = 0""".format(start_date=start_date, end_date=end_date), as_list=True)
+            flag_sinvs_as_exportet = frappe.db.sql("""
+                UPDATE `tabSales Invoice` 
+                SET `exported_to_abacus` = 1 
+                WHERE `posting_date` >= %(start_date)s 
+                  AND `posting_date` <= %(end_date)s 
+                  AND `docstatus` = 1 
+                  AND `exported_to_abacus` = 0""", 
+                {
+                    'start_date': start_date, 
+                    'end_date': end_date
+                }
+            )
         else:
             sinv_range = []
             for sinv in items:
@@ -157,11 +175,11 @@ def generate_transfer_file(start_date, end_date, limit=10000, aggregated=0):
                 LEFT JOIN `tabPurchase Invoice Item` ON `tabPurchase Invoice`.`name` = `tabPurchase Invoice Item`.`parent`
                 LEFT JOIN `tabPurchase Taxes and Charges` ON `tabPurchase Invoice`.`name` = `tabPurchase Taxes and Charges`.`parent`
                 WHERE
-                    `tabPurchase Invoice`.`posting_date` >= '{start_date}'
-                    AND `tabPurchase Invoice`.`posting_date` <= '{end_date}'
+                    `tabPurchase Invoice`.`posting_date` >= %(start_date)s
+                    AND `tabPurchase Invoice`.`posting_date` <= %(end_date)s
                     AND `tabPurchase Invoice`.`docstatus` = 1
                     AND `tabPurchase Invoice`.`exported_to_abacus` = 0
-                GROUP BY `key`""".format(start_date=start_date, end_date=end_date)
+                GROUP BY `key`"""
         else:
             sql_query = """SELECT DISTINCT `tabPurchase Invoice`.`name`, 
                   `tabPurchase Invoice`.`posting_date`, 
@@ -179,16 +197,35 @@ def generate_transfer_file(start_date, end_date, limit=10000, aggregated=0):
                 LEFT JOIN `tabPurchase Invoice Item` ON `tabPurchase Invoice`.`name` = `tabPurchase Invoice Item`.`parent`
                 LEFT JOIN `tabPurchase Taxes and Charges` ON (`tabPurchase Invoice`.`name` = `tabPurchase Taxes and Charges`.`parent` AND  `tabPurchase Taxes and Charges`.`idx` = 1)
                 WHERE
-                    `tabPurchase Invoice`.`posting_date` >= '{start_date}'
-                    AND `tabPurchase Invoice`.`posting_date` <= '{end_date}'
+                    `tabPurchase Invoice`.`posting_date` >= %(start_date)s
+                    AND `tabPurchase Invoice`.`posting_date` <= %(end_date)s
                     AND `tabPurchase Invoice`.`docstatus` = 1
                     AND `tabPurchase Invoice`.`exported_to_abacus` = 0 
-                LIMIT {limit}""".format(start_date=start_date, end_date=end_date, limit=limit)
+                LIMIT %(limit)s"""
         
-        items = frappe.db.sql(sql_query, as_dict=True)
+        items = frappe.db.sql(sql_query,
+            {
+                'start_date': start_date, 
+                'end_date': end_date, 
+                'limit': limit
+            },
+            as_dict=True
+        )
         
         if aggregated == 1:
-            flag_sinvs_as_exportet = frappe.db.sql("""UPDATE `tabPurchase Invoice` SET `exported_to_abacus` = 1 WHERE `posting_date` >= '{start_date}' AND `posting_date` <= '{end_date}' AND `docstatus` = 1 AND `exported_to_abacus` = 0""".format(start_date=start_date, end_date=end_date), as_list=True)
+            flag_sinvs_as_exportet = frappe.db.sql("""
+                UPDATE `tabPurchase Invoice` 
+                SET `exported_to_abacus` = 1 
+                WHERE `posting_date` >= %(start_date)s 
+                  AND `posting_date` <= %(end_date)s 
+                  AND `docstatus` = 1 
+                  AND `exported_to_abacus` = 0
+                """,
+                {
+                    'start_date': start_date, 
+                    'end_date': end_date
+                }
+            )
         else:
             sinv_range = []
             for sinv in items:
@@ -244,12 +281,12 @@ def generate_transfer_file(start_date, end_date, limit=10000, aggregated=0):
                       ) AS `key`
                     FROM `tabPayment Entry`
                     WHERE
-                        `posting_date` >= '{start_date}'
-                        AND `posting_date` <= '{end_date}'
+                        `posting_date` >= %(start_date)s
+                        AND `posting_date` <= %(end_date)s
                         AND `docstatus` = 1
                         AND `exported_to_abacus` = 0
                     GROUP BY `key`
-                """.format(start_date=start_date, end_date=end_date)
+                """
         else:
             sql_query = """SELECT `tabPayment Entry`.`name`,
                       `tabPayment Entry`.`posting_date`, 
@@ -262,15 +299,34 @@ def generate_transfer_file(start_date, end_date, limit=10000, aggregated=0):
                       ) AS `key`
                     FROM `tabPayment Entry`
                     WHERE
-                        `posting_date` >= '{start_date}'
-                        AND `posting_date` <= '{end_date}'
+                        `posting_date` >= %(start_date)s
+                        AND `posting_date` <= %(end_date)s
                         AND `docstatus` = 1
                         AND `exported_to_abacus` = 0
-                LIMIT {limit}""".format(start_date=start_date, end_date=end_date, limit=limit)
+                LIMIT %(limit)s """
 
-        items = frappe.db.sql(sql_query, as_dict=True)
+        items = frappe.db.sql(sql_query, 
+            {
+                'start_date': start_date, 
+                'end_date': end_date, 
+                'limit': limit
+            },
+            as_dict=True
+        )
         if aggregated == 1:
-            flag_sinvs_as_exportet = frappe.db.sql("""UPDATE `tabPayment Entry` SET `exported_to_abacus` = 1 WHERE `posting_date` >= '{start_date}' AND `posting_date` <= '{end_date}' AND `docstatus` = 1 AND `exported_to_abacus` = 0""".format(start_date=start_date, end_date=end_date), as_list=True)
+            flag_sinvs_as_exportet = frappe.db.sql("""
+                UPDATE `tabPayment Entry` 
+                SET `exported_to_abacus` = 1 
+                WHERE `posting_date` >= %(start_date)s 
+                  AND `posting_date` <= %(end_date)s 
+                  AND `docstatus` = 1 
+                  AND `exported_to_abacus` = 0
+                """,
+                {
+                    'start_date': start_date, 
+                    'end_date': end_date
+                }
+            )
         else:
             payment_range = []
             for payment in items:
@@ -399,10 +455,12 @@ def get_account_number(account_name):
             `account_number`
         FROM `tabAccount`
         WHERE
-            `name` = '{account_name}'
+            `name` = %(account_name)s
         LIMIT 1
-        """.format(account_name=account_name)
-    items = frappe.db.sql(sql_query, as_dict=True)
+        """
+    items = frappe.db.sql(sql_query, {
+            'account_name': account_name
+        }as_dict=True)
     if items:
         return items[0]['account_number']
     else:
@@ -415,10 +473,10 @@ def get_income_account_number(sales_invoice):
         FROM `tabSales Invoice Item`
         LEFT JOIN `tabAccount` ON `tabSales Invoice Item`.`income_account` = `tabAccount`.`name`
         WHERE
-            `tabSales Invoice Item`.`parent` = '{sales_invoice}'
+            `tabSales Invoice Item`.`parent` = %(sales_invoice)s
         LIMIT 1
-        """.format(sales_invoice=sales_invoice)
-    items = frappe.db.sql(sql_query, as_dict=True)
+        """
+    items = frappe.db.sql(sql_query, {'sales_invoice': sales_invoice}, as_dict=True)
     if items:
         return items[0]['account_number']
     else:
@@ -432,10 +490,10 @@ def get_sales_taxes(sales_invoice):
         FROM `tabSales Taxes and Charges`
         LEFT JOIN `tabAccount` ON `tabSales Taxes and Charges`.`account_head` = `tabAccount`.`name`
         WHERE
-            `tabSales Taxes and Charges`.`parent` = '{sales_invoice}'
+            `tabSales Taxes and Charges`.`parent` = %(sales_invoice)s
         LIMIT 1
-        """.format(sales_invoice=sales_invoice)
-    items = frappe.db.sql(sql_query, as_dict=True)
+        """
+    items = frappe.db.sql(sql_query, {'sales_invoice': sales_invoice}, as_dict=True)
     if items:
         return items[0]
     else:
@@ -458,22 +516,23 @@ def reset_export_flags():
 # get transactions
 @frappe.whitelist()
 def get_transactions(start_date, end_date):
-    sql_query = """SELECT `posting_date` AS `date`, `debit_to` AS `account`, `name`, `base_grand_total` AS `amount`, "Sales Invoice" AS `type` 
+    sql_query = """
+        SELECT `posting_date` AS `date`, `debit_to` AS `account`, `name`, `base_grand_total` AS `amount`, "Sales Invoice" AS `type` 
         FROM `tabSales Invoice`
         WHERE
-            `posting_date` >= '{start_date}'
-            AND `posting_date` <= '{end_date}'
+            `posting_date` >= %(start_date)s
+            AND `posting_date` <= %(end_date)s
             AND `docstatus` = 1
             AND `exported_to_abacus` = 0
         UNION SELECT `posting_date` AS `date`, `paid_to` AS `account`, `name`, `paid_amount` AS `amount`, "Payment Entry" AS `type`
         FROM `tabPayment Entry`
         WHERE
-            `posting_date` >= '{start_date}'
-            AND `posting_date` <= '{end_date}'
+            `posting_date` >= %(start_date)s
+            AND `posting_date` <= %(end_date)s
             AND `docstatus` = 1
             AND `exported_to_abacus` = 0
-        ORDER BY `date` LIMIT 20""".format(start_date=start_date, end_date=end_date)
-    items = frappe.db.sql(sql_query, as_dict=True)
+        ORDER BY `date` LIMIT 20"""
+    items = frappe.db.sql(sql_query, {'start_date': start_date, 'end_date': end_date}, as_dict=True)
     if items:
         return items
     else:

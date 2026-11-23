@@ -262,12 +262,16 @@ class ZUGFeRDWizard(Document):
         frappe.db.sql("""
             UPDATE `tabFile`
             SET 
-                `attached_to_name` = "{pinv}", 
+                `attached_to_name` = %(pinv)s, 
                 `attached_to_doctype` = "Purchase Invoice"
             WHERE
                 `attached_to_name` = "ZUGFeRD Wizard"
                 AND `attached_to_doctype` = "ZUGFeRD Wizard"
-            ;""".format(pinv=pinv_doc.name))
+            """,
+            {
+                'pinv': pinv_doc.name
+            }
+        )
             
         # clear wizard
         frappe.db.sql("""

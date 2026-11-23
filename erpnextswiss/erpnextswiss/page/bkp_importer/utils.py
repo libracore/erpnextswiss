@@ -83,9 +83,9 @@ def calc_and_create_new_parent_list(parent_list, dt, dn):
                 IFNULL(SUM(`total`), 0) AS `element_total`
              FROM `tabHLK Structur Organisation`
              WHERE
-                `parent` = '{dn}'
-                AND `parent_element` = '{parent}';
-        """.format(dn=dn, parent=parent), as_list=True)[0][0]
+                `parent` = %(dn)s
+                AND `parent_element` = %(parent)s
+        """, {'dn': dn, 'parent': parent}, as_list=True)[0][0]
         
         document = frappe.get_doc(dt, dn)
         for structur_element in document.hlk_structur_organisation:

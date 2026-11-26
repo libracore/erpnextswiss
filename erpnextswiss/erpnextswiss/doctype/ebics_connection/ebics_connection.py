@@ -28,7 +28,8 @@ class ebicsConnection(Document):
                 self.synced_until =self.synced_until.date()
                 
         return
-        
+    
+    @frappe.whitelist()
     def get_activation_wizard(self):
         # determine configuration stage
         if (not self.host_id) or (not self.url) or (not self.partner_id) or (not self.user_id) or (not self.key_password):

@@ -100,7 +100,8 @@ class ebicsConnection(Document):
             raise TypeError("synced_until must be a date or an ISO date string")
                 
         return
-        
+    
+    @frappe.whitelist()
     def get_activation_wizard(self):
         # determine configuration stage
         if (not self.host_id) or (not self.url) or (not self.partner_id) or (not self.user_id) or (not self.key_password):

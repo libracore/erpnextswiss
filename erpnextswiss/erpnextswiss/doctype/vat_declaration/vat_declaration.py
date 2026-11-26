@@ -65,6 +65,8 @@ class VATDeclaration(Document):
 
 @frappe.whitelist()
 def get_view_total(view_name, start_date, end_date, company=None):
+    if company and not frappe.db.exists("Company", company):
+        frappe.throw("Invalid company")         # prevent injects
     # try to fetch total from VAT query
     if frappe.db.exists("VAT query", view_name):
         """
@@ -92,6 +94,8 @@ def get_view_total(view_name, start_date, end_date, company=None):
 
 @frappe.whitelist()
 def get_view_tax(view_name, start_date, end_date, company=None):
+    if company and not frappe.db.exists("Company", company):
+        frappe.throw("Invalid company")         # prevent injects
     # try to fetch total from VAT query
     if frappe.db.exists("VAT query", view_name):
         sql_query = """SELECT IFNULL(SUM(`s`.`total_taxes_and_charges`), 0) AS `total` 

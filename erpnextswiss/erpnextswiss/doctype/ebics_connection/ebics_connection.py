@@ -71,7 +71,8 @@ class ebicsConnection(Document):
         user = EbicsUser(keyring=keyring, partnerid=self.partner_id, userid=self.user_id)
         client = EbicsClient(bank, user, version=self.ebics_version)
         return client
-        
+    
+    @frappe.whitelist()
     def create_keys(self):
         try:
             passphrase = get_decrypted_password("ebics Connection", self.name, "key_password", False)
@@ -84,7 +85,7 @@ class ebicsConnection(Document):
         except Exception as err:
             frappe.throw( "{0}".format(err), _("Error") )
         return
-
+    
     def create_certificate(self):
         try:
             passphrase = get_decrypted_password("ebics Connection", self.name, "key_password", False)
@@ -104,7 +105,8 @@ class ebicsConnection(Document):
         except Exception as err:
             frappe.throw( "{0}".format(err), _("Error") )
         return
-        
+    
+    @frappe.whitelist()
     def send_signature(self):
         try:
             client = self.get_client()
@@ -116,6 +118,7 @@ class ebicsConnection(Document):
             frappe.throw( "{0}".format(err), _("Error") )
         return
     
+    @frappe.whitelist()
     def send_keys(self):
         try:
             client = self.get_client()
@@ -127,6 +130,7 @@ class ebicsConnection(Document):
             frappe.throw( "{0}".format(err), _("Error") )
         return
     
+    @frappe.whitelist()
     def create_ini_letter(self):
         try:
             # create ini letter
@@ -150,7 +154,8 @@ class ebicsConnection(Document):
         except Exception as err:
             frappe.throw( "{0}".format(err), _("Error") )
         return
-        
+    
+    @frappe.whitelist()
     def download_public_keys(self):
         try:
             client = self.get_client()
@@ -161,7 +166,8 @@ class ebicsConnection(Document):
         except Exception as err:
             frappe.throw( "{0}".format(err), _("Error") )
         return
-        
+    
+    @frappe.whitelist()
     def activate_account(self):
         try:
             passphrase = get_decrypted_password("ebics Connection", self.name, "key_password", False)
